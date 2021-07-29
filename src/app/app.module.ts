@@ -3,6 +3,13 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ButtonModule } from "primeng/button";
+import { PanelModule } from "primeng/panel";
+import { MenuModule } from "primeng/menu";
+import { ToastModule } from "primeng/toast";
+import { CardModule } from "primeng/card";
+import { ToggleButtonModule } from "primeng/togglebutton";
+import { FormsModule } from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -10,7 +17,14 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ButtonModule,
+    PanelModule,
+    MenuModule,
+    ToastModule,
+    CardModule,
+    ToggleButtonModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

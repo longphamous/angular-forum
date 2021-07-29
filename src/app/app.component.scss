@@ -1,0 +1,29 @@
+.app-top-bar {
+  border-bottom: 1px solid darkgray;
+  height: 45px;
+  margin-bottom: 15px;
+}
+
+.section-container {
+  background-color: var(--surface-b);
+  color: var(--text-color);
+}
+
+.toggle-button-enabled {
+  color: brown;
+}
+
+.sizes {
+  .p-inputtext {
+    display: block;
+    margin-bottom: .5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.p-field * {
+  display: block;
+}
