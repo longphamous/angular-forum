@@ -11,10 +11,13 @@ import { CardModule } from "primeng/card";
 import { ToggleButtonModule } from "primeng/togglebutton";
 import { FormsModule } from "@angular/forms";
 import { InputTextModule } from "primeng/inputtext";
+import { PageHeaderComponent } from './home/page-header/page-header.component';
+import {MenubarModule} from 'primeng/menubar';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    PageHeaderComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +29,8 @@ import { InputTextModule } from "primeng/inputtext";
     CardModule,
     ToggleButtonModule,
     FormsModule,
-    InputTextModule
+    InputTextModule,
+    MenubarModule
   ],
   providers: [],
   bootstrap: [AppComponent]
