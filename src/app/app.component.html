@@ -1,21 +1,17 @@
 <div class="app-top-bar"></div>
-<div class="section-container">
+<div class="content-section">
+  <div class="card">
+    <h5>Invalid</h5>
+    <div class="p-field">
+      <label for="username2">Username</label>
+      <input id="username2" type="username" aria-describedby="username2-help" class="ng-invalid ng-dirty" pInputText />
+      <small id="username2-help" class="p-error">Username is not available.</small>
+    </div>
 
-</div>
-<p-card header="Simple Card" [style]="{'width': '25rem', 'margin-bottom': '2em'}">
-  <ng-template pTemplate="header">
-    <img alt="Card" src="assets/showcase/images/usercard.png">
-  </ng-template>
-  <p>OUTLINE What the Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae numquam deserunt
-    quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!</p>
-</p-card>
+    <p-button label="Submit"></p-button>
 
-<h5>Basic</h5>
-<p-toggleButton [class.toggle-button-enabled]="checked1" [(ngModel)]="checked1" onLabel="1" offLabel="2" [style]="{'background-color': 'red'}"></p-toggleButton>
 
-<h5>Invalid</h5>
-<div class="p-field">
-  <label for="username2">Username</label>
-  <input id="username2" type="username" aria-describedby="username2-help" class="ng-invalid ng-dirty" pInputText />
-  <small id="username2-help" class="p-error">Username is not available.</small>
+    <h5>Basic</h5>
+    <input type="text" pInputText [(ngModel)]="value1">
+  </div>
 </div>

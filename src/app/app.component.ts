@@ -8,4 +8,5 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'angular-forum';
   checked1: boolean = false;
+  value1 = "";
 }

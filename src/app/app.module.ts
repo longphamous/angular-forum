@@ -10,6 +10,7 @@ import { ToastModule } from "primeng/toast";
 import { CardModule } from "primeng/card";
 import { ToggleButtonModule } from "primeng/togglebutton";
 import { FormsModule } from "@angular/forms";
+import { InputTextModule } from "primeng/inputtext";
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { FormsModule } from "@angular/forms";
     ToastModule,
     CardModule,
     ToggleButtonModule,
-    FormsModule
+    FormsModule,
+    InputTextModule
   ],
   providers: [],
   bootstrap: [AppComponent]
