@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# dann entweder das externe Script aufrufen:
+.husky/prepare-commit-msg.sh "$@"
