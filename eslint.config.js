@@ -14,11 +14,12 @@ module.exports = tseslint.config(
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      "quotes": ["error", "double", { avoidEscape: true }],
       "@angular-eslint/directive-selector": [
         "error",
         {
           type: "attribute",
-          prefix: "app",
+          prefix: "",
           style: "camelCase",
         },
       ],
@@ -26,7 +27,7 @@ module.exports = tseslint.config(
         "error",
         {
           type: "element",
-          prefix: "app",
+          prefix: "",
           style: "kebab-case",
         },
       ],
@@ -38,6 +39,8 @@ module.exports = tseslint.config(
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility,
     ],
-    rules: {},
-  }
+    rules: {
+      "@angular-eslint/template/quotes": ["error", "double"]
+    },
+  },
 );
