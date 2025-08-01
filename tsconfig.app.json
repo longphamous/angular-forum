@@ -8,5 +8,13 @@
   },
   "files": ["src/main.ts"],
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
-  "exclude": ["src/**/test.ts", "src/**/*.mock.ts", "src/**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "src/**/test.ts",
+    "src/**/*.mock.ts",
+    "src/**/*.spec.ts"
+  ],
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  }
 }
