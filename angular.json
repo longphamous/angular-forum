@@ -17,9 +17,10 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/angular-forum",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
+            "outputPath": {
+              "base": "dist/angular-forum",
+              "browser": ""
+            },
             "polyfills": [
               "zone.js"
             ],
