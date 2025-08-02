@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 
-import { SectionCardComponent } from "../toolbox/section-card/section-card.component";
+import { SectionCardComponent } from "../../shared/components/section-card/section-card.component";
 
 @Component({
   selector: "dashboard",
