@@ -1,0 +1,32 @@
+name: Notify GitHub of Render Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy-status:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Start deployment and save the deployment_id
+      - name: Start GitHub Deployment
+        id: start-deploy
+        uses: bobheadxi/deployments@v1
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
+          ref: ${{ github.sha }}
+          desc: Deployment triggered on Render
+
+      # Step 2: Finish deployment using the captured deployment_id
+      - name: Finish GitHub Deployment
+        uses: bobheadxi/deployments@v1
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
+          status: success
+          deployment_id: ${{ steps.start-deploy.outputs.deployment_id }}
+          env_url: https://angular-forum-zk2e.onrender.com/
