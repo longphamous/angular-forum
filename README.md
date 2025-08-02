@@ -1,59 +1,105 @@
 # AngularForum
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.15.
+AngularForum is a modern web application built with Angular, designed to provide a seamless forum experience. It leverages the latest Angular CLI tools, Tailwind CSS for utility-first styling, and PrimeNG for rich UI components.
 
-## Development server
+## 🚀 Features
 
-To start a local development server, run:
+- Fast, responsive user interface
+- Modular architecture with Angular components
+- Utility-first styling with Tailwind CSS
+- Rich UI components powered by PrimeNG
+- Easy code scaffolding and testing
+- Ready for production deployment
 
-```bash
-ng serve
-```
+## 🛠️ Getting Started
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Prerequisites
 
-## Code scaffolding
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [pnpm](https://pnpm.io/) (v8 or higher recommended)
+- [Angular CLI](https://angular.dev/tools/cli)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Installation
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Clone the repository and install dependencies:
 
 ```bash
-ng build
+git clone https://github.com/your-username/angular-forum.git
+cd angular-forum
+pnpm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Development Server
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Start the local development server:
 
 ```bash
-ng test
+pnpm ng serve
 ```
 
-## Running end-to-end tests
+Navigate to [http://localhost:4200/](http://localhost:4200/) in your browser. The app reloads automatically on code changes.
 
-For end-to-end (e2e) testing, run:
+## 🎨 Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for utility-first styling. You can customize styles in the `tailwind.config.js` file.
+
+## 🌟 UI Components
+
+[PrimeNG](https://primeng.org/) is used for feature-rich UI components. Refer to the PrimeNG documentation for usage and customization.
+
+## 🧩 Code Scaffolding
+
+Generate new components, directives, or pipes using Angular CLI:
 
 ```bash
-ng e2e
+pnpm ng generate component component-name
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+For more options, run:
 
-## Additional Resources
+```bash
+pnpm ng generate --help
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 🏗️ Building for Production
+
+Build the project for production:
+
+```bash
+pnpm ng build
+```
+
+The build artifacts will be stored in the `dist/` directory.
+
+## 🧪 Running Tests
+
+### Unit Tests
+
+Run unit tests with Karma:
+
+```bash
+pnpm ng test
+```
+
+### End-to-End Tests
+
+Run e2e tests (configure your preferred framework):
+
+```bash
+pnpm ng e2e
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+## 📚 Resources
+
+- [Angular Documentation](https://angular.dev/docs)
+- [Angular CLI Reference](https://angular.dev/tools/cli)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [PrimeNG Documentation](https://primeng.org/)
+
+---
+
+Made with ❤️ using Angular, Tailwind CSS, and PrimeNG.
