@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { SectionCardComponent } from "./section-card.component";
+import { NavigationBarComponent } from "./navigation-bar.component";
 
-describe("SectionCardComponent", () => {
-  let component: SectionCardComponent;
-  let fixture: ComponentFixture<SectionCardComponent>;
+describe("NavigationBarComponent", () => {
+  let component: NavigationBarComponent;
+  let fixture: ComponentFixture<NavigationBarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SectionCardComponent],
+      imports: [NavigationBarComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SectionCardComponent);
+    fixture = TestBed.createComponent(NavigationBarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
