@@ -1,2 +1,158 @@
-<navigation-bar class="m-0.5"></navigation-bar>
-<router-outlet />
+<div class="min-h-screen flex flex-col bg-gray-50">
+  <!-- Header with navigation and auth controls -->
+  <header class="flex items-center justify-between px-4 py-2 bg-white shadow">
+    <div class="flex items-center gap-4">
+      <a routerLink="/" class="text-2xl font-semibold text-blue-600">Forum</a>
+      <nav class="hidden md:flex gap-3">
+        <a
+          routerLink="/"
+          routerLinkActive="underline"
+          class="text-sm hover:underline"
+          >Overview</a
+        >
+        <a
+          routerLink="/forums"
+          routerLinkActive="underline"
+          class="text-sm hover:underline"
+          >Forums</a
+        >
+        <a
+          routerLink="/search"
+          routerLinkActive="underline"
+          class="text-sm hover:underline"
+          >Search</a
+        >
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-6">
+      <!-- Search placeholder -->
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search..."
+          class="border rounded-md px-3 py-1 w-56 focus:outline-none focus:ring"
+          aria-label="Search input"
+        />
+      </div>
+
+      <!-- Authentication / User Menu -->
+      <div class="relative">
+        <ng-container *ngIf="isAuthenticated(); else loginFormTpl">
+          <button
+            class="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 focus:outline-none"
+            (click)="toggleMenu()"
+            aria-label="User menu"
+            type="button"
+          >
+            <div
+              class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm"
+              aria-hidden="true"
+            >
+              {{
+                currentUser()?.displayName?.[0] || currentUser()?.username?.[0]
+              }}
+            </div>
+            <div class="hidden sm:block text-sm">
+              {{ currentUser()?.displayName }}
+            </div>
+            <svg
+              class="w-4 h-4 ml-1"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div
+            *ngIf="menuOpen"
+            class="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-md z-10"
+            role="menu"
+            aria-label="User dropdown"
+          >
+            <ul class="flex flex-col py-1">
+              <li>
+                <a
+                  [routerLink]="['/user', currentUser()?.id]"
+                  class="block px-4 py-2 text-sm hover:bg-gray-100"
+                  (click)="closeMenu()"
+                >
+                  Profile
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/settings"
+                  class="block px-4 py-2 text-sm hover:bg-gray-100"
+                  (click)="closeMenu()"
+                >
+                  Settings
+                </a>
+              </li>
+              <li>
+                <button
+                  class="w-full text-left block px-4 py-2 text-sm hover:bg-gray-100"
+                  (click)="logout()"
+                  type="button"
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+
+        <!-- Login form when not authenticated -->
+        <ng-template #loginFormTpl>
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="submitLogin()"
+            class="flex items-center gap-2"
+            aria-label="Login form"
+          >
+            <input
+              formControlName="username"
+              type="text"
+              placeholder="Username"
+              class="border rounded-md px-2 py-1 w-36 focus:outline-none"
+              aria-label="Username"
+            />
+            <input
+              formControlName="password"
+              type="password"
+              placeholder="Password"
+              class="border rounded-md px-2 py-1 w-36 focus:outline-none"
+              aria-label="Password"
+            />
+            <button
+              type="submit"
+              [disabled]="loginForm.invalid || loading"
+              class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm disabled:opacity-50"
+            >
+              {{ loading ? "..." : "Login" }}
+            </button>
+          </form>
+          <div *ngIf="error" class="text-red-600 text-sm ml-2">
+            {{ error }}
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main outlet -->
+  <main class="flex-1 p-4">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="text-center text-xs p-4 bg-white border-t">
+    © {{ currentYear }} – Forum Demo
+  </footer>
+</div>
