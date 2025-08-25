@@ -6,19 +6,19 @@ import { providePrimeNG } from "primeng/config";
 import { routes } from "./app.routes";
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    providePrimeNG({
-      theme: {
-        preset: Aura,
-        options: {
-          cssLayer: {
-            name: "primeng",
-            order: "theme, base, primeng",
-          },
-        },
-      },
-    }),
-  ],
+    providers: [
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideRouter(routes),
+        providePrimeNG({
+            theme: {
+                preset: Aura,
+                options: {
+                    cssLayer: {
+                        name: "primeng",
+                        order: "theme, base, primeng"
+                    }
+                }
+            }
+        })
+    ]
 };

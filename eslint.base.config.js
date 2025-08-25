@@ -3,12 +3,14 @@ const eslint = require("@eslint/js");
 const tseslint = require("typescript-eslint");
 const angular = require("angular-eslint");
 const simpleImportSort = require("eslint-plugin-simple-import-sort");
+const prettierPlugin = require("eslint-plugin-prettier");
 
 module.exports = tseslint.config(
   {
     files: ["**/*.ts"],
     plugins: {
       "simple-import-sort": simpleImportSort,
+      prettier: prettierPlugin
     },
     extends: [
       eslint.configs.recommended,
@@ -21,6 +23,7 @@ module.exports = tseslint.config(
       quotes: ["error", "double", { avoidEscape: true }],
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
+      "prettier/prettier": "error",
       "@angular-eslint/directive-selector": [
         "error",
         {

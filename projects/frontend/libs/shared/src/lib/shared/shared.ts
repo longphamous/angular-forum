@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'lib-shared',
-  imports: [],
-  templateUrl: './shared.html',
-  styleUrl: './shared.css',
+    selector: "lib-shared",
+    imports: [],
+    templateUrl: "./shared.html",
+    styleUrl: "./shared.css"
 })
 export class Shared {}
