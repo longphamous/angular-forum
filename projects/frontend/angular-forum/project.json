@@ -66,7 +66,8 @@
           "buildTarget": "angular-forum:build:production"
         },
         "development": {
-          "buildTarget": "angular-forum:build:development"
+          "buildTarget": "angular-forum:build:development",
+          "port": 4201
         }
       },
       "defaultConfiguration": "development"
