@@ -1,21 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Shared } from './shared';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-describe('Shared', () => {
-  let component: Shared;
-  let fixture: ComponentFixture<Shared>;
+import { Shared } from "./shared";
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Shared],
-    }).compileComponents();
+describe("Shared", () => {
+    let component: Shared;
+    let fixture: ComponentFixture<Shared>;
 
-    fixture = TestBed.createComponent(Shared);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [Shared]
+        }).compileComponents();
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+        fixture = TestBed.createComponent(Shared);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 });

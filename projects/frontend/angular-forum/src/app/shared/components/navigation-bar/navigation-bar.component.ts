@@ -4,11 +4,11 @@ import { BadgeModule } from "primeng/badge";
 import { MenubarModule } from "primeng/menubar";
 
 @Component({
-  selector: "navigation-bar",
-  imports: [AvatarModule, BadgeModule, MenubarModule],
-  templateUrl: "./navigation-bar.component.html",
-  styleUrl: "./navigation-bar.component.scss",
+    selector: "navigation-bar",
+    imports: [AvatarModule, BadgeModule, MenubarModule],
+    templateUrl: "./navigation-bar.component.html",
+    styleUrl: "./navigation-bar.component.scss"
 })
 export class NavigationBarComponent {
-  items: any = [];
+    items: any = [];
 }
