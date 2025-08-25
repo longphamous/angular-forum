@@ -37,6 +37,7 @@ module.exports = tseslint.config(
           style: "kebab-case",
         },
       ],
+      "@typescript-eslint/member-ordering": ["error"],
     },
   },
   {
