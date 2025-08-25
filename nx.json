@@ -43,14 +43,6 @@
       "!{projectRoot}/cypress.config.[jt]s"
     ]
   },
-  "projects": {
-    "angular-forum": {
-      "tags": []
-    },
-    "anime-db": {
-      "tags": []
-    }
-  },
   "plugins": [
     {
       "plugin": "@nx/cypress/plugin",
@@ -74,6 +66,13 @@
       "linter": "eslint",
       "style": "scss",
       "unitTestRunner": "vitest"
+    },
+    "@nx/angular:library": {
+      "linter": "eslint",
+      "unitTestRunner": "vitest"
+    },
+    "@nx/angular:component": {
+      "style": "css"
     }
   }
 }

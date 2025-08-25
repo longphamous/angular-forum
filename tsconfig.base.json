@@ -7,6 +7,9 @@
     "target": "ES2022",
     "module": "ES2022",
     "skipLibCheck": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "shared": ["projects/frontend/libs/shared/src/index.ts"]
+    }
   }
 }
