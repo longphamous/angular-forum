@@ -9,8 +9,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "shared": ["projects/frontend/libs/shared/src/index.ts"],
-      "shared-ui": ["projects/frontend/libs/shared-ui/src/index.ts"]
+      "shared": ["projects/frontend/libs/shared/src/index.ts"]
     }
   }
 }
