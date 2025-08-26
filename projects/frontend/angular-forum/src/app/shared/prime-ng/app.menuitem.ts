@@ -81,8 +81,7 @@ import { LayoutService } from "./service/layout.service";
             ),
             transition("collapsed <=> expanded", animate("400ms cubic-bezier(0.86, 0, 0.07, 1)"))
         ])
-    ],
-    providers: [LayoutService]
+    ]
 })
 export class AppMenuitem implements OnInit, OnDestroy {
     @Input() item!: MenuItem;

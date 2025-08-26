@@ -19,7 +19,9 @@ export interface Product {
     rating?: number;
 }
 
-@Injectable()
+@Injectable({
+    providedIn: "root"
+})
 export class ProductService {
     status: string[] = ["OUTOFSTOCK", "INSTOCK", "LOWSTOCK"];
 
