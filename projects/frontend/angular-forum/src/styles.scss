@@ -1,12 +1,4 @@
-@import "primeicons/primeicons.css";
-@import "tailwindcss";
-
-:root {
-  --font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
-  --font-size: 0.875rem;
-}
-
-body {
-  font-family: var(--font-family);
-  font-size: var(--font-size);
-}
+@use "./assets/tailwind.css";
+@use "./assets/layout/layout.scss";
+@use "primeicons/primeicons.css";
+@use "./assets/demo/demo.scss";
