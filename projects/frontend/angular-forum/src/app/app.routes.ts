@@ -1,6 +1,5 @@
 import { Routes } from "@angular/router";
 
-import { Dashboard } from "./features/pages/dashboard/dashboard";
 import { AppLayout } from "./shared/prime-ng/app.layout";
 
 export const routes: Routes = [
@@ -8,7 +7,11 @@ export const routes: Routes = [
         path: "",
         component: AppLayout,
         children: [
-            { path: "", component: Dashboard },
+            { path: "", redirectTo: "dashboard", pathMatch: "full" },
+            {
+                path: "dashboard",
+                loadComponent: () => import("./features/pages/dashboard/dashboard").then((c) => c.Dashboard)
+            },
             {
                 path: "forum",
                 loadComponent: () =>
