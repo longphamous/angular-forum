@@ -10,7 +10,7 @@ export const routes: Routes = [
         children: [
             { path: "", component: Dashboard },
             {
-                path: "uikit",
+                path: "forum",
                 loadComponent: () =>
                     import("./features/forums/forum-list/forum-list.component").then((c) => c.ForumListComponent)
             }
