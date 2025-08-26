@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, inject, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { TranslocoPipe } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DataViewModule } from "primeng/dataview";
 import { IconFieldModule } from "primeng/iconfield";
@@ -28,7 +29,8 @@ import { Product, ProductService } from "../../pages/service/product.service";
         PickListModule,
         OrderListModule,
         TagModule,
-        ButtonModule
+        ButtonModule,
+        TranslocoPipe
     ],
     templateUrl: "./forum-list.component.html",
     styleUrl: "./forum-list.component.scss"

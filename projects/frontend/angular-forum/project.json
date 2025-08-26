@@ -24,6 +24,11 @@
           {
             "glob": "**/*",
             "input": "public"
+          },
+          {
+            "glob": "**/*",
+            "input": "projects/frontend/angular-forum/src/assets/i18n",
+            "output": "assets/i18n"
           }
         ],
         "styles": ["projects/frontend/angular-forum/src/styles.scss"],
@@ -74,6 +79,12 @@
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n"
+    },
+    "i18n-extract": {
+      "command": "transloco-keys-manager extract --project angular-forum"
+    },
+    "i18n-find": {
+      "command": "transloco-keys-manager find --project angular-forum"
     },
     "test": {
       "executor": "@angular/build:karma",

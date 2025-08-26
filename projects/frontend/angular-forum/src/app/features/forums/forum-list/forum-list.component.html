@@ -1,5 +1,5 @@
 <div class="card">
-    <div class="mb-4 text-xl font-semibold">Forum List</div>
+    <div class="mb-4 text-xl font-semibold">{{ "forum" | transloco }}</div>
     <p-menubar [model]="nestedMenuItems">
         <ng-template #end>
             <p-iconfield>
@@ -11,7 +11,7 @@
 </div>
 
 <div class="card">
-    <div class="text-xl font-semibold">DataView</div>
+    <div class="text-xl font-semibold">{{ "forum.list" | transloco }}</div>
     <p-dataview [layout]="layout" [value]="products">
         <ng-template #header>
             <div class="flex justify-end">
