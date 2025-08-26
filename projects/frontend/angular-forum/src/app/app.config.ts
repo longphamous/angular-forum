@@ -9,16 +9,6 @@ export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({ eventCoalescing: true }),
         provideRouter(routes),
-        providePrimeNG({
-            theme: {
-                preset: Aura,
-                options: {
-                    cssLayer: {
-                        name: "primeng",
-                        order: "theme, base, primeng"
-                    }
-                }
-            }
-        })
+        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: ".app-dark" } } })
     ]
 };
