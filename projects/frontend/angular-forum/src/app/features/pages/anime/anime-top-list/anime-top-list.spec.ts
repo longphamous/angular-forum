@@ -1,17 +1,16 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { AnimeTopList } from "./anime-top-list";
 
-import { PageRegisterComponent } from "./page-register.component";
-
-describe("PageRegisterComponent", () => {
-    let component: PageRegisterComponent;
-    let fixture: ComponentFixture<PageRegisterComponent>;
+describe("AnimeTopList", () => {
+    let component: AnimeTopList;
+    let fixture: ComponentFixture<AnimeTopList>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [PageRegisterComponent]
+            imports: [AnimeTopList]
         }).compileComponents();
 
-        fixture = TestBed.createComponent(PageRegisterComponent);
+        fixture = TestBed.createComponent(AnimeTopList);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

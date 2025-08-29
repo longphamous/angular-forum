@@ -120,11 +120,13 @@ export class AppMenuitem implements OnInit, OnDestroy {
             this.active = false;
         });
 
-        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((params) => {
-            if (this.item.routerLink) {
-                this.updateActiveStateFromRoute();
-            }
-        });
+        this.router.events
+            .pipe(filter((event) => event instanceof NavigationEnd))
+            .subscribe((_params: NavigationEnd) => {
+                if (this.item.routerLink) {
+                    this.updateActiveStateFromRoute();
+                }
+            });
     }
 
     @HostBinding("class.active-menuitem")

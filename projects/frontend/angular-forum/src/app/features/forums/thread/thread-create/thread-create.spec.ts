@@ -1,17 +1,16 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ThreadCreate } from "./thread-create";
 
-import { ThreadViewComponent } from "./thread-view.component";
-
-describe("ThreadViewComponent", () => {
-    let component: ThreadViewComponent;
-    let fixture: ComponentFixture<ThreadViewComponent>;
+describe("ThreadCreate", () => {
+    let component: ThreadCreate;
+    let fixture: ComponentFixture<ThreadCreate>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [ThreadViewComponent]
+            imports: [ThreadCreate]
         }).compileComponents();
 
-        fixture = TestBed.createComponent(ThreadViewComponent);
+        fixture = TestBed.createComponent(ThreadCreate);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
