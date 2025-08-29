@@ -1,0 +1,134 @@
+<div class="card">
+    <div class="text-xl font-semibold">{{ "thread.list" | transloco }}</div>
+    <p-dataview [layout]="layout" [value]="products">
+        <ng-template #header>
+            <div class="flex justify-end">
+                <p-select-button [(ngModel)]="layout" [allowEmpty]="false" [options]="options">
+                    <ng-template #item let-option>
+                        <i class="pi" [ngClass]="{ 'pi-bars': option === 'list', 'pi-table': option === 'grid' }"></i>
+                    </ng-template>
+                </p-select-button>
+            </div>
+        </ng-template>
+
+        <ng-template #list let-items>
+            <div class="flex flex-col">
+                <div *ngFor="let item of items; let i = index">
+                    <div
+                        class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center"
+                        [ngClass]="{ 'border-surface border-t': i !== 0 }"
+                    >
+                        <div class="relative md:w-40">
+                            <img
+                                class="mx-auto block w-full rounded xl:block"
+                                [alt]="item.name"
+                                src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}"
+                            />
+                            <div class="rounded-border absolute bg-black/70" [style]="{ left: '4px', top: '4px' }">
+                                <p-tag [severity]="getSeverity(item)" [value]="item.inventoryStatus"></p-tag>
+                            </div>
+                        </div>
+                        <div class="flex flex-1 flex-col justify-between gap-6 md:flex-row md:items-center">
+                            <div class="flex flex-row items-start justify-between gap-2 md:flex-col">
+                                <div>
+                                    <p-tag [value]="item.category"/>
+                                    <div class="mt-2 text-lg font-medium">{{ item.name }}</div>
+                                </div>
+                                <div class="bg-surface-100 p-1" style="border-radius: 30px">
+                                    <div
+                                        class="bg-surface-0 flex items-center justify-center gap-2 px-2 py-1"
+                                        style="
+                                            border-radius: 30px;
+                                            box-shadow:
+                                                0px 1px 2px 0px rgba(0, 0, 0, 0.04),
+                                                0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                                        "
+                                    >
+                                        <span class="text-surface-900 text-sm font-medium">{{ item.rating }}</span>
+                                        <i class="pi pi-star-fill text-yellow-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-8 md:items-end">
+                                <span class="text-xl font-semibold">$ {{ item.price }}</span>
+                                <div class="flex flex-row-reverse gap-2 md:flex-row">
+                                    <p-button [outlined]="true" icon="pi pi-heart" styleClass="h-full"></p-button>
+                                    <p-button
+                                        [disabled]="item.inventoryStatus === 'OUTOFSTOCK'"
+                                        icon="pi pi-shopping-cart"
+                                        label="Buy Now"
+                                        styleClass="flex-auto md:flex-initial whitespace-nowrap"
+                                    ></p-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template #grid let-items>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 p-2 sm:col-span-6 lg:col-span-4" *ngFor="let item of items; let i = index">
+                    <div
+                        class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 flex flex-col rounded border p-6"
+                    >
+                        <div class="relative w-full shadow-sm">
+                            <img
+                                class="w-full rounded"
+                                [alt]="item.name"
+                                src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}"
+                            />
+                            <div
+                                class="rounded-border absolute bg-black/70"
+                                [style]="{
+                                    left: '4px',
+                                    top: '4px'
+                                }"
+                            >
+                                <p-tag [severity]="getSeverity(item)" [value]="item.inventoryStatus"></p-tag>
+                            </div>
+                        </div>
+                        <div class="pt-12">
+                            <div class="flex flex-row items-start justify-between gap-2">
+                                <div>
+                                    <span class="text-surface-500 dark:text-surface-400 text-sm font-medium"
+                                        >{{ item.category }}</span
+                                    >
+                                    <div class="mt-1 text-lg font-medium">{{ item.name }}</div>
+                                </div>
+                                <div class="bg-surface-100 p-1" style="border-radius: 30px">
+                                    <div
+                                        class="bg-surface-0 flex items-center justify-center gap-2 px-2 py-1"
+                                        style="
+                                            border-radius: 30px;
+                                            box-shadow:
+                                                0px 1px 2px 0px rgba(0, 0, 0, 0.04),
+                                                0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                                        "
+                                    >
+                                        <span class="text-surface-900 text-xs font-medium">{{ item.rating }}</span>
+                                        <i class="pi pi-star-fill text-yellow-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex flex-col gap-6">
+                                <span class="text-2xl font-semibold">$ {{ item.price }}</span>
+                                <div class="flex gap-2">
+                                    <p-button
+                                        class="flex-auto whitespace-nowrap"
+                                        [disabled]="item.inventoryStatus === 'OUTOFSTOCK'"
+                                        icon="pi pi-shopping-cart"
+                                        label="Buy Now"
+                                        styleClass="w-full"
+                                    ></p-button>
+                                    <p-button [outlined]="true" icon="pi pi-heart" styleClass="h-full"></p-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    </p-dataview>
+</div>

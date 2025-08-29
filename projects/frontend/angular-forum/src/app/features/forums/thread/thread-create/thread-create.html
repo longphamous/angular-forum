@@ -1,0 +1,30 @@
+<p-fluid>
+    <div class="card">
+        <div class="text-xl font-semibold">{{ "thread.create" | transloco }}</div>
+
+        <div class="mt-8 flex">
+            <div class="card flex w-full flex-col gap-6">
+                <div class="text-xl font-semibold">{{ "thread.information" | transloco }}</div>
+                <p-divider />
+                <div class="flex w-full flex-wrap gap-2">
+                    <label for="firstname2">{{ "thread.title" | transloco }}</label>
+                    <input id="firstname2" pInputText type="text" />
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 flex">
+            <div class="card flex w-full flex-col gap-6">
+                <div class="text-xl font-semibold">{{ "thread.description" | transloco }}</div>
+                <p-divider />
+                <div class="flex w-full flex-wrap">
+                    <p-editor class="w-full" [(ngModel)]="text" [style]="{ height: '320px' }" />
+                </div>
+                <div class="flex justify-center gap-2">
+                    <p-button [label]="'preview' | transloco" severity="contrast" />
+                    <p-button [label]="'submit' | transloco" />
+                </div>
+            </div>
+        </div>
+    </div>
+</p-fluid>

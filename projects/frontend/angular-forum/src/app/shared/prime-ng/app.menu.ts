@@ -27,12 +27,16 @@ export class AppMenu implements OnInit {
             },
             {
                 label: "Forum",
-                items: [{ label: "Forum List", icon: "pi pi-fw pi-th-large", routerLink: ["/forum"] }]
+                items: [
+                    { label: "Forum List", icon: "pi pi-fw pi-th-large", routerLink: ["/forum"] },
+                    { label: "Thread List", icon: "pi pi-fw pi-th-large", routerLink: ["/thread-list"] },
+                    { label: "Create Thread", icon: "pi pi-fw pi-th-large", routerLink: ["/thread-create"] }
+                ]
             },
             {
                 label: "Anime",
                 items: [
-                    { label: "Top Anime", icon: "pi pi-fw pi-list", routerLink: ["/top-anime"] },
+                    { label: "Top Anime", icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
                     { label: "Anime Database", icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] }
                 ]
             },

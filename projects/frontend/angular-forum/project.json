@@ -29,6 +29,11 @@
             "glob": "**/*",
             "input": "projects/frontend/angular-forum/src/assets/i18n",
             "output": "assets/i18n"
+          },
+          {
+            "glob": "**/*",
+            "input": "projects/frontend/angular-forum/src/assets/data",
+            "output": "assets/data"
           }
         ],
         "styles": ["projects/frontend/angular-forum/src/styles.scss"],
@@ -44,7 +49,7 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kB",
+              "maximumWarning": "1MB",
               "maximumError": "2MB"
             },
             {
