@@ -1,0 +1,56 @@
+{
+  "name": "base",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "projects/backend/base/src",
+  "tags": ["scope:backend", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/projects/backend/base",
+        "tsConfig": "projects/backend/base/tsconfig.app.json",
+        "main": "projects/backend/base/src/main.ts",
+        "assets": ["projects/backend/base/src/assets"]
+      },
+      "configurations": {
+        "production": {},
+        "development": {
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "base:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "base:build:development"
+        },
+        "production": {
+          "buildTarget": "base:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/projects/backend/base"],
+      "options": {
+        "jestConfig": "projects/backend/base/jest.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["projects/backend/base/**/*.ts"]
+      }
+    }
+  }
+}
+

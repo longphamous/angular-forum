@@ -1,6 +1,6 @@
 # Aniverse
 
-Aniverse is a modern web application suite built with Angular and managed as an Nx Monorepo. It includes two Angular applications: `angular-forum` (a forum system) and `anime-db` (a database interface). The project leverages Nx for efficient workspace management, Tailwind CSS for utility-first styling, and PrimeNG for rich UI components.
+Aniverse is a modern web application suite built with Angular and managed as an Nx Monorepo. It includes two Angular applications: `angular-forum` (a forum system) and `anime-db` (a database interface), as well as a NestJS backend service `base`. The project leverages Nx for efficient workspace management, Tailwind CSS for utility-first styling, and PrimeNG for rich UI components.
 
 ## 🚀 Features
 
@@ -44,6 +44,12 @@ Start the local development server for each project:
   nx serve anime-db
   ```
   Navigate to [http://localhost:4202/](http://localhost:4202/) in your browser.
+
+- For the `base` backend (NestJS):
+  ```bash
+  nx serve base
+  ```
+  The API is available at [http://localhost:3000/api](http://localhost:3000/api).
 
 Both apps reload automatically on code changes. To run both projects simultaneously:
 ```bash
