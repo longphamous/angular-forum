@@ -7,8 +7,8 @@ module.exports = tseslint.config(
   ...baseConfig
     .filter((config) => {
       // HTML-Template-Konfiguration weglassen (nicht relevant für NestJS)
-      if (config.files?.some((f) => f.includes('*.html'))) return false;
-      return true;
+      return !config.files?.some((f) => f.includes('*.html'));
+
     })
     .map((config) => {
       // Angular-Template-Prozessor komplett aus dem Objekt entfernen
