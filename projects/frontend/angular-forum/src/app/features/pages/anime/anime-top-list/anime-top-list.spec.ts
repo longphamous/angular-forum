@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+
 import { AnimeTopList } from "./anime-top-list";
 
 describe("AnimeTopList", () => {
