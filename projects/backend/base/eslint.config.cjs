@@ -27,6 +27,7 @@ module.exports = tseslint.config(
       '@angular-eslint/no-output-rename': 'off',
       '@angular-eslint/use-lifecycle-interface': 'off',
       '@angular-eslint/contextual-lifecycle': 'off',
+      '@angular-eslint/prefer-inject': 'off',
     },
   }
 );
