@@ -10,7 +10,7 @@ import { LayoutService } from "./service/layout.service";
     selector: "app-floating-configurator",
     imports: [CommonModule, ButtonModule, StyleClassModule, AppConfigurator],
     template: `
-        <div class="right-8 top-8 flex gap-4" [ngClass]="{ fixed: float() }">
+        <div class="top-8 right-8 flex gap-4" [ngClass]="{ fixed: float() }">
             <p-button
                 [icon]="isDarkTheme() ? 'pi pi-moon' : 'pi pi-sun'"
                 [rounded]="true"

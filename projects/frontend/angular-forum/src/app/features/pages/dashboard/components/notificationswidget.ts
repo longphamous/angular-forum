@@ -22,7 +22,7 @@ import { MenuModule } from "primeng/menu";
         </div>
 
         <span class="text-muted-color mb-4 block font-medium">TODAY</span>
-        <ul class="mx-0 mb-6 mt-0 list-none p-0">
+        <ul class="mx-0 mt-0 mb-6 list-none p-0">
             <li class="border-surface flex items-center border-b py-2">
                 <div
                     class="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-400/10"

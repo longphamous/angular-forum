@@ -24,7 +24,7 @@ import { MenuModule } from "primeng/menu";
         <ul class="m-0 list-none p-0">
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Space T-Shirt</span
                     >
                     <div class="text-muted-color mt-1">Clothing</div>
@@ -41,12 +41,12 @@ import { MenuModule } from "primeng/menu";
             </li>
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Portal Sticker</span
                     >
                     <div class="text-muted-color mt-1">Accessories</div>
                 </div>
-                <div class="ml-0 mt-2 flex items-center md:ml-20 md:mt-0">
+                <div class="mt-2 ml-0 flex items-center md:mt-0 md:ml-20">
                     <div
                         class="bg-surface-300 dark:bg-surface-500 rounded-border w-40 overflow-hidden lg:w-24"
                         style="height: 8px"
@@ -58,12 +58,12 @@ import { MenuModule } from "primeng/menu";
             </li>
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Supernova Sticker</span
                     >
                     <div class="text-muted-color mt-1">Accessories</div>
                 </div>
-                <div class="ml-0 mt-2 flex items-center md:ml-20 md:mt-0">
+                <div class="mt-2 ml-0 flex items-center md:mt-0 md:ml-20">
                     <div
                         class="bg-surface-300 dark:bg-surface-500 rounded-border w-40 overflow-hidden lg:w-24"
                         style="height: 8px"
@@ -75,12 +75,12 @@ import { MenuModule } from "primeng/menu";
             </li>
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Wonders Notebook</span
                     >
                     <div class="text-muted-color mt-1">Office</div>
                 </div>
-                <div class="ml-0 mt-2 flex items-center md:ml-20 md:mt-0">
+                <div class="mt-2 ml-0 flex items-center md:mt-0 md:ml-20">
                     <div
                         class="bg-surface-300 dark:bg-surface-500 rounded-border w-40 overflow-hidden lg:w-24"
                         style="height: 8px"
@@ -92,12 +92,12 @@ import { MenuModule } from "primeng/menu";
             </li>
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Mat Black Case</span
                     >
                     <div class="text-muted-color mt-1">Accessories</div>
                 </div>
-                <div class="ml-0 mt-2 flex items-center md:ml-20 md:mt-0">
+                <div class="mt-2 ml-0 flex items-center md:mt-0 md:ml-20">
                     <div
                         class="bg-surface-300 dark:bg-surface-500 rounded-border w-40 overflow-hidden lg:w-24"
                         style="height: 8px"
@@ -109,12 +109,12 @@ import { MenuModule } from "primeng/menu";
             </li>
             <li class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 mb-1 mr-2 font-medium md:mb-0"
+                    <span class="text-surface-900 dark:text-surface-0 mr-2 mb-1 font-medium md:mb-0"
                         >Robots T-Shirt</span
                     >
                     <div class="text-muted-color mt-1">Clothing</div>
                 </div>
-                <div class="ml-0 mt-2 flex items-center md:ml-20 md:mt-0">
+                <div class="mt-2 ml-0 flex items-center md:mt-0 md:ml-20">
                     <div
                         class="bg-surface-300 dark:bg-surface-500 rounded-border w-40 overflow-hidden lg:w-24"
                         style="height: 8px"

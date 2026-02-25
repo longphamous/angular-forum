@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+
 import { AnimeDatabase } from "./anime-database";
 
 describe("AnimeDatabase", () => {
