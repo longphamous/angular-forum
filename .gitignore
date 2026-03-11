@@ -57,3 +57,9 @@ Thumbs.db
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+

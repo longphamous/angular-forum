@@ -1,10 +1,12 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 
+import { Public } from "../auth/auth.decorators";
 import { GamificationService } from "./gamification.service";
 import { Achievement } from "./models/achievement.model";
 import { LeaderboardEntry } from "./models/leaderboard.model";
 import { UserProgress } from "./models/user-progress.model";
 
+@Public()
 @Controller("gamification")
 export class GamificationController {
     constructor(private readonly gamificationService: GamificationService) {}

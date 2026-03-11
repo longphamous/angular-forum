@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
+import { Public } from "../../auth/auth.decorators";
 import { LottoScheduler } from "./lotto.scheduler";
 import { LottoService } from "./lotto.service";
 import { DrawResult, DrawScheduleConfig, LottoDraw, LottoResult, LottoTicket } from "./models/lotto.model";
 
+@Public()
 @Controller("credit/lotto")
 export class LottoController {
     constructor(

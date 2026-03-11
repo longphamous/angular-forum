@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 
+import { Public } from "../auth/auth.decorators";
 import { CreditService } from "./credit.service";
 import { Transaction } from "./models/transaction.model";
 import { Wallet } from "./models/wallet.model";
 
+@Public()
 @Controller("credit")
 export class CreditController {
     constructor(private readonly creditService: CreditService) {}
