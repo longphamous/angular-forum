@@ -3,36 +3,36 @@
         <div>
             <h2 class="m-0 text-2xl font-bold">Anime Database</h2>
             @if (facade.total() > 0) {
-                <p class="mb-0 mt-1 text-surface-500">{{ facade.total().toLocaleString() }} Einträge</p>
+            <p class="text-surface-500 mt-1 mb-0">{{ facade.total().toLocaleString() }} Einträge</p>
             }
         </div>
     </div>
 
     @if (facade.error()) {
-        <p-message severity="error" [text]="facade.error()!" styleClass="mb-4 w-full" />
+    <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
     }
 
     <p-table
-        [value]="facade.animeList()"
+        (onLazyLoad)="onLazyLoad($event)"
         [lazy]="true"
-        [paginator]="true"
-        [rows]="pageSize"
-        [totalRecords]="facade.total()"
         [loading]="facade.loading()"
+        [paginator]="true"
         [rowHover]="true"
+        [rows]="pageSize"
         [scrollable]="true"
         [showGridlines]="false"
-        (onLazyLoad)="onLazyLoad($event)"
+        [totalRecords]="facade.total()"
+        [value]="facade.animeList()"
         dataKey="id"
         styleClass="p-datatable-sm"
     >
         <ng-template #header>
             <tr>
-                <th style="width: 3.5rem" class="text-center text-surface-400">#</th>
+                <th class="text-surface-400 text-center" style="width: 3.5rem">#</th>
                 <th style="min-width: 22rem">Anime</th>
                 <th style="width: 6.5rem">Typ</th>
-                <th style="width: 5.5rem" class="text-center">Folgen</th>
-                <th style="width: 5.5rem" class="text-center">Score</th>
+                <th class="text-center" style="width: 5.5rem">Folgen</th>
+                <th class="text-center" style="width: 5.5rem">Score</th>
                 <th style="min-width: 11rem">Status</th>
                 <th style="width: 8rem">Start</th>
                 <th style="width: 8rem">Ende</th>
@@ -44,21 +44,19 @@
         <ng-template #body let-anime>
             <tr>
                 <!-- Rank -->
-                <td class="text-center text-sm text-surface-400">
-                    {{ anime.rank ?? '—' }}
-                </td>
+                <td class="text-surface-400 text-center text-sm">{{ anime.rank ?? '—' }}</td>
 
                 <!-- Picture + Title -->
                 <td>
                     <div class="flex items-center gap-3">
                         @if (anime.picture) {
-                            <img
-                                [src]="anime.picture"
-                                [alt]="anime.title"
-                                class="anime-thumbnail flex-shrink-0 rounded object-cover"
-                            />
+                        <img
+                            class="anime-thumbnail flex-shrink-0 rounded object-cover"
+                            [alt]="anime.title"
+                            [src]="anime.picture"
+                        />
                         } @else {
-                            <div class="anime-thumbnail flex-shrink-0 rounded bg-surface-200 dark:bg-surface-700"></div>
+                        <div class="anime-thumbnail bg-surface-200 dark:bg-surface-700 flex-shrink-0 rounded"></div>
                         }
                         <div class="min-w-0">
                             <div
@@ -69,9 +67,7 @@
                                 {{ anime.titleEnglish || anime.title || '—' }}
                             </div>
                             @if (anime.titleEnglish && anime.title && anime.title !== anime.titleEnglish) {
-                                <div class="mt-0.5 truncate text-xs text-surface-400">
-                                    {{ anime.title }}
-                                </div>
+                            <div class="text-surface-400 mt-0.5 truncate text-xs">{{ anime.title }}</div>
                             }
                         </div>
                     </div>
@@ -80,69 +76,61 @@
                 <!-- Type -->
                 <td>
                     @if (anime.type) {
-                        <p-tag [value]="anime.type" [severity]="getTypeSeverity(anime.type)" styleClass="text-xs" />
+                    <p-tag [severity]="getTypeSeverity(anime.type)" [value]="anime.type" styleClass="text-xs" />
                     } @else {
-                        <span class="text-surface-400">—</span>
+                    <span class="text-surface-400">—</span>
                     }
                 </td>
 
                 <!-- Episodes -->
                 <td class="text-center text-sm">
-                    @if (anime.episode) {
-                        {{ anime.episode }}
-                    } @else {
-                        <span class="text-surface-400">—</span>
+                    @if (anime.episode) { {{ anime.episode }} } @else {
+                    <span class="text-surface-400">—</span>
                     }
                 </td>
 
                 <!-- Score -->
                 <td class="text-center text-sm font-semibold">
                     @if (anime.mean) {
-                        <span [class]="getScoreClass(anime.mean)">{{ anime.mean.toFixed(2) }}</span>
+                    <span [class]="getScoreClass(anime.mean)">{{ anime.mean.toFixed(2) }}</span>
                     } @else {
-                        <span class="text-surface-400">N/A</span>
+                    <span class="text-surface-400">N/A</span>
                     }
                 </td>
 
                 <!-- Status -->
                 <td>
                     @if (anime.status) {
-                        <p-tag
-                            [value]="anime.status"
-                            [severity]="getStatusSeverity(anime.status)"
-                            styleClass="text-xs whitespace-nowrap"
-                        />
+                    <p-tag
+                        [severity]="getStatusSeverity(anime.status)"
+                        [value]="anime.status"
+                        styleClass="text-xs whitespace-nowrap"
+                    />
                     } @else {
-                        <span class="text-surface-400">—</span>
+                    <span class="text-surface-400">—</span>
                     }
                 </td>
 
                 <!-- Start Date -->
-                <td class="text-sm text-surface-500">
+                <td class="text-surface-500 text-sm">
                     {{ formatDate(anime.startYear, anime.startMonth, anime.startDay) }}
                 </td>
 
                 <!-- End Date -->
-                <td class="text-sm text-surface-500">
-                    {{ formatDate(anime.endYear, anime.endMonth, anime.endDay) }}
-                </td>
+                <td class="text-surface-500 text-sm">{{ formatDate(anime.endYear, anime.endMonth, anime.endDay) }}</td>
 
                 <!-- Season -->
-                <td class="text-sm text-surface-500">
-                    {{ formatSeason(anime.season, anime.seasonYear) }}
-                </td>
+                <td class="text-surface-500 text-sm">{{ formatSeason(anime.season, anime.seasonYear) }}</td>
 
                 <!-- Rating -->
-                <td class="text-xs text-surface-400">
-                    {{ anime.rating || '—' }}
-                </td>
+                <td class="text-surface-400 text-xs">{{ anime.rating || '—' }}</td>
             </tr>
         </ng-template>
 
         <ng-template #emptymessage>
             <tr>
                 <td colspan="10">
-                    <div class="flex flex-col items-center justify-center py-12 text-surface-400">
+                    <div class="text-surface-400 flex flex-col items-center justify-center py-12">
                         <i class="pi pi-inbox mb-3 text-5xl"></i>
                         <span class="text-lg">Keine Anime gefunden.</span>
                     </div>
@@ -155,16 +143,16 @@
                 <td><p-skeleton height="1.25rem" /></td>
                 <td>
                     <div class="flex items-center gap-3">
-                        <p-skeleton width="2.5rem" height="3.5rem" styleClass="rounded flex-shrink-0" />
+                        <p-skeleton height="3.5rem" styleClass="rounded flex-shrink-0" width="2.5rem" />
                         <div class="flex-1">
                             <p-skeleton height="0.875rem" styleClass="mb-2" />
-                            <p-skeleton width="60%" height="0.75rem" />
+                            <p-skeleton height="0.75rem" width="60%" />
                         </div>
                     </div>
                 </td>
                 <td><p-skeleton height="1.5rem" width="3.5rem" /></td>
-                <td><p-skeleton height="1.25rem" width="2rem" styleClass="mx-auto" /></td>
-                <td><p-skeleton height="1.25rem" width="2.5rem" styleClass="mx-auto" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2.5rem" /></td>
                 <td><p-skeleton height="1.5rem" width="6rem" /></td>
                 <td><p-skeleton height="1.25rem" width="4.5rem" /></td>
                 <td><p-skeleton height="1.25rem" width="4.5rem" /></td>

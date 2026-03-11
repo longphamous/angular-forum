@@ -41,3 +41,34 @@ export interface PaginatedAnime {
     page: number;
     limit: number;
 }
+
+export type AnimeSortField =
+    | "id"
+    | "title"
+    | "mean"
+    | "rank"
+    | "popularity"
+    | "episode"
+    | "seasonYear"
+    | "startYear"
+    | "member"
+    | "voter";
+
+export interface AnimeFilter {
+    search?: string;
+    type?: string;
+    status?: string;
+    season?: string;
+    seasonYear?: number;
+    startYear?: number;
+    endYear?: number;
+    source?: string;
+    rating?: string;
+    nsfw?: boolean;
+    minEpisodes?: number;
+    maxEpisodes?: number;
+    minScore?: number;
+    maxScore?: number;
+    sortBy?: AnimeSortField;
+    sortOrder?: "ASC" | "DESC";
+}

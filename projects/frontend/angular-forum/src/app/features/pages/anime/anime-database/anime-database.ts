@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
-
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
 import { SkeletonModule } from "primeng/skeleton";
