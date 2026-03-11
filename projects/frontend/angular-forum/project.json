@@ -77,7 +77,8 @@
         },
         "development": {
           "buildTarget": "angular-forum:build:development",
-          "port": 4201
+          "port": 4201,
+          "proxyConfig": "projects/frontend/angular-forum/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

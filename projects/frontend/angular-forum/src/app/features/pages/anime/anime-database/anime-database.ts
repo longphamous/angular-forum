@@ -1,146 +1,87 @@
-import { CommonModule } from "@angular/common";
-import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    inject,
-    OnInit,
-    ViewChild
-} from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { ButtonModule } from "primeng/button";
-import { IconFieldModule } from "primeng/iconfield";
-import { InputIconModule } from "primeng/inputicon";
-import { InputTextModule } from "primeng/inputtext";
-import { MultiSelectModule } from "primeng/multiselect";
-import { ProgressBarModule } from "primeng/progressbar";
-import { RatingModule } from "primeng/rating";
-import { RippleModule } from "primeng/ripple";
-import { SelectModule } from "primeng/select";
-import { SliderModule } from "primeng/slider";
-import { Table, TableModule } from "primeng/table";
-import { TagModule } from "primeng/tag";
-import { ToastModule } from "primeng/toast";
-import { ToggleButtonModule } from "primeng/togglebutton";
+import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 
-import { Customer, CustomerService, Representative } from "../../service/customer.service";
-import { Status } from "../anime-top-list/anime-top-list";
+import { ButtonModule } from "primeng/button";
+import { MessageModule } from "primeng/message";
+import { SkeletonModule } from "primeng/skeleton";
+import { TableLazyLoadEvent, TableModule } from "primeng/table";
+import { TagModule } from "primeng/tag";
+import { TooltipModule } from "primeng/tooltip";
+
+import { AnimeFacade } from "../../../../facade/anime/anime-facade";
 
 @Component({
     selector: "anime-database",
-    imports: [
-        TableModule,
-        MultiSelectModule,
-        SelectModule,
-        InputIconModule,
-        TagModule,
-        InputTextModule,
-        SliderModule,
-        ProgressBarModule,
-        ToggleButtonModule,
-        ToastModule,
-        CommonModule,
-        FormsModule,
-        ButtonModule,
-        RatingModule,
-        RippleModule,
-        IconFieldModule
-    ],
+    imports: [TableModule, TagModule, ButtonModule, SkeletonModule, TooltipModule, MessageModule],
     templateUrl: "./anime-database.html",
     styleUrl: "./anime-database.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnimeDatabase implements OnInit {
-    @ViewChild("filter") filter!: ElementRef;
+    readonly facade = inject(AnimeFacade);
+    readonly pageSize = 20;
 
-    customers1: Customer[] = [];
-
-    representatives: Representative[] = [];
-
-    statuses: Status[] = [];
-
-    activityValues: number[] = [0, 100];
-
-    isExpanded: boolean = false;
-
-    balanceFrozen: boolean = false;
-
-    loading: boolean = true;
-
-    customerService: CustomerService = inject(CustomerService);
-    cd: ChangeDetectorRef = inject(ChangeDetectorRef);
-
-    ngOnInit() {
-        this.customerService.getCustomersLarge().subscribe((customers) => {
-            this.customers1 = customers;
-            this.loading = false;
-
-            this.customers1.forEach((customer) => {
-                if (customer.date) {
-                    customer.date = new Date(customer.date);
-                }
-            });
-            this.cd.markForCheck();
-        });
-
-        this.representatives = [
-            { name: "Amy Elsner", image: "amyelsner.png" },
-            { name: "Anna Fali", image: "annafali.png" },
-            { name: "Asiya Javayant", image: "asiyajavayant.png" },
-            { name: "Bernardo Dominic", image: "bernardodominic.png" },
-            { name: "Elwin Sharvill", image: "elwinsharvill.png" },
-            { name: "Ioni Bowcher", image: "ionibowcher.png" },
-            { name: "Ivan Magalhaes", image: "ivanmagalhaes.png" },
-            { name: "Onyama Limba", image: "onyamalimba.png" },
-            { name: "Stephen Shaw", image: "stephenshaw.png" },
-            { name: "XuXue Feng", image: "xuxuefeng.png" }
-        ];
-
-        this.statuses = [
-            { label: "Unqualified", value: "unqualified" },
-            { label: "Qualified", value: "qualified" },
-            { label: "New", value: "new" },
-            { label: "Negotiation", value: "negotiation" },
-            { label: "Renewal", value: "renewal" },
-            { label: "Proposal", value: "proposal" }
-        ];
+    ngOnInit(): void {
+        this.facade.loadPage(1, this.pageSize);
     }
 
-    onGlobalFilter(table: Table, event: Event) {
-        table.filterGlobal((event.target as HTMLInputElement).value, "contains");
+    onLazyLoad(event: TableLazyLoadEvent): void {
+        const first = event.first ?? 0;
+        const rows = event.rows ?? this.pageSize;
+        const page = Math.floor(first / rows) + 1;
+        this.facade.loadPage(page, rows);
     }
 
-    clear(table: Table) {
-        table.clear();
-        this.filter.nativeElement.value = "";
+    formatDate(year?: number, month?: number, day?: number): string {
+        if (!year) return "—";
+        if (!month) return year.toString();
+        if (!day) return `${year}-${String(month).padStart(2, "0")}`;
+        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     }
 
-    getSeverity(status: string) {
-        switch (status) {
-            case "qualified":
-            case "instock":
-            case "INSTOCK":
-            case "DELIVERED":
-            case "delivered":
-                return "success";
+    formatSeason(season?: string, year?: number): string {
+        if (!season && !year) return "—";
+        const parts: string[] = [];
+        if (season) parts.push(season.charAt(0).toUpperCase() + season.slice(1).toLowerCase());
+        if (year) parts.push(year.toString());
+        return parts.join(" ");
+    }
 
-            case "negotiation":
-            case "lowstock":
-            case "LOWSTOCK":
-            case "PENDING":
-            case "pending":
+    getTypeSeverity(type?: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" {
+        switch (type?.toLowerCase()) {
+            case "tv":
+                return "info";
+            case "movie":
+                return "contrast";
+            case "ova":
+            case "ona":
+                return "secondary";
+            case "special":
                 return "warn";
-
-            case "unqualified":
-            case "outofstock":
-            case "OUTOFSTOCK":
-            case "CANCELLED":
-            case "cancelled":
+            case "music":
                 return "danger";
+            default:
+                return "secondary";
+        }
+    }
 
+    getStatusSeverity(status?: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" {
+        switch (status?.toLowerCase()) {
+            case "currently airing":
+                return "success";
+            case "finished airing":
+                return "secondary";
+            case "not yet aired":
+                return "warn";
             default:
                 return "info";
         }
+    }
+
+    getScoreClass(mean?: number): string {
+        if (!mean) return "text-surface-400";
+        if (mean >= 8) return "text-green-500 font-bold";
+        if (mean >= 7) return "text-green-400 font-semibold";
+        if (mean >= 6) return "text-yellow-500";
+        return "text-red-400";
     }
 }
