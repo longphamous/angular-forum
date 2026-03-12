@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import { CreateCategoryDto } from "../dto/create-category.dto";
@@ -21,12 +21,22 @@ export class CategoryController {
     }
 
     /**
+     * GET /forum/categories/admin
+     * Lists ALL categories (including inactive). Requires admin role.
+     */
+    @Roles("admin")
+    @Get("admin")
+    findAllAdmin(): Promise<CategoryDto[]> {
+        return this.categoryService.findAllAdmin();
+    }
+
+    /**
      * GET /forum/categories/:id
      * Returns a single category with its forums.
      */
     @Public()
     @Get(":id")
-    findById(@Param("id") id: string): Promise<CategoryDetailDto> {
+    findById(@Param("id", ParseUUIDPipe) id: string): Promise<CategoryDetailDto> {
         return this.categoryService.findById(id);
     }
 
@@ -46,7 +56,7 @@ export class CategoryController {
      */
     @Roles("admin")
     @Patch(":id")
-    update(@Param("id") id: string, @Body() dto: UpdateCategoryDto): Promise<CategoryDto> {
+    update(@Param("id", ParseUUIDPipe) id: string, @Body() dto: UpdateCategoryDto): Promise<CategoryDto> {
         return this.categoryService.update(id, dto);
     }
 
@@ -56,7 +66,7 @@ export class CategoryController {
      */
     @Roles("admin")
     @Delete(":id")
-    async remove(@Param("id") id: string): Promise<{ success: boolean }> {
+    async remove(@Param("id", ParseUUIDPipe) id: string): Promise<{ success: boolean }> {
         await this.categoryService.remove(id);
         return { success: true };
     }

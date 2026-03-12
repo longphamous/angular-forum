@@ -1,11 +1,21 @@
 import { Routes } from "@angular/router";
 
+import { adminGuard, authGuard } from "./core/guards/auth.guard";
 import { AppLayout } from "./shared/prime-ng/app.layout";
 
 export const routes: Routes = [
     {
+        path: "login",
+        loadComponent: () => import("./features/pages/login-page/login-page").then((c) => c.LoginPage)
+    },
+    {
+        path: "register",
+        loadComponent: () => import("./features/pages/register-page/register-page").then((c) => c.RegisterPage)
+    },
+    {
         path: "",
         component: AppLayout,
+        canActivate: [authGuard],
         children: [
             { path: "", redirectTo: "dashboard", pathMatch: "full" },
             {
@@ -41,6 +51,17 @@ export const routes: Routes = [
                 path: "anime-database",
                 loadComponent: () =>
                     import("./features/pages/anime/anime-database/anime-database").then((c) => c.AnimeDatabase)
+            },
+            {
+                path: "admin/overview",
+                canActivate: [adminGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-overview/admin-overview").then((c) => c.AdminOverview)
+            },
+            {
+                path: "admin/forum",
+                canActivate: [adminGuard],
+                loadComponent: () => import("./features/admin/admin-forum/admin-forum").then((c) => c.AdminForum)
             }
         ]
     }

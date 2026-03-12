@@ -49,6 +49,13 @@ export class CategoryService {
         return categories.map(toDto);
     }
 
+    async findAllAdmin(): Promise<CategoryDto[]> {
+        const categories = await this.categoryRepo.find({
+            order: { position: "ASC" }
+        });
+        return categories.map(toDto);
+    }
+
     async findById(id: string): Promise<CategoryDetailDto> {
         const category = await this.findEntityById(id);
         const withForums = await this.categoryRepo.findOne({

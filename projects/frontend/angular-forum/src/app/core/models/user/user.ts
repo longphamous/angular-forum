@@ -1,7 +1,27 @@
-import { UserSummary } from "./user-summary";
+export type UserRole = "admin" | "moderator" | "member" | "guest";
+export type UserStatus = "active" | "inactive" | "banned" | "pending";
 
-export interface User extends UserSummary {
-    roles: string[];
-    reputation: number;
-    joinedAt: string;
+export interface UserProfile {
+    id: string;
+    username: string;
+    email: string;
+    displayName: string;
+    avatarUrl?: string;
+    bio?: string;
+    role: UserRole;
+    status: UserStatus;
+    createdAt: string;
+    lastLoginAt?: string;
+}
+
+export interface AuthSession {
+    userId: string;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: string;
+}
+
+export interface LoginResponse {
+    session: AuthSession;
+    profile: UserProfile;
 }

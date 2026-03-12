@@ -9,47 +9,35 @@ import { PasswordModule } from "primeng/password";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 @Component({
-    selector: "register-page",
+    selector: "login-page",
     imports: [FormsModule, ButtonModule, InputTextModule, PasswordModule, MessageModule, RouterLink],
-    templateUrl: "./register-page.html",
-    styleUrl: "./register-page.scss",
+    templateUrl: "./login-page.html",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RegisterPage {
+export class LoginPage {
     readonly loading = signal(false);
     readonly errorMessage = signal<string | null>(null);
 
     username = "";
-    email = "";
     password = "";
-    displayName = "";
 
     private readonly authFacade = inject(AuthFacade);
     private readonly router = inject(Router);
 
     onSubmit(): void {
-        if (!this.username || !this.email || !this.password) return;
+        if (!this.username || !this.password) return;
 
         this.loading.set(true);
         this.errorMessage.set(null);
 
-        this.authFacade
-            .register({
-                username: this.username,
-                email: this.email,
-                password: this.password,
-                displayName: this.displayName || undefined
-            })
-            .subscribe({
-                next: () => {
-                    this.router.navigate(["/login"]);
-                },
-                error: (err: { error?: { message?: string } }) => {
-                    this.errorMessage.set(
-                        err.error?.message ?? "Registrierung fehlgeschlagen. Bitte versuche es erneut."
-                    );
-                    this.loading.set(false);
-                }
-            });
+        this.authFacade.login(this.username, this.password).subscribe({
+            next: () => {
+                this.router.navigate(["/dashboard"]);
+            },
+            error: (err: { error?: { message?: string } }) => {
+                this.errorMessage.set(err.error?.message ?? "Login fehlgeschlagen. Bitte versuche es erneut.");
+                this.loading.set(false);
+            }
+        });
     }
 }

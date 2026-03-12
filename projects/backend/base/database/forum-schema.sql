@@ -1,7 +1,7 @@
 -- =============================================================================
--- Aniverse Base – Forum Schema
--- Run as the aniverse_app role (or superuser) against the aniverse_base DB.
--- Idempotent: safe to re-run.
+-- Aniverse Base – Forum Schema (LEGACY / REFERENCE)
+-- This file is superseded by schema.sql which covers all application tables.
+-- Kept for reference only – do NOT run separately if schema.sql was already applied.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------

@@ -6,6 +6,7 @@ export type { UserRole, UserStatus };
 export interface UserProfile {
     id: string;
     username: string;
+    email: string;
     displayName: string;
     avatarUrl?: string;
     bio?: string;

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import { CreateForumDto } from "../dto/create-forum.dto";
@@ -18,7 +18,7 @@ export class ForumController {
     @Public()
     @Get("categories/:categoryId/forums")
     findByCategory(
-        @Param("categoryId") categoryId: string,
+        @Param("categoryId", ParseUUIDPipe) categoryId: string,
         @Query() query: ForumQueryDto
     ): Promise<PaginatedResult<ForumDto>> {
         return this.forumService.findByCategory(categoryId, query);
@@ -30,7 +30,7 @@ export class ForumController {
      */
     @Public()
     @Get("forums/:id")
-    findById(@Param("id") id: string): Promise<ForumDetailDto> {
+    findById(@Param("id", ParseUUIDPipe) id: string): Promise<ForumDetailDto> {
         return this.forumService.findById(id);
     }
 
@@ -40,7 +40,7 @@ export class ForumController {
      */
     @Roles("admin")
     @Post("categories/:categoryId/forums")
-    create(@Param("categoryId") categoryId: string, @Body() dto: CreateForumDto): Promise<ForumDto> {
+    create(@Param("categoryId", ParseUUIDPipe) categoryId: string, @Body() dto: CreateForumDto): Promise<ForumDto> {
         return this.forumService.create(categoryId, dto);
     }
 
@@ -50,7 +50,7 @@ export class ForumController {
      */
     @Roles("admin", "moderator")
     @Patch("forums/:id")
-    update(@Param("id") id: string, @Body() dto: UpdateForumDto): Promise<ForumDto> {
+    update(@Param("id", ParseUUIDPipe) id: string, @Body() dto: UpdateForumDto): Promise<ForumDto> {
         return this.forumService.update(id, dto);
     }
 
@@ -60,7 +60,7 @@ export class ForumController {
      */
     @Roles("admin")
     @Delete("forums/:id")
-    async remove(@Param("id") id: string): Promise<{ success: boolean }> {
+    async remove(@Param("id", ParseUUIDPipe) id: string): Promise<{ success: boolean }> {
         await this.forumService.remove(id);
         return { success: true };
     }

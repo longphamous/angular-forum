@@ -7,18 +7,27 @@ import { provideTransloco } from "@jsverse/transloco";
 import { AppComponent } from "./app/app.component";
 import { appConfig } from "./app/app.config";
 import { MockInterceptor } from "./app/core/mocks/mock-interceptor/mock-interceptor";
+import { environment } from "./environments/environment";
 import { TranslocoHttpLoader } from "./transloco-loader";
+
+const mockProvider = environment.useMock
+    ? [
+          {
+              provide: HTTP_INTERCEPTORS,
+              useClass: MockInterceptor,
+              multi: true
+          }
+      ]
+    : [];
+
+console.info(`[bootstrap] Mock-Interceptor: ${environment.useMock ? "aktiv" : "deaktiviert"}`);
 
 bootstrapApplication(AppComponent, {
     providers: [
         ...appConfig.providers,
         // HttpClient with interceptor support (so that DI-registered interceptors take effect)
         provideHttpClient(withInterceptorsFromDi()),
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: MockInterceptor,
-            multi: true
-        },
+        ...mockProvider,
         provideTransloco({
             config: {
                 availableLangs: ["en", "de"],

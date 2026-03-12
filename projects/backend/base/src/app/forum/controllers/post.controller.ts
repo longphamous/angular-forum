@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
 
 import { Public } from "../../auth/auth.decorators";
 import { CurrentUser } from "../../auth/current-user.decorator";
@@ -21,7 +21,7 @@ export class PostController {
     @Public()
     @Get("threads/:threadId/posts")
     findByThread(
-        @Param("threadId") threadId: string,
+        @Param("threadId", ParseUUIDPipe) threadId: string,
         @Query() query: ForumQueryDto
     ): Promise<PaginatedResult<PostDto>> {
         return this.postService.findByThread(threadId, query);
@@ -33,7 +33,7 @@ export class PostController {
      */
     @Public()
     @Get("posts/:id")
-    findById(@Param("id") id: string): Promise<PostDto> {
+    findById(@Param("id", ParseUUIDPipe) id: string): Promise<PostDto> {
         return this.postService.findById(id);
     }
 
@@ -43,7 +43,7 @@ export class PostController {
      */
     @Post("threads/:threadId/posts")
     create(
-        @Param("threadId") threadId: string,
+        @Param("threadId", ParseUUIDPipe) threadId: string,
         @Body() dto: CreatePostDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<PostDto> {
@@ -56,7 +56,7 @@ export class PostController {
      */
     @Patch("posts/:id")
     update(
-        @Param("id") id: string,
+        @Param("id", ParseUUIDPipe) id: string,
         @Body() dto: UpdatePostDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<PostDto> {
@@ -68,7 +68,7 @@ export class PostController {
      * Soft-deletes a post. Author, moderators, and admins may delete.
      */
     @Delete("posts/:id")
-    async remove(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async remove(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
         await this.postService.remove(id, user.userId, user.role);
         return { success: true };
     }
@@ -79,7 +79,7 @@ export class PostController {
      */
     @Post("posts/:id/react")
     react(
-        @Param("id") id: string,
+        @Param("id", ParseUUIDPipe) id: string,
         @Body() dto: ReactPostDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<ReactionDto> {
@@ -91,7 +91,7 @@ export class PostController {
      * Removes the current user's reaction from a post.
      */
     @Delete("posts/:id/react")
-    async unreact(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async unreact(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
         await this.postService.unreact(id, user.userId);
         return { success: true };
     }

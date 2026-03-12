@@ -13,8 +13,8 @@ export const databaseConfig = registerAs(
         password: process.env["DB_PASSWORD"] ?? "CHANGE_ME",
         database: process.env["DB_NAME"] ?? "aniverse_base",
         schema: process.env["DB_SCHEMA"] ?? "public",
-        // Entities are registered per-module via forFeature()
-        entities: [],
+        // Automatically load entities registered via TypeOrmModule.forFeature()
+        autoLoadEntities: true,
         // Set to false in production – use migrations instead
         synchronize: process.env["NODE_ENV"] !== "production",
         logging: process.env["NODE_ENV"] === "development",

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import * as bcrypt from "bcryptjs";
 import { Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
@@ -11,19 +12,13 @@ import { AuthSession, UserProfile } from "./models/user.model";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Simple mock hash – replace with bcrypt/argon2 in production. */
-function hashPassword(plain: string): string {
-    return `hashed:${plain}`;
-}
-
-function verifyPassword(plain: string, hash: string): boolean {
-    return hash === hashPassword(plain);
-}
+const SALT_ROUNDS = 10;
 
 function toProfile(user: UserEntity): UserProfile {
     return {
         id: user.id,
         username: user.username,
+        email: user.email,
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
         bio: user.bio,
@@ -54,10 +49,11 @@ export class UserService {
             throw new BadRequestException(`Email "${dto.email}" is already registered`);
         }
 
+        const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
         const user = this.userRepo.create({
             username: dto.username,
             email: dto.email,
-            passwordHash: hashPassword(dto.password),
+            passwordHash,
             displayName: dto.displayName ?? dto.username,
             role: "member",
             status: "active"
@@ -68,7 +64,9 @@ export class UserService {
 
     async login(dto: LoginDto): Promise<{ session: AuthSession; profile: UserProfile }> {
         const user = await this.userRepo.findOneBy({ username: dto.username });
-        if (!user || !verifyPassword(dto.password, user.passwordHash)) {
+        const passwordValid = user ? await bcrypt.compare(dto.password, user.passwordHash) : false;
+
+        if (!user || !passwordValid) {
             throw new UnauthorizedException("Invalid username or password");
         }
         if (user.status === "banned") {

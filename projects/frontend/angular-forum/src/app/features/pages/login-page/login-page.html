@@ -1,0 +1,62 @@
+<div class="bg-surface-50 dark:bg-surface-950 flex min-h-screen items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        <div class="surface-card rounded-2xl p-8 shadow-lg">
+            <div class="mb-8 text-center">
+                <h1 class="text-surface-900 dark:text-surface-0 mb-2 text-3xl font-bold">Willkommen zurück</h1>
+                <p class="text-surface-500">Melde dich bei Aniverse an</p>
+            </div>
+
+            @if (errorMessage()) {
+            <p-message [text]="errorMessage()!" severity="error" styleClass="w-full mb-4" />
+            }
+
+            <form class="flex flex-col gap-4" (ngSubmit)="onSubmit()">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="username"
+                        >Benutzername</label
+                    >
+                    <input
+                        class="w-full"
+                        id="username"
+                        [(ngModel)]="username"
+                        autocomplete="username"
+                        name="username"
+                        pInputText
+                        placeholder="Benutzername"
+                        required
+                        type="text"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="password">Passwort</label>
+                    <p-password
+                        [(ngModel)]="password"
+                        [feedback]="false"
+                        [toggleMask]="true"
+                        autocomplete="current-password"
+                        inputId="password"
+                        inputStyleClass="w-full"
+                        name="password"
+                        placeholder="Passwort"
+                        required
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <p-button
+                    [disabled]="!username || !password"
+                    [loading]="loading()"
+                    label="Anmelden"
+                    styleClass="w-full mt-2"
+                    type="submit"
+                />
+            </form>
+
+            <div class="text-surface-500 mt-6 text-center">
+                Noch kein Konto?
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/register">Jetzt registrieren</a>
+            </div>
+        </div>
+    </div>
+</div>

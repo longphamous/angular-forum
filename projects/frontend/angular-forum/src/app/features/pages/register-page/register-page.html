@@ -1,1 +1,96 @@
-<p>register-page works!</p>
+<div class="bg-surface-50 dark:bg-surface-950 flex min-h-screen items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        <div class="surface-card rounded-2xl p-8 shadow-lg">
+            <div class="mb-8 text-center">
+                <h1 class="text-surface-900 dark:text-surface-0 mb-2 text-3xl font-bold">Konto erstellen</h1>
+                <p class="text-surface-500">Werde Teil der Aniverse Community</p>
+            </div>
+
+            @if (errorMessage()) {
+            <p-message [text]="errorMessage()!" severity="error" styleClass="w-full mb-4" />
+            }
+
+            <form class="flex flex-col gap-4" (ngSubmit)="onSubmit()">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="username"
+                        >Benutzername <span class="text-red-500">*</span></label
+                    >
+                    <input
+                        class="w-full"
+                        id="username"
+                        [(ngModel)]="username"
+                        autocomplete="username"
+                        name="username"
+                        pInputText
+                        placeholder="Benutzername"
+                        required
+                        type="text"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="displayName"
+                        >Anzeigename</label
+                    >
+                    <input
+                        class="w-full"
+                        id="displayName"
+                        [(ngModel)]="displayName"
+                        autocomplete="name"
+                        name="displayName"
+                        pInputText
+                        placeholder="Anzeigename (optional)"
+                        type="text"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="email"
+                        >E-Mail <span class="text-red-500">*</span></label
+                    >
+                    <input
+                        class="w-full"
+                        id="email"
+                        [(ngModel)]="email"
+                        autocomplete="email"
+                        name="email"
+                        pInputText
+                        placeholder="E-Mail-Adresse"
+                        required
+                        type="email"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="password"
+                        >Passwort <span class="text-red-500">*</span></label
+                    >
+                    <p-password
+                        [(ngModel)]="password"
+                        [toggleMask]="true"
+                        autocomplete="new-password"
+                        inputId="password"
+                        inputStyleClass="w-full"
+                        name="password"
+                        placeholder="Passwort"
+                        required
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <p-button
+                    [disabled]="!username || !email || !password"
+                    [loading]="loading()"
+                    label="Registrieren"
+                    styleClass="w-full mt-2"
+                    type="submit"
+                />
+            </form>
+
+            <div class="text-surface-500 mt-6 text-center">
+                Bereits ein Konto?
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/login">Jetzt anmelden</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -38,6 +38,13 @@ export class AppMenu implements OnInit {
             },
 
             {
+                label: "Admin",
+                items: [
+                    { label: "Übersicht", icon: "pi pi-fw pi-chart-bar", routerLink: ["/admin/overview"] },
+                    { label: "Forenstruktur", icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] }
+                ]
+            },
+            {
                 label: "Further Links",
                 items: [
                     {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
 
 import { Public } from "../../auth/auth.decorators";
 import { CurrentUser } from "../../auth/current-user.decorator";
@@ -19,7 +19,7 @@ export class ThreadController {
      */
     @Public()
     @Get("forums/:forumId/threads")
-    findByForum(@Param("forumId") forumId: string, @Query() query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
+    findByForum(@Param("forumId", ParseUUIDPipe) forumId: string, @Query() query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
         return this.threadService.findByForum(forumId, query);
     }
 
@@ -29,7 +29,7 @@ export class ThreadController {
      */
     @Public()
     @Get("threads/:id")
-    findById(@Param("id") id: string): Promise<ThreadDetailDto> {
+    findById(@Param("id", ParseUUIDPipe) id: string): Promise<ThreadDetailDto> {
         return this.threadService.findById(id);
     }
 
@@ -39,7 +39,7 @@ export class ThreadController {
      */
     @Post("forums/:forumId/threads")
     create(
-        @Param("forumId") forumId: string,
+        @Param("forumId", ParseUUIDPipe) forumId: string,
         @Body() dto: CreateThreadDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<ThreadDto> {
@@ -52,7 +52,7 @@ export class ThreadController {
      */
     @Patch("threads/:id")
     update(
-        @Param("id") id: string,
+        @Param("id", ParseUUIDPipe) id: string,
         @Body() dto: UpdateThreadDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<ThreadDto> {
@@ -64,7 +64,7 @@ export class ThreadController {
      * Soft-deletes a thread. Author, moderators, and admins may delete.
      */
     @Delete("threads/:id")
-    async remove(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async remove(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
         await this.threadService.remove(id, user.userId, user.role);
         return { success: true };
     }
