@@ -3,6 +3,8 @@ import { computed, inject, Injectable, Signal, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { Observable, tap } from "rxjs";
 
+import { AUTH_ROUTES } from "../../core/api/auth.routes";
+import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { AuthSession, LoginResponse, UserProfile } from "../../core/models/user/user";
 
 const STORAGE_TOKEN = "aniverse_access_token";
@@ -27,6 +29,7 @@ export class AuthFacade {
     private readonly _accessToken = signal<string | null>(null);
     private readonly http = inject(HttpClient);
     private readonly router = inject(Router);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
     constructor() {
         this.currentUser = this._currentUser.asReadonly();
@@ -44,17 +47,17 @@ export class AuthFacade {
 
     login(username: string, password: string): Observable<LoginResponse> {
         return this.http
-            .post<LoginResponse>("/api/user/login", { username, password })
+            .post<LoginResponse>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.login()}`, { username, password })
             .pipe(tap((res) => this._persist(res.session, res.profile)));
     }
 
     register(payload: RegisterPayload): Observable<UserProfile> {
-        return this.http.post<UserProfile>("/api/user/register", payload);
+        return this.http.post<UserProfile>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.register()}`, payload);
     }
 
     refreshToken(): Observable<AuthSession> {
         const refreshToken = localStorage.getItem(STORAGE_REFRESH);
-        return this.http.post<AuthSession>("/api/user/refresh", { refreshToken }).pipe(
+        return this.http.post<AuthSession>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.refresh()}`, { refreshToken }).pipe(
             tap((session) => {
                 this._accessToken.set(session.accessToken);
                 localStorage.setItem(STORAGE_TOKEN, session.accessToken);

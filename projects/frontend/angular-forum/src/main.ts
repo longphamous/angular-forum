@@ -6,6 +6,7 @@ import { provideTransloco } from "@jsverse/transloco";
 
 import { AppComponent } from "./app/app.component";
 import { appConfig } from "./app/app.config";
+import { API_CONFIG } from "./app/core/config/api.config";
 import { MockInterceptor } from "./app/core/mocks/mock-interceptor/mock-interceptor";
 import { environment } from "./environments/environment";
 import { TranslocoHttpLoader } from "./transloco-loader";
@@ -25,6 +26,7 @@ console.info(`[bootstrap] Mock-Interceptor: ${environment.useMock ? "aktiv" : "d
 bootstrapApplication(AppComponent, {
     providers: [
         ...appConfig.providers,
+        { provide: API_CONFIG, useValue: environment.api },
         // HttpClient with interceptor support (so that DI-registered interceptors take effect)
         provideHttpClient(withInterceptorsFromDi()),
         ...mockProvider,

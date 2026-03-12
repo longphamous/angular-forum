@@ -1,6 +1,8 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Injectable, Signal, signal } from "@angular/core";
 
+import { ANIME_ROUTES } from "../../core/api/anime.routes";
+import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Anime, AnimeFilter, PaginatedAnime } from "../../core/models/anime/anime";
 
 @Injectable({ providedIn: "root" })
@@ -15,6 +17,7 @@ export class AnimeFacade {
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
     constructor() {
         this.animeList = this._animeList.asReadonly();
@@ -29,7 +32,7 @@ export class AnimeFacade {
 
         const params = new HttpParams().set("page", page).set("limit", limit);
 
-        this.http.get<PaginatedAnime>("/api/anime", { params }).subscribe({
+        this.http.get<PaginatedAnime>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.list()}`, { params }).subscribe({
             next: (res) => {
                 this._animeList.set(res.data);
                 this._total.set(res.total);
@@ -65,7 +68,7 @@ export class AnimeFacade {
         if (filters.sortBy) params = params.set("sortBy", filters.sortBy);
         if (filters.sortOrder) params = params.set("sortOrder", filters.sortOrder);
 
-        this.http.get<PaginatedAnime>("/api/anime", { params }).subscribe({
+        this.http.get<PaginatedAnime>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.list()}`, { params }).subscribe({
             next: (res) => {
                 this._animeList.set(res.data);
                 this._total.set(res.total);

@@ -3,6 +3,8 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 import { forkJoin, Observable } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
+import { FORUM_ROUTES } from "../../core/api/forum.routes";
+import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Forum } from "../../core/models/forum/forum";
 import { ForumCategory } from "../../core/models/forum/forum-category";
 
@@ -54,6 +56,7 @@ export class AdminFacade {
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
     constructor() {
         this.categories = this._categories.asReadonly();
@@ -67,14 +70,18 @@ export class AdminFacade {
         this._error.set(null);
 
         this.http
-            .get<ForumCategory[]>("/api/forum/categories")
+            .get<ForumCategory[]>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.list()}`)
             .pipe(
                 switchMap((categories) => {
                     if (categories.length === 0) {
                         return [[] as ForumCategory[]];
                     }
                     return forkJoin(
-                        categories.map((cat) => this.http.get<ForumCategory>(`/api/forum/categories/${cat.id}`))
+                        categories.map((cat) =>
+                            this.http.get<ForumCategory>(
+                                `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(cat.id)}`
+                            )
+                        )
                     );
                 })
             )
@@ -92,27 +99,40 @@ export class AdminFacade {
     }
 
     createCategory(payload: CreateCategoryPayload): Observable<ForumCategory> {
-        return this.http.post<ForumCategory>("/api/forum/categories", payload);
+        return this.http.post<ForumCategory>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.list()}`,
+            payload
+        );
     }
 
     updateCategory(id: string, payload: UpdateCategoryPayload): Observable<ForumCategory> {
-        return this.http.patch<ForumCategory>(`/api/forum/categories/${id}`, payload);
+        return this.http.patch<ForumCategory>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(id)}`,
+            payload
+        );
     }
 
     deleteCategory(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`/api/forum/categories/${id}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(id)}`
+        );
     }
 
     createForum(categoryId: string, payload: CreateForumPayload): Observable<Forum> {
-        return this.http.post<Forum>(`/api/forum/categories/${categoryId}/forums`, payload);
+        return this.http.post<Forum>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.forums(categoryId)}`,
+            payload
+        );
     }
 
     updateForum(id: string, payload: UpdateForumPayload): Observable<Forum> {
-        return this.http.patch<Forum>(`/api/forum/forums/${id}`, payload);
+        return this.http.patch<Forum>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`, payload);
     }
 
     deleteForum(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`/api/forum/forums/${id}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`
+        );
     }
 
     private _computeStats(categories: ForumCategory[]): void {

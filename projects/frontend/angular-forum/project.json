@@ -46,6 +46,12 @@
       },
       "configurations": {
         "production": {
+          "fileReplacements": [
+            {
+              "replace": "projects/frontend/angular-forum/src/environments/environment.ts",
+              "with": "projects/frontend/angular-forum/src/environments/environment.production.ts"
+            }
+          ],
           "budgets": [
             {
               "type": "initial",

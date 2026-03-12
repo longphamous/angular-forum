@@ -1,3 +1,6 @@
 export const environment = {
-    useMock: true
+    useMock: true,
+    api: {
+        baseUrl: "/api"
+    }
 };

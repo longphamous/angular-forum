@@ -3,6 +3,8 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 import { forkJoin, Observable } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
+import { FORUM_ROUTES } from "../../core/api/forum.routes";
+import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Forum } from "../../core/models/forum/forum";
 import { ForumCategory } from "../../core/models/forum/forum-category";
 import { PaginatedPosts, Post } from "../../core/models/forum/post";
@@ -30,6 +32,7 @@ export class ForumFacade {
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
     constructor() {
         this.categories = this._categories.asReadonly();
@@ -48,14 +51,18 @@ export class ForumFacade {
         this._error.set(null);
 
         this.http
-            .get<ForumCategory[]>("/api/forum/categories")
+            .get<ForumCategory[]>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.list()}`)
             .pipe(
                 switchMap((categories) => {
                     if (categories.length === 0) {
                         return [[] as ForumCategory[]];
                     }
                     return forkJoin(
-                        categories.map((cat) => this.http.get<ForumCategory>(`/api/forum/categories/${cat.id}`))
+                        categories.map((cat) =>
+                            this.http.get<ForumCategory>(
+                                `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(cat.id)}`
+                            )
+                        )
                     );
                 })
             )
@@ -75,7 +82,7 @@ export class ForumFacade {
         this._loading.set(true);
         this._error.set(null);
 
-        this.http.get<Forum>(`/api/forum/forums/${id}`).subscribe({
+        this.http.get<Forum>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`).subscribe({
             next: (forum) => {
                 this._currentForum.set(forum);
                 this._loading.set(false);
@@ -93,24 +100,26 @@ export class ForumFacade {
 
         const params = new HttpParams().set("page", page).set("limit", limit);
 
-        this.http.get<PaginatedThreads>(`/api/forum/forums/${forumId}/threads`, { params }).subscribe({
-            next: (res) => {
-                this._threads.set(res.data);
-                this._threadTotal.set(res.total);
-                this._loading.set(false);
-            },
-            error: () => {
-                this._error.set("Fehler beim Laden der Threads.");
-                this._loading.set(false);
-            }
-        });
+        this.http
+            .get<PaginatedThreads>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.threads(forumId)}`, { params })
+            .subscribe({
+                next: (res) => {
+                    this._threads.set(res.data);
+                    this._threadTotal.set(res.total);
+                    this._loading.set(false);
+                },
+                error: () => {
+                    this._error.set("Fehler beim Laden der Threads.");
+                    this._loading.set(false);
+                }
+            });
     }
 
     loadThread(id: string): void {
         this._loading.set(true);
         this._error.set(null);
 
-        this.http.get<Thread>(`/api/forum/threads/${id}`).subscribe({
+        this.http.get<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.detail(id)}`).subscribe({
             next: (thread) => {
                 this._currentThread.set(thread);
                 this._loading.set(false);
@@ -128,25 +137,30 @@ export class ForumFacade {
 
         const params = new HttpParams().set("page", page).set("limit", limit);
 
-        this.http.get<PaginatedPosts>(`/api/forum/threads/${threadId}/posts`, { params }).subscribe({
-            next: (res) => {
-                this._posts.set(res.data);
-                this._postTotal.set(res.total);
-                this._loading.set(false);
-            },
-            error: () => {
-                this._error.set("Fehler beim Laden der Beiträge.");
-                this._loading.set(false);
-            }
-        });
+        this.http
+            .get<PaginatedPosts>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, { params })
+            .subscribe({
+                next: (res) => {
+                    this._posts.set(res.data);
+                    this._postTotal.set(res.total);
+                    this._loading.set(false);
+                },
+                error: () => {
+                    this._error.set("Fehler beim Laden der Beiträge.");
+                    this._loading.set(false);
+                }
+            });
     }
 
     createThread(forumId: string, title: string, content: string): Observable<Thread> {
-        return this.http.post<Thread>(`/api/forum/forums/${forumId}/threads`, { title, content });
+        return this.http.post<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.threads(forumId)}`, {
+            title,
+            content
+        });
     }
 
     createPost(threadId: string, content: string): Observable<Post> {
-        return this.http.post<Post>(`/api/forum/threads/${threadId}/posts`, { content });
+        return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, { content });
     }
 
     resetError(): void {
