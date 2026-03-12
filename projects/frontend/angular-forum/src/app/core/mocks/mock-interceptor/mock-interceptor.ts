@@ -13,7 +13,7 @@ import { delay } from "rxjs/operators";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { User } from "../../models/user/user";
-import { mockCategories, mockForums, mockThreads, mockUsers, mockUserSummaries } from "../mock-data/mock-data";
+import { mockCategories, mockForums, mockPosts, mockThreads, mockUsers } from "../mock-data/mock-data";
 
 const SIMULATED_LATENCY_MS = 300;
 
@@ -59,93 +59,120 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(response);
         }
 
-        // GET /forums
-        if (method === "GET" && lowerUrl.endsWith("/forums")) {
+        // GET /api/forum/categories
+        if (method === "GET" && lowerUrl.match(/\/api\/forum\/categories$/)) {
             const categories = Object.values(mockCategories).map((cat) => ({
                 ...cat,
-                subforums: cat.subforums ?? []
+                forums: undefined
             }));
-            return this.ok({ categories });
+            return this.ok(categories);
         }
 
-        // GET /forum/:id/threads
-        const forumThreadsMatch = lowerUrl.match(/\/forum\/([^/]+)\/threads$/);
-        if (method === "GET" && forumThreadsMatch) {
-            const forumId = forumThreadsMatch[1];
+        // GET /api/forum/categories/:id
+        const categoryDetailMatch = lowerUrl.match(/\/api\/forum\/categories\/([^/]+)$/);
+        if (method === "GET" && categoryDetailMatch) {
+            const categoryId = categoryDetailMatch[1];
+            const category = mockCategories[categoryId];
+            if (!category) {
+                return this.error("Kategorie nicht gefunden", 404);
+            }
+            return this.ok(category);
+        }
+
+        // GET /api/forum/forums/:id
+        const forumDetailMatch = lowerUrl.match(/\/api\/forum\/forums\/([^/]+)$/);
+        if (method === "GET" && forumDetailMatch) {
+            const forumId = forumDetailMatch[1];
             const forum = mockForums[forumId];
             if (!forum) {
                 return this.error("Forum nicht gefunden", 404);
             }
-
-            // For demo: return all threads (could be filtered by forumId if stored)
-            const threads = Object.values(mockThreads).map<{
-                id: string;
-                title: string;
-                author: unknown;
-                lastPostAt: string;
-                replyCount: number;
-            }>((t) => ({
-                id: t.id,
-                title: t.title,
-                author: t.author,
-                lastPostAt: t.lastPostAt,
-                replyCount: t.replyCount
-            }));
-
-            return this.ok({ forumId, threads });
+            return this.ok(forum);
         }
 
-        // GET /thread/:id
-        const threadMatch = lowerUrl.match(/\/thread\/([^/]+)$/);
-        if (method === "GET" && threadMatch) {
-            const threadId = threadMatch[1];
+        // GET /api/forum/forums/:forumId/threads
+        const forumThreadsMatch = lowerUrl.match(/\/api\/forum\/forums\/([^/]+)\/threads/);
+        if (method === "GET" && forumThreadsMatch) {
+            const forumId = forumThreadsMatch[1];
+            const threads = Object.values(mockThreads).filter((t) => t.forumId === forumId);
+            return this.ok({ data: threads, total: threads.length, page: 1, limit: 20 });
+        }
+
+        // GET /api/forum/threads/:id
+        const threadDetailMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)$/);
+        if (method === "GET" && threadDetailMatch) {
+            const threadId = threadDetailMatch[1];
             const thread = mockThreads[threadId];
             if (!thread) {
                 return this.error("Thread nicht gefunden", 404);
             }
-            return this.ok({ thread });
+            return this.ok(thread);
         }
 
-        // POST /thread/:id/reply
-        const replyMatch = lowerUrl.match(/\/thread\/([^/]+)\/reply$/);
-        if (method === "POST" && replyMatch) {
-            const threadId = replyMatch[1];
-            const payload = body as {
-                content: string;
-                authorId: string;
-                replyToPostId?: string;
-            } | null;
+        // GET /api/forum/threads/:threadId/posts
+        const threadPostsMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/posts/);
+        if (method === "GET" && threadPostsMatch) {
+            const threadId = threadPostsMatch[1];
+            const posts = Object.values(mockPosts).filter((p) => p.threadId === threadId);
+            return this.ok({ data: posts, total: posts.length, page: 1, limit: 20 });
+        }
+
+        // POST /api/forum/forums/:forumId/threads
+        const createThreadMatch = lowerUrl.match(/\/api\/forum\/forums\/([^/]+)\/threads$/);
+        if (method === "POST" && createThreadMatch) {
+            const forumId = createThreadMatch[1];
+            const payload = body as { title: string; content: string } | null;
             if (!payload) {
                 return this.error("Fehlender Request-Body", 400);
             }
-            const { content, authorId, replyToPostId } = payload;
+            const now = new Date().toISOString();
+            const newThread: Thread = {
+                id: "t_" + Math.random().toString(36).substring(2),
+                forumId,
+                authorId: "u1",
+                title: payload.title,
+                slug: payload.title.toLowerCase().replace(/\s+/g, "-"),
+                isPinned: false,
+                isLocked: false,
+                isSticky: false,
+                viewCount: 0,
+                replyCount: 0,
+                createdAt: now,
+                updatedAt: now
+            };
+            mockThreads[newThread.id] = newThread;
+            return this.ok(newThread);
+        }
 
+        // POST /api/forum/threads/:threadId/posts
+        const createPostMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/posts$/);
+        if (method === "POST" && createPostMatch) {
+            const threadId = createPostMatch[1];
+            const payload = body as { content: string } | null;
+            if (!payload) {
+                return this.error("Fehlender Request-Body", 400);
+            }
             const thread = mockThreads[threadId] as Thread | undefined;
             if (!thread) {
                 return this.error("Thread nicht gefunden", 404);
             }
-
-            const authorSummary = mockUserSummaries[authorId];
-            if (!authorSummary) {
-                return this.error("Author nicht gefunden", 400);
-            }
-
+            const now = new Date().toISOString();
             const newPost: Post = {
                 id: "p_" + Math.random().toString(36).substring(2),
-                threadId: thread.id,
-                author: authorSummary,
-                content: content,
-                createdAt: new Date().toISOString(),
+                threadId,
+                authorId: "u1",
+                content: payload.content,
+                isFirstPost: false,
                 isEdited: false,
-                replyToPostId: replyToPostId
+                editCount: 0,
+                reactionCount: 0,
+                createdAt: now,
+                updatedAt: now
             };
-
-            // State mutieren (Mock)
-            thread.posts.push(newPost);
-            thread.replyCount = thread.posts.length - 1;
-            thread.lastPostAt = newPost.createdAt;
-
-            return this.ok({ post: newPost });
+            mockPosts[newPost.id] = newPost;
+            thread.replyCount += 1;
+            thread.lastPostAt = now;
+            return this.ok(newPost);
         }
 
         // Fallback: durchreichen

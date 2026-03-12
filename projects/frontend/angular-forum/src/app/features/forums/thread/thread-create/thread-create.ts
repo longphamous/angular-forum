@@ -1,19 +1,70 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoPipe } from "@jsverse/transloco";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { FluidModule } from "primeng/fluid";
 import { InputTextModule } from "primeng/inputtext";
+import { MessageModule } from "primeng/message";
+
+import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
     selector: "thread-create",
-    imports: [TranslocoPipe, InputTextModule, FormsModule, ButtonModule, EditorModule, FluidModule, DividerModule],
+    imports: [
+        FormsModule,
+        InputTextModule,
+        ButtonModule,
+        EditorModule,
+        FluidModule,
+        DividerModule,
+        MessageModule,
+        RouterModule
+    ],
     templateUrl: "./thread-create.html",
     styleUrl: "./thread-create.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ThreadCreate {
-    text = "";
+export class ThreadCreate implements OnInit {
+    readonly route = inject(ActivatedRoute);
+    readonly router = inject(Router);
+    readonly facade = inject(ForumFacade);
+    readonly cd = inject(ChangeDetectorRef);
+
+    title = "";
+    content = "";
+    submitting = false;
+    error: string | null = null;
+
+    private forumId = "";
+
+    ngOnInit(): void {
+        this.route.params.subscribe((params) => {
+            this.forumId = params["forumId"] as string;
+        });
+    }
+
+    submit(): void {
+        if (!this.title.trim() || !this.content.trim()) {
+            this.error = "Titel und Inhalt sind erforderlich.";
+            return;
+        }
+        this.submitting = true;
+        this.error = null;
+        this.facade.createThread(this.forumId, this.title.trim(), this.content).subscribe({
+            next: (thread) => {
+                this.router.navigate(["/forum/threads", thread.id]);
+            },
+            error: () => {
+                this.error = "Fehler beim Erstellen des Threads.";
+                this.submitting = false;
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    cancel(): void {
+        this.router.navigate(["/forum/forums", this.forumId]);
+    }
 }

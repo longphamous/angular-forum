@@ -27,11 +27,7 @@ export class AppMenu implements OnInit {
             },
             {
                 label: "Forum",
-                items: [
-                    { label: "Forum List", icon: "pi pi-fw pi-th-large", routerLink: ["/forum"] },
-                    { label: "Thread List", icon: "pi pi-fw pi-th-large", routerLink: ["/thread-list"] },
-                    { label: "Create Thread", icon: "pi pi-fw pi-th-large", routerLink: ["/thread-create"] }
-                ]
+                items: [{ label: "Forum Übersicht", icon: "pi pi-fw pi-comments", routerLink: ["/forum"] }]
             },
             {
                 label: "Anime",

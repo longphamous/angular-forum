@@ -1,8 +1,12 @@
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
-import { Thread, ThreadSummary } from "../../models/forum/thread";
+import { Post } from "../../models/forum/post";
+import { Thread } from "../../models/forum/thread";
 import { User } from "../../models/user/user";
-import { UserSummary } from "../../models/user/user-summary";
+
+const now = new Date().toISOString();
+const oneHourAgo = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+const thirtySecondsAgo = new Date(Date.now() - 1000 * 30).toISOString();
 
 const user1: User = {
     id: "u1",
@@ -29,70 +33,69 @@ export const mockUsers: Record<string, User> = {
     [user2.id]: user2
 };
 
-export const mockUserSummaries: Record<string, UserSummary> = {
-    [user1.id]: {
-        id: user1.id,
-        username: user1.username,
-        displayName: user1.displayName,
-        avatarUrl: user1.avatarUrl
+export const mockPosts: Record<string, Post> = {
+    p1: {
+        id: "p1",
+        threadId: "t1",
+        authorId: user1.id,
+        content: "Das ist der erste Beitrag. Viel Spaß beim Diskutieren!",
+        isFirstPost: true,
+        isEdited: false,
+        editCount: 0,
+        reactionCount: 0,
+        createdAt: oneHourAgo,
+        updatedAt: oneHourAgo
     },
-    [user2.id]: {
-        id: user2.id,
-        username: user2.username,
-        displayName: user2.displayName,
-        avatarUrl: user2.avatarUrl
+    p2: {
+        id: "p2",
+        threadId: "t1",
+        authorId: user2.id,
+        content: "Danke! Schön hier zu sein.",
+        isFirstPost: false,
+        isEdited: false,
+        editCount: 0,
+        reactionCount: 0,
+        createdAt: thirtySecondsAgo,
+        updatedAt: thirtySecondsAgo
     }
 };
 
-// Sample thread with posts
 const thread1: Thread = {
     id: "t1",
+    forumId: "f1",
+    authorId: user1.id,
     title: "Willkommen im Forum!",
-    author: mockUserSummaries[user1.id],
-    lastPostAt: new Date().toISOString(),
+    slug: "willkommen-im-forum",
+    isPinned: false,
+    isLocked: false,
+    isSticky: false,
+    viewCount: 42,
     replyCount: 1,
-    content: "Das ist der erste Beitrag. Viel Spaß beim Diskutieren!",
-    posts: [
-        {
-            id: "p1",
-            threadId: "t1",
-            author: mockUserSummaries[user1.id],
-            content: "Das ist der erste Beitrag. Viel Spaß beim Diskutieren!",
-            createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-            isEdited: false
-        },
-        {
-            id: "p2",
-            threadId: "t1",
-            author: mockUserSummaries[user2.id],
-            content: "Danke! Schön hier zu sein.",
-            createdAt: new Date(Date.now() - 1000 * 30).toISOString(),
-            isEdited: false
-        }
-    ]
+    lastPostAt: thirtySecondsAgo,
+    lastPostByUserId: user2.id,
+    createdAt: oneHourAgo,
+    updatedAt: thirtySecondsAgo
 };
-
-const threadSummary1 = (): ThreadSummary => ({
-    id: thread1.id,
-    title: thread1.title,
-    author: thread1.author,
-    lastPostAt: thread1.lastPostAt,
-    replyCount: thread1.replyCount
-});
-
-// Forum
-const forum1 = {
-    id: "f1",
-    title: "Allgemeines",
-    description: "Diskussionen rund ums Thema",
-    categoryId: "c1",
-    threadCount: 1,
-    postCount: 2,
-    latestThread: threadSummary1()
-} as Forum;
 
 export const mockThreads: Record<string, Thread> = {
     [thread1.id]: thread1
+};
+
+const forum1: Forum = {
+    id: "f1",
+    categoryId: "c1",
+    name: "Allgemeines",
+    slug: "allgemeines",
+    description: "Diskussionen rund ums Thema",
+    position: 1,
+    isLocked: false,
+    isPrivate: false,
+    threadCount: 1,
+    postCount: 2,
+    lastPostAt: thirtySecondsAgo,
+    lastPostByUserId: user2.id,
+    createdAt: now,
+    updatedAt: now
 };
 
 export const mockForums: Record<string, Forum> = {
@@ -102,9 +105,13 @@ export const mockForums: Record<string, Forum> = {
 export const mockCategories: Record<string, ForumCategory> = {
     c1: {
         id: "c1",
-        title: "Community",
+        name: "Community",
+        slug: "community",
         description: "Hauptbereich für alle Mitglieder",
-        order: 1,
-        subforums: [forum1]
+        position: 1,
+        isActive: true,
+        forums: [forum1],
+        createdAt: now,
+        updatedAt: now
     }
 };

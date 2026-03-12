@@ -7,6 +7,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { CreditModule } from "./credit/credit.module";
 import { DatabaseModule } from "./database/database.module";
+import { ForumModule } from "./forum/forum.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { UserModule } from "./user/user.module";
 
@@ -22,7 +23,8 @@ import { UserModule } from "./user/user.module";
         GamificationModule,
         CreditModule,
         UserModule,
-        AnimeModule
+        AnimeModule,
+        ForumModule
     ],
     controllers: [AppController],
     providers: [AppService]

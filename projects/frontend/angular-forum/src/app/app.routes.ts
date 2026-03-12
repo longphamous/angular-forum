@@ -18,14 +18,19 @@ export const routes: Routes = [
                     import("./features/forums/forum-list/forum-list.component").then((c) => c.ForumListComponent)
             },
             {
-                path: "thread-list",
+                path: "forum/forums/:forumId",
                 loadComponent: () =>
                     import("./features/forums/thread/thread-list/thread-list").then((c) => c.ThreadList)
             },
             {
-                path: "thread-create",
+                path: "forum/forums/:forumId/create",
                 loadComponent: () =>
                     import("./features/forums/thread/thread-create/thread-create").then((c) => c.ThreadCreate)
+            },
+            {
+                path: "forum/threads/:threadId",
+                loadComponent: () =>
+                    import("./features/forums/thread/thread-detail/thread-detail").then((c) => c.ThreadDetail)
             },
             {
                 path: "anime-top-list",

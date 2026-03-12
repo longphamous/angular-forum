@@ -1,0 +1,139 @@
+<div class="flex flex-col gap-4">
+    <!-- Header -->
+    <div class="card">
+        <div class="mb-4 flex items-start gap-3">
+            @if (facade.currentThread()) {
+            <p-button
+                [routerLink]="['/forum/forums', facade.currentThread()!.forumId]"
+                [text]="true"
+                icon="pi pi-arrow-left"
+            />
+            } @else {
+            <p-button [text]="true" icon="pi pi-arrow-left" routerLink="/forum" />
+            }
+
+            <div class="flex-1">
+                @if (facade.loading() && !facade.currentThread()) {
+                <p-skeleton height="2rem" styleClass="mb-2 w-2/3" />
+                <p-skeleton height="1rem" styleClass="w-1/2" />
+                } @else if (facade.currentThread()) {
+                <div class="flex flex-wrap items-center gap-2">
+                    <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                        {{ facade.currentThread()!.title }}
+                    </h1>
+                    @if (facade.currentThread()!.isPinned) {
+                    <p-tag severity="warn" value="Angepinnt" />
+                    } @if (facade.currentThread()!.isSticky) {
+                    <p-tag severity="info" value="Wichtig" />
+                    } @if (facade.currentThread()!.isLocked) {
+                    <p-tag severity="danger" value="Gesperrt" />
+                    }
+                </div>
+                <div class="text-surface-500 mt-2 flex flex-wrap gap-4 text-sm">
+                    <span><i class="pi pi-user mr-1"></i>{{ facade.currentThread()!.authorId }}</span>
+                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(facade.currentThread()!.createdAt) }}</span>
+                    <span><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} Aufrufe</span>
+                    <span><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} Antworten</span>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Error -->
+    @if (facade.error()) {
+    <p-message [text]="facade.error()!" severity="error" styleClass="w-full" />
+    }
+
+    <!-- Posts -->
+    @if (facade.loading() && facade.posts().length === 0) {
+    <div class="flex flex-col gap-3">
+        @for (_ of [1, 2, 3]; track $index) {
+        <div class="card">
+            <div class="mb-3 flex items-center gap-3">
+                <p-skeleton shape="circle" size="2.5rem" />
+                <div class="flex-1">
+                    <p-skeleton height="1rem" styleClass="mb-1 w-1/4" />
+                    <p-skeleton height="0.75rem" styleClass="w-1/3" />
+                </div>
+            </div>
+            <p-skeleton height="5rem" />
+        </div>
+        }
+    </div>
+    } @else { @for (post of facade.posts(); track post.id; let i = $index) {
+    <div
+        class="card"
+        [class.border-l-4]="post.isFirstPost"
+        [class.border-primary-300]="post.isFirstPost"
+        [class.dark:border-primary-600]="post.isFirstPost"
+    >
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div
+                    class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
+                >
+                    {{ post.authorId.slice(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                    <div class="text-surface-900 dark:text-surface-0 font-semibold">
+                        {{ post.authorId.slice(0, 8) }}…
+                    </div>
+                    <div class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                @if (post.isFirstPost) {
+                <p-tag severity="info" value="Erster Beitrag" />
+                } @if (post.isEdited) {
+                <span class="text-surface-400 text-xs italic">
+                    bearbeitet {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                </span>
+                } @if (post.reactionCount > 0) {
+                <span class="text-surface-500 text-sm">
+                    <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
+                </span>
+                }
+            </div>
+        </div>
+
+        <p-divider styleClass="my-3" />
+
+        <div class="post-content" [innerHTML]="post.content"></div>
+    </div>
+    } @if (facade.postTotal() > pageSize) {
+    <p-paginator (onPageChange)="onPostsPageChange($event)" [rows]="pageSize" [totalRecords]="facade.postTotal()" />
+    } }
+
+    <!-- Reply form -->
+    @if (!facade.currentThread()?.isLocked) {
+    <div class="card">
+        <h2 class="mb-4 text-lg font-semibold">Antworten</h2>
+
+        @if (replyError) {
+        <p-message [text]="replyError" severity="error" styleClass="mb-3 w-full" />
+        }
+
+        <p-editor
+            [(ngModel)]="replyContent"
+            [readonly]="submittingReply"
+            [style]="{ height: '200px' }"
+            placeholder="Deine Antwort..."
+        />
+
+        <div class="mt-3 flex justify-end">
+            <p-button
+                (onClick)="submitReply()"
+                [disabled]="!replyContent.trim()"
+                [loading]="submittingReply"
+                icon="pi pi-send"
+                label="Antwort senden"
+            />
+        </div>
+    </div>
+    } @else {
+    <div class="card text-surface-500 py-6 text-center">
+        <i class="pi pi-lock mr-2"></i>Dieser Thread ist gesperrt. Keine weiteren Antworten möglich.
+    </div>
+    }
+</div>

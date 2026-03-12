@@ -1,65 +1,69 @@
-import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { TranslocoPipe } from "@jsverse/transloco";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
-import { DataViewModule } from "primeng/dataview";
-import { IconFieldModule } from "primeng/iconfield";
-import { InputTextModule } from "primeng/inputtext";
-import { MenubarModule } from "primeng/menubar";
-import { OrderListModule } from "primeng/orderlist";
-import { PickListModule } from "primeng/picklist";
-import { SelectButtonModule } from "primeng/selectbutton";
+import { MessageModule } from "primeng/message";
+import { PaginatorModule, PaginatorState } from "primeng/paginator";
+import { SkeletonModule } from "primeng/skeleton";
+import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
+import { TooltipModule } from "primeng/tooltip";
 
-import { Product, ProductService } from "../../../pages/service/product.service";
+import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
     selector: "thread-list",
     imports: [
-        CommonModule,
-        MenubarModule,
-        IconFieldModule,
-        InputTextModule,
-        DataViewModule,
-        FormsModule,
-        SelectButtonModule,
-        PickListModule,
-        OrderListModule,
-        TagModule,
+        RouterModule,
         ButtonModule,
-        TranslocoPipe
+        TagModule,
+        SkeletonModule,
+        MessageModule,
+        TableModule,
+        TooltipModule,
+        PaginatorModule
     ],
     templateUrl: "./thread-list.html",
     styleUrl: "./thread-list.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ThreadList implements OnInit {
-    layout: "list" | "grid" = "list";
+    readonly facade = inject(ForumFacade);
+    readonly route = inject(ActivatedRoute);
+    readonly router = inject(Router);
+    readonly pageSize = 20;
 
-    options = ["list", "grid"];
-
-    products: Product[] = [];
-
-    productService: ProductService = inject(ProductService);
+    private forumId = "";
 
     ngOnInit(): void {
-        this.productService.getProductsSmall().then((data) => (this.products = data.slice(0, 6)));
+        this.route.params.subscribe((params) => {
+            this.forumId = params["forumId"] as string;
+            this.facade.loadForum(this.forumId);
+            this.facade.loadThreads(this.forumId, 1, this.pageSize);
+        });
     }
 
-    getSeverity(product: Product) {
-        switch (product.inventoryStatus) {
-            case "INSTOCK":
-                return "success";
+    onPageChange(event: PaginatorState): void {
+        const page = event.page ?? 0;
+        const rows = event.rows ?? this.pageSize;
+        this.facade.loadThreads(this.forumId, page + 1, rows);
+    }
 
-            case "LOWSTOCK":
-                return "warn";
+    goToThread(threadId: string): void {
+        this.router.navigate(["/forum/threads", threadId]);
+    }
 
-            case "OUTOFSTOCK":
-                return "danger";
+    createThread(): void {
+        this.router.navigate(["/forum/forums", this.forumId, "create"]);
+    }
 
-            default:
-                return "info";
-        }
+    formatRelative(dateStr: string): string {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) return "gerade eben";
+        if (minutes < 60) return `vor ${minutes} Min.`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `vor ${hours} Std.`;
+        const days = Math.floor(hours / 24);
+        return `vor ${days} Tag${days !== 1 ? "en" : ""}`;
     }
 }

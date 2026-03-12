@@ -1,15 +1,23 @@
-import { UserSummary } from "../user/user-summary";
-import { Post } from "./post";
-
-export interface ThreadSummary {
+export interface Thread {
     id: string;
+    forumId: string;
+    authorId: string;
     title: string;
-    author: UserSummary;
-    lastPostAt: string;
+    slug: string;
+    isPinned: boolean;
+    isLocked: boolean;
+    isSticky: boolean;
+    viewCount: number;
     replyCount: number;
+    lastPostAt?: string;
+    lastPostByUserId?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
-export interface Thread extends ThreadSummary {
-    content: string;
-    posts: Post[];
+export interface PaginatedThreads {
+    data: Thread[];
+    total: number;
+    page: number;
+    limit: number;
 }
