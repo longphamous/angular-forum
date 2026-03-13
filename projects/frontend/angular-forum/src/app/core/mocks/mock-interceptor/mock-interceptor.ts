@@ -10,15 +10,15 @@ import { Injectable } from "@angular/core";
 import { Observable, of, throwError } from "rxjs";
 import { delay } from "rxjs/operators";
 
-import { DashboardStats, RecentThread, TopPoster } from "../../../facade/dashboard/dashboard-facade";
 import { AdminCreateUserPayload, AdminUpdateUserPayload } from "../../../facade/admin/admin-facade";
+import { DashboardStats, RecentThread, TopPoster } from "../../../facade/dashboard/dashboard-facade";
 import { Anime, AnimeListEntry, AnimeListEntryPayload, AnimeListStatus } from "../../models/anime/anime";
-import { Group, PagePermission } from "../../models/group/group";
-import { UserProfile } from "../../models/user/user";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
+import { Group } from "../../models/group/group";
+import { UserProfile } from "../../models/user/user";
 import {
     mockAnimeDetails,
     mockAnimeListStore,
@@ -302,6 +302,91 @@ export class MockInterceptor implements HttpInterceptor {
             thread.replyCount += 1;
             thread.lastPostAt = now;
             return this.ok(newPost);
+        }
+
+        // GET /api/anime/genres
+        if (method === "GET" && lowerUrl.match(/\/api\/anime\/genres$/)) {
+            const allGenres = [
+                "Action",
+                "Adult Cast",
+                "Adventure",
+                "Anthropomorphic",
+                "Avant Garde",
+                "Award Winning",
+                "Boys Love",
+                "CGDCT",
+                "Childcare",
+                "Combat Sports",
+                "Comedy",
+                "Crossdressing",
+                "Delinquents",
+                "Detective",
+                "Drama",
+                "Ecchi",
+                "Educational",
+                "Erotica",
+                "Fantasy",
+                "Gag Humor",
+                "Girls Love",
+                "Gore",
+                "Gourmet",
+                "Harem",
+                "Hentai",
+                "High Stakes Game",
+                "Historical",
+                "Horror",
+                "Idols (Female)",
+                "Idols (Male)",
+                "Isekai",
+                "Iyashikei",
+                "Josei",
+                "Kids",
+                "Love Polygon",
+                "Love Status Quo",
+                "Magical Sex Shift",
+                "Mahou Shoujo",
+                "Martial Arts",
+                "Mecha",
+                "Medical",
+                "Military",
+                "Music",
+                "Mystery",
+                "Mythology",
+                "Organized Crime",
+                "Otaku Culture",
+                "Parody",
+                "Performing Arts",
+                "Pets",
+                "Psychological",
+                "Racing",
+                "Reincarnation",
+                "Reverse Harem",
+                "Romance",
+                "Samurai",
+                "School",
+                "Sci-Fi",
+                "Seinen",
+                "Shoujo",
+                "Shounen",
+                "Showbiz",
+                "Slice of Life",
+                "Space",
+                "Sports",
+                "Strategy Game",
+                "Super Power",
+                "Supernatural",
+                "Survival",
+                "Suspense",
+                "Team Sports",
+                "Time Travel",
+                "Urban Fantasy",
+                "Vampire",
+                "Video Game",
+                "Villainess",
+                "Visual Arts",
+                "Workplace"
+            ];
+            return this.ok(allGenres);
         }
 
         // GET /api/anime/list  (must be before /api/anime/:id)

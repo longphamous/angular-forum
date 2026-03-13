@@ -33,6 +33,7 @@ export interface AnimeDto {
     userOnHold?: number;
     userDropped?: number;
     userPlanned?: number;
+    genres?: string[];
 }
 
 export interface PaginatedAnimeDto {

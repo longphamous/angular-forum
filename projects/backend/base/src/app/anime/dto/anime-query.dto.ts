@@ -39,6 +39,9 @@ export class AnimeQueryDto {
     minRank?: number;
     maxRank?: number;
 
+    // Genre filter
+    genre?: string;
+
     // Sorting
     sortBy?: AnimeSortField;
     sortOrder?: SortOrder;

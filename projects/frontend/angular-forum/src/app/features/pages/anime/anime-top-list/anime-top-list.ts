@@ -98,6 +98,7 @@ export class AnimeTopList implements OnInit {
 
     // Filter state (bound via ngModel)
     search = "";
+    selectedGenre: string | null = null;
     selectedType: string | null = null;
     selectedStatus: string | null = null;
     selectedSeason: string | null = null;
@@ -116,6 +117,7 @@ export class AnimeTopList implements OnInit {
     private sortOrder: "ASC" | "DESC" = "DESC";
 
     ngOnInit(): void {
+        this.facade.loadGenres();
         const saved = this.listStateService.consumeTopListState();
         if (saved) {
             this.tableFirst = saved.first;
@@ -125,6 +127,7 @@ export class AnimeTopList implements OnInit {
             this.tableSortField = saved.sortField;
             this.tableSortOrder = saved.sortOrder === "DESC" ? -1 : 1;
             this.search = saved.search;
+            this.selectedGenre = saved.selectedGenre;
             this.selectedType = saved.selectedType;
             this.selectedStatus = saved.selectedStatus;
             this.selectedSeason = saved.selectedSeason;
@@ -168,6 +171,7 @@ export class AnimeTopList implements OnInit {
 
     resetFilters(): void {
         this.search = "";
+        this.selectedGenre = null;
         this.selectedType = null;
         this.selectedStatus = null;
         this.selectedSeason = null;
@@ -249,6 +253,7 @@ export class AnimeTopList implements OnInit {
             sortField: this.sortField,
             sortOrder: this.sortOrder,
             search: this.search,
+            selectedGenre: this.selectedGenre,
             selectedType: this.selectedType,
             selectedStatus: this.selectedStatus,
             selectedSeason: this.selectedSeason,
@@ -272,6 +277,7 @@ export class AnimeTopList implements OnInit {
         };
 
         if (this.search) filters.search = this.search;
+        if (this.selectedGenre) filters.genre = this.selectedGenre;
         if (this.selectedType) filters.type = this.selectedType;
         if (this.selectedStatus) filters.status = this.selectedStatus;
         if (this.selectedSeason) filters.season = this.selectedSeason;

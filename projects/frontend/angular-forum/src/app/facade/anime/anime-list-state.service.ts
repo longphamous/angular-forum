@@ -20,6 +20,7 @@ export interface AnimeTopListState {
     selectedMaxEpisodes: number | null;
     selectedMinScore: number | null;
     selectedMaxScore: number | null;
+    selectedGenre: string | null;
 }
 
 export interface AnimeDatabaseState {

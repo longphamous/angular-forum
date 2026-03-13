@@ -37,6 +37,7 @@ const ANIME_DB_CONNECTION = "anime-db";
         TypeOrmModule.forFeature([AnimeEntity], ANIME_DB_CONNECTION)
     ],
     controllers: [AnimeController],
-    providers: [AnimeService]
+    providers: [AnimeService],
+    exports: [AnimeService]
 })
 export class AnimeModule {}

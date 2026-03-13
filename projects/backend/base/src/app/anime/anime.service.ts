@@ -23,7 +23,7 @@ const ALLOWED_SORT_FIELDS: Record<AnimeSortField, string> = {
     voter: "anime.voter"
 };
 
-function toDto(entity: AnimeEntity): AnimeDto {
+function toDto(entity: AnimeEntity, genres: string[] = []): AnimeDto {
     return {
         id: Number(entity.id),
         title: entity.title,
@@ -58,7 +58,8 @@ function toDto(entity: AnimeEntity): AnimeDto {
         userCompleted: entity.userCompleted !== undefined ? Number(entity.userCompleted) : undefined,
         userOnHold: entity.userOnHold !== undefined ? Number(entity.userOnHold) : undefined,
         userDropped: entity.userDropped !== undefined ? Number(entity.userDropped) : undefined,
-        userPlanned: entity.userPlanned !== undefined ? Number(entity.userPlanned) : undefined
+        userPlanned: entity.userPlanned !== undefined ? Number(entity.userPlanned) : undefined,
+        genres
     };
 }
 
@@ -76,7 +77,8 @@ export class AnimeService {
         if (!entity) {
             throw new NotFoundException(`Anime with id ${id} not found`);
         }
-        return toDto(entity);
+        const genreMap = await this.loadGenreMap([id]);
+        return toDto(entity, genreMap.get(id) ?? []);
     }
 
     async findAll(page: number, limit: number, query: AnimeQueryDto): Promise<PaginatedAnimeDto> {
@@ -146,6 +148,18 @@ export class AnimeService {
             qb.andWhere("anime.rank <= :maxRank", { maxRank: query.maxRank });
         }
 
+        // Genre filter
+        if (query.genre) {
+            qb.andWhere(
+                `anime.id IN (
+                    SELECT ag.anime_id FROM anime_genre ag
+                    INNER JOIN genre g ON ag.genre_id = g.id
+                    WHERE LOWER(g.name) = LOWER(:genre) AND g.deleted_at IS NULL
+                )`,
+                { genre: query.genre }
+            );
+        }
+
         // Sorting
         const sortColumn = query.sortBy ? (ALLOWED_SORT_FIELDS[query.sortBy] ?? "anime.id") : "anime.id";
         const sortOrder = query.sortOrder === "DESC" ? "DESC" : "ASC";
@@ -156,8 +170,11 @@ export class AnimeService {
 
         const [entities, total] = await qb.getManyAndCount();
 
+        const ids = entities.map((e) => Number(e.id));
+        const genreMap = await this.loadGenreMap(ids);
+
         return {
-            data: entities.map(toDto),
+            data: entities.map((e) => toDto(e, genreMap.get(Number(e.id)) ?? [])),
             total,
             page,
             limit
@@ -196,5 +213,42 @@ export class AnimeService {
         }
         entity.deletedAt = new Date();
         await this.animeRepo.save(entity);
+    }
+
+    async findByIds(ids: number[]): Promise<AnimeDto[]> {
+        if (!ids.length) return [];
+        const entities = await this.animeRepo
+            .createQueryBuilder("anime")
+            .where("anime.id IN (:...ids)", { ids })
+            .andWhere("anime.deleted_at IS NULL")
+            .getMany();
+        const genreMap = await this.loadGenreMap(ids);
+        return entities.map((e) => toDto(e, genreMap.get(Number(e.id)) ?? []));
+    }
+
+    async getAllGenres(): Promise<string[]> {
+        const rows: Array<{ name: string }> = await this.animeRepo.query(
+            `SELECT DISTINCT name FROM genre WHERE deleted_at IS NULL AND name IS NOT NULL ORDER BY name`
+        );
+        return rows.map((r) => r.name);
+    }
+
+    private async loadGenreMap(animeIds: number[]): Promise<Map<number, string[]>> {
+        if (!animeIds.length) return new Map();
+        const rows: Array<{ anime_id: string; name: string }> = await this.animeRepo.query(
+            `SELECT ag.anime_id::bigint, g.name
+             FROM anime_genre ag
+             INNER JOIN genre g ON ag.genre_id = g.id
+             WHERE ag.anime_id = ANY($1) AND g.deleted_at IS NULL
+             ORDER BY g.name`,
+            [animeIds]
+        );
+        const map = new Map<number, string[]>();
+        for (const row of rows) {
+            const id = Number(row.anime_id);
+            if (!map.has(id)) map.set(id, []);
+            map.get(id)!.push(row.name);
+        }
+        return map;
     }
 }

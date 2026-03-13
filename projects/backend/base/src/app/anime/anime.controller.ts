@@ -59,6 +59,16 @@ export class AnimeController {
     }
 
     /**
+     * GET /api/anime/genres
+     * Returns a sorted list of all genre names.
+     */
+    @Public()
+    @Get("genres")
+    getAllGenres(): Promise<string[]> {
+        return this.animeService.getAllGenres();
+    }
+
+    /**
      * GET /api/anime/:id
      * Returns a single anime by its numeric ID.
      */

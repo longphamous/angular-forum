@@ -186,6 +186,15 @@
                     <p-tag [severity]="listStatusSeverity()" [value]="listStatusLabel()" styleClass="text-xs" />
                     }
                 </div>
+                @if (anime()!.genres?.length) {
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                    @for (genre of anime()!.genres!; track genre) {
+                    <span
+                        class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >{{ genre }}</span>
+                    }
+                </div>
+                }
             </div>
 
             <p-divider styleClass="my-0" />

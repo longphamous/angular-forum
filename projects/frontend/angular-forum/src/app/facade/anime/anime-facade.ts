@@ -18,6 +18,7 @@ export class AnimeFacade {
     readonly currentAnime: Signal<Anime | null>;
     readonly detailLoading: Signal<boolean>;
     readonly error: Signal<string | null>;
+    readonly genres: Signal<string[]>;
     readonly listLoading: Signal<boolean>;
     readonly loading: Signal<boolean>;
     readonly total: Signal<number>;
@@ -27,6 +28,7 @@ export class AnimeFacade {
     private readonly _currentAnime = signal<Anime | null>(null);
     private readonly _detailLoading = signal(false);
     private readonly _error = signal<string | null>(null);
+    private readonly _genres = signal<string[]>([]);
     private readonly _listLoading = signal(false);
     private readonly _loading = signal(false);
     private readonly _total = signal(0);
@@ -39,6 +41,7 @@ export class AnimeFacade {
         this.currentAnime = this._currentAnime.asReadonly();
         this.detailLoading = this._detailLoading.asReadonly();
         this.error = this._error.asReadonly();
+        this.genres = this._genres.asReadonly();
         this.listLoading = this._listLoading.asReadonly();
         this.loading = this._loading.asReadonly();
         this.total = this._total.asReadonly();
@@ -84,6 +87,7 @@ export class AnimeFacade {
         if (filters.maxEpisodes != null) params = params.set("maxEpisodes", filters.maxEpisodes);
         if (filters.minScore != null) params = params.set("minScore", filters.minScore);
         if (filters.maxScore != null) params = params.set("maxScore", filters.maxScore);
+        if (filters.genre) params = params.set("genre", filters.genre);
         if (filters.sortBy) params = params.set("sortBy", filters.sortBy);
         if (filters.sortOrder) params = params.set("sortOrder", filters.sortOrder);
 
@@ -155,5 +159,13 @@ export class AnimeFacade {
 
     removeFromUserListLocally(animeId: number): void {
         this._userList.update((list) => list.filter((e) => e.animeId !== animeId));
+    }
+
+    loadGenres(): void {
+        if (this._genres().length > 0) return;
+        this.http.get<string[]>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.genres()}`).subscribe({
+            next: (genres) => this._genres.set(genres),
+            error: () => {}
+        });
     }
 }

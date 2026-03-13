@@ -515,7 +515,8 @@ export const mockAnimeDetails: Record<number, Anime> = {
         endDay: 24,
         broadcastDay: "Saturday",
         broadcastTime: "18:00",
-        episodeDuration: 24
+        episodeDuration: 24,
+        genres: ["Action", "Adult Cast", "Award Winning", "Sci-Fi", "Space"]
     },
     5114: {
         id: 5114,
@@ -543,7 +544,8 @@ export const mockAnimeDetails: Record<number, Anime> = {
         endYear: 2010,
         endMonth: 7,
         endDay: 4,
-        episodeDuration: 24
+        episodeDuration: 24,
+        genres: ["Action", "Adventure", "Drama", "Fantasy", "Military", "Shounen"]
     },
     9253: {
         id: 9253,
@@ -571,7 +573,8 @@ export const mockAnimeDetails: Record<number, Anime> = {
         endYear: 2011,
         endMonth: 9,
         endDay: 14,
-        episodeDuration: 23
+        episodeDuration: 23,
+        genres: ["Drama", "Psychological", "Sci-Fi", "Suspense", "Time Travel"]
     }
 };
 

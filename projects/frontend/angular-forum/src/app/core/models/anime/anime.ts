@@ -1,5 +1,6 @@
 export interface Anime {
     id: number;
+    genres?: string[];
     title?: string;
     titleEnglish?: string;
     titleJapanese?: string;
@@ -77,6 +78,7 @@ export type AnimeSortField =
     | "voter";
 
 export interface AnimeFilter {
+    genre?: string;
     search?: string;
     type?: string;
     status?: string;

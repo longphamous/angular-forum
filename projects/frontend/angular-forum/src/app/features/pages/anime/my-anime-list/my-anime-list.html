@@ -157,6 +157,18 @@
                     <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
                     }
                 </div>
+                @if (entry.anime?.genres?.length) {
+                <div class="mt-1 flex flex-wrap gap-1">
+                    @for (genre of entry.anime!.genres!.slice(0, 3); track genre) {
+                    <span
+                        class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
+                    >{{ genre }}</span>
+                    }
+                    @if (entry.anime!.genres!.length > 3) {
+                    <span class="text-surface-400 text-xs">+{{ entry.anime!.genres!.length - 3 }}</span>
+                    }
+                </div>
+                }
                 @if (entry.review) {
                 <p class="text-surface-500 mt-1.5 line-clamp-2 text-xs italic">"{{ entry.review }}"</p>
                 }

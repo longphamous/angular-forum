@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
+import { AnimeListModule } from "./anime/anime-list.module";
 import { AnimeModule } from "./anime/anime.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -25,6 +26,7 @@ import { UserModule } from "./user/user.module";
         CreditModule,
         UserModule,
         AnimeModule,
+        AnimeListModule,
         ForumModule,
         GroupModule
     ],
