@@ -3,5 +3,5 @@ export const ANIME_ROUTES = {
     genres: () => "/anime/genres",
     list: () => "/anime",
     myList: () => "/anime/list",
-    publicList: (userId: string) => `/users/${userId}/anime-list`
+    publicList: (userId: string) => `/anime/list/user/${userId}`
 } as const;

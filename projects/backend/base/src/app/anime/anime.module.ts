@@ -2,9 +2,12 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { AnimeListController } from "./anime-list.controller";
+import { AnimeListService } from "./anime-list.service";
 import { AnimeController } from "./anime.controller";
 import { AnimeService } from "./anime.service";
 import { AnimeEntity } from "./entities/anime.entity";
+import { UserAnimeListEntity } from "./entities/user-anime-list.entity";
 
 const ANIME_DB_CONNECTION = "anime-db";
 
@@ -14,6 +17,9 @@ const ANIME_DB_CONNECTION = "anime-db";
  *
  * Uses a separate named TypeORM connection ("anime-db") so it does not
  * interfere with the main aniverse_base connection.
+ *
+ * AnimeListController is registered HERE (before AnimeController) so that
+ * Express matches GET /anime/list before the dynamic GET /anime/:id route.
  */
 @Module({
     imports: [
@@ -34,10 +40,14 @@ const ANIME_DB_CONNECTION = "anime-db";
                 logging: config.get<string>("NODE_ENV") === "development"
             })
         }),
-        TypeOrmModule.forFeature([AnimeEntity], ANIME_DB_CONNECTION)
+        TypeOrmModule.forFeature([AnimeEntity], ANIME_DB_CONNECTION),
+        // UserAnimeListEntity uses the default (aniverse_base) connection
+        TypeOrmModule.forFeature([UserAnimeListEntity])
     ],
-    controllers: [AnimeController],
-    providers: [AnimeService],
+    // AnimeListController MUST come before AnimeController so that
+    // GET /anime/list is registered before GET /anime/:id in Express
+    controllers: [AnimeListController, AnimeController],
+    providers: [AnimeListService, AnimeService],
     exports: [AnimeService]
 })
 export class AnimeModule {}

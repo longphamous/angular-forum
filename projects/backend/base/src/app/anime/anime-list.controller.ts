@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, ParseUUIDPipe, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post } from "@nestjs/common";
 
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -6,7 +6,11 @@ import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { AnimeListEntryDto, AnimeListService } from "./anime-list.service";
 import { SaveAnimeListEntryDto } from "./dto/save-anime-list-entry.dto";
 
-@Controller()
+/**
+ * Routes are grouped under /anime/list to avoid the /:id catch-all on AnimeController.
+ * Public user list lives at /anime/list/user/:userId.
+ */
+@Controller("anime/list")
 export class AnimeListController {
     constructor(private readonly animeListService: AnimeListService) {}
 
@@ -14,7 +18,7 @@ export class AnimeListController {
      * GET /anime/list
      * Returns the authenticated user's anime list with enriched anime data.
      */
-    @Get("anime/list")
+    @Get()
     getUserList(@CurrentUser() user: AuthenticatedUser): Promise<AnimeListEntryDto[]> {
         return this.animeListService.getUserList(user.userId);
     }
@@ -23,7 +27,7 @@ export class AnimeListController {
      * POST /anime/list
      * Creates or updates a list entry for the authenticated user.
      */
-    @Post("anime/list")
+    @Post()
     saveEntry(
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: SaveAnimeListEntryDto
@@ -35,7 +39,7 @@ export class AnimeListController {
      * DELETE /anime/list/:animeId
      * Removes an entry from the authenticated user's list.
      */
-    @Delete("anime/list/:animeId")
+    @Delete(":animeId")
     @HttpCode(HttpStatus.NO_CONTENT)
     removeEntry(
         @CurrentUser() user: AuthenticatedUser,
@@ -45,12 +49,12 @@ export class AnimeListController {
     }
 
     /**
-     * GET /users/:userId/anime-list
-     * Public endpoint: returns any user's anime list.
+     * GET /anime/list/user/:userId
+     * Public endpoint: returns any user's anime list by UUID.
      */
     @Public()
-    @Get("users/:userId/anime-list")
-    getPublicUserList(@Param("userId", ParseUUIDPipe) userId: string): Promise<AnimeListEntryDto[]> {
+    @Get("user/:userId")
+    getPublicUserList(@Param("userId") userId: string): Promise<AnimeListEntryDto[]> {
         return this.animeListService.getUserList(userId);
     }
 }

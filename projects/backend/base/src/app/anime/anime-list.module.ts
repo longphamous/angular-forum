@@ -1,17 +1,16 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { AnimeListController } from "./anime-list.controller";
-import { AnimeListService } from "./anime-list.service";
-import { UserAnimeListEntity } from "./entities/user-anime-list.entity";
 import { AnimeModule } from "./anime.module";
 
+/**
+ * AnimeListModule re-exports AnimeModule so that other modules can import
+ * AnimeListModule and transitively get AnimeService.
+ *
+ * The actual AnimeListController and AnimeListService live in AnimeModule
+ * so that Express registers GET /anime/list BEFORE GET /anime/:id.
+ */
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([UserAnimeListEntity]),
-        AnimeModule
-    ],
-    controllers: [AnimeListController],
-    providers: [AnimeListService]
+    imports: [AnimeModule],
+    exports: [AnimeModule]
 })
 export class AnimeListModule {}

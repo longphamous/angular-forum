@@ -450,8 +450,8 @@ export class MockInterceptor implements HttpInterceptor {
             }
         }
 
-        // GET /api/users/:userId/anime-list
-        const publicListMatch = lowerUrl.match(/\/api\/users\/([^/]+)\/anime-list$/);
+        // GET /api/anime/list/user/:userId
+        const publicListMatch = lowerUrl.match(/\/api\/anime\/list\/user\/([^/]+)$/);
         if (method === "GET" && publicListMatch) {
             const userId = publicListMatch[1];
             const entries = Object.values(mockAnimeListStore).filter((e) => e.userId === userId);

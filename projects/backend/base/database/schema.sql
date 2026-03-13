@@ -255,7 +255,42 @@ CREATE INDEX IF NOT EXISTS idx_forum_post_reactions_post_id ON forum_post_reacti
 CREATE INDEX IF NOT EXISTS idx_forum_post_reactions_user_id ON forum_post_reactions (user_id);
 
 -- =============================================================================
--- SECTION 3 – Permissions
+-- SECTION 3 – Anime Lists
+-- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- Table: user_anime_list
+-- Each row represents one anime on a user's personal list.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_anime_list (
+    id               UUID         NOT NULL DEFAULT gen_random_uuid(),
+    user_id          UUID         NOT NULL,
+    anime_id         INTEGER      NOT NULL,
+    status           VARCHAR(20)  NOT NULL,
+    score            SMALLINT,
+    episodes_watched INTEGER      NOT NULL DEFAULT 0,
+    review           TEXT,
+    created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT pk_user_anime_list         PRIMARY KEY (id),
+    CONSTRAINT uq_user_anime_list_entry   UNIQUE (user_id, anime_id),
+    CONSTRAINT ck_user_anime_list_score   CHECK (score IS NULL OR (score >= 1 AND score <= 10)),
+    CONSTRAINT ck_user_anime_list_status  CHECK (status IN ('watching','completed','plan_to_watch','on_hold','dropped'))
+);
+
+COMMENT ON TABLE  user_anime_list                  IS 'Personal anime tracking list per user.';
+COMMENT ON COLUMN user_anime_list.user_id          IS 'Cross-module reference to users.id; no FK to avoid tight coupling.';
+COMMENT ON COLUMN user_anime_list.anime_id         IS 'References anime.id in the anime-db connection; no FK across connections.';
+COMMENT ON COLUMN user_anime_list.status           IS 'watching | completed | plan_to_watch | on_hold | dropped';
+COMMENT ON COLUMN user_anime_list.score            IS '1–10 personal rating; NULL means not yet rated.';
+COMMENT ON COLUMN user_anime_list.episodes_watched IS 'Number of episodes the user has watched so far.';
+
+CREATE INDEX IF NOT EXISTS idx_user_anime_list_user_id  ON user_anime_list (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_anime_list_anime_id ON user_anime_list (anime_id);
+
+-- =============================================================================
+-- SECTION 4 – Permissions
 -- Grant all DML privileges to the application role.
 -- =============================================================================
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE users                  TO aniverse_app;
@@ -264,3 +299,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE forums                 TO aniverse
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE forum_threads          TO aniverse_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE forum_posts            TO aniverse_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE forum_post_reactions   TO aniverse_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE user_anime_list        TO aniverse_app;
