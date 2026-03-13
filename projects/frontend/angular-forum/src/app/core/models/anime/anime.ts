@@ -1,6 +1,21 @@
+export interface AnimeStudio {
+    id: number;
+    name: string;
+}
+
+export interface RelatedAnime {
+    animeId: number;
+    relation: string;
+    title?: string;
+    titleEnglish?: string;
+    picture?: string;
+}
+
 export interface Anime {
     id: number;
     genres?: string[];
+    studios?: AnimeStudio[];
+    relatedAnime?: RelatedAnime[];
     title?: string;
     titleEnglish?: string;
     titleJapanese?: string;

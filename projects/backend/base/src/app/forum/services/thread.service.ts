@@ -1,8 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
-import { UserRole } from "../../user/entities/user.entity";
+import { GamificationService } from "../../gamification/gamification.service";
+import { UserXpData } from "../../gamification/level.config";
+import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreateThreadDto } from "../dto/create-thread.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
 import { UpdateThreadDto } from "../dto/update-thread.dto";
@@ -12,6 +14,12 @@ import { ForumThreadEntity } from "../entities/thread.entity";
 import { PaginatedResult, ThreadDetailDto, ThreadDto } from "../models/forum.model";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+interface ThreadAuthorInfo {
+    displayName: string;
+    avatarUrl?: string;
+    xpData?: UserXpData;
+}
 
 function generateSlug(text: string): string {
     return text
@@ -23,13 +31,18 @@ function generateSlug(text: string): string {
         .substring(0, 100);
 }
 
-function toDto(entity: ForumThreadEntity): ThreadDto {
+function toDto(entity: ForumThreadEntity, author?: ThreadAuthorInfo): ThreadDto {
     return {
         id: entity.id,
         forumId: entity.forumId,
         authorId: entity.authorId,
+        authorName: author?.displayName ?? entity.authorId.slice(0, 8),
+        authorAvatarUrl: author?.avatarUrl,
+        authorLevel: author?.xpData?.level ?? 1,
+        authorLevelName: author?.xpData?.levelName ?? "Neuling",
         title: entity.title,
         slug: entity.slug,
+        tags: entity.tags ?? [],
         isPinned: entity.isPinned,
         isLocked: entity.isLocked,
         isSticky: entity.isSticky,
@@ -56,7 +69,10 @@ export class ThreadService {
         @InjectRepository(ForumPostEntity)
         private readonly postRepo: Repository<ForumPostEntity>,
         @InjectRepository(ForumEntity)
-        private readonly forumRepo: Repository<ForumEntity>
+        private readonly forumRepo: Repository<ForumEntity>,
+        @InjectRepository(UserEntity)
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService
     ) {}
 
     async findByForum(forumId: string, query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
@@ -75,7 +91,18 @@ export class ThreadService {
             take: limit
         });
 
-        return { data: threads.map(toDto), total, page, limit };
+        const authorIds = [...new Set(threads.map((t) => t.authorId))];
+        const [users, xpMap] = await Promise.all([
+            authorIds.length
+                ? this.userRepo.find({ where: { id: In(authorIds) }, select: ["id", "displayName", "avatarUrl"] })
+                : Promise.resolve([]),
+            this.gamificationService.getUserXpDataBatch(authorIds)
+        ]);
+        const userMap = new Map<string, ThreadAuthorInfo>(
+            users.map((u) => [u.id, { displayName: u.displayName, avatarUrl: u.avatarUrl, xpData: xpMap.get(u.id) }])
+        );
+
+        return { data: threads.map((t) => toDto(t, userMap.get(t.authorId))), total, page, limit };
     }
 
     async findById(id: string): Promise<ThreadDetailDto> {
@@ -108,6 +135,7 @@ export class ThreadService {
             authorId,
             title: dto.title,
             slug,
+            tags: dto.tags ?? [],
             isPinned: dto.isPinned ?? false,
             isSticky: dto.isSticky ?? false,
             lastPostAt: now,
@@ -128,6 +156,9 @@ export class ThreadService {
         await this.forumRepo.increment({ id: forumId }, "postCount", 1);
         await this.forumRepo.update(forumId, { lastPostAt: now, lastPostByUserId: authorId });
 
+        // Award XP for creating a thread
+        void this.gamificationService.awardXp(authorId, "create_thread", thread.id);
+
         return toDto(thread);
     }
 
@@ -144,6 +175,7 @@ export class ThreadService {
         if (dto.isPinned !== undefined) entity.isPinned = dto.isPinned;
         if (dto.isLocked !== undefined) entity.isLocked = dto.isLocked;
         if (dto.isSticky !== undefined) entity.isSticky = dto.isSticky;
+        if (dto.tags !== undefined) entity.tags = dto.tags;
 
         await this.threadRepo.save(entity);
         return toDto(entity);

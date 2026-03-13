@@ -12,5 +12,8 @@ export const FORUM_ROUTES = {
     threads: {
         detail: (id: string) => `/forum/threads/${id}`,
         posts: (threadId: string) => `/forum/threads/${threadId}/posts`
+    },
+    posts: {
+        react: (postId: string) => `/forum/posts/${postId}/react`
     }
 } as const;

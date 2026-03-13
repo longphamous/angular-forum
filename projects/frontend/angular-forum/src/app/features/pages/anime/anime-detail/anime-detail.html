@@ -195,6 +195,15 @@
                     }
                 </div>
                 }
+                @if (anime()!.studios?.length) {
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                    @for (studio of anime()!.studios!; track studio.id) {
+                    <span
+                        class="border-surface-300 dark:border-surface-600 text-surface-600 dark:text-surface-300 rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                    >{{ studio.name }}</span>
+                    }
+                </div>
+                }
             </div>
 
             <p-divider styleClass="my-0" />
@@ -273,6 +282,57 @@
                 </div>
                 }
             </div>
+
+            <!-- Related Anime -->
+            @if (anime()!.relatedAnime?.length) {
+            <p-divider styleClass="my-0" />
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-semibold tracking-wide uppercase">
+                    Verwandte Anime
+                </h3>
+                <div class="flex flex-col gap-2">
+                    @for (related of anime()!.relatedAnime!; track related.animeId) {
+                    <a
+                        class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
+                        [routerLink]="['/anime', related.animeId]"
+                    >
+                        <div class="group relative h-12 w-8 flex-shrink-0">
+                            @if (related.picture) {
+                            <img
+                                class="h-12 w-8 rounded object-cover"
+                                [alt]="related.titleEnglish || related.title"
+                                [src]="related.picture"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                            >
+                                <img
+                                    class="w-full rounded-lg object-cover shadow-xl"
+                                    [alt]="related.titleEnglish || related.title"
+                                    [src]="related.picture"
+                                    style="aspect-ratio: 2/3"
+                                />
+                            </div>
+                            } @else {
+                            <div
+                                class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                            >
+                                <i class="pi pi-image text-surface-400 text-xs"></i>
+                            </div>
+                            }
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
+                                {{ related.titleEnglish || related.title }}
+                            </div>
+                            <div class="text-surface-400 text-xs">{{ related.relation }}</div>
+                        </div>
+                        <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                    </a>
+                    }
+                </div>
+            </div>
+            }
         </div>
     </div>
     } @else {

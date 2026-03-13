@@ -246,16 +246,21 @@ export class MockInterceptor implements HttpInterceptor {
         const createThreadMatch = lowerUrl.match(/\/api\/forum\/forums\/([^/]+)\/threads$/);
         if (method === "POST" && createThreadMatch) {
             const forumId = createThreadMatch[1];
-            const payload = body as { title: string; content: string } | null;
+            const payload = body as { title: string; content: string; tags?: string[] } | null;
             if (!payload) {
                 return this.error("Fehlender Request-Body", 400);
             }
             const now = new Date().toISOString();
             const authorId = "00000000-0000-0000-0000-000000000003";
+            const authorProfile = mockUserProfiles[authorId];
             const newThread: Thread = {
                 id: "mock-" + Math.random().toString(36).substring(2),
                 forumId,
                 authorId,
+                authorName: authorProfile?.displayName ?? "Unbekannt",
+                authorLevel: authorProfile?.level ?? 1,
+                authorLevelName: authorProfile?.levelName ?? "Neuling",
+                tags: payload.tags ?? [],
                 title: payload.title,
                 slug: payload.title.toLowerCase().replace(/\s+/g, "-"),
                 isPinned: false,
@@ -272,6 +277,24 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(newThread);
         }
 
+        // POST /api/forum/posts/:id/react
+        const postReactMatch = lowerUrl.match(/\/api\/forum\/posts\/([^/]+)\/react$/);
+        if (method === "POST" && postReactMatch) {
+            const postId = postReactMatch[1];
+            const post = mockPosts[postId];
+            if (!post) return this.error("Beitrag nicht gefunden", 404);
+            post.reactionCount = (post.reactionCount ?? 0) + 1;
+            return this.ok({ id: "mock-reaction", postId, userId: "00000000-0000-0000-0000-000000000003", reactionType: "heart", createdAt: new Date().toISOString() });
+        }
+
+        // DELETE /api/forum/posts/:id/react
+        if (method === "DELETE" && postReactMatch) {
+            const postId = postReactMatch[1];
+            const post = mockPosts[postId];
+            if (post) post.reactionCount = Math.max(0, (post.reactionCount ?? 0) - 1);
+            return this.ok({ success: true });
+        }
+
         // POST /api/forum/threads/:threadId/posts
         const createPostMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/posts$/);
         if (method === "POST" && createPostMatch) {
@@ -286,10 +309,18 @@ export class MockInterceptor implements HttpInterceptor {
             }
             const now = new Date().toISOString();
             const authorId = "00000000-0000-0000-0000-000000000003";
+            const postAuthor = mockUserProfiles[authorId];
             const newPost: Post = {
                 id: "mock-" + Math.random().toString(36).substring(2),
                 threadId,
                 authorId,
+                authorName: postAuthor?.displayName ?? "Unbekannt",
+                authorRole: postAuthor?.role ?? "member",
+                authorPostCount: postAuthor?.postCount ?? 0,
+                authorAvatarUrl: postAuthor?.avatarUrl,
+                authorSignature: postAuthor?.signature,
+                authorLevel: postAuthor?.level ?? 1,
+                authorLevelName: postAuthor?.levelName ?? "Neuling",
                 content: payload.content,
                 isFirstPost: false,
                 isEdited: false,
@@ -507,6 +538,12 @@ export class MockInterceptor implements HttpInterceptor {
                 email: payload.email,
                 groups: newUserGroups,
                 id: "mock-" + Math.random().toString(36).substring(2),
+                postCount: 0,
+                level: 1,
+                levelName: "Neuling",
+                xp: 0,
+                xpToNextLevel: 100,
+                xpProgressPercent: 0,
                 role: newRole,
                 status: payload.status ?? "active",
                 username: payload.username
@@ -653,6 +690,15 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok({ ...perm });
         }
 
+        // GET /api/user/profile/:userId  (public profile)
+        const publicProfileMatch = lowerUrl.match(/\/api\/user\/profile\/([0-9a-f-]{36})$/i);
+        if (method === "GET" && publicProfileMatch) {
+            const userId = publicProfileMatch[1];
+            const profile = mockUserProfiles[userId];
+            if (!profile) return this.error("Benutzer nicht gefunden", 404);
+            return this.ok({ ...profile });
+        }
+
         // PATCH /api/user/profile
         if (method === "PATCH" && lowerUrl.match(/\/api\/user\/profile$/)) {
             const authHeader = req.headers.get("Authorization");
@@ -675,6 +721,29 @@ export class MockInterceptor implements HttpInterceptor {
         // POST /api/user/change-password
         if (method === "POST" && lowerUrl.match(/\/api\/user\/change-password$/)) {
             return this.ok(null);
+        }
+
+        // GET /api/gamification/config
+        if (method === "GET" && lowerUrl.match(/\/api\/gamification\/config$/)) {
+            return this.ok([
+                { eventType: "create_thread", xpAmount: 10, label: "Thread erstellen", description: "XP für das Erstellen eines neuen Threads" },
+                { eventType: "create_post", xpAmount: 5, label: "Beitrag schreiben", description: "XP für das Verfassen einer Antwort" },
+                { eventType: "receive_reaction", xpAmount: 3, label: "Reaktion erhalten", description: "XP wenn ein eigener Beitrag eine Reaktion bekommt" },
+                { eventType: "give_reaction", xpAmount: 1, label: "Reaktion geben", description: "XP für das Reagieren auf einen fremden Beitrag" }
+            ]);
+        }
+
+        // PATCH /api/gamification/config/:eventType
+        const gamificationConfigPatchMatch = lowerUrl.match(/\/api\/gamification\/config\/([^/]+)$/);
+        if (method === "PATCH" && gamificationConfigPatchMatch) {
+            const eventType = gamificationConfigPatchMatch[1];
+            const patch = body as { xpAmount: number };
+            return this.ok({ eventType, xpAmount: patch.xpAmount });
+        }
+
+        // POST /api/gamification/recalculate
+        if (method === "POST" && lowerUrl.match(/\/api\/gamification\/recalculate$/)) {
+            return this.ok({ updatedUsers: Object.keys(mockUserProfiles).length });
         }
 
         // GET /api/dashboard/stats

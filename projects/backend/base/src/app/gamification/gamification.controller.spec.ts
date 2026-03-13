@@ -1,8 +1,13 @@
-import { NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
 
 import { GamificationController } from "./gamification.controller";
 import { GamificationService } from "./gamification.service";
+import { UserXpEntity } from "./entities/user-xp.entity";
+import { XpEventEntity } from "./entities/xp-event.entity";
+
+const mockUserXpRepo = { findOneBy: jest.fn(), find: jest.fn(), findBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+const mockXpEventRepo = { create: jest.fn(), save: jest.fn() };
 
 describe("GamificationController", () => {
     let controller: GamificationController;
@@ -10,7 +15,11 @@ describe("GamificationController", () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [GamificationController],
-            providers: [GamificationService]
+            providers: [
+                GamificationService,
+                { provide: getRepositoryToken(UserXpEntity), useValue: mockUserXpRepo },
+                { provide: getRepositoryToken(XpEventEntity), useValue: mockXpEventRepo }
+            ]
         }).compile();
 
         controller = module.get<GamificationController>(GamificationController);
@@ -20,53 +29,13 @@ describe("GamificationController", () => {
         expect(controller).toBeDefined();
     });
 
-    describe("getAllAchievements", () => {
-        it("should return an array of achievements", () => {
-            const result = controller.getAllAchievements();
-            expect(Array.isArray(result)).toBe(true);
-            expect(result.length).toBeGreaterThan(0);
-            expect(result[0]).toHaveProperty("id");
-            expect(result[0]).toHaveProperty("points");
-        });
-    });
-
-    describe("getAchievementById", () => {
-        it("should return a single achievement", () => {
-            const result = controller.getAchievementById("first-post");
-            expect(result.id).toBe("first-post");
-            expect(result.name).toBe("First Steps");
-        });
-
-        it("should throw NotFoundException for unknown id", () => {
-            expect(() => controller.getAchievementById("unknown")).toThrow(NotFoundException);
-        });
-    });
-
-    describe("getLeaderboard", () => {
-        it("should return leaderboard entries", () => {
-            const result = controller.getLeaderboard();
-            expect(Array.isArray(result)).toBe(true);
-            expect(result[0]).toHaveProperty("rank");
-            expect(result[0]).toHaveProperty("points");
-        });
-
-        it("should respect the limit parameter", () => {
-            const result = controller.getLeaderboard(2);
-            expect(result.length).toBe(2);
-        });
-    });
-
     describe("getUserProgress", () => {
-        it("should return progress for a valid user", () => {
-            const result = controller.getUserProgress("u1");
-            expect(result.userId).toBe("u1");
+        it("should return progress for a user", async () => {
+            mockUserXpRepo.findOneBy.mockResolvedValue({ userId: "u1", xp: 150, level: 2 });
+            const result = await controller.getUserProgress("u1");
             expect(result).toHaveProperty("level");
-            expect(result).toHaveProperty("currentPoints");
-            expect(result).toHaveProperty("pointsToNextLevel");
-        });
-
-        it("should throw NotFoundException for unknown user", () => {
-            expect(() => controller.getUserProgress("unknown")).toThrow(NotFoundException);
+            expect(result).toHaveProperty("xp");
+            expect(result).toHaveProperty("levelName");
         });
     });
 });

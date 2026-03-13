@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { In, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
+import { GamificationService } from "../gamification/gamification.service";
+import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
 import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
@@ -17,7 +19,9 @@ import { AuthSession, UserProfile } from "./models/user.model";
 
 const SALT_ROUNDS = 10;
 
-function toProfile(user: UserEntity): UserProfile {
+const DEFAULT_XP: UserXpData = { xp: 0, level: 1, levelName: "Neuling", xpToNextLevel: 100, xpProgressPercent: 0 };
+
+function toProfile(user: UserEntity, postCount = 0, xpData: UserXpData = DEFAULT_XP): UserProfile {
     return {
         id: user.id,
         username: user.username,
@@ -25,9 +29,20 @@ function toProfile(user: UserEntity): UserProfile {
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
         bio: user.bio,
+        birthday: user.birthday ? (user.birthday as Date).toISOString().split("T")[0] : undefined,
+        gender: user.gender,
+        location: user.location,
+        website: user.website,
+        signature: user.signature,
         role: user.role,
         status: user.status,
         groups: user.groups?.map((g) => g.name) ?? [],
+        postCount,
+        level: xpData.level,
+        levelName: xpData.levelName,
+        xp: xpData.xp,
+        xpToNextLevel: xpData.xpToNextLevel,
+        xpProgressPercent: xpData.xpProgressPercent,
         createdAt: user.createdAt.toISOString(),
         lastLoginAt: user.lastLoginAt?.toISOString()
     };
@@ -42,7 +57,10 @@ export class UserService {
         private readonly userRepo: Repository<UserEntity>,
         @InjectRepository(GroupEntity)
         private readonly groupRepo: Repository<GroupEntity>,
-        private readonly authService: AuthService
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
+        private readonly authService: AuthService,
+        private readonly gamificationService: GamificationService
     ) {}
 
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -98,7 +116,15 @@ export class UserService {
     // ── Profile ───────────────────────────────────────────────────────────────
 
     async getProfile(userId: string): Promise<UserProfile> {
-        return toProfile(await this.findById(userId));
+        const [user, [{ count }], xpData] = await Promise.all([
+            this.findById(userId),
+            this.dataSource.query<{ count: string }[]>(
+                `SELECT COUNT(*) AS count FROM forum_posts WHERE author_id = $1 AND deleted_at IS NULL`,
+                [userId]
+            ),
+            this.gamificationService.getUserXpData(userId)
+        ]);
+        return toProfile(user, Number(count), xpData);
     }
 
     async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserProfile> {
@@ -106,6 +132,11 @@ export class UserService {
         if (dto.displayName !== undefined) user.displayName = dto.displayName;
         if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
         if (dto.bio !== undefined) user.bio = dto.bio;
+        if (dto.birthday !== undefined) user.birthday = dto.birthday ? new Date(dto.birthday) : undefined;
+        if (dto.gender !== undefined) user.gender = dto.gender;
+        if (dto.location !== undefined) user.location = dto.location;
+        if (dto.website !== undefined) user.website = dto.website;
+        if (dto.signature !== undefined) user.signature = dto.signature;
         await this.userRepo.save(user);
         return toProfile(user);
     }
@@ -114,7 +145,7 @@ export class UserService {
 
     async getAllUsers(): Promise<UserProfile[]> {
         const users = await this.userRepo.find({ order: { createdAt: "ASC" }, relations: { groups: true } });
-        return users.map(toProfile);
+        return users.map((u) => toProfile(u));
     }
 
     async adminCreateUser(dto: AdminCreateUserDto): Promise<UserProfile> {
@@ -149,6 +180,11 @@ export class UserService {
         if (dto.displayName !== undefined) user.displayName = dto.displayName;
         if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
         if (dto.bio !== undefined) user.bio = dto.bio;
+        if (dto.birthday !== undefined) user.birthday = dto.birthday ? new Date(dto.birthday) : undefined;
+        if (dto.gender !== undefined) user.gender = dto.gender;
+        if (dto.location !== undefined) user.location = dto.location;
+        if (dto.website !== undefined) user.website = dto.website;
+        if (dto.signature !== undefined) user.signature = dto.signature;
         if (dto.role !== undefined) user.role = dto.role;
         if (dto.status !== undefined) user.status = dto.status;
         await this.userRepo.save(user);

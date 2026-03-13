@@ -65,3 +65,4 @@ vitest.config.*.timestamp*
 
 # AI Tools
 CLAUDE.md
+/.claude/

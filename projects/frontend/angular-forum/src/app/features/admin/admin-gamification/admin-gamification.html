@@ -1,0 +1,134 @@
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="m-0 text-2xl font-bold">Gamification</h2>
+                <p class="text-surface-500 mt-1 mb-0 text-sm">XP-Einstellungen, Level-Übersicht und User-Neuberechnung</p>
+            </div>
+            <p-button
+                (onClick)="recalculate()"
+                [loading]="recalculating()"
+                icon="pi pi-refresh"
+                label="XP neu berechnen"
+                severity="warn"
+                pTooltip="Berechnet die Erfahrungspunkte aller Benutzer anhand der aktuellen Konfiguration und dem vorhandenen Content neu"
+                tooltipPosition="left"
+            />
+        </div>
+    </div>
+
+    @if (error()) {
+    <p-message [text]="error()!" severity="error" styleClass="w-full" />
+    }
+    @if (successMsg()) {
+    <p-message [text]="successMsg()!" severity="success" styleClass="w-full" />
+    }
+
+    <!-- XP Config -->
+    <div class="card">
+        <h3 class="mb-1 text-lg font-semibold">XP-Konfiguration</h3>
+        <p class="text-surface-500 mb-4 text-sm">Lege fest, wie viele Erfahrungspunkte Benutzer für jede Aktion erhalten.</p>
+
+        @if (loading()) {
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3,4]; track $index) {
+            <p-skeleton height="3.5rem" />
+            }
+        </div>
+        } @else {
+        <p-table [value]="configs()" styleClass="p-datatable-sm">
+            <ng-template #header>
+                <tr>
+                    <th class="w-8"></th>
+                    <th>Aktion</th>
+                    <th>Beschreibung</th>
+                    <th class="w-40 text-right">XP pro Aktion</th>
+                    <th class="w-24 text-right">Speichern</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-entry>
+                <tr>
+                    <td>
+                        <i class="{{ eventTypeIcon(entry.eventType) }} text-primary text-lg"></i>
+                    </td>
+                    <td>
+                        <span class="font-medium">{{ entry.label }}</span>
+                        <br />
+                        <code class="text-surface-400 text-xs">{{ entry.eventType }}</code>
+                    </td>
+                    <td class="text-surface-500 text-sm">{{ entry.description ?? '—' }}</td>
+                    <td class="text-right">
+                        <p-inputnumber
+                            [(ngModel)]="editAmounts[entry.eventType]"
+                            [min]="0"
+                            [max]="9999"
+                            [showButtons]="true"
+                            buttonLayout="horizontal"
+                            decrementButtonIcon="pi pi-minus"
+                            incrementButtonIcon="pi pi-plus"
+                            inputStyleClass="w-16 text-center"
+                            styleClass="w-full"
+                        />
+                    </td>
+                    <td class="text-right">
+                        <p-button
+                            (onClick)="saveConfig(entry)"
+                            [disabled]="!isDirty(entry)"
+                            [loading]="saving() === entry.eventType"
+                            icon="pi pi-check"
+                            size="small"
+                            severity="success"
+                        />
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+        }
+    </div>
+
+    <!-- Level Table -->
+    <div class="card">
+        <h3 class="mb-1 text-lg font-semibold">Level-Übersicht</h3>
+        <p class="text-surface-500 mb-4 text-sm">Alle Level und die benötigten Erfahrungspunkte. Diese Schwellwerte sind fest im System verankert.</p>
+
+        <p-table [value]="levels" styleClass="p-datatable-sm">
+            <ng-template #header>
+                <tr>
+                    <th class="w-16">Level</th>
+                    <th>Bezeichnung</th>
+                    <th class="text-right">Ab (XP)</th>
+                    <th class="text-right">Bis (XP)</th>
+                    <th class="text-right">Bereich</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-lvl let-i="rowIndex">
+                <tr>
+                    <td>
+                        <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">
+                            <i class="pi pi-star-fill text-[10px]"></i> {{ lvl.level }}
+                        </span>
+                    </td>
+                    <td class="font-medium">{{ lvl.name }}</td>
+                    <td class="text-right text-sm">{{ lvl.minXp | number }}</td>
+                    <td class="text-right text-sm text-surface-400">
+                        @if (i < levels.length - 1) {
+                            {{ (levels[i + 1].minXp - 1) | number }}
+                        } @else {
+                            <span class="text-yellow-600 dark:text-yellow-400">∞</span>
+                        }
+                    </td>
+                    <td class="text-right text-sm">
+                        @if (i < levels.length - 1) {
+                            {{ (levels[i + 1].minXp - lvl.minXp) | number }} XP
+                        } @else {
+                            <span class="text-yellow-600 dark:text-yellow-400">Max</span>
+                        }
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+</div>

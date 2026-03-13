@@ -2,8 +2,13 @@ export interface Thread {
     id: string;
     forumId: string;
     authorId: string;
+    authorName: string;
+    authorAvatarUrl?: string;
+    authorLevel: number;
+    authorLevelName: string;
     title: string;
     slug: string;
+    tags: string[];
     isPinned: boolean;
     isLocked: boolean;
     isSticky: boolean;

@@ -1,24 +1,26 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
 import { PaginatorModule, PaginatorState } from "primeng/paginator";
 import { SkeletonModule } from "primeng/skeleton";
-import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
     selector: "thread-list",
     imports: [
         RouterModule,
+        AvatarModule,
         ButtonModule,
+        LevelBadge,
         TagModule,
         SkeletonModule,
         MessageModule,
-        TableModule,
         TooltipModule,
         PaginatorModule
     ],

@@ -49,6 +49,12 @@ function toUserProfile(user: UserEntity): UserProfile {
         role: user.role,
         status: user.status,
         groups: user.groups?.map((g) => g.name) ?? [],
+        postCount: 0,
+        level: 1,
+        levelName: "Neuling",
+        xp: 0,
+        xpToNextLevel: 100,
+        xpProgressPercent: 0,
         createdAt: user.createdAt.toISOString(),
         lastLoginAt: user.lastLoginAt?.toISOString()
     };

@@ -4,4 +4,5 @@ export class CreateThreadDto {
     content!: string;
     isPinned?: boolean;
     isSticky?: boolean;
+    tags?: string[];
 }

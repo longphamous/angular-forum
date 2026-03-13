@@ -41,19 +41,19 @@ function relativeTime(dateStr: string): string {
             } @else {
                 <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
                     @for (thread of facade.recentThreads(); track thread.id) {
-                        <div class="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                        <a
+                            class="hover:bg-surface-50 dark:hover:bg-surface-800 -mx-2 flex items-start gap-3 rounded-lg px-2 py-3 no-underline transition-colors first:pt-0 last:pb-0"
+                            [routerLink]="['/forum/threads', thread.id]"
+                        >
                             <p-avatar
                                 [label]="thread.authorName.charAt(0).toUpperCase()"
                                 shape="circle"
                                 styleClass="shrink-0 bg-primary/10 text-primary font-semibold"
                             />
                             <div class="min-w-0 flex-1">
-                                <a
-                                    class="text-surface-900 dark:text-surface-0 hover:text-primary block truncate font-medium"
-                                    [routerLink]="['/forum/thread', thread.id]"
-                                >
+                                <div class="text-surface-900 dark:text-surface-0 truncate font-medium">
                                     {{ thread.title }}
-                                </a>
+                                </div>
                                 <div class="mt-1 flex flex-wrap items-center gap-2">
                                     <p-tag [value]="thread.forumName" severity="secondary" styleClass="text-xs" />
                                     <span class="text-surface-500 dark:text-surface-400 text-xs">
@@ -72,7 +72,8 @@ function relativeTime(dateStr: string): string {
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                            <i class="pi pi-chevron-right text-surface-300 shrink-0 self-center text-xs"></i>
+                        </a>
                     } @empty {
                         <p class="text-surface-500 dark:text-surface-400 text-sm">Keine Themen gefunden.</p>
                     }

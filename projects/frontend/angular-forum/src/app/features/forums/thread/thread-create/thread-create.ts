@@ -5,6 +5,7 @@ import { ButtonModule } from "primeng/button";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { FluidModule } from "primeng/fluid";
+import { Chip } from "primeng/chip";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 
@@ -15,6 +16,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
     imports: [
         FormsModule,
         InputTextModule,
+        Chip,
         ButtonModule,
         EditorModule,
         FluidModule,
@@ -34,6 +36,8 @@ export class ThreadCreate implements OnInit {
 
     title = "";
     content = "";
+    tags: string[] = [];
+    tagInput = "";
     submitting = false;
     error: string | null = null;
 
@@ -52,7 +56,7 @@ export class ThreadCreate implements OnInit {
         }
         this.submitting = true;
         this.error = null;
-        this.facade.createThread(this.forumId, this.title.trim(), this.content).subscribe({
+        this.facade.createThread(this.forumId, this.title.trim(), this.content, this.tags).subscribe({
             next: (thread) => {
                 this.router.navigate(["/forum/threads", thread.id]);
             },
@@ -66,5 +70,19 @@ export class ThreadCreate implements OnInit {
 
     cancel(): void {
         this.router.navigate(["/forum/forums", this.forumId]);
+    }
+
+    addTag(event: KeyboardEvent): void {
+        if (event.key !== "Enter" && event.key !== ",") return;
+        event.preventDefault();
+        const value = this.tagInput.trim().replace(/,/g, "");
+        if (value && !this.tags.includes(value)) {
+            this.tags = [...this.tags, value];
+        }
+        this.tagInput = "";
+    }
+
+    removeTag(tag: string): void {
+        this.tags = this.tags.filter((t) => t !== tag);
     }
 }

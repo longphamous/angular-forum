@@ -1,14 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
+import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { MessageModule } from "primeng/message";
 import { PaginatorModule, PaginatorState } from "primeng/paginator";
 import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
+import { TextareaModule } from "primeng/textarea";
+import { TooltipModule } from "primeng/tooltip";
 
+import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
+import { Post } from "../../../../core/models/forum/post";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
@@ -16,13 +21,17 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
     imports: [
         FormsModule,
         ButtonModule,
-        EditorModule,
-        TagModule,
-        SkeletonModule,
-        MessageModule,
-        RouterModule,
+        DialogModule,
         DividerModule,
-        PaginatorModule
+        EditorModule,
+        LevelBadge,
+        MessageModule,
+        PaginatorModule,
+        RouterModule,
+        SkeletonModule,
+        TagModule,
+        TextareaModule,
+        TooltipModule
     ],
     templateUrl: "./thread-detail.html",
     styleUrl: "./thread-detail.scss",
@@ -39,11 +48,21 @@ export class ThreadDetail implements OnInit {
     submittingReply = false;
     replyError: string | null = null;
 
+    readonly reportVisible = signal(false);
+    readonly reportSuccess = signal(false);
+    reportReason = "";
+
     private threadId = "";
+    private currentPage = 1;
+    private readonly reactedPostIds = new Set<string>();
+    private readonly reactionAdjust = new Map<string, number>();
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
             this.threadId = params["threadId"] as string;
+            this.currentPage = 1;
+            this.reactedPostIds.clear();
+            this.reactionAdjust.clear();
             this.facade.loadThread(this.threadId);
             this.facade.loadPosts(this.threadId, 1, this.pageSize);
         });
@@ -52,7 +71,8 @@ export class ThreadDetail implements OnInit {
     onPostsPageChange(event: PaginatorState): void {
         const page = event.page ?? 0;
         const rows = event.rows ?? this.pageSize;
-        this.facade.loadPosts(this.threadId, page + 1, rows);
+        this.currentPage = page + 1;
+        this.facade.loadPosts(this.threadId, this.currentPage, rows);
     }
 
     submitReply(): void {
@@ -94,5 +114,59 @@ export class ThreadDetail implements OnInit {
         if (hours < 24) return `vor ${hours} Std.`;
         const days = Math.floor(hours / 24);
         return `vor ${days} Tag${days !== 1 ? "en" : ""}`;
+    }
+
+    authorRoleSeverity(role: string): "danger" | "warn" | "info" | "secondary" {
+        if (role === "admin") return "danger";
+        if (role === "moderator") return "warn";
+        if (role === "member") return "info";
+        return "secondary";
+    }
+
+    // ── Reactions ─────────────────────────────────────────────────────────────
+
+    hasReacted(postId: string): boolean {
+        return this.reactedPostIds.has(postId);
+    }
+
+    adjustedReactionCount(post: Post): number {
+        return post.reactionCount + (this.reactionAdjust.get(post.id) ?? 0);
+    }
+
+    toggleReact(post: Post): void {
+        if (this.reactedPostIds.has(post.id)) {
+            this.reactedPostIds.delete(post.id);
+            this.reactionAdjust.set(post.id, (this.reactionAdjust.get(post.id) ?? 0) - 1);
+            this.facade.unreactToPost(post.id).subscribe();
+        } else {
+            this.reactedPostIds.add(post.id);
+            this.reactionAdjust.set(post.id, (this.reactionAdjust.get(post.id) ?? 0) + 1);
+            this.facade.reactToPost(post.id).subscribe();
+        }
+        this.cd.markForCheck();
+    }
+
+    // ── Quote ─────────────────────────────────────────────────────────────────
+
+    quotePost(post: Post): void {
+        const quote = `<blockquote><strong>${post.authorName} schrieb:</strong><br>${post.content}</blockquote><p><br></p>`;
+        this.replyContent = (this.replyContent ? this.replyContent + quote : quote);
+        const replyEl = document.getElementById("reply-section");
+        if (replyEl) replyEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        this.cd.markForCheck();
+    }
+
+    // ── Report ────────────────────────────────────────────────────────────────
+
+    openReport(post: Post): void {
+        this.reportReason = "";
+        this.reportSuccess.set(false);
+        this.reportVisible.set(true);
+        void post;
+    }
+
+    submitReport(): void {
+        this.reportSuccess.set(true);
+        this.reportReason = "";
     }
 }

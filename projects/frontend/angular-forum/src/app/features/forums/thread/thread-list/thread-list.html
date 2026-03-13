@@ -1,93 +1,169 @@
-<div class="card">
-    <div class="mb-4 flex items-center gap-3">
-        <p-button [text]="true" icon="pi pi-arrow-left" pTooltip="Zurück zum Forum" routerLink="/forum" />
-        <div class="flex-1">
+<div class="flex flex-col gap-4">
+    <!-- Header -->
+    <div class="card">
+        <div class="mb-4 flex items-center gap-3">
+            <p-button [text]="true" icon="pi pi-arrow-left" pTooltip="Zurück zum Forum" routerLink="/forum" />
+            <div class="flex-1">
+                @if (facade.currentForum()) {
+                <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ facade.currentForum()!.name }}</h1>
+                @if (facade.currentForum()!.description) {
+                <p class="text-surface-500 mt-0.5 text-sm">{{ facade.currentForum()!.description }}</p>
+                }
+                } @else if (facade.loading()) {
+                <p-skeleton height="1.5rem" styleClass="w-1/3 mb-1" />
+                <p-skeleton height="1rem" styleClass="w-1/2" />
+                }
+            </div>
             @if (facade.currentForum()) {
-            <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ facade.currentForum()!.name }}</h1>
-            @if (facade.currentForum()!.description) {
-            <p class="text-surface-500 mt-0.5 text-sm">{{ facade.currentForum()!.description }}</p>
-            } } @else if (facade.loading()) {
-            <p-skeleton height="1.5rem" styleClass="w-1/3 mb-1" />
-            <p-skeleton height="1rem" styleClass="w-1/2" />
+            <div class="hidden shrink-0 gap-6 text-right sm:flex">
+                <div>
+                    <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.threadCount }}</div>
+                    <div class="text-surface-500 text-xs">Threads</div>
+                </div>
+                <div>
+                    <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.postCount }}</div>
+                    <div class="text-surface-500 text-xs">Beiträge</div>
+                </div>
+            </div>
             }
+            <p-button (onClick)="createThread()" icon="pi pi-plus" label="Neuen Thread erstellen" />
         </div>
-        @if (facade.currentForum()) {
-        <div class="hidden shrink-0 gap-6 text-right sm:flex">
-            <div>
-                <div class="text-surface-900 dark:text-surface-0 font-semibold">
-                    {{ facade.currentForum()!.threadCount }}
-                </div>
-                <div class="text-surface-500 text-xs">Threads</div>
-            </div>
-            <div>
-                <div class="text-surface-900 dark:text-surface-0 font-semibold">
-                    {{ facade.currentForum()!.postCount }}
-                </div>
-                <div class="text-surface-500 text-xs">Beiträge</div>
-            </div>
-        </div>
-        }
-        <p-button (onClick)="createThread()" icon="pi pi-plus" label="Neuen Thread erstellen" />
     </div>
 
     @if (facade.error()) {
-    <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
-    } @if (facade.loading()) {
-    <div class="flex flex-col gap-2">
-        @for (_ of [1, 2, 3, 4, 5]; track $index) {
-        <p-skeleton height="3.5rem" />
-        }
-    </div>
-    } @else { @if (facade.threads().length === 0) {
-    <div class="text-surface-500 py-12 text-center">Noch keine Threads.</div>
-    } @else {
-    <p-table [rowHover]="true" [value]="facade.threads()" styleClass="p-datatable-sm">
-        <ng-template #header>
-            <tr>
-                <th class="w-full">Titel</th>
-                <th class="hidden whitespace-nowrap sm:table-cell">Letzter Beitrag</th>
-                <th class="hidden whitespace-nowrap md:table-cell">Antworten / Aufrufe</th>
-            </tr>
-        </ng-template>
-        <ng-template #body let-thread>
-            <tr class="cursor-pointer" (click)="goToThread(thread.id)">
-                <td>
-                    <div class="flex items-center gap-2">
-                        @if (thread.isPinned) {
-                        <i class="pi pi-bookmark text-orange-500" pTooltip="Angepinnt"></i>
+    <p-message [text]="facade.error()!" severity="error" styleClass="w-full" />
+    }
+
+    <!-- Thread list -->
+    <div class="card">
+        @if (facade.loading()) {
+        <div class="flex flex-col divide-y divide-surface-100 dark:divide-surface-700">
+            @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <div class="flex items-start gap-4 py-5">
+                <p-skeleton shape="circle" size="2.75rem" styleClass="hidden sm:block shrink-0" />
+                <div class="flex-1">
+                    <p-skeleton height="1.25rem" styleClass="mb-2 w-2/3" />
+                    <p-skeleton height="0.875rem" styleClass="w-1/3" />
+                </div>
+                <div class="hidden shrink-0 sm:block">
+                    <p-skeleton height="0.875rem" styleClass="mb-1 w-20" />
+                    <p-skeleton height="0.875rem" styleClass="w-16" />
+                </div>
+            </div>
+            }
+        </div>
+        } @else if (facade.threads().length === 0) {
+        <div class="text-surface-500 py-16 text-center">
+            <i class="pi pi-comments text-surface-300 mb-3 block text-4xl"></i>
+            Noch keine Threads vorhanden.
+        </div>
+        } @else {
+        <div class="divide-surface-100 dark:divide-surface-700 -mx-2 divide-y">
+            @for (thread of facade.threads(); track thread.id) {
+            <a
+                class="group flex items-start gap-4 rounded-lg px-2 py-4 no-underline transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
+                [class.border-l-4]="thread.isPinned || thread.isSticky"
+                [class.border-primary-400]="thread.isPinned && !thread.isSticky"
+                [class.border-yellow-400]="thread.isSticky && !thread.isPinned"
+                [class.border-primary-300]="thread.isPinned && thread.isSticky"
+                [routerLink]="['/forum/threads', thread.id]"
+            >
+                <!-- Author avatar -->
+                <div class="hidden shrink-0 sm:block">
+                    @if (thread.authorAvatarUrl) {
+                    <img
+                        class="h-11 w-11 rounded-full object-cover ring-2 ring-surface-200 dark:ring-surface-700"
+                        [alt]="thread.authorName"
+                        [src]="thread.authorAvatarUrl"
+                    />
+                    } @else {
+                    <div
+                        class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 flex h-11 w-11 items-center justify-center rounded-full text-base font-bold"
+                    >
+                        {{ thread.authorName.charAt(0).toUpperCase() }}
+                    </div>
+                    }
+                </div>
+
+                <!-- Main content -->
+                <div class="min-w-0 flex-1">
+                    <!-- Title + badges row -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (thread.isLocked) {
+                        <i class="pi pi-lock text-red-500 text-xs" pTooltip="Gesperrt"></i>
+                        } @if (thread.isPinned) {
+                        <i class="pi pi-bookmark text-primary text-xs" pTooltip="Angepinnt"></i>
                         } @if (thread.isSticky) {
-                        <i class="pi pi-star text-yellow-500" pTooltip="Wichtig"></i>
-                        } @if (thread.isLocked) {
-                        <i class="pi pi-lock text-red-500" pTooltip="Gesperrt"></i>
+                        <i class="pi pi-star text-yellow-500 text-xs" pTooltip="Wichtig"></i>
                         }
-                        <span class="font-medium">{{ thread.title }}</span>
+                        <span
+                            class="text-surface-900 dark:text-surface-0 font-semibold transition-colors group-hover:text-primary"
+                        >
+                            {{ thread.title }}
+                        </span>
                         @if (thread.isPinned) {
-                        <p-tag severity="warn" value="Angepinnt" />
+                        <p-tag severity="warn" value="Angepinnt" styleClass="text-xs" />
                         } @if (thread.isLocked) {
-                        <p-tag severity="danger" value="Gesperrt" />
+                        <p-tag severity="danger" value="Gesperrt" styleClass="text-xs" />
+                        }
+                        @for (tag of thread.tags; track tag) {
+                        <span
+                            class="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full px-2 py-0.5 text-xs font-medium"
+                        >
+                            #{{ tag }}
+                        </span>
                         }
                     </div>
-                </td>
-                <td class="hidden sm:table-cell">
-                    @if (thread.lastPostAt) {
-                    <span class="text-surface-500 text-sm">{{ formatRelative(thread.lastPostAt) }}</span>
-                    } @else {
-                    <span class="text-surface-400 text-sm">—</span>
-                    }
-                </td>
-                <td class="hidden md:table-cell">
-                    <span class="text-surface-500 text-sm"> {{ thread.replyCount }} / {{ thread.viewCount }} </span>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
 
-    @if (facade.threadTotal() > pageSize) {
-    <p-paginator
-        (onPageChange)="onPageChange($event)"
-        [rows]="pageSize"
-        [totalRecords]="facade.threadTotal()"
-        styleClass="mt-4"
-    />
-    } } }
+                    <!-- Meta row -->
+                    <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-user text-xs"></i>{{ thread.authorName }}
+                        </span>
+                        <level-badge [level]="thread.authorLevel" [levelName]="thread.authorLevelName" />
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-calendar text-xs"></i>{{ formatRelative(thread.createdAt) }}
+                        </span>
+                        @if (thread.lastPostAt) {
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-clock text-xs"></i>Letzte Antwort {{ formatRelative(thread.lastPostAt) }}
+                        </span>
+                        }
+                        <!-- Mobile stats -->
+                        <span class="flex items-center gap-1 sm:hidden">
+                            <i class="pi pi-comments text-xs"></i>{{ thread.replyCount }}
+                        </span>
+                        <span class="flex items-center gap-1 sm:hidden">
+                            <i class="pi pi-eye text-xs"></i>{{ thread.viewCount }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Desktop stats -->
+                <div class="hidden shrink-0 flex-col items-end gap-1.5 text-xs text-surface-500 dark:text-surface-400 sm:flex">
+                    <span class="flex items-center gap-1.5">
+                        <i class="pi pi-comments text-xs"></i>
+                        <span>{{ thread.replyCount }} Antworten</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <i class="pi pi-eye text-xs"></i>
+                        <span>{{ thread.viewCount }} Aufrufe</span>
+                    </span>
+                </div>
+
+                <i class="pi pi-chevron-right text-surface-300 dark:text-surface-600 hidden self-center text-xs sm:block"></i>
+            </a>
+            }
+        </div>
+
+        @if (facade.threadTotal() > pageSize) {
+        <p-paginator
+            (onPageChange)="onPageChange($event)"
+            [rows]="pageSize"
+            [totalRecords]="facade.threadTotal()"
+            styleClass="mt-4"
+        />
+        }
+        }
+    </div>
 </div>

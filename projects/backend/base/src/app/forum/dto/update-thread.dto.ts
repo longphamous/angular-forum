@@ -3,4 +3,5 @@ export class UpdateThreadDto {
     isPinned?: boolean;
     isLocked?: boolean;
     isSticky?: boolean;
+    tags?: string[];
 }

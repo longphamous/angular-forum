@@ -47,6 +47,9 @@ export class ForumThreadEntity {
     @Column({ name: "reply_count", default: 0 })
     replyCount!: number;
 
+    @Column({ type: "simple-json", nullable: true })
+    tags?: string[];
+
     @Column({ name: "last_post_at", nullable: true, type: "timestamptz" })
     lastPostAt?: Date;
 

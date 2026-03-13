@@ -1,79 +1,173 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, In, Repository } from "typeorm";
 
-import { Achievement } from "./models/achievement.model";
-import { LeaderboardEntry } from "./models/leaderboard.model";
-import { UserProgress } from "./models/user-progress.model";
+import { XpConfigEntity } from "./entities/xp-config.entity";
+import { XpEventType, XpEventEntity } from "./entities/xp-event.entity";
+import { UserXpEntity } from "./entities/user-xp.entity";
+import { getLevelForXp, getXpProgressPercent, getXpToNextLevel, UserXpData } from "./level.config";
 
-const ACHIEVEMENTS: Achievement[] = [
-    {
-        id: "first-post",
-        name: "First Steps",
-        description: "Create your first forum post",
-        icon: "📝",
-        points: 10
-    },
-    {
-        id: "helpful-member",
-        name: "Helpful Member",
-        description: "Receive 10 upvotes on your answers",
-        icon: "🌟",
-        points: 50
-    },
-    {
-        id: "veteran",
-        name: "Veteran",
-        description: "Be a member for 365 days",
-        icon: "🏆",
-        points: 100
-    },
-    {
-        id: "anime-expert",
-        name: "Anime Expert",
-        description: "Write 50 posts in the anime category",
-        icon: "🎌",
-        points: 200
-    }
-];
+export interface XpConfigDto {
+    eventType: string;
+    xpAmount: number;
+    label: string;
+    description?: string;
+}
 
-const LEADERBOARD: LeaderboardEntry[] = [
-    { rank: 1, userId: "u1", username: "NarutoFan99", points: 1250, level: 12 },
-    { rank: 2, userId: "u2", username: "AnimeQueen", points: 980, level: 10 },
-    { rank: 3, userId: "u3", username: "MangaMaster", points: 750, level: 8 },
-    { rank: 4, userId: "u4", username: "OtakuLord", points: 540, level: 6 },
-    { rank: 5, userId: "u5", username: "SakuraChan", points: 320, level: 4 }
-];
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
 export class GamificationService {
-    getAllAchievements(): Achievement[] {
-        return ACHIEVEMENTS;
+    // Simple in-memory cache for XP config (refreshed on update or after TTL)
+    private configCache: Map<string, number> | null = null;
+    private configCacheAt = 0;
+    private readonly CONFIG_TTL_MS = 60_000; // 1 minute
+
+    constructor(
+        @InjectRepository(UserXpEntity)
+        private readonly userXpRepo: Repository<UserXpEntity>,
+        @InjectRepository(XpEventEntity)
+        private readonly xpEventRepo: Repository<XpEventEntity>,
+        @InjectRepository(XpConfigEntity)
+        private readonly xpConfigRepo: Repository<XpConfigEntity>,
+        @InjectDataSource()
+        private readonly dataSource: DataSource
+    ) {}
+
+    // ── XP Config ─────────────────────────────────────────────────────────────
+
+    async getXpConfig(): Promise<XpConfigDto[]> {
+        const rows = await this.xpConfigRepo.find({ order: { eventType: "ASC" } });
+        return rows.map((r) => ({ eventType: r.eventType, xpAmount: r.xpAmount, label: r.label, description: r.description }));
     }
 
-    getAchievementById(id: string): Achievement {
-        const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-        if (!achievement) {
-            throw new NotFoundException(`Achievement with id "${id}" not found`);
+    async updateXpConfig(eventType: string, xpAmount: number): Promise<XpConfigDto> {
+        const row = await this.xpConfigRepo.findOneBy({ eventType });
+        if (!row) {
+            throw new Error(`Unknown event type: ${eventType}`);
         }
-        return achievement;
+        row.xpAmount = xpAmount;
+        await this.xpConfigRepo.save(row);
+        this.configCache = null; // invalidate cache
+        return { eventType: row.eventType, xpAmount: row.xpAmount, label: row.label, description: row.description };
     }
 
-    getUserProgress(userId: string): UserProgress {
-        const entry = LEADERBOARD.find((e) => e.userId === userId);
-        if (!entry) {
-            throw new NotFoundException(`User with id "${userId}" not found`);
+    // ── Award XP ──────────────────────────────────────────────────────────────
+
+    async awardXp(userId: string, eventType: XpEventType, referenceId?: string): Promise<void> {
+        const config = await this.getConfigCache();
+        const amount = config.get(eventType) ?? 0;
+        if (amount <= 0) return;
+
+        let record = await this.userXpRepo.findOneBy({ userId });
+        if (!record) {
+            record = this.userXpRepo.create({ userId, xp: 0, level: 1 });
         }
-        const pointsToNextLevel = (entry.level + 1) * 100 - entry.points;
+
+        record.xp += amount;
+        record.level = getLevelForXp(record.xp).level;
+        await this.userXpRepo.save(record);
+
+        const event = this.xpEventRepo.create({ userId, eventType, xpGained: amount, referenceId });
+        await this.xpEventRepo.save(event);
+    }
+
+    // ── Read XP ───────────────────────────────────────────────────────────────
+
+    async getUserXpData(userId: string): Promise<UserXpData> {
+        const record = await this.userXpRepo.findOneBy({ userId });
+        return this.toXpData(record?.xp ?? 0);
+    }
+
+    async getUserXpDataBatch(userIds: string[]): Promise<Map<string, UserXpData>> {
+        if (!userIds.length) return new Map();
+        const records = await this.userXpRepo.findBy({ userId: In(userIds) });
+        const map = new Map<string, UserXpData>(records.map((r) => [r.userId, this.toXpData(r.xp)]));
+        for (const id of userIds) {
+            if (!map.has(id)) map.set(id, this.toXpData(0));
+        }
+        return map;
+    }
+
+    // ── Recalculate ───────────────────────────────────────────────────────────
+
+    async recalculateAllUserXp(): Promise<{ updatedUsers: number }> {
+        const config = await this.getConfigCache();
+        const threadXp = config.get("create_thread") ?? 10;
+        const postXp = config.get("create_post") ?? 5;
+        const receiveXp = config.get("receive_reaction") ?? 3;
+        const giveXp = config.get("give_reaction") ?? 1;
+
+        const result = await this.dataSource.query<{ user_id: string; total_xp: number }[]>(`
+            WITH
+            thread_counts AS (
+                SELECT author_id AS user_id, COUNT(*) AS cnt
+                FROM forum_threads
+                WHERE deleted_at IS NULL
+                GROUP BY author_id
+            ),
+            post_counts AS (
+                SELECT author_id AS user_id, COUNT(*) AS cnt
+                FROM forum_posts
+                WHERE deleted_at IS NULL AND is_first_post = false
+                GROUP BY author_id
+            ),
+            reactions_received AS (
+                SELECT fp.author_id AS user_id, COUNT(*) AS cnt
+                FROM forum_post_reactions fpr
+                JOIN forum_posts fp ON fp.id = fpr.post_id
+                GROUP BY fp.author_id
+            ),
+            reactions_given AS (
+                SELECT user_id, COUNT(*) AS cnt
+                FROM forum_post_reactions
+                GROUP BY user_id
+            )
+            SELECT
+                u.id AS user_id,
+                (COALESCE((SELECT cnt FROM thread_counts WHERE user_id = u.id), 0) * $1 +
+                 COALESCE((SELECT cnt FROM post_counts   WHERE user_id = u.id), 0) * $2 +
+                 COALESCE((SELECT cnt FROM reactions_received WHERE user_id = u.id), 0) * $3 +
+                 COALESCE((SELECT cnt FROM reactions_given     WHERE user_id = u.id), 0) * $4
+                ) AS total_xp
+            FROM users u
+        `, [threadXp, postXp, receiveXp, giveXp]);
+
+        for (const row of result) {
+            const xp = Number(row.total_xp);
+            const level = getLevelForXp(xp).level;
+            await this.userXpRepo.upsert(
+                { userId: row.user_id, xp, level },
+                { conflictPaths: ["userId"] }
+            );
+        }
+
+        // Clear xp_events and re-insert summary events so history is consistent
+        // (optional: skip if event history is not important for recalculation)
+
+        return { updatedUsers: result.length };
+    }
+
+    // ── Private ───────────────────────────────────────────────────────────────
+
+    private async getConfigCache(): Promise<Map<string, number>> {
+        if (this.configCache && Date.now() - this.configCacheAt < this.CONFIG_TTL_MS) {
+            return this.configCache;
+        }
+        const rows = await this.xpConfigRepo.find();
+        this.configCache = new Map(rows.map((r) => [r.eventType, r.xpAmount]));
+        this.configCacheAt = Date.now();
+        return this.configCache;
+    }
+
+    private toXpData(xp: number): UserXpData {
+        const levelInfo = getLevelForXp(xp);
         return {
-            userId: entry.userId,
-            username: entry.username,
-            level: entry.level,
-            currentPoints: entry.points,
-            pointsToNextLevel: Math.max(0, pointsToNextLevel),
-            totalAchievements: Math.floor(entry.points / 100)
+            xp,
+            level: levelInfo.level,
+            levelName: levelInfo.name,
+            xpToNextLevel: getXpToNextLevel(xp),
+            xpProgressPercent: getXpProgressPercent(xp)
         };
-    }
-
-    getLeaderboard(limit = 10): LeaderboardEntry[] {
-        return LEADERBOARD.slice(0, limit);
     }
 }

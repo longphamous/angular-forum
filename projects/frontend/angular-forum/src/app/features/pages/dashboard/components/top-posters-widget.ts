@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { RouterModule } from "@angular/router";
 import { AvatarModule } from "primeng/avatar";
 import { CardModule } from "primeng/card";
 import { SkeletonModule } from "primeng/skeleton";
@@ -20,7 +21,7 @@ const RANK_STYLES: RankStyle[] = [
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AvatarModule, CardModule, SkeletonModule, TagModule],
+    imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule],
     selector: "app-top-posters-widget",
     template: `
         <p-card>
@@ -41,7 +42,10 @@ const RANK_STYLES: RankStyle[] = [
             } @else {
                 <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
                     @for (poster of facade.topPosters(); track poster.userId; let i = $index) {
-                        <div class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <a
+                            class="hover:bg-surface-50 dark:hover:bg-surface-800 -mx-2 flex items-center gap-3 rounded-lg px-2 py-3 no-underline transition-colors first:pt-0 last:pb-0"
+                            [routerLink]="['/users', poster.userId]"
+                        >
                             <div
                                 class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
                                 [class]="rankBg(i)"
@@ -69,7 +73,8 @@ const RANK_STYLES: RankStyle[] = [
                                     <span>{{ poster.postCount }} Beiträge</span>
                                 </div>
                             </div>
-                        </div>
+                            <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                        </a>
                     } @empty {
                         <p class="text-surface-500 dark:text-surface-400 text-sm">Keine Daten vorhanden.</p>
                     }

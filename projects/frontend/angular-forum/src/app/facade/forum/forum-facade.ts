@@ -152,15 +152,27 @@ export class ForumFacade {
             });
     }
 
-    createThread(forumId: string, title: string, content: string): Observable<Thread> {
+    createThread(forumId: string, title: string, content: string, tags: string[] = []): Observable<Thread> {
         return this.http.post<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.threads(forumId)}`, {
             title,
-            content
+            content,
+            tags
         });
     }
 
     createPost(threadId: string, content: string): Observable<Post> {
         return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, { content });
+    }
+
+    reactToPost(postId: string): Observable<void> {
+        return this.http.post<void>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`,
+            { reactionType: "heart" }
+        );
+    }
+
+    unreactToPost(postId: string): Observable<void> {
+        return this.http.delete<void>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`);
     }
 
     resetError(): void {

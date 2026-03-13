@@ -56,8 +56,13 @@ export interface ThreadDto {
     id: string;
     forumId: string;
     authorId: string;
+    authorName: string;
+    authorAvatarUrl?: string;
+    authorLevel: number;
+    authorLevelName: string;
     title: string;
     slug: string;
+    tags: string[];
     isPinned: boolean;
     isLocked: boolean;
     isSticky: boolean;
@@ -80,6 +85,13 @@ export interface PostDto {
     id: string;
     threadId: string;
     authorId: string;
+    authorName: string;
+    authorRole: string;
+    authorPostCount: number;
+    authorAvatarUrl?: string;
+    authorSignature?: string;
+    authorLevel: number;
+    authorLevelName: string;
     content: string;
     isFirstPost: boolean;
     isEdited: boolean;

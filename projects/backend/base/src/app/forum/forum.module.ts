@@ -1,10 +1,12 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { CategoryController } from "./controllers/category.controller";
 import { ForumController } from "./controllers/forum.controller";
 import { PostController } from "./controllers/post.controller";
 import { ThreadController } from "./controllers/thread.controller";
+import { UserEntity } from "../user/entities/user.entity";
 import { ForumCategoryEntity } from "./entities/category.entity";
 import { ForumEntity } from "./entities/forum.entity";
 import { ForumPostEntity } from "./entities/post.entity";
@@ -17,12 +19,14 @@ import { ThreadService } from "./services/thread.service";
 
 @Module({
     imports: [
+        GamificationModule,
         TypeOrmModule.forFeature([
             ForumCategoryEntity,
             ForumEntity,
             ForumThreadEntity,
             ForumPostEntity,
-            ForumPostReactionEntity
+            ForumPostReactionEntity,
+            UserEntity
         ])
     ],
     controllers: [CategoryController, ForumController, ThreadController, PostController],

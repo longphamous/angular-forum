@@ -5,5 +5,6 @@ export const USER_ROUTES = {
         list: () => "/user"
     },
     changePassword: () => "/user/change-password",
-    profile: () => "/user/profile"
+    profile: () => "/user/profile",
+    publicProfile: (userId: string) => `/user/profile/${userId}`
 } as const;

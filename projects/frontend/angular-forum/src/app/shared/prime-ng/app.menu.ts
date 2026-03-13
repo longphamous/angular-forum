@@ -45,7 +45,8 @@ export class AppMenu implements OnInit {
                     { label: "Forenstruktur", icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] },
                     { label: "Benutzerverwaltung", icon: "pi pi-fw pi-users", routerLink: ["/admin/users"] },
                     { label: "Gruppenverwaltung", icon: "pi pi-fw pi-shield", routerLink: ["/admin/groups"] },
-                    { label: "Seitenberechtigungen", icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] }
+                    { label: "Seitenberechtigungen", icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] },
+                    { label: "Gamification", icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] }
                 ]
             },
             {

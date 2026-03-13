@@ -1,8 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
-import { UserRole } from "../../user/entities/user.entity";
+import { GamificationService } from "../../gamification/gamification.service";
+import { UserXpData } from "../../gamification/level.config";
+import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreatePostDto } from "../dto/create-post.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
 import { ReactPostDto } from "../dto/react-post.dto";
@@ -15,11 +17,27 @@ import { PaginatedResult, PostDto, ReactionDto } from "../models/forum.model";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function toDto(entity: ForumPostEntity): PostDto {
+interface AuthorInfo {
+    displayName: string;
+    role: string;
+    postCount: number;
+    avatarUrl?: string;
+    signature?: string;
+    xpData?: UserXpData;
+}
+
+function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
     return {
         id: entity.id,
         threadId: entity.threadId,
         authorId: entity.authorId,
+        authorName: author?.displayName ?? entity.authorId.slice(0, 8),
+        authorRole: author?.role ?? "member",
+        authorPostCount: author?.postCount ?? 0,
+        authorAvatarUrl: author?.avatarUrl,
+        authorSignature: author?.signature,
+        authorLevel: author?.xpData?.level ?? 1,
+        authorLevelName: author?.xpData?.levelName ?? "Neuling",
         content: entity.content,
         isFirstPost: entity.isFirstPost,
         isEdited: entity.isEdited,
@@ -57,7 +75,10 @@ export class PostService {
         @InjectRepository(ForumThreadEntity)
         private readonly threadRepo: Repository<ForumThreadEntity>,
         @InjectRepository(ForumEntity)
-        private readonly forumRepo: Repository<ForumEntity>
+        private readonly forumRepo: Repository<ForumEntity>,
+        @InjectRepository(UserEntity)
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService
     ) {}
 
     async findByThread(threadId: string, query: ForumQueryDto): Promise<PaginatedResult<PostDto>> {
@@ -72,7 +93,37 @@ export class PostService {
             take: limit
         });
 
-        return { data: posts.map(toDto), total, page, limit };
+        const authorIds = [...new Set(posts.map((p) => p.authorId))];
+        const [users, postCountRows, xpMap] = await Promise.all([
+            authorIds.length
+                ? this.userRepo.find({ where: { id: In(authorIds) }, select: ["id", "displayName", "role", "avatarUrl", "signature"] })
+                : Promise.resolve([]),
+            authorIds.length
+                ? this.postRepo.query<{ author_id: string; count: string }[]>(
+                      `SELECT author_id, COUNT(*) AS count FROM forum_posts WHERE author_id = ANY($1) AND deleted_at IS NULL GROUP BY author_id`,
+                      [authorIds]
+                  )
+                : Promise.resolve([]),
+            this.gamificationService.getUserXpDataBatch(authorIds)
+        ]);
+
+        const postCountMap = new Map(postCountRows.map((r) => [r.author_id, Number(r.count)]));
+
+        const userMap = new Map<string, AuthorInfo>(
+            users.map((u) => [
+                u.id,
+                {
+                    displayName: u.displayName,
+                    role: u.role,
+                    postCount: postCountMap.get(u.id) ?? 0,
+                    avatarUrl: u.avatarUrl,
+                    signature: u.signature,
+                    xpData: xpMap.get(u.id)
+                }
+            ])
+        );
+
+        return { data: posts.map((p) => toDto(p, userMap.get(p.authorId))), total, page, limit };
     }
 
     async findById(id: string): Promise<PostDto> {
@@ -98,6 +149,9 @@ export class PostService {
         // Update forum counters
         await this.forumRepo.increment({ id: thread.forumId }, "postCount", 1);
         await this.forumRepo.update(thread.forumId, { lastPostAt: now, lastPostByUserId: authorId });
+
+        // Award XP for creating a post
+        void this.gamificationService.awardXp(authorId, "create_post", post.id);
 
         return toDto(post);
     }
@@ -162,6 +216,12 @@ export class PostService {
             await this.reactionRepo.save(reaction);
             await this.postRepo.increment({ id: postId }, "reactionCount", 1);
             post.reactionCount += 1;
+
+            // Award XP: giver gets 1, receiver gets 3
+            void this.gamificationService.awardXp(userId, "give_reaction", postId);
+            if (post.authorId !== userId) {
+                void this.gamificationService.awardXp(post.authorId, "receive_reaction", postId);
+            }
         }
 
         return toReactionDto(reaction);

@@ -25,6 +25,30 @@
                         type="text"
                     />
                 </div>
+                <div class="flex w-full flex-col gap-2">
+                    <label class="font-medium" for="thread-tags">
+                        Tags <span class="text-surface-400 font-normal text-sm">(optional – Enter oder Komma zum Hinzufügen)</span>
+                    </label>
+                    <div class="border-surface-300 dark:border-surface-600 focus-within:border-primary flex flex-wrap items-center gap-2 rounded-md border bg-white px-3 py-2 dark:bg-surface-900">
+                        @for (tag of tags; track tag) {
+                        <p-chip
+                            [label]="tag"
+                            [removable]="true"
+                            (onRemove)="removeTag(tag)"
+                        />
+                        }
+                        <input
+                            class="min-w-24 flex-1 border-none bg-transparent text-sm outline-none"
+                            id="thread-tags"
+                            [(ngModel)]="tagInput"
+                            [disabled]="submitting"
+                            (keydown)="addTag($event)"
+                            placeholder="Tag eingeben…"
+                            type="text"
+                        />
+                    </div>
+                    <span class="text-surface-400 text-xs">{{ tags.length }} Tag(s) hinzugefügt</span>
+                </div>
             </div>
         </div>
 

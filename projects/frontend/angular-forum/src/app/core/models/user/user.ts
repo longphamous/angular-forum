@@ -8,9 +8,20 @@ export interface UserProfile {
     displayName: string;
     avatarUrl?: string;
     bio?: string;
+    birthday?: string;
+    gender?: string;
+    location?: string;
+    website?: string;
+    signature?: string;
     role: UserRole;
     status: UserStatus;
     groups: string[];
+    postCount: number;
+    level: number;
+    levelName: string;
+    xp: number;
+    xpToNextLevel: number;
+    xpProgressPercent: number;
     createdAt: string;
     lastLoginAt?: string;
 }

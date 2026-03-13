@@ -3,17 +3,19 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { DatePickerModule } from "primeng/datepicker";
 import { DividerModule } from "primeng/divider";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 import { PasswordModule } from "primeng/password";
+import { SelectModule } from "primeng/select";
 import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 
-import { ChangePasswordPayload, UpdateProfilePayload } from "../../../facade/auth/auth-facade";
-import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { UserRole } from "../../../core/models/user/user";
+import { AuthFacade, ChangePasswordPayload, UpdateProfilePayload } from "../../../facade/auth/auth-facade";
 
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const newPw = group.get("newPassword")?.value as string;
@@ -41,11 +43,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
         AvatarModule,
         ButtonModule,
         CardModule,
+        DatePickerModule,
         DividerModule,
         InputTextModule,
+        LevelProgress,
         MessageModule,
         PasswordModule,
         ReactiveFormsModule,
+        SelectModule,
         TabsModule,
         TagModule,
         TextareaModule
@@ -91,6 +96,17 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                 </span>
                             }
                         </div>
+                        @if (user()?.level) {
+                            <div class="mt-3 w-full max-w-xs">
+                                <level-progress
+                                    [level]="user()!.level"
+                                    [levelName]="user()!.levelName"
+                                    [xp]="user()!.xp"
+                                    [xpProgressPercent]="user()!.xpProgressPercent"
+                                    [xpToNextLevel]="user()!.xpToNextLevel"
+                                />
+                            </div>
+                        }
                     </div>
                 </div>
             </p-card>
@@ -220,11 +236,99 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     rows="4"
                                 ></textarea>
                                 <div class="text-surface-400 dark:text-surface-500 text-right text-xs">
-                                    {{ profileForm.get("bio")?.value?.length ?? 0 }} / 300
+                                    {{ profileForm.get("bio")?.value?.length ?? 0 }} / 500
                                 </div>
-                                @if (profileForm.get("bio")?.errors?.["maxlength"] && profileForm.get("bio")?.touched) {
-                                    <small class="text-red-500">Maximal 300 Zeichen erlaubt.</small>
-                                }
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                        for="gender"
+                                    >
+                                        Geschlecht <span class="text-surface-400 font-normal">(optional)</span>
+                                    </label>
+                                    <p-select
+                                        [options]="genderOptions"
+                                        formControlName="gender"
+                                        inputId="gender"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        styleClass="w-full"
+                                    />
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                        for="birthday"
+                                    >
+                                        Geburtstag <span class="text-surface-400 font-normal">(optional)</span>
+                                    </label>
+                                    <p-datepicker
+                                        [maxDate]="today"
+                                        [showIcon]="true"
+                                        dateFormat="dd.mm.yy"
+                                        formControlName="birthday"
+                                        inputId="birthday"
+                                        styleClass="w-full"
+                                    />
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                        for="location"
+                                    >
+                                        Ort <span class="text-surface-400 font-normal">(optional)</span>
+                                    </label>
+                                    <input
+                                        class="w-full"
+                                        id="location"
+                                        formControlName="location"
+                                        pInputText
+                                        placeholder="Stadt, Land…"
+                                        type="text"
+                                    />
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                        for="website"
+                                    >
+                                        Website <span class="text-surface-400 font-normal">(optional)</span>
+                                    </label>
+                                    <input
+                                        class="w-full"
+                                        id="website"
+                                        formControlName="website"
+                                        pInputText
+                                        placeholder="https://…"
+                                        type="url"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label
+                                    class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                    for="signature"
+                                >
+                                    Signatur <span class="text-surface-400 font-normal">(optional)</span>
+                                </label>
+                                <textarea
+                                    class="w-full"
+                                    id="signature"
+                                    [autoResize]="true"
+                                    formControlName="signature"
+                                    placeholder="Deine Signatur, die unter deinen Beiträgen erscheint…"
+                                    pTextarea
+                                    rows="3"
+                                ></textarea>
+                                <div class="text-surface-400 dark:text-surface-500 text-right text-xs">
+                                    {{ profileForm.get("signature")?.value?.length ?? 0 }} / 300
+                                </div>
                             </div>
 
                             <div class="flex justify-end">
@@ -362,9 +466,24 @@ export class ProfilePage {
     protected readonly passwordSuccess = signal<string | null>(null);
     protected readonly passwordError = signal<string | null>(null);
 
+    protected readonly today = new Date();
+
+    protected readonly genderOptions = [
+        { label: "Keine Angabe", value: "" },
+        { label: "Männlich", value: "male" },
+        { label: "Weiblich", value: "female" },
+        { label: "Divers", value: "other" },
+        { label: "Lieber nicht angeben", value: "prefer_not_to_say" }
+    ];
+
     protected readonly profileForm = this.fb.group({
-        bio: ["", Validators.maxLength(300)],
-        displayName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(50)]]
+        bio: ["", Validators.maxLength(500)],
+        birthday: [null as Date | null],
+        displayName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+        gender: [""],
+        location: ["", Validators.maxLength(100)],
+        website: ["", Validators.maxLength(255)],
+        signature: ["", Validators.maxLength(300)]
     });
 
     protected readonly passwordForm = this.fb.group(
@@ -380,7 +499,15 @@ export class ProfilePage {
         effect(() => {
             const u = this.user();
             if (u) {
-                this.profileForm.patchValue({ bio: u.bio ?? "", displayName: u.displayName });
+                this.profileForm.patchValue({
+                    bio: u.bio ?? "",
+                    birthday: u.birthday ? new Date(u.birthday) : null,
+                    displayName: u.displayName,
+                    gender: u.gender ?? "",
+                    location: u.location ?? "",
+                    website: u.website ?? "",
+                    signature: u.signature ?? ""
+                });
                 this.profileForm.markAsPristine();
             }
         });
@@ -410,9 +537,15 @@ export class ProfilePage {
         this.profileSuccess.set(null);
         this.profileError.set(null);
 
+        const rawBirthday = this.profileForm.value.birthday;
         const payload: UpdateProfilePayload = {
             bio: this.profileForm.value.bio ?? "",
-            displayName: this.profileForm.value.displayName!
+            birthday: rawBirthday ? (rawBirthday as Date).toISOString().split("T")[0] : "",
+            displayName: this.profileForm.value.displayName!,
+            gender: this.profileForm.value.gender ?? "",
+            location: this.profileForm.value.location ?? "",
+            website: this.profileForm.value.website ?? "",
+            signature: this.profileForm.value.signature ?? ""
         };
 
         this.authFacade.updateProfile(payload).subscribe({

@@ -1,5 +1,6 @@
 import { Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
@@ -90,9 +91,9 @@ export class AnimeDetail implements OnInit {
     protected readonly statusOptions = STATUS_OPTIONS;
 
     // ⑤ Private
+    private readonly destroyRef = inject(DestroyRef);
     private readonly location = inject(Location);
     private readonly route = inject(ActivatedRoute);
-    private animeId = 0;
 
     constructor() {
         effect(() => {
@@ -119,8 +120,11 @@ export class AnimeDetail implements OnInit {
     }
 
     ngOnInit(): void {
-        this.animeId = Number(this.route.snapshot.paramMap.get("id"));
-        this.facade.loadById(this.animeId);
+        this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+            const id = Number(params.get("id"));
+            this.showFullSynopsis.set(false);
+            this.facade.loadById(id);
+        });
         this.facade.loadUserList();
     }
 

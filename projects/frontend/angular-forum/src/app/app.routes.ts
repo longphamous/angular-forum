@@ -82,6 +82,13 @@ export const routes: Routes = [
                     import("./features/pages/anime/anime-detail/anime-detail").then((c) => c.AnimeDetail)
             },
             {
+                path: "users/:userId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/user-profile/user-profile-page").then((c) => c.UserProfilePage)
+            },
+            {
                 path: "users/:userId/anime-list",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
@@ -125,6 +132,13 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-permissions/admin-permissions").then((c) => c.AdminPermissions)
+            },
+            {
+                path: "admin/gamification",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-gamification/admin-gamification").then((c) => c.AdminGamification)
             }
         ]
     }

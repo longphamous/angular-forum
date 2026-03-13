@@ -22,7 +22,12 @@ export interface RegisterPayload {
 export interface UpdateProfilePayload {
     avatarUrl?: string;
     bio?: string;
+    birthday?: string;
     displayName?: string;
+    gender?: string;
+    location?: string;
+    website?: string;
+    signature?: string;
 }
 
 export interface ChangePasswordPayload {

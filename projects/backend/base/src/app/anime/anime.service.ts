@@ -6,7 +6,7 @@ import { AnimeQueryDto, AnimeSortField } from "./dto/anime-query.dto";
 import { CreateAnimeDto } from "./dto/create-anime.dto";
 import { UpdateAnimeDto } from "./dto/update-anime.dto";
 import { AnimeEntity } from "./entities/anime.entity";
-import { AnimeDto, PaginatedAnimeDto } from "./models/anime.model";
+import { AnimeDto, AnimeStudioDto, PaginatedAnimeDto, RelatedAnimeDto } from "./models/anime.model";
 
 const ANIME_DB_CONNECTION = "anime-db";
 
@@ -23,7 +23,12 @@ const ALLOWED_SORT_FIELDS: Record<AnimeSortField, string> = {
     voter: "anime.voter"
 };
 
-function toDto(entity: AnimeEntity, genres: string[] = []): AnimeDto {
+function toDto(
+    entity: AnimeEntity,
+    genres: string[] = [],
+    studios: AnimeStudioDto[] = [],
+    relatedAnime: RelatedAnimeDto[] = []
+): AnimeDto {
     return {
         id: Number(entity.id),
         title: entity.title,
@@ -59,7 +64,9 @@ function toDto(entity: AnimeEntity, genres: string[] = []): AnimeDto {
         userOnHold: entity.userOnHold !== undefined ? Number(entity.userOnHold) : undefined,
         userDropped: entity.userDropped !== undefined ? Number(entity.userDropped) : undefined,
         userPlanned: entity.userPlanned !== undefined ? Number(entity.userPlanned) : undefined,
-        genres
+        genres,
+        studios,
+        relatedAnime
     };
 }
 
@@ -77,8 +84,12 @@ export class AnimeService {
         if (!entity) {
             throw new NotFoundException(`Anime with id ${id} not found`);
         }
-        const genreMap = await this.loadGenreMap([id]);
-        return toDto(entity, genreMap.get(id) ?? []);
+        const [genreMap, studioMap, relatedMap] = await Promise.all([
+            this.loadGenreMap([id]),
+            this.loadStudioMap([id]),
+            this.loadRelatedMap([id])
+        ]);
+        return toDto(entity, genreMap.get(id) ?? [], studioMap.get(id) ?? [], relatedMap.get(id) ?? []);
     }
 
     async findAll(page: number, limit: number, query: AnimeQueryDto): Promise<PaginatedAnimeDto> {
@@ -231,6 +242,58 @@ export class AnimeService {
             `SELECT DISTINCT name FROM genre WHERE deleted_at IS NULL AND name IS NOT NULL ORDER BY name`
         );
         return rows.map((r) => r.name);
+    }
+
+    private async loadStudioMap(animeIds: number[]): Promise<Map<number, AnimeStudioDto[]>> {
+        if (!animeIds.length) return new Map();
+        const rows: Array<{ anime_id: string; id: string; name: string }> = await this.animeRepo.query(
+            `SELECT as2.anime_id::bigint, s.id::bigint, s.name
+             FROM anime_studio as2
+             INNER JOIN studio s ON as2.studio_id = s.id
+             WHERE as2.anime_id = ANY($1) AND s.deleted_at IS NULL
+             ORDER BY s.name`,
+            [animeIds]
+        );
+        const map = new Map<number, AnimeStudioDto[]>();
+        for (const row of rows) {
+            const id = Number(row.anime_id);
+            if (!map.has(id)) map.set(id, []);
+            map.get(id)!.push({ id: Number(row.id), name: row.name });
+        }
+        return map;
+    }
+
+    private async loadRelatedMap(animeIds: number[]): Promise<Map<number, RelatedAnimeDto[]>> {
+        if (!animeIds.length) return new Map();
+        const rows: Array<{
+            anime_id1: string;
+            anime_id2: string;
+            relation: string;
+            title: string;
+            title_english: string;
+            picture: string;
+        }> = await this.animeRepo.query(
+            `SELECT ar.anime_id1::bigint, ar.anime_id2::bigint, ar.relation,
+                    a.title, a.title_english, a.picture
+             FROM anime_related ar
+             INNER JOIN anime a ON ar.anime_id2 = a.id
+             WHERE ar.anime_id1 = ANY($1) AND a.deleted_at IS NULL
+             ORDER BY ar.relation, a.title`,
+            [animeIds]
+        );
+        const map = new Map<number, RelatedAnimeDto[]>();
+        for (const row of rows) {
+            const id = Number(row.anime_id1);
+            if (!map.has(id)) map.set(id, []);
+            map.get(id)!.push({
+                animeId: Number(row.anime_id2),
+                relation: row.relation,
+                title: row.title,
+                titleEnglish: row.title_english,
+                picture: row.picture
+            });
+        }
+        return map;
     }
 
     private async loadGenreMap(animeIds: number[]): Promise<Map<number, string[]>> {
