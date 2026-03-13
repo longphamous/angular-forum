@@ -9,6 +9,7 @@ import { CreditModule } from "./credit/credit.module";
 import { DatabaseModule } from "./database/database.module";
 import { ForumModule } from "./forum/forum.module";
 import { GamificationModule } from "./gamification/gamification.module";
+import { GroupModule } from "./group/group.module";
 import { UserModule } from "./user/user.module";
 
 @Module({
@@ -24,7 +25,8 @@ import { UserModule } from "./user/user.module";
         CreditModule,
         UserModule,
         AnimeModule,
-        ForumModule
+        ForumModule,
+        GroupModule
     ],
     controllers: [AppController],
     providers: [AppService]

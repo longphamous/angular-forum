@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
+import { GroupEntity } from "../../group/entities/group.entity";
 
 export type UserRole = "admin" | "moderator" | "member" | "guest";
 export type UserStatus = "active" | "inactive" | "banned" | "pending";
@@ -42,6 +44,9 @@ export class UserEntity {
 
     @Column({ name: "last_login_at", nullable: true, type: "timestamptz" })
     lastLoginAt?: Date;
+
+    @ManyToMany(() => GroupEntity, (group) => group.users)
+    groups?: GroupEntity[];
 
     @CreateDateColumn({ name: "created_at", type: "timestamptz" })
     createdAt!: Date;

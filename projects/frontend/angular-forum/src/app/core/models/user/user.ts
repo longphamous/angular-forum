@@ -10,6 +10,7 @@ export interface UserProfile {
     bio?: string;
     role: UserRole;
     status: UserStatus;
+    groups: string[];
     createdAt: string;
     lastLoginAt?: string;
 }

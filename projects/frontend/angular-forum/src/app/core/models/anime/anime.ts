@@ -42,6 +42,28 @@ export interface PaginatedAnime {
     limit: number;
 }
 
+export type AnimeListStatus = "watching" | "completed" | "plan_to_watch" | "on_hold" | "dropped";
+
+export interface AnimeListEntry {
+    animeId: number;
+    userId: string;
+    status: AnimeListStatus;
+    score?: number;
+    review?: string;
+    episodesWatched?: number;
+    createdAt: string;
+    updatedAt: string;
+    anime?: Anime;
+}
+
+export interface AnimeListEntryPayload {
+    animeId: number;
+    status: AnimeListStatus;
+    score?: number;
+    review?: string;
+    episodesWatched?: number;
+}
+
 export type AnimeSortField =
     | "id"
     | "title"

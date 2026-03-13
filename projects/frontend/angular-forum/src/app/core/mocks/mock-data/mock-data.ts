@@ -1,7 +1,10 @@
+import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
+import { Group, PagePermission } from "../../models/group/group";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
+import { UserProfile } from "../../models/user/user";
 
 export interface User {
     id: string;
@@ -54,6 +57,194 @@ export const mockUsers: Record<string, User> = {
     [adminUser.id]: adminUser,
     [modUser.id]: modUser,
     [memberUser.id]: memberUser
+};
+
+// ── Mock Groups ───────────────────────────────────────────────────────────────
+
+export const mockGroups: Record<string, Group> = {
+    "g-jeder": {
+        id: "g-jeder",
+        name: "Jeder",
+        description: "Alle Besucher und registrierten Benutzer",
+        isSystem: true,
+        userCount: 3,
+        createdAt: now,
+        updatedAt: now
+    },
+    "g-gast": {
+        id: "g-gast",
+        name: "Gast",
+        description: "Nicht angemeldete Besucher",
+        isSystem: true,
+        userCount: 0,
+        createdAt: now,
+        updatedAt: now
+    },
+    "g-registered": {
+        id: "g-registered",
+        name: "Registrierte Benutzer",
+        description: "Alle angemeldeten Benutzer",
+        isSystem: true,
+        userCount: 3,
+        createdAt: now,
+        updatedAt: now
+    },
+    "g-moderator": {
+        id: "g-moderator",
+        name: "Moderator",
+        description: "Moderatoren mit erweiterten Rechten",
+        isSystem: true,
+        userCount: 1,
+        createdAt: now,
+        updatedAt: now
+    },
+    "g-admin": {
+        id: "g-admin",
+        name: "Admin",
+        description: "Administratoren mit vollen Rechten",
+        isSystem: true,
+        userCount: 1,
+        createdAt: now,
+        updatedAt: now
+    }
+};
+
+// Maps userId → group ids
+export const mockUserGroupMap: Record<string, string[]> = {
+    [adminUser.id]: ["g-jeder", "g-registered", "g-admin"],
+    [modUser.id]: ["g-jeder", "g-registered", "g-moderator"],
+    [memberUser.id]: ["g-jeder", "g-registered"]
+};
+
+// ── Mock Page Permissions ─────────────────────────────────────────────────────
+
+export const mockPagePermissions: Record<string, PagePermission> = {
+    "pp-dashboard": {
+        id: "pp-dashboard",
+        route: "/dashboard",
+        name: "Dashboard",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-forum": {
+        id: "pp-forum",
+        route: "/forum",
+        name: "Forum Übersicht",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-anime-top": {
+        id: "pp-anime-top",
+        route: "/anime-top-list",
+        name: "Top Anime Liste",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-anime-db": {
+        id: "pp-anime-db",
+        route: "/anime-database",
+        name: "Anime Datenbank",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-anime-mylist": {
+        id: "pp-anime-mylist",
+        route: "/anime/my-list",
+        name: "Meine Anime-Liste",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-profile": {
+        id: "pp-profile",
+        route: "/profile",
+        name: "Profil",
+        groups: [{ id: "g-registered", name: "Registrierte Benutzer" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-overview": {
+        id: "pp-admin-overview",
+        route: "/admin/overview",
+        name: "Admin Übersicht",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-forum": {
+        id: "pp-admin-forum",
+        route: "/admin/forum",
+        name: "Admin Forenstruktur",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-users": {
+        id: "pp-admin-users",
+        route: "/admin/users",
+        name: "Admin Benutzerverwaltung",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-groups": {
+        id: "pp-admin-groups",
+        route: "/admin/groups",
+        name: "Admin Gruppenverwaltung",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-permissions": {
+        id: "pp-admin-permissions",
+        route: "/admin/permissions",
+        name: "Admin Seitenberechtigungen",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    }
+};
+
+// ── UserProfiles (for admin user management) ──────────────────────────────────
+
+export const mockUserProfiles: Record<string, UserProfile> = {
+    [adminUser.id]: {
+        bio: "Administrator des Aniverse Forums.",
+        createdAt: adminUser.joinedAt,
+        displayName: adminUser.displayName,
+        email: "admin@aniverse.de",
+        groups: ["Jeder", "Registrierte Benutzer", "Admin"],
+        id: adminUser.id,
+        role: "admin",
+        status: "active",
+        username: adminUser.username
+    },
+    [modUser.id]: {
+        bio: "",
+        createdAt: modUser.joinedAt,
+        displayName: modUser.displayName,
+        email: "sakura@aniverse.de",
+        groups: ["Jeder", "Registrierte Benutzer", "Moderator"],
+        id: modUser.id,
+        role: "moderator",
+        status: "active",
+        username: modUser.username
+    },
+    [memberUser.id]: {
+        bio: "",
+        createdAt: memberUser.joinedAt,
+        displayName: memberUser.displayName,
+        email: "naruto_fan@example.com",
+        groups: ["Jeder", "Registrierte Benutzer"],
+        id: memberUser.id,
+        role: "member",
+        status: "active",
+        username: memberUser.username
+    }
 };
 
 // ── Posts ─────────────────────────────────────────────────────────────────────
@@ -290,5 +481,133 @@ export const mockCategories: Record<string, ForumCategory> = {
         forums: [forumGaming, forumPlauderecke],
         createdAt: now,
         updatedAt: now
+    }
+};
+
+// ── Anime Mock Detail Objects ─────────────────────────────────────────────────
+
+export const mockAnimeDetails: Record<number, Anime> = {
+    1: {
+        id: 1,
+        title: "Cowboy Bebop",
+        titleEnglish: "Cowboy Bebop",
+        titleJapanese: "カウボーイビバップ",
+        picture: "https://cdn.myanimelist.net/images/anime/4/19644l.jpg",
+        synopsis:
+            "In the year 2071, humanity has colonized several planets and moons of the solar system leaving the now uninhabitable surface of planet Earth behind. The Inter Solar System Police attempts to keep peace in the galaxy, aided in part by outlaw bounty hunters, referred to as 'Cowboys'. The ragtag team aboard the spaceship Bebop—Spike Spiegel, Jet Black, Faye Valentine, Edward Wong, and their corgi Ein—are searching the galaxy for bounties to pay the bills.",
+        type: "TV",
+        status: "Finished Airing",
+        episode: 26,
+        mean: 8.78,
+        rank: 28,
+        popularity: 42,
+        member: 857439,
+        voter: 566234,
+        seasonYear: 1998,
+        season: "spring",
+        rating: "R",
+        source: "Original",
+        startYear: 1998,
+        startMonth: 4,
+        startDay: 3,
+        endYear: 1999,
+        endMonth: 4,
+        endDay: 24,
+        broadcastDay: "Saturday",
+        broadcastTime: "18:00",
+        episodeDuration: 24
+    },
+    5114: {
+        id: 5114,
+        title: "Fullmetal Alchemist: Brotherhood",
+        titleEnglish: "Fullmetal Alchemist: Brotherhood",
+        titleJapanese: "鋼の錬金術師 FULLMETAL ALCHEMIST",
+        picture: "https://cdn.myanimelist.net/images/anime/1208/94745l.jpg",
+        synopsis:
+            "After a horrific alchemy experiment goes wrong in the Elric household, brothers Edward and Alphonse are left in a catastrophic situation. Ignoring the taboo of human transmutation, the brothers attempted to bring their deceased mother back to life.",
+        type: "TV",
+        status: "Finished Airing",
+        episode: 64,
+        mean: 9.1,
+        rank: 1,
+        popularity: 3,
+        member: 3300000,
+        voter: 2000000,
+        seasonYear: 2009,
+        season: "spring",
+        rating: "R",
+        source: "Manga",
+        startYear: 2009,
+        startMonth: 4,
+        startDay: 5,
+        endYear: 2010,
+        endMonth: 7,
+        endDay: 4,
+        episodeDuration: 24
+    },
+    9253: {
+        id: 9253,
+        title: "Steins;Gate",
+        titleEnglish: "Steins;Gate",
+        titleJapanese: "シュタインズ・ゲート",
+        picture: "https://cdn.myanimelist.net/images/anime/5/73199l.jpg",
+        synopsis:
+            "The self-proclaimed mad scientist Rintarou Okabe rents out a room in a rickety old building in Akihabara where he indulges himself in his hobby of inventing 'future gadgets' with fellow lab members.",
+        type: "TV",
+        status: "Finished Airing",
+        episode: 24,
+        mean: 9.07,
+        rank: 3,
+        popularity: 7,
+        member: 2800000,
+        voter: 1700000,
+        seasonYear: 2011,
+        season: "spring",
+        rating: "PG-13",
+        source: "Visual novel",
+        startYear: 2011,
+        startMonth: 4,
+        startDay: 6,
+        endYear: 2011,
+        endMonth: 9,
+        endDay: 14,
+        episodeDuration: 23
+    }
+};
+
+// ── Anime List (mutable, per user) ────────────────────────────────────────────
+
+// key: `${userId}:${animeId}`
+export const mockAnimeListStore: Record<string, AnimeListEntry> = {
+    [`00000000-0000-0000-0000-000000000003:5114`]: {
+        animeId: 5114,
+        userId: "00000000-0000-0000-0000-000000000003",
+        status: "completed" as AnimeListStatus,
+        score: 10,
+        review: "Absolutes Meisterwerk! Eine der besten Anime-Serien aller Zeiten.",
+        episodesWatched: 64,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo,
+        anime: mockAnimeDetails[5114]
+    },
+    [`00000000-0000-0000-0000-000000000003:1`]: {
+        animeId: 1,
+        userId: "00000000-0000-0000-0000-000000000003",
+        status: "completed" as AnimeListStatus,
+        score: 9,
+        review: "Klassiker! Die Musik und Atmosphäre sind unübertroffen.",
+        episodesWatched: 26,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo,
+        anime: mockAnimeDetails[1]
+    },
+    [`00000000-0000-0000-0000-000000000003:9253`]: {
+        animeId: 9253,
+        userId: "00000000-0000-0000-0000-000000000003",
+        status: "plan_to_watch" as AnimeListStatus,
+        episodesWatched: 0,
+        createdAt: now,
+        updatedAt: now,
+        anime: mockAnimeDetails[9253]
     }
 };

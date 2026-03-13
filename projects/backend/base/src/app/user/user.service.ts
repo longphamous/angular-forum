@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
+import { GroupEntity } from "../group/entities/group.entity";
+import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
+import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -24,6 +27,7 @@ function toProfile(user: UserEntity): UserProfile {
         bio: user.bio,
         role: user.role,
         status: user.status,
+        groups: user.groups?.map((g) => g.name) ?? [],
         createdAt: user.createdAt.toISOString(),
         lastLoginAt: user.lastLoginAt?.toISOString()
     };
@@ -36,6 +40,8 @@ export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        @InjectRepository(GroupEntity)
+        private readonly groupRepo: Repository<GroupEntity>,
         private readonly authService: AuthService
     ) {}
 
@@ -50,20 +56,22 @@ export class UserService {
         }
 
         const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+        const defaultGroups = await this.groupRepo.findBy({ name: In(["Jeder", "Registrierte Benutzer"]) });
         const user = this.userRepo.create({
             username: dto.username,
             email: dto.email,
             passwordHash,
             displayName: dto.displayName ?? dto.username,
             role: "member",
-            status: "active"
+            status: "active",
+            groups: defaultGroups
         });
         await this.userRepo.save(user);
         return toProfile(user);
     }
 
     async login(dto: LoginDto): Promise<{ session: AuthSession; profile: UserProfile }> {
-        const user = await this.userRepo.findOneBy({ username: dto.username });
+        const user = await this.userRepo.findOne({ where: { username: dto.username }, relations: { groups: true } });
         const passwordValid = user ? await bcrypt.compare(dto.password, user.passwordHash) : false;
 
         if (!user || !passwordValid) {
@@ -105,8 +113,46 @@ export class UserService {
     // ── Admin ─────────────────────────────────────────────────────────────────
 
     async getAllUsers(): Promise<UserProfile[]> {
-        const users = await this.userRepo.find({ order: { createdAt: "ASC" } });
+        const users = await this.userRepo.find({ order: { createdAt: "ASC" }, relations: { groups: true } });
         return users.map(toProfile);
+    }
+
+    async adminCreateUser(dto: AdminCreateUserDto): Promise<UserProfile> {
+        if (await this.userRepo.existsBy({ username: dto.username })) {
+            throw new BadRequestException(`Username "${dto.username}" is already taken`);
+        }
+        if (await this.userRepo.existsBy({ email: dto.email })) {
+            throw new BadRequestException(`Email "${dto.email}" is already registered`);
+        }
+
+        const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+        const role = dto.role ?? "member";
+        const groupNames = ["Jeder", "Registrierte Benutzer"];
+        if (role === "admin") groupNames.push("Admin");
+        if (role === "moderator") groupNames.push("Moderator");
+        const defaultGroups = await this.groupRepo.findBy({ name: In(groupNames) });
+        const user = this.userRepo.create({
+            username: dto.username,
+            email: dto.email,
+            passwordHash,
+            displayName: dto.displayName ?? dto.username,
+            role,
+            status: dto.status ?? "active",
+            groups: defaultGroups
+        });
+        await this.userRepo.save(user);
+        return toProfile(user);
+    }
+
+    async adminUpdateUser(userId: string, dto: AdminUpdateUserDto): Promise<UserProfile> {
+        const user = await this.findById(userId);
+        if (dto.displayName !== undefined) user.displayName = dto.displayName;
+        if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
+        if (dto.bio !== undefined) user.bio = dto.bio;
+        if (dto.role !== undefined) user.role = dto.role;
+        if (dto.status !== undefined) user.status = dto.status;
+        await this.userRepo.save(user);
+        return toProfile(user);
     }
 
     async deleteUser(userId: string): Promise<void> {
@@ -117,7 +163,7 @@ export class UserService {
     // ── Private ───────────────────────────────────────────────────────────────
 
     private async findById(id: string): Promise<UserEntity> {
-        const user = await this.userRepo.findOneBy({ id });
+        const user = await this.userRepo.findOne({ where: { id }, relations: { groups: true } });
         if (!user) throw new NotFoundException(`User with id "${id}" not found`);
         return user;
     }

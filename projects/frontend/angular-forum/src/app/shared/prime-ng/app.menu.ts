@@ -33,7 +33,8 @@ export class AppMenu implements OnInit {
                 label: "Anime",
                 items: [
                     { label: "Top Anime", icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
-                    { label: "Anime Database", icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] }
+                    { label: "Anime Database", icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] },
+                    { label: "Meine Liste", icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }
                 ]
             },
 
@@ -41,7 +42,10 @@ export class AppMenu implements OnInit {
                 label: "Admin",
                 items: [
                     { label: "Übersicht", icon: "pi pi-fw pi-chart-bar", routerLink: ["/admin/overview"] },
-                    { label: "Forenstruktur", icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] }
+                    { label: "Forenstruktur", icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] },
+                    { label: "Benutzerverwaltung", icon: "pi pi-fw pi-users", routerLink: ["/admin/users"] },
+                    { label: "Gruppenverwaltung", icon: "pi pi-fw pi-shield", routerLink: ["/admin/groups"] },
+                    { label: "Seitenberechtigungen", icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] }
                 ]
             },
             {

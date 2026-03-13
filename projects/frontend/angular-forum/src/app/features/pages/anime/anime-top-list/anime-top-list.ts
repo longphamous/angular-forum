@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
@@ -44,6 +45,7 @@ export class AnimeTopList {
     @ViewChild("dt") dt!: Table;
 
     readonly facade = inject(AnimeFacade);
+    private readonly router = inject(Router);
     readonly pageSize = 20;
 
     readonly typeOptions: SelectOption[] = [
@@ -200,6 +202,10 @@ export class AnimeTopList {
         if (season) parts.push(season.charAt(0).toUpperCase() + season.slice(1).toLowerCase());
         if (year) parts.push(year.toString());
         return parts.join(" ");
+    }
+
+    navigateToDetail(id: number): void {
+        void this.router.navigate(["/anime", id]);
     }
 
     private loadData(page: number): void {

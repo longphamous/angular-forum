@@ -1,0 +1,119 @@
+<div class="card">
+    <!-- Header -->
+    <div class="mb-5">
+        <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">Seitenberechtigungen</h2>
+        <p class="text-surface-500 mt-1 text-sm">
+            Konfiguriere welche Gruppen auf welche Seiten zugreifen dürfen
+        </p>
+    </div>
+
+    <!-- Skeleton -->
+    @if (facade.pagePermissionsLoading()) {
+        <div class="flex flex-col gap-2">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+                <p-skeleton height="3rem" />
+            }
+        </div>
+    } @else {
+        <p-table [value]="facade.pagePermissions()" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Seite</th>
+                    <th>Route</th>
+                    <th>Erlaubte Gruppen</th>
+                    <th class="text-right">Aktionen</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-perm>
+                <tr>
+                    <td class="font-semibold">{{ perm.name }}</td>
+                    <td>
+                        <code class="bg-surface-100 dark:bg-surface-800 rounded px-1.5 py-0.5 text-xs">
+                            {{ perm.route }}
+                        </code>
+                    </td>
+                    <td>
+                        <div class="flex flex-wrap gap-1">
+                            @if (!perm.groups?.length) {
+                                <span class="text-surface-400 text-sm">–</span>
+                            } @else {
+                                @for (group of perm.groups; track group.id) {
+                                    <p-tag
+                                        [value]="group.name"
+                                        severity="secondary"
+                                        styleClass="text-xs"
+                                    />
+                                }
+                            }
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <p-button
+                            icon="pi pi-pencil"
+                            pTooltip="Gruppen bearbeiten"
+                            severity="secondary"
+                            size="small"
+                            [text]="true"
+                            (onClick)="openEditDialog(perm)"
+                        />
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="4">
+                        Keine Berechtigungen konfiguriert.
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    }
+</div>
+
+<!-- Edit groups dialog -->
+<p-dialog
+    [header]="'Gruppen: ' + (editingPermission()?.name ?? '')"
+    [modal]="true"
+    [style]="{ width: '34rem' }"
+    [visible]="showEditDialog()"
+    (visibleChange)="showEditDialog.set($any($event))"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <p class="text-surface-500 m-0 text-sm">
+            Route:
+            <code class="bg-surface-100 dark:bg-surface-800 ml-1 rounded px-1.5 py-0.5 text-xs">
+                {{ editingPermission()?.route }}
+            </code>
+        </p>
+        <div class="flex flex-col gap-1">
+            <label class="text-surface-500 text-sm font-medium" for="permGroups">Erlaubte Gruppen</label>
+            <p-multiselect
+                [ngModel]="editingGroupIds()"
+                [options]="groupOptions()"
+                inputId="permGroups"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Gruppen auswählen…"
+                styleClass="w-full"
+                (ngModelChange)="editingGroupIds.set($event)"
+            />
+        </div>
+        @if (saveError()) {
+            <p-message class="w-full" severity="error">{{ saveError() }}</p-message>
+        }
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button
+            label="Abbrechen"
+            severity="secondary"
+            [text]="true"
+            (onClick)="showEditDialog.set(false)"
+        />
+        <p-button
+            icon="pi pi-check"
+            label="Speichern"
+            [loading]="saving()"
+            (onClick)="savePermission()"
+        />
+    </ng-template>
+</p-dialog>

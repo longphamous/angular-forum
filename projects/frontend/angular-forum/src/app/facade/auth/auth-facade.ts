@@ -4,6 +4,7 @@ import { Router } from "@angular/router";
 import { Observable, tap } from "rxjs";
 
 import { AUTH_ROUTES } from "../../core/api/auth.routes";
+import { USER_ROUTES } from "../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { AuthSession, LoginResponse, UserProfile } from "../../core/models/user/user";
 
@@ -16,6 +17,17 @@ export interface RegisterPayload {
     email: string;
     password: string;
     displayName?: string;
+}
+
+export interface UpdateProfilePayload {
+    avatarUrl?: string;
+    bio?: string;
+    displayName?: string;
+}
+
+export interface ChangePasswordPayload {
+    currentPassword: string;
+    newPassword: string;
 }
 
 @Injectable({ providedIn: "root" })
@@ -64,6 +76,21 @@ export class AuthFacade {
                 localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
             })
         );
+    }
+
+    updateProfile(payload: UpdateProfilePayload): Observable<UserProfile> {
+        return this.http
+            .patch<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.profile()}`, payload)
+            .pipe(
+                tap((updated) => {
+                    this._currentUser.set(updated);
+                    localStorage.setItem(STORAGE_PROFILE, JSON.stringify(updated));
+                })
+            );
+    }
+
+    changePassword(payload: ChangePasswordPayload): Observable<void> {
+        return this.http.post<void>(`${this.apiConfig.baseUrl}${USER_ROUTES.changePassword()}`, payload);
     }
 
     logout(): void {

@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
+import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
+import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -86,6 +88,26 @@ export class UserController {
     @Get()
     getAllUsers(): Promise<UserProfile[]> {
         return this.userService.getAllUsers();
+    }
+
+    /**
+     * POST /user/admin
+     * Creates a new user with a custom role and status. Requires admin role.
+     */
+    @Roles("admin")
+    @Post("admin")
+    adminCreateUser(@Body() dto: AdminCreateUserDto): Promise<UserProfile> {
+        return this.userService.adminCreateUser(dto);
+    }
+
+    /**
+     * PATCH /user/:userId
+     * Updates a user's role, status, or profile. Requires admin role.
+     */
+    @Roles("admin")
+    @Patch(":userId")
+    adminUpdateUser(@Param("userId") userId: string, @Body() dto: AdminUpdateUserDto): Promise<UserProfile> {
+        return this.userService.adminUpdateUser(userId, dto);
     }
 
     /**

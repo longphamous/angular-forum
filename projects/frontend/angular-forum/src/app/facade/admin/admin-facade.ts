@@ -4,9 +4,28 @@ import { forkJoin, Observable } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
 import { FORUM_ROUTES } from "../../core/api/forum.routes";
+import { USER_ROUTES } from "../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Forum } from "../../core/models/forum/forum";
 import { ForumCategory } from "../../core/models/forum/forum-category";
+import { UserProfile, UserRole, UserStatus } from "../../core/models/user/user";
+
+export interface AdminCreateUserPayload {
+    displayName?: string;
+    email: string;
+    password: string;
+    role?: UserRole;
+    status?: UserStatus;
+    username: string;
+}
+
+export interface AdminUpdateUserPayload {
+    avatarUrl?: string;
+    bio?: string;
+    displayName?: string;
+    role?: UserRole;
+    status?: UserStatus;
+}
 
 export interface CreateCategoryPayload {
     name: string;
@@ -47,22 +66,31 @@ export interface AdminStats {
 @Injectable({ providedIn: "root" })
 export class AdminFacade {
     readonly categories: Signal<ForumCategory[]>;
-    readonly stats: Signal<AdminStats>;
-    readonly loading: Signal<boolean>;
     readonly error: Signal<string | null>;
+    readonly loading: Signal<boolean>;
+    readonly stats: Signal<AdminStats>;
+    readonly users: Signal<UserProfile[]>;
+    readonly usersLoading: Signal<boolean>;
+    readonly usersError: Signal<string | null>;
 
     private readonly _categories = signal<ForumCategory[]>([]);
-    private readonly _stats = signal<AdminStats>({ categoryCount: 0, forumCount: 0, threadCount: 0, postCount: 0 });
-    private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
+    private readonly _loading = signal(false);
+    private readonly _stats = signal<AdminStats>({ categoryCount: 0, forumCount: 0, threadCount: 0, postCount: 0 });
+    private readonly _users = signal<UserProfile[]>([]);
+    private readonly _usersLoading = signal(false);
+    private readonly _usersError = signal<string | null>(null);
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
     constructor() {
         this.categories = this._categories.asReadonly();
-        this.stats = this._stats.asReadonly();
-        this.loading = this._loading.asReadonly();
         this.error = this._error.asReadonly();
+        this.loading = this._loading.asReadonly();
+        this.stats = this._stats.asReadonly();
+        this.users = this._users.asReadonly();
+        this.usersLoading = this._usersLoading.asReadonly();
+        this.usersError = this._usersError.asReadonly();
     }
 
     loadCategories(): void {
@@ -133,6 +161,52 @@ export class AdminFacade {
         return this.http.delete<{ success: boolean }>(
             `${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`
         );
+    }
+
+    // ── User Management ──────────────────────────────────────────────────────
+
+    loadUsers(): void {
+        this._usersLoading.set(true);
+        this._usersError.set(null);
+
+        this.http.get<UserProfile[]>(`${this.apiConfig.baseUrl}${USER_ROUTES.admin.list()}`).subscribe({
+            next: (users) => {
+                this._users.set(users);
+                this._usersLoading.set(false);
+            },
+            error: () => {
+                this._usersError.set("Fehler beim Laden der Benutzer.");
+                this._usersLoading.set(false);
+            }
+        });
+    }
+
+    createUser(payload: AdminCreateUserPayload): Observable<UserProfile> {
+        return this.http.post<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.admin.create()}`, payload);
+    }
+
+    updateUser(id: string, payload: AdminUpdateUserPayload): Observable<UserProfile> {
+        return this.http.patch<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.admin.detail(id)}`, payload);
+    }
+
+    deleteUserById(id: string): Observable<{ success: boolean }> {
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${USER_ROUTES.admin.detail(id)}`);
+    }
+
+    updateUserLocally(user: UserProfile): void {
+        this._users.update((list) => {
+            const idx = list.findIndex((u) => u.id === user.id);
+            if (idx >= 0) {
+                const updated = [...list];
+                updated[idx] = user;
+                return updated;
+            }
+            return [user, ...list];
+        });
+    }
+
+    removeUserLocally(id: string): void {
+        this._users.update((list) => list.filter((u) => u.id !== id));
     }
 
     private _computeStats(categories: ForumCategory[]): void {

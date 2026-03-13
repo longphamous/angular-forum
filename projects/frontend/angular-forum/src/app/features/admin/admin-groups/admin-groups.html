@@ -1,0 +1,218 @@
+<div class="card">
+    <!-- Header -->
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">Gruppenverwaltung</h2>
+            <p class="text-surface-500 mt-1 text-sm">Gruppen erstellen, bearbeiten und Benutzer zuweisen</p>
+        </div>
+        <p-button icon="pi pi-plus" label="Neue Gruppe" (onClick)="openCreateDialog()" />
+    </div>
+
+    <!-- Skeleton -->
+    @if (facade.groupsLoading()) {
+        <div class="flex flex-col gap-2">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+                <p-skeleton height="3rem" />
+            }
+        </div>
+    } @else if (facade.groupsError()) {
+        <p-message class="w-full" severity="error">{{ facade.groupsError() }}</p-message>
+    } @else {
+        <p-table [value]="facade.groups()" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th>Beschreibung</th>
+                    <th class="text-center">Benutzer</th>
+                    <th class="text-center">Typ</th>
+                    <th class="text-right">Aktionen</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-group>
+                <tr>
+                    <td class="font-semibold">{{ group.name }}</td>
+                    <td class="text-surface-500 text-sm">{{ group.description || '–' }}</td>
+                    <td class="text-center">
+                        <span class="font-mono text-sm">{{ group.userCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        @if (group.isSystem) {
+                            <p-tag severity="secondary" value="System" styleClass="text-xs" />
+                        } @else {
+                            <p-tag severity="info" value="Custom" styleClass="text-xs" />
+                        }
+                    </td>
+                    <td class="text-right">
+                        <p-button
+                            icon="pi pi-users"
+                            pTooltip="Benutzer verwalten"
+                            severity="secondary"
+                            size="small"
+                            [text]="true"
+                            (onClick)="openUsersDialog(group)"
+                        />
+                        <p-button
+                            icon="pi pi-pencil"
+                            pTooltip="Bearbeiten"
+                            severity="secondary"
+                            size="small"
+                            [text]="true"
+                            (onClick)="openEditDialog(group)"
+                        />
+                        @if (!group.isSystem) {
+                            <p-button
+                                icon="pi pi-trash"
+                                pTooltip="Löschen"
+                                severity="danger"
+                                size="small"
+                                [text]="true"
+                                (onClick)="openDeleteDialog(group)"
+                            />
+                        }
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="5">Keine Gruppen gefunden.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    }
+</div>
+
+<!-- Group create/edit dialog -->
+<p-dialog
+    [header]="editingGroup() ? 'Gruppe bearbeiten' : 'Neue Gruppe'"
+    [modal]="true"
+    [style]="{ width: '32rem' }"
+    [visible]="showGroupDialog()"
+    (visibleChange)="showGroupDialog.set($any($event))"
+>
+    <form class="flex flex-col gap-4 pt-2" [formGroup]="groupForm" (ngSubmit)="saveGroup()">
+        <div class="flex flex-col gap-1">
+            <label class="text-surface-500 text-sm font-medium" for="groupName">Name *</label>
+            <input
+                class="w-full"
+                formControlName="name"
+                id="groupName"
+                pInputText
+                placeholder="z. B. Premium-Mitglieder"
+            />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-surface-500 text-sm font-medium" for="groupDesc">Beschreibung</label>
+            <textarea
+                class="w-full text-sm"
+                [autoResize]="true"
+                formControlName="description"
+                id="groupDesc"
+                placeholder="Optionale Beschreibung…"
+                pTextarea
+                rows="2"
+            ></textarea>
+        </div>
+        @if (groupError()) {
+            <p-message class="w-full" severity="error">{{ groupError() }}</p-message>
+        }
+    </form>
+    <ng-template pTemplate="footer">
+        <p-button
+            label="Abbrechen"
+            severity="secondary"
+            [text]="true"
+            (onClick)="showGroupDialog.set(false)"
+        />
+        <p-button
+            [disabled]="groupForm.invalid"
+            [label]="editingGroup() ? 'Speichern' : 'Erstellen'"
+            [loading]="groupSaving()"
+            (onClick)="saveGroup()"
+        />
+    </ng-template>
+</p-dialog>
+
+<!-- Delete confirmation dialog -->
+<p-dialog
+    header="Gruppe löschen"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+    [visible]="showDeleteDialog()"
+    (visibleChange)="showDeleteDialog.set($any($event))"
+>
+    <p class="text-surface-700 dark:text-surface-200 m-0">
+        Gruppe <strong>{{ deletingGroup()?.name }}</strong> wirklich löschen?
+        Diese Aktion kann nicht rückgängig gemacht werden.
+    </p>
+    <ng-template pTemplate="footer">
+        <p-button
+            label="Abbrechen"
+            severity="secondary"
+            [text]="true"
+            (onClick)="showDeleteDialog.set(false)"
+        />
+        <p-button
+            icon="pi pi-trash"
+            label="Löschen"
+            severity="danger"
+            [loading]="deleteLoading()"
+            (onClick)="confirmDelete()"
+        />
+    </ng-template>
+</p-dialog>
+
+<!-- Manage users dialog -->
+<p-dialog
+    [header]="'Benutzer in Gruppe: ' + (managingGroup()?.name ?? '')"
+    [modal]="true"
+    [style]="{ width: '40rem' }"
+    [visible]="showUsersDialog()"
+    (visibleChange)="showUsersDialog.set($any($event))"
+>
+    @if (usersLoading() || adminFacade.usersLoading()) {
+        <div class="flex flex-col gap-2 py-4">
+            @for (i of [1, 2, 3]; track i) {
+                <p-skeleton height="2.5rem" />
+            }
+        </div>
+    } @else {
+        <div class="max-h-80 overflow-y-auto">
+            <p class="text-surface-500 mb-3 text-sm">Benutzer auswählen die dieser Gruppe angehören sollen:</p>
+            @for (user of adminFacade.users(); track user.id) {
+                <div
+                    class="hover:bg-surface-50 dark:hover:bg-surface-800/50 flex cursor-pointer items-center gap-3 rounded p-2"
+                    role="checkbox"
+                    tabindex="0"
+                    [attr.aria-checked]="isUserSelected(user.id)"
+                    (click)="toggleUser(user)"
+                    (keydown.enter)="toggleUser(user)"
+                    (keydown.space)="toggleUser(user)"
+                >
+                    <p-checkbox
+                        [binary]="true"
+                        [ngModel]="isUserSelected(user.id)"
+                        (ngModelChange)="toggleUser(user)"
+                    />
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-semibold">{{ user.displayName }}</div>
+                        <div class="text-surface-400 text-xs">{{ user.username }} · {{ user.role }}</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    <ng-template pTemplate="footer">
+        <p-button
+            label="Abbrechen"
+            severity="secondary"
+            [text]="true"
+            (onClick)="showUsersDialog.set(false)"
+        />
+        <p-button
+            icon="pi pi-check"
+            label="Speichern"
+            [loading]="usersSaving()"
+            (onClick)="saveGroupUsers()"
+        />
+    </ng-template>
+</p-dialog>

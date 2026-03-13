@@ -252,7 +252,7 @@
         </ng-template>
 
         <ng-template #body let-anime>
-            <tr>
+            <tr class="cursor-pointer" (click)="navigateToDetail(anime.id)">
                 <!-- Rank -->
                 <td class="text-surface-400 text-center text-sm">{{ anime.rank ?? '—' }}</td>
 
