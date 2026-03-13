@@ -74,30 +74,47 @@
 <p-dialog
     [header]="'Gruppen: ' + (editingPermission()?.name ?? '')"
     [modal]="true"
-    [style]="{ width: '34rem' }"
+    [style]="{ width: '38rem' }"
     [visible]="showEditDialog()"
     (visibleChange)="showEditDialog.set($any($event))"
 >
     <div class="flex flex-col gap-4 pt-2">
-        <p class="text-surface-500 m-0 text-sm">
-            Route:
-            <code class="bg-surface-100 dark:bg-surface-800 ml-1 rounded px-1.5 py-0.5 text-xs">
-                {{ editingPermission()?.route }}
-            </code>
-        </p>
-        <div class="flex flex-col gap-1">
-            <label class="text-surface-500 text-sm font-medium" for="permGroups">Erlaubte Gruppen</label>
-            <p-multiselect
-                [ngModel]="editingGroupIds()"
-                [options]="groupOptions()"
-                inputId="permGroups"
-                optionLabel="name"
-                optionValue="id"
-                placeholder="Gruppen auswählen…"
-                styleClass="w-full"
-                (ngModelChange)="editingGroupIds.set($event)"
-            />
+        <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-3 py-2">
+            <i class="pi pi-link text-surface-400 text-sm"></i>
+            <code class="text-surface-600 dark:text-surface-300 text-sm">{{ editingPermission()?.route }}</code>
         </div>
+
+        <div class="flex flex-col gap-2">
+            <span class="text-surface-500 text-sm font-medium">Erlaubte Gruppen</span>
+            <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-2 rounded-lg border p-3">
+                @for (group of groupOptions(); track group.id) {
+                    <label
+                        class="hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                        [class.bg-primary-50]="isGroupSelected(group.id)"
+                        [class.dark:bg-primary-900/20]="isGroupSelected(group.id)"
+                    >
+                        <p-checkbox
+                            [binary]="true"
+                            [ngModel]="isGroupSelected(group.id)"
+                            (ngModelChange)="toggleGroup(group.id)"
+                        />
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium">{{ group.name }}</div>
+                            @if (group.description) {
+                                <div class="text-surface-400 truncate text-xs">{{ group.description }}</div>
+                            }
+                        </div>
+                    </label>
+                }
+            </div>
+            @if (!editingGroupIds().length) {
+                <p class="text-warn-500 m-0 text-xs">
+                    <i class="pi pi-exclamation-triangle mr-1"></i>
+                    Keine Gruppe gewählt – Seite ist für niemanden zugänglich.
+                </p>
+            }
+        </div>
+
         @if (saveError()) {
             <p-message class="w-full" severity="error">{{ saveError() }}</p-message>
         }

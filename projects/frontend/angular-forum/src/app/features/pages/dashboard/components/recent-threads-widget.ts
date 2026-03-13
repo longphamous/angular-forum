@@ -32,14 +32,14 @@ function relativeTime(dateStr: string): string {
                         <div class="flex items-center gap-3">
                             <p-skeleton shape="circle" size="2.5rem" />
                             <div class="flex flex-1 flex-col gap-2">
-                                <p-skeleton width="70%" height="1rem" />
-                                <p-skeleton width="40%" height="0.75rem" />
+                                <p-skeleton height="1rem" width="70%" />
+                                <p-skeleton height="0.75rem" width="40%" />
                             </div>
                         </div>
                     }
                 </div>
             } @else {
-                <div class="flex flex-col divide-y divide-surface-100 dark:divide-surface-700">
+                <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
                     @for (thread of facade.recentThreads(); track thread.id) {
                         <div class="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                             <p-avatar
@@ -49,8 +49,8 @@ function relativeTime(dateStr: string): string {
                             />
                             <div class="min-w-0 flex-1">
                                 <a
+                                    class="text-surface-900 dark:text-surface-0 hover:text-primary block truncate font-medium"
                                     [routerLink]="['/forum/thread', thread.id]"
-                                    class="text-surface-900 dark:text-surface-0 block truncate font-medium hover:text-primary"
                                 >
                                     {{ thread.title }}
                                 </a>
@@ -60,7 +60,9 @@ function relativeTime(dateStr: string): string {
                                         {{ thread.authorName }}
                                     </span>
                                     <span class="text-surface-400 dark:text-surface-500 text-xs">·</span>
-                                    <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-xs">
+                                    <span
+                                        class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-xs"
+                                    >
                                         <i class="pi pi-comment text-xs"></i>
                                         {{ thread.replyCount }}
                                     </span>

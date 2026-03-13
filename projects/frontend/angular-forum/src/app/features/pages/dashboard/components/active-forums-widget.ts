@@ -19,10 +19,10 @@ import { ActiveForum, DashboardFacade } from "../../../../facade/dashboard/dashb
                     @for (item of skeletonItems; track item) {
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
-                                <p-skeleton width="50%" height="1rem" />
-                                <p-skeleton width="20%" height="1rem" />
+                                <p-skeleton height="1rem" width="50%" />
+                                <p-skeleton height="1rem" width="20%" />
                             </div>
-                            <p-skeleton width="100%" height="0.5rem" borderRadius="4px" />
+                            <p-skeleton borderRadius="4px" height="0.5rem" width="100%" />
                         </div>
                     }
                 </div>
@@ -32,9 +32,7 @@ import { ActiveForum, DashboardFacade } from "../../../../facade/dashboard/dashb
                         <div>
                             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                                 <div class="flex min-w-0 items-center gap-2">
-                                    <span
-                                        class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium"
-                                    >
+                                    <span class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium">
                                         {{ forum.name }}
                                     </span>
                                     <p-tag
@@ -56,11 +54,7 @@ import { ActiveForum, DashboardFacade } from "../../../../facade/dashboard/dashb
                                     </span>
                                 </div>
                             </div>
-                            <p-progressbar
-                                [value]="progressValue(forum)"
-                                [showValue]="false"
-                                styleClass="h-1.5"
-                            />
+                            <p-progressbar [showValue]="false" [value]="progressValue(forum)" styleClass="h-1.5" />
                         </div>
                     } @empty {
                         <p class="text-surface-500 dark:text-surface-400 text-sm">Keine Foren gefunden.</p>

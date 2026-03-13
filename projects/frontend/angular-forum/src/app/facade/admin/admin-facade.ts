@@ -127,10 +127,7 @@ export class AdminFacade {
     }
 
     createCategory(payload: CreateCategoryPayload): Observable<ForumCategory> {
-        return this.http.post<ForumCategory>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.list()}`,
-            payload
-        );
+        return this.http.post<ForumCategory>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.list()}`, payload);
     }
 
     updateCategory(id: string, payload: UpdateCategoryPayload): Observable<ForumCategory> {
@@ -141,16 +138,11 @@ export class AdminFacade {
     }
 
     deleteCategory(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(id)}`
-        );
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.detail(id)}`);
     }
 
     createForum(categoryId: string, payload: CreateForumPayload): Observable<Forum> {
-        return this.http.post<Forum>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.forums(categoryId)}`,
-            payload
-        );
+        return this.http.post<Forum>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.categories.forums(categoryId)}`, payload);
     }
 
     updateForum(id: string, payload: UpdateForumPayload): Observable<Forum> {
@@ -158,9 +150,7 @@ export class AdminFacade {
     }
 
     deleteForum(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`
-        );
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.detail(id)}`);
     }
 
     // ── User Management ──────────────────────────────────────────────────────

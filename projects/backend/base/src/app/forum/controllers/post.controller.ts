@@ -68,7 +68,10 @@ export class PostController {
      * Soft-deletes a post. Author, moderators, and admins may delete.
      */
     @Delete("posts/:id")
-    async remove(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async remove(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ success: boolean }> {
         await this.postService.remove(id, user.userId, user.role);
         return { success: true };
     }
@@ -91,7 +94,10 @@ export class PostController {
      * Removes the current user's reaction from a post.
      */
     @Delete("posts/:id/react")
-    async unreact(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async unreact(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ success: boolean }> {
         await this.postService.unreact(id, user.userId);
         return { success: true };
     }

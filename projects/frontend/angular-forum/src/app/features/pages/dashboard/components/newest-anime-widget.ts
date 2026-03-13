@@ -18,26 +18,26 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                 <div class="flex flex-col gap-4">
                     @for (item of skeletonItems; track item) {
                         <div class="flex items-center gap-3">
-                            <p-skeleton width="3rem" height="4rem" borderRadius="4px" />
+                            <p-skeleton borderRadius="4px" height="4rem" width="3rem" />
                             <div class="flex flex-1 flex-col gap-2">
-                                <p-skeleton width="65%" height="1rem" />
-                                <p-skeleton width="35%" height="0.75rem" />
+                                <p-skeleton height="1rem" width="65%" />
+                                <p-skeleton height="0.75rem" width="35%" />
                             </div>
                         </div>
                     }
                 </div>
             } @else {
-                <div class="flex flex-col divide-y divide-surface-100 dark:divide-surface-700">
+                <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
                     @for (anime of facade.newestAnime(); track anime.id) {
                         <a
+                            class="flex items-center gap-3 py-3 no-underline first:pt-0 last:pb-0 hover:opacity-80"
                             routerLink="/anime"
-                            class="flex items-center gap-3 py-3 first:pt-0 last:pb-0 no-underline hover:opacity-80"
                         >
                             @if (anime.picture) {
                                 <img
-                                    [src]="anime.picture"
-                                    [alt]="anime.title ?? 'Anime'"
                                     class="h-16 w-12 shrink-0 rounded object-cover"
+                                    [alt]="anime.title ?? 'Anime'"
+                                    [src]="anime.picture"
                                 />
                             } @else {
                                 <div

@@ -72,20 +72,13 @@ export class DashboardFacade {
         this._loading.set(true);
         this._error.set(null);
 
-        const animeParams = new HttpParams()
-            .set("sortBy", "id")
-            .set("sortOrder", "DESC")
-            .set("limit", 5);
+        const animeParams = new HttpParams().set("sortBy", "id").set("sortOrder", "DESC").set("limit", 5);
 
-        const stats$ = this.http.get<DashboardStats>(
-            `${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.stats()}`
-        );
+        const stats$ = this.http.get<DashboardStats>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.stats()}`);
         const recentThreads$ = this.http.get<RecentThread[]>(
             `${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.recentThreads()}`
         );
-        const topPosters$ = this.http.get<TopPoster[]>(
-            `${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.topPosters()}`
-        );
+        const topPosters$ = this.http.get<TopPoster[]>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.topPosters()}`);
         const newestAnime$ = this.http
             .get<PaginatedAnime>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.list()}`, {
                 params: animeParams
@@ -111,9 +104,7 @@ export class DashboardFacade {
                                     }
                                 }
                             }
-                            return allForums
-                                .sort((a, b) => b.threadCount - a.threadCount)
-                                .slice(0, 5);
+                            return allForums.sort((a, b) => b.threadCount - a.threadCount).slice(0, 5);
                         })
                     );
                 })

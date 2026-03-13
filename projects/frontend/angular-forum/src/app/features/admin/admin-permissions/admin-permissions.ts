@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
 import { MessageModule } from "primeng/message";
-import { MultiSelectModule } from "primeng/multiselect";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
@@ -18,8 +18,8 @@ import { GroupFacade } from "../../../facade/group/group-facade";
         ButtonModule,
         DialogModule,
         FormsModule,
+        CheckboxModule,
         MessageModule,
-        MultiSelectModule,
         SkeletonModule,
         TableModule,
         TagModule,
@@ -70,6 +70,19 @@ export class AdminPermissions implements OnInit {
                 this.saving.set(false);
             }
         });
+    }
+
+    protected isGroupSelected(groupId: string): boolean {
+        return this.editingGroupIds().includes(groupId);
+    }
+
+    protected toggleGroup(groupId: string): void {
+        const current = this.editingGroupIds();
+        if (current.includes(groupId)) {
+            this.editingGroupIds.set(current.filter((id) => id !== groupId));
+        } else {
+            this.editingGroupIds.set([...current, groupId]);
+        }
     }
 
     protected groupOptions(): Group[] {

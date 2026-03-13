@@ -68,11 +68,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                 {{ user()?.displayName }}
                             </span>
                             @if (user()?.role) {
-                                <p-tag
-                                    [value]="roleLabel()"
-                                    [severity]="roleSeverity()"
-                                    styleClass="text-xs"
-                                />
+                                <p-tag [severity]="roleSeverity()" [value]="roleLabel()" styleClass="text-xs" />
                             }
                         </div>
                         <span class="text-surface-500 dark:text-surface-400 text-sm">
@@ -81,7 +77,9 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                         @if (user()?.bio) {
                             <p class="text-surface-700 dark:text-surface-300 mt-1 text-sm">{{ user()?.bio }}</p>
                         }
-                        <div class="text-surface-400 dark:text-surface-500 mt-2 flex flex-wrap justify-center gap-4 text-xs sm:justify-start">
+                        <div
+                            class="text-surface-400 dark:text-surface-500 mt-2 flex flex-wrap justify-center gap-4 text-xs sm:justify-start"
+                        >
                             <span class="flex items-center gap-1">
                                 <i class="pi pi-calendar"></i>
                                 Mitglied seit {{ formatDate(user()?.createdAt) }}
@@ -100,15 +98,9 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
             <!-- Tabs -->
             <p-tabs value="overview">
                 <p-tablist>
-                    <p-tab value="overview">
-                        <i class="pi pi-user mr-2"></i>Übersicht
-                    </p-tab>
-                    <p-tab value="edit">
-                        <i class="pi pi-pencil mr-2"></i>Bearbeiten
-                    </p-tab>
-                    <p-tab value="security">
-                        <i class="pi pi-lock mr-2"></i>Sicherheit
-                    </p-tab>
+                    <p-tab value="overview"> <i class="pi pi-user mr-2"></i>Übersicht </p-tab>
+                    <p-tab value="edit"> <i class="pi pi-pencil mr-2"></i>Bearbeiten </p-tab>
+                    <p-tab value="security"> <i class="pi pi-lock mr-2"></i>Sicherheit </p-tab>
                 </p-tablist>
 
                 <p-tabpanels>
@@ -117,7 +109,9 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                         <div class="flex flex-col gap-4 pt-2">
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
-                                    <div class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium uppercase tracking-wide">
+                                    <div
+                                        class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
+                                    >
                                         Benutzername
                                     </div>
                                     <div class="text-surface-900 dark:text-surface-0 font-medium">
@@ -125,7 +119,9 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     </div>
                                 </div>
                                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
-                                    <div class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium uppercase tracking-wide">
+                                    <div
+                                        class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
+                                    >
                                         E-Mail
                                     </div>
                                     <div class="text-surface-900 dark:text-surface-0 font-medium">
@@ -133,13 +129,17 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     </div>
                                 </div>
                                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
-                                    <div class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium uppercase tracking-wide">
+                                    <div
+                                        class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
+                                    >
                                         Rolle
                                     </div>
-                                    <p-tag [value]="roleLabel()" [severity]="roleSeverity()" styleClass="text-xs" />
+                                    <p-tag [severity]="roleSeverity()" [value]="roleLabel()" styleClass="text-xs" />
                                 </div>
                                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
-                                    <div class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium uppercase tracking-wide">
+                                    <div
+                                        class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
+                                    >
                                         Status
                                     </div>
                                     <div class="text-surface-900 dark:text-surface-0 font-medium capitalize">
@@ -150,7 +150,9 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
 
                             @if (user()?.bio) {
                                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4">
-                                    <div class="text-surface-500 dark:text-surface-400 mb-2 text-xs font-medium uppercase tracking-wide">
+                                    <div
+                                        class="text-surface-500 dark:text-surface-400 mb-2 text-xs font-medium tracking-wide uppercase"
+                                    >
                                         Bio
                                     </div>
                                     <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed">
@@ -163,31 +165,43 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
 
                     <!-- Profil bearbeiten -->
                     <p-tabpanel value="edit">
-                        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="flex flex-col gap-5 pt-2">
+                        <form class="flex flex-col gap-5 pt-2" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
                             @if (profileSuccess()) {
-                                <p-message severity="success" [text]="profileSuccess()!" styleClass="w-full" />
+                                <p-message [text]="profileSuccess()!" severity="success" styleClass="w-full" />
                             }
                             @if (profileError()) {
-                                <p-message severity="error" [text]="profileError()!" styleClass="w-full" />
+                                <p-message [text]="profileError()!" severity="error" styleClass="w-full" />
                             }
 
                             <div class="flex flex-col gap-2">
-                                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="displayName">
+                                <label
+                                    class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                    for="displayName"
+                                >
                                     Anzeigename
                                 </label>
                                 <input
-                                    id="displayName"
-                                    type="text"
-                                    pInputText
-                                    formControlName="displayName"
-                                    placeholder="Dein Anzeigename"
                                     class="w-full"
-                                    [class.ng-invalid]="profileForm.get('displayName')?.invalid && profileForm.get('displayName')?.touched"
+                                    id="displayName"
+                                    [class.ng-invalid]="
+                                        profileForm.get('displayName')?.invalid &&
+                                        profileForm.get('displayName')?.touched
+                                    "
+                                    formControlName="displayName"
+                                    pInputText
+                                    placeholder="Dein Anzeigename"
+                                    type="text"
                                 />
-                                @if (profileForm.get('displayName')?.errors?.['required'] && profileForm.get('displayName')?.touched) {
+                                @if (
+                                    profileForm.get("displayName")?.errors?.["required"] &&
+                                    profileForm.get("displayName")?.touched
+                                ) {
                                     <small class="text-red-500">Anzeigename ist erforderlich.</small>
                                 }
-                                @if (profileForm.get('displayName')?.errors?.['minlength'] && profileForm.get('displayName')?.touched) {
+                                @if (
+                                    profileForm.get("displayName")?.errors?.["minlength"] &&
+                                    profileForm.get("displayName")?.touched
+                                ) {
                                     <small class="text-red-500">Mindestens 2 Zeichen erforderlich.</small>
                                 }
                             </div>
@@ -197,29 +211,29 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     Bio <span class="text-surface-400 font-normal">(optional)</span>
                                 </label>
                                 <textarea
+                                    class="w-full"
                                     id="bio"
-                                    pTextarea
+                                    [autoResize]="true"
                                     formControlName="bio"
                                     placeholder="Erzähl etwas über dich…"
+                                    pTextarea
                                     rows="4"
-                                    class="w-full"
-                                    [autoResize]="true"
                                 ></textarea>
                                 <div class="text-surface-400 dark:text-surface-500 text-right text-xs">
-                                    {{ profileForm.get('bio')?.value?.length ?? 0 }} / 300
+                                    {{ profileForm.get("bio")?.value?.length ?? 0 }} / 300
                                 </div>
-                                @if (profileForm.get('bio')?.errors?.['maxlength'] && profileForm.get('bio')?.touched) {
+                                @if (profileForm.get("bio")?.errors?.["maxlength"] && profileForm.get("bio")?.touched) {
                                     <small class="text-red-500">Maximal 300 Zeichen erlaubt.</small>
                                 }
                             </div>
 
                             <div class="flex justify-end">
                                 <p-button
-                                    label="Speichern"
-                                    icon="pi pi-check"
-                                    type="submit"
-                                    [loading]="saving()"
                                     [disabled]="profileForm.invalid || profileForm.pristine"
+                                    [loading]="saving()"
+                                    icon="pi pi-check"
+                                    label="Speichern"
+                                    type="submit"
                                 />
                             </div>
                         </form>
@@ -227,28 +241,34 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
 
                     <!-- Sicherheit -->
                     <p-tabpanel value="security">
-                        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="flex flex-col gap-5 pt-2">
+                        <form class="flex flex-col gap-5 pt-2" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
                             @if (passwordSuccess()) {
-                                <p-message severity="success" [text]="passwordSuccess()!" styleClass="w-full" />
+                                <p-message [text]="passwordSuccess()!" severity="success" styleClass="w-full" />
                             }
                             @if (passwordError()) {
-                                <p-message severity="error" [text]="passwordError()!" styleClass="w-full" />
+                                <p-message [text]="passwordError()!" severity="error" styleClass="w-full" />
                             }
 
                             <div class="flex flex-col gap-2">
-                                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="currentPassword">
+                                <label
+                                    class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                    for="currentPassword"
+                                >
                                     Aktuelles Passwort
                                 </label>
                                 <p-password
-                                    inputId="currentPassword"
-                                    formControlName="currentPassword"
-                                    placeholder="Aktuelles Passwort"
                                     [feedback]="false"
                                     [toggleMask]="true"
-                                    styleClass="w-full"
+                                    formControlName="currentPassword"
+                                    inputId="currentPassword"
                                     inputStyleClass="w-full"
+                                    placeholder="Aktuelles Passwort"
+                                    styleClass="w-full"
                                 />
-                                @if (passwordForm.get('currentPassword')?.errors?.['required'] && passwordForm.get('currentPassword')?.touched) {
+                                @if (
+                                    passwordForm.get("currentPassword")?.errors?.["required"] &&
+                                    passwordForm.get("currentPassword")?.touched
+                                ) {
                                     <small class="text-red-500">Aktuelles Passwort ist erforderlich.</small>
                                 }
                             </div>
@@ -256,55 +276,70 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                             <p-divider />
 
                             <div class="flex flex-col gap-2">
-                                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="newPassword">
+                                <label
+                                    class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                    for="newPassword"
+                                >
                                     Neues Passwort
                                 </label>
                                 <p-password
-                                    inputId="newPassword"
-                                    formControlName="newPassword"
-                                    placeholder="Neues Passwort"
                                     [toggleMask]="true"
-                                    promptLabel="Passwort eingeben"
-                                    weakLabel="Schwach"
+                                    formControlName="newPassword"
+                                    inputId="newPassword"
+                                    inputStyleClass="w-full"
                                     mediumLabel="Mittel"
+                                    placeholder="Neues Passwort"
+                                    promptLabel="Passwort eingeben"
                                     strongLabel="Stark"
                                     styleClass="w-full"
-                                    inputStyleClass="w-full"
+                                    weakLabel="Schwach"
                                 />
-                                @if (passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched) {
+                                @if (
+                                    passwordForm.get("newPassword")?.errors?.["required"] &&
+                                    passwordForm.get("newPassword")?.touched
+                                ) {
                                     <small class="text-red-500">Neues Passwort ist erforderlich.</small>
                                 }
-                                @if (passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched) {
+                                @if (
+                                    passwordForm.get("newPassword")?.errors?.["minlength"] &&
+                                    passwordForm.get("newPassword")?.touched
+                                ) {
                                     <small class="text-red-500">Mindestens 8 Zeichen erforderlich.</small>
                                 }
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="confirmPassword">
+                                <label
+                                    class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                    for="confirmPassword"
+                                >
                                     Passwort bestätigen
                                 </label>
                                 <p-password
-                                    inputId="confirmPassword"
-                                    formControlName="confirmPassword"
-                                    placeholder="Passwort wiederholen"
                                     [feedback]="false"
                                     [toggleMask]="true"
-                                    styleClass="w-full"
+                                    formControlName="confirmPassword"
+                                    inputId="confirmPassword"
                                     inputStyleClass="w-full"
+                                    placeholder="Passwort wiederholen"
+                                    styleClass="w-full"
                                 />
-                                @if (passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched) {
+                                @if (
+                                    passwordForm.errors?.["passwordMismatch"] &&
+                                    passwordForm.get("confirmPassword")?.touched
+                                ) {
                                     <small class="text-red-500">Passwörter stimmen nicht überein.</small>
                                 }
                             </div>
 
                             <div class="flex justify-end">
                                 <p-button
-                                    label="Passwort ändern"
-                                    icon="pi pi-lock"
-                                    type="submit"
-                                    severity="warn"
-                                    [loading]="savingPassword()"
                                     [disabled]="passwordForm.invalid"
+                                    [loading]="savingPassword()"
+                                    icon="pi pi-lock"
+                                    label="Passwort ändern"
+                                    severity="warn"
+                                    type="submit"
                                 />
                             </div>
                         </form>

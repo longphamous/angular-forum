@@ -22,9 +22,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             }
                         </span>
                     </div>
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-400/10"
-                    >
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-400/10">
                         <i class="pi pi-comments text-xl text-blue-500"></i>
                     </div>
                 </div>
@@ -55,7 +53,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-green-500 text-sm font-semibold">+12% diese Woche</span>
+                    <span class="text-sm font-semibold text-green-500">+12% diese Woche</span>
                 </div>
             </p-card>
         </div>
@@ -81,7 +79,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-orange-500 text-sm font-semibold">+3% diese Woche</span>
+                    <span class="text-sm font-semibold text-orange-500">+3% diese Woche</span>
                 </div>
             </p-card>
         </div>
@@ -107,7 +105,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-purple-500 text-sm font-semibold">+8% diese Woche</span>
+                    <span class="text-sm font-semibold text-purple-500">+8% diese Woche</span>
                 </div>
             </p-card>
         </div>

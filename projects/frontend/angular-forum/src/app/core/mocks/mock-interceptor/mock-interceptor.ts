@@ -540,9 +540,7 @@ export class MockInterceptor implements HttpInterceptor {
             if (!profile) return this.error("Benutzer nicht gefunden", 404);
             const body3 = body as { groupIds: string[] };
             mockUserGroupMap[userId] = body3.groupIds;
-            profile.groups = body3.groupIds
-                .map((id) => mockGroups[id]?.name)
-                .filter((n): n is string => Boolean(n));
+            profile.groups = body3.groupIds.map((id) => mockGroups[id]?.name).filter((n): n is string => Boolean(n));
             // Update user counts
             for (const g of Object.values(mockGroups)) {
                 g.userCount = Object.values(mockUserGroupMap).filter((ids) => ids.includes(g.id)).length;

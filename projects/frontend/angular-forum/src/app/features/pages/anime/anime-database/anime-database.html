@@ -14,6 +14,7 @@
 
     <p-table
         (onLazyLoad)="onLazyLoad($event)"
+        [first]="tableFirst"
         [lazy]="true"
         [loading]="facade.loading()"
         [paginator]="true"
@@ -42,7 +43,7 @@
         </ng-template>
 
         <ng-template #body let-anime>
-            <tr>
+            <tr class="cursor-pointer" (click)="navigateToDetail(anime.id)">
                 <!-- Rank -->
                 <td class="text-surface-400 text-center text-sm">{{ anime.rank ?? '—' }}</td>
 

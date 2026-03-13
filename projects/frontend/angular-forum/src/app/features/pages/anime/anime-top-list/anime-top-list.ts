@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ButtonModule } from "primeng/button";
@@ -15,6 +15,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { AnimeFilter, AnimeSortField } from "../../../../core/models/anime/anime";
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
+import { AnimeListStateService } from "../../../../facade/anime/anime-list-state.service";
 
 interface SelectOption {
     label: string;
@@ -41,12 +42,18 @@ interface SelectOption {
     styleUrl: "./anime-top-list.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnimeTopList {
+export class AnimeTopList implements OnInit {
     @ViewChild("dt") dt!: Table;
 
     readonly facade = inject(AnimeFacade);
     private readonly router = inject(Router);
+    private readonly listStateService = inject(AnimeListStateService);
     readonly pageSize = 20;
+
+    // Table binding state (restored from service when navigating back)
+    tableFirst = 0;
+    tableSortField = "mean";
+    tableSortOrder = -1;
 
     readonly typeOptions: SelectOption[] = [
         { label: "TV", value: "TV" },
@@ -108,16 +115,44 @@ export class AnimeTopList {
     private sortField: AnimeSortField = "mean";
     private sortOrder: "ASC" | "DESC" = "DESC";
 
+    ngOnInit(): void {
+        const saved = this.listStateService.consumeTopListState();
+        if (saved) {
+            this.tableFirst = saved.first;
+            this.currentRows = saved.rows;
+            this.sortField = saved.sortField;
+            this.sortOrder = saved.sortOrder;
+            this.tableSortField = saved.sortField;
+            this.tableSortOrder = saved.sortOrder === "DESC" ? -1 : 1;
+            this.search = saved.search;
+            this.selectedType = saved.selectedType;
+            this.selectedStatus = saved.selectedStatus;
+            this.selectedSeason = saved.selectedSeason;
+            this.selectedSeasonYear = saved.selectedSeasonYear;
+            this.selectedStartYear = saved.selectedStartYear;
+            this.selectedEndYear = saved.selectedEndYear;
+            this.selectedSource = saved.selectedSource;
+            this.selectedRating = saved.selectedRating;
+            this.selectedMinEpisodes = saved.selectedMinEpisodes;
+            this.selectedMaxEpisodes = saved.selectedMaxEpisodes;
+            this.selectedMinScore = saved.selectedMinScore;
+            this.selectedMaxScore = saved.selectedMaxScore;
+        }
+    }
+
     onLazyLoad(event: TableLazyLoadEvent): void {
         const first = event.first ?? 0;
         const rows = event.rows ?? this.pageSize;
         const page = Math.floor(first / rows) + 1;
         this.currentRows = rows;
+        this.tableFirst = first;
 
         if (event.sortField) {
             const field = Array.isArray(event.sortField) ? event.sortField[0] : event.sortField;
             this.sortField = (field as AnimeSortField) ?? "rank";
             this.sortOrder = event.sortOrder === -1 ? "DESC" : "ASC";
+            this.tableSortField = this.sortField;
+            this.tableSortOrder = event.sortOrder ?? -1;
         }
 
         this.loadData(page);
@@ -147,6 +182,9 @@ export class AnimeTopList {
         this.selectedMaxScore = null;
         this.sortField = "mean";
         this.sortOrder = "DESC";
+        this.tableSortField = "mean";
+        this.tableSortOrder = -1;
+        this.listStateService.clearTopListState();
         this.applyFilters();
     }
 
@@ -205,6 +243,25 @@ export class AnimeTopList {
     }
 
     navigateToDetail(id: number): void {
+        this.listStateService.saveTopListState({
+            first: this.tableFirst,
+            rows: this.currentRows,
+            sortField: this.sortField,
+            sortOrder: this.sortOrder,
+            search: this.search,
+            selectedType: this.selectedType,
+            selectedStatus: this.selectedStatus,
+            selectedSeason: this.selectedSeason,
+            selectedSeasonYear: this.selectedSeasonYear,
+            selectedStartYear: this.selectedStartYear,
+            selectedEndYear: this.selectedEndYear,
+            selectedSource: this.selectedSource,
+            selectedRating: this.selectedRating,
+            selectedMinEpisodes: this.selectedMinEpisodes,
+            selectedMaxEpisodes: this.selectedMaxEpisodes,
+            selectedMinScore: this.selectedMinScore,
+            selectedMaxScore: this.selectedMaxScore
+        });
         void this.router.navigate(["/anime", id]);
     }
 

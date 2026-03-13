@@ -215,6 +215,7 @@
 
     <p-table
         (onLazyLoad)="onLazyLoad($event)"
+        [first]="tableFirst"
         [lazy]="true"
         [loading]="facade.loading()"
         [paginator]="true"
@@ -222,8 +223,8 @@
         [rows]="pageSize"
         [scrollable]="true"
         [showGridlines]="false"
-        [sortField]="'mean'"
-        [sortOrder]="-1"
+        [sortField]="tableSortField"
+        [sortOrder]="tableSortOrder"
         [totalRecords]="facade.total()"
         [value]="facade.animeList()"
         #dt

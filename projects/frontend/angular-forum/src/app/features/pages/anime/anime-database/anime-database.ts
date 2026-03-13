@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
 import { SkeletonModule } from "primeng/skeleton";
@@ -7,6 +8,7 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
+import { AnimeListStateService } from "../../../../facade/anime/anime-list-state.service";
 
 @Component({
     selector: "anime-database",
@@ -18,15 +20,28 @@ import { AnimeFacade } from "../../../../facade/anime/anime-facade";
 export class AnimeDatabase implements OnInit {
     readonly facade = inject(AnimeFacade);
     readonly pageSize = 20;
+    private readonly router = inject(Router);
+    private readonly listStateService = inject(AnimeListStateService);
+
+    tableFirst = 0;
+    private currentRows = this.pageSize;
 
     ngOnInit(): void {
-        this.facade.loadPage(1, this.pageSize);
+        const saved = this.listStateService.consumeDatabaseState();
+        if (saved) {
+            this.tableFirst = saved.first;
+            this.currentRows = saved.rows;
+        } else {
+            this.facade.loadPage(1, this.pageSize);
+        }
     }
 
     onLazyLoad(event: TableLazyLoadEvent): void {
         const first = event.first ?? 0;
         const rows = event.rows ?? this.pageSize;
         const page = Math.floor(first / rows) + 1;
+        this.tableFirst = first;
+        this.currentRows = rows;
         this.facade.loadPage(page, rows);
     }
 
@@ -74,6 +89,11 @@ export class AnimeDatabase implements OnInit {
             default:
                 return "info";
         }
+    }
+
+    navigateToDetail(id: number): void {
+        this.listStateService.saveDatabaseState({ first: this.tableFirst, rows: this.currentRows });
+        void this.router.navigate(["/anime", id]);
     }
 
     getScoreClass(mean?: number): string {

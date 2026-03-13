@@ -9,13 +9,7 @@ import { TopPostersWidget } from "./components/top-posters-widget";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        ActiveForumsWidget,
-        DashboardStatsWidget,
-        NewestAnimeWidget,
-        RecentThreadsWidget,
-        TopPostersWidget
-    ],
+    imports: [ActiveForumsWidget, DashboardStatsWidget, NewestAnimeWidget, RecentThreadsWidget, TopPostersWidget],
     selector: "app-dashboard",
     template: `
         <div class="grid grid-cols-12 gap-6">

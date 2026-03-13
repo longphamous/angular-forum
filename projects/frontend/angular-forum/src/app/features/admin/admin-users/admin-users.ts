@@ -427,7 +427,14 @@ export class AdminUsers implements OnInit {
     }
 
     protected resetCreateForm(): void {
-        this.createForm.reset({ role: "member", status: "active", displayName: "", email: "", password: "", username: "" });
+        this.createForm.reset({
+            role: "member",
+            status: "active",
+            displayName: "",
+            email: "",
+            password: "",
+            username: ""
+        });
         this.createError.set(null);
     }
 
@@ -523,10 +530,14 @@ export class AdminUsers implements OnInit {
 
     protected roleSeverity(role: UserRole): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" {
         switch (role) {
-            case "admin": return "danger";
-            case "moderator": return "warn";
-            case "member": return "info";
-            case "guest": return "secondary";
+            case "admin":
+                return "danger";
+            case "moderator":
+                return "warn";
+            case "member":
+                return "info";
+            case "guest":
+                return "secondary";
         }
     }
 
@@ -536,10 +547,14 @@ export class AdminUsers implements OnInit {
 
     protected statusSeverity(status: UserStatus): "success" | "info" | "warn" | "danger" | "secondary" {
         switch (status) {
-            case "active": return "success";
-            case "inactive": return "secondary";
-            case "banned": return "danger";
-            case "pending": return "warn";
+            case "active":
+                return "success";
+            case "inactive":
+                return "secondary";
+            case "banned":
+                return "danger";
+            case "pending":
+                return "warn";
         }
     }
 

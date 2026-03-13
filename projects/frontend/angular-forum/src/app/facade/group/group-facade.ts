@@ -120,10 +120,9 @@ export class GroupFacade {
     }
 
     setPermissionGroups(permId: string, groupIds: string[]): Observable<PagePermission> {
-        return this.http.put<PagePermission>(
-            `${this.apiConfig.baseUrl}${PAGE_PERMISSION_ROUTES.groups(permId)}`,
-            { groupIds }
-        );
+        return this.http.put<PagePermission>(`${this.apiConfig.baseUrl}${PAGE_PERMISSION_ROUTES.groups(permId)}`, {
+            groupIds
+        });
     }
 
     createPagePermission(payload: CreatePagePermissionPayload): Observable<PagePermission> {

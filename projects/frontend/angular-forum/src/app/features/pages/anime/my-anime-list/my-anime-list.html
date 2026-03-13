@@ -6,211 +6,186 @@
                 {{ isOwnList() ? "Meine Anime-Liste" : ownerName() + "s Anime-Liste" }}
             </h2>
             @if (list().length > 0) {
-                <p class="text-surface-500 mb-0 mt-1 text-sm">{{ list().length }} Einträge gesamt</p>
+            <p class="text-surface-500 mt-1 mb-0 text-sm">{{ list().length }} Einträge gesamt</p>
             }
         </div>
         @if (isOwnList()) {
-            <p-button
-                icon="pi pi-search"
-                label="Anime entdecken"
-                [outlined]="true"
-                routerLink="/anime-top-list"
-                severity="secondary"
-            />
+        <p-button
+            [outlined]="true"
+            icon="pi pi-search"
+            label="Anime entdecken"
+            routerLink="/anime-top-list"
+            severity="secondary"
+        />
         }
     </div>
 
     @if (facade.listLoading()) {
-        <div class="flex flex-col gap-3">
-            @for (i of [1, 2, 3, 4, 5]; track i) {
-                <div
-                    class="border-surface-200 dark:border-surface-700 flex items-center gap-4 rounded-lg border p-4"
-                >
-                    <p-skeleton borderRadius="6px" height="5rem" width="3.5rem" />
-                    <div class="flex-1">
-                        <p-skeleton height="1rem" styleClass="mb-2" width="50%" />
-                        <p-skeleton height="0.75rem" width="30%" />
-                    </div>
-                    <p-skeleton height="1.5rem" width="5rem" />
-                </div>
-            }
+    <div class="flex flex-col gap-3">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="border-surface-200 dark:border-surface-700 flex items-center gap-4 rounded-lg border p-4">
+            <p-skeleton borderRadius="6px" height="5rem" width="3.5rem" />
+            <div class="flex-1">
+                <p-skeleton height="1rem" styleClass="mb-2" width="50%" />
+                <p-skeleton height="0.75rem" width="30%" />
+            </div>
+            <p-skeleton height="1.5rem" width="5rem" />
         </div>
+        }
+    </div>
     } @else if (list().length === 0) {
-        <div class="flex flex-col items-center justify-center py-20 text-center">
-            <i class="pi pi-inbox text-surface-300 mb-4 text-6xl"></i>
-            <p class="text-surface-500 text-lg">Noch keine Einträge.</p>
-            @if (isOwnList()) {
-                <p class="text-surface-400 text-sm">Füge Anime aus der Liste hinzu!</p>
-                <p-button
-                    icon="pi pi-search"
-                    label="Anime entdecken"
-                    class="mt-4"
-                    routerLink="/anime-top-list"
-                />
-            }
-        </div>
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-inbox text-surface-300 mb-4 text-6xl"></i>
+        <p class="text-surface-500 text-lg">Noch keine Einträge.</p>
+        @if (isOwnList()) {
+        <p class="text-surface-400 text-sm">Füge Anime aus der Liste hinzu!</p>
+        <p-button class="mt-4" icon="pi pi-search" label="Anime entdecken" routerLink="/anime-top-list" />
+        }
+    </div>
     } @else {
-        <!-- Stats row -->
-        <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            @for (stat of statCards(); track stat.status) {
-                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
-                    <div class="text-xl font-bold">{{ stat.count }}</div>
-                    <div class="text-surface-500 mt-0.5 text-xs">{{ stat.label }}</div>
-                </div>
-            }
+    <!-- Stats row -->
+    <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        @for (stat of statCards(); track stat.status) {
+        <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
+            <div class="text-xl font-bold">{{ stat.count }}</div>
+            <div class="text-surface-500 mt-0.5 text-xs">{{ stat.label }}</div>
         </div>
+        }
+    </div>
 
-        <!-- Tabs -->
-        <p-tabs [value]="activeTab" (valueChange)="activeTab = $any($event)">
-            <p-tablist>
-                <p-tab value="all">
-                    Alle
-                    <span
-                        class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs"
-                    >
-                        {{ list().length }}
-                    </span>
-                </p-tab>
-                @for (status of allStatuses; track status) {
-                    <p-tab [value]="status">
-                        {{ statusLabel(status) }}
-                        @if (countByStatus(status) > 0) {
-                            <span
-                                class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs"
-                            >
-                                {{ countByStatus(status) }}
-                            </span>
-                        }
-                    </p-tab>
+    <!-- Tabs -->
+    <p-tabs (valueChange)="activeTab = $any($event)" [value]="activeTab">
+        <p-tablist>
+            <p-tab value="all">
+                Alle
+                <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
+                    {{ list().length }}
+                </span>
+            </p-tab>
+            @for (status of allStatuses; track status) {
+            <p-tab [value]="status">
+                {{ statusLabel(status) }} @if (countByStatus(status) > 0) {
+                <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
+                    {{ countByStatus(status) }}
+                </span>
                 }
-            </p-tablist>
+            </p-tab>
+            }
+        </p-tablist>
 
-            <p-tabpanels>
-                <p-tabpanel value="all">
-                    <ng-container
-                        *ngTemplateOutlet="entryList; context: { $implicit: list() }"
-                    />
-                </p-tabpanel>
-                @for (status of allStatuses; track status) {
-                    <p-tabpanel [value]="status">
-                        <ng-container
-                            *ngTemplateOutlet="
+        <p-tabpanels>
+            <p-tabpanel value="all">
+                <ng-container *ngTemplateOutlet="entryList; context: { $implicit: list() }" />
+            </p-tabpanel>
+            @for (status of allStatuses; track status) {
+            <p-tabpanel [value]="status">
+                <ng-container
+                    *ngTemplateOutlet="
                                 entryList;
                                 context: { $implicit: entriesByStatus(status) }
                             "
-                        />
-                    </p-tabpanel>
-                }
-            </p-tabpanels>
-        </p-tabs>
+                />
+            </p-tabpanel>
+            }
+        </p-tabpanels>
+    </p-tabs>
     }
 </div>
 
 <ng-template #entryList let-entries>
     @if (entries.length === 0) {
-        <div class="text-surface-400 py-10 text-center text-sm">
-            Keine Einträge in dieser Kategorie.
-        </div>
+    <div class="text-surface-400 py-10 text-center text-sm">Keine Einträge in dieser Kategorie.</div>
     } @else {
-        <div class="flex flex-col gap-3 pt-3">
-            @for (entry of entries; track entry.animeId) {
+    <div class="flex flex-col gap-3 pt-3">
+        @for (entry of entries; track entry.animeId) {
+        <div
+            class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800/50 flex items-center gap-4 rounded-lg border p-3 transition-colors"
+        >
+            <!-- Cover -->
+            <div
+                class="flex-shrink-0 cursor-pointer"
+                (click)="goToDetail(entry.animeId)"
+                (keydown.enter)="goToDetail(entry.animeId)"
+                role="button"
+                tabindex="0"
+            >
+                @if (entry.anime?.picture) {
+                <img
+                    class="rounded object-cover"
+                    [alt]="entry.anime?.title"
+                    [src]="entry.anime!.picture"
+                    style="width: 3.5rem; height: 5rem"
+                />
+                } @else {
                 <div
-                    class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800/50 flex items-center gap-4 rounded-lg border p-3 transition-colors"
+                    class="bg-surface-200 dark:bg-surface-700 flex items-center justify-center rounded"
+                    style="width: 3.5rem; height: 5rem"
                 >
-                    <!-- Cover -->
-                    <div
-                        class="flex-shrink-0 cursor-pointer"
-                        role="button"
-                        tabindex="0"
-                        (click)="goToDetail(entry.animeId)"
-                        (keydown.enter)="goToDetail(entry.animeId)"
-                    >
-                        @if (entry.anime?.picture) {
-                            <img
-                                [alt]="entry.anime?.title"
-                                [src]="entry.anime!.picture"
-                                class="rounded object-cover"
-                                style="width: 3.5rem; height: 5rem"
-                            />
-                        } @else {
-                            <div
-                                class="bg-surface-200 dark:bg-surface-700 flex items-center justify-center rounded"
-                                style="width: 3.5rem; height: 5rem"
-                            >
-                                <i class="pi pi-image text-surface-400 text-xl"></i>
-                            </div>
-                        }
-                    </div>
+                    <i class="pi pi-image text-surface-400 text-xl"></i>
+                </div>
+                }
+            </div>
 
-                    <!-- Info -->
-                    <div class="min-w-0 flex-1">
-                        <button
-                            class="text-surface-900 dark:text-surface-0 m-0 w-full cursor-pointer truncate border-none bg-transparent p-0 text-left text-sm font-semibold hover:underline"
-                            (click)="goToDetail(entry.animeId)"
-                        >
-                            {{ entry.anime?.titleEnglish || entry.anime?.title || "Anime #" + entry.animeId }}
-                        </button>
-                        @if (
-                            entry.anime?.titleEnglish &&
-                            entry.anime?.title &&
-                            entry.anime!.title !== entry.anime!.titleEnglish
-                        ) {
-                            <p class="text-surface-400 mt-0.5 truncate text-xs">
-                                {{ entry.anime!.title }}
-                            </p>
-                        }
-                        <div class="mt-1.5 flex flex-wrap items-center gap-2">
-                            <p-tag
-                                [severity]="statusSeverity(entry.status)"
-                                [value]="statusLabel(entry.status)"
-                                styleClass="text-xs"
-                            />
-                            @if (entry.score) {
-                                <span class="flex items-center gap-1 text-xs text-yellow-500">
-                                    <i class="pi pi-star-fill text-xs"></i>
-                                    {{ entry.score }}/10
-                                </span>
-                            }
-                            @if (entry.episodesWatched !== null && entry.anime?.episode) {
-                                <span class="text-surface-400 text-xs">
-                                    {{ entry.episodesWatched }}/{{ entry.anime!.episode }} Folgen
-                                </span>
-                            }
-                            @if (entry.anime?.type) {
-                                <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
-                            }
-                        </div>
-                        @if (entry.review) {
-                            <p class="text-surface-500 mt-1.5 line-clamp-2 text-xs italic">
-                                "{{ entry.review }}"
-                            </p>
-                        }
-                    </div>
-
-                    <!-- Actions (own list only) -->
-                    @if (isOwnList()) {
-                        <div class="flex flex-shrink-0 flex-col gap-1">
-                            <p-button
-                                icon="pi pi-pencil"
-                                pTooltip="Bearbeiten"
-                                severity="secondary"
-                                size="small"
-                                [text]="true"
-                                (onClick)="goToDetail(entry.animeId)"
-                            />
-                            <p-button
-                                icon="pi pi-trash"
-                                pTooltip="Entfernen"
-                                severity="danger"
-                                size="small"
-                                [loading]="removingId() === entry.animeId"
-                                [text]="true"
-                                (onClick)="removeEntry(entry.animeId)"
-                            />
-                        </div>
+            <!-- Info -->
+            <div class="min-w-0 flex-1">
+                <button
+                    class="text-surface-900 dark:text-surface-0 m-0 w-full cursor-pointer truncate border-none bg-transparent p-0 text-left text-sm font-semibold hover:underline"
+                    (click)="goToDetail(entry.animeId)"
+                >
+                    {{ entry.anime?.titleEnglish || entry.anime?.title || "Anime #" + entry.animeId }}
+                </button>
+                @if ( entry.anime?.titleEnglish && entry.anime?.title && entry.anime!.title !==
+                entry.anime!.titleEnglish ) {
+                <p class="text-surface-400 mt-0.5 truncate text-xs">{{ entry.anime!.title }}</p>
+                }
+                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                    <p-tag
+                        [severity]="statusSeverity(entry.status)"
+                        [value]="statusLabel(entry.status)"
+                        styleClass="text-xs"
+                    />
+                    @if (entry.score) {
+                    <span class="flex items-center gap-1 text-xs text-yellow-500">
+                        <i class="pi pi-star-fill text-xs"></i>
+                        {{ entry.score }}/10
+                    </span>
+                    } @if (entry.episodesWatched !== null && entry.anime?.episode) {
+                    <span class="text-surface-400 text-xs">
+                        {{ entry.episodesWatched }}/{{ entry.anime!.episode }} Folgen
+                    </span>
+                    } @if (entry.anime?.type) {
+                    <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
                     }
                 </div>
+                @if (entry.review) {
+                <p class="text-surface-500 mt-1.5 line-clamp-2 text-xs italic">"{{ entry.review }}"</p>
+                }
+            </div>
+
+            <!-- Actions (own list only) -->
+            @if (isOwnList()) {
+            <div class="flex flex-shrink-0 flex-col gap-1">
+                <p-button
+                    (onClick)="goToDetail(entry.animeId)"
+                    [text]="true"
+                    icon="pi pi-pencil"
+                    pTooltip="Bearbeiten"
+                    severity="secondary"
+                    size="small"
+                />
+                <p-button
+                    (onClick)="removeEntry(entry.animeId)"
+                    [loading]="removingId() === entry.animeId"
+                    [text]="true"
+                    icon="pi pi-trash"
+                    pTooltip="Entfernen"
+                    severity="danger"
+                    size="small"
+                />
+            </div>
             }
         </div>
+        }
+    </div>
     }
 </ng-template>

@@ -19,7 +19,10 @@ export class ThreadController {
      */
     @Public()
     @Get("forums/:forumId/threads")
-    findByForum(@Param("forumId", ParseUUIDPipe) forumId: string, @Query() query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
+    findByForum(
+        @Param("forumId", ParseUUIDPipe) forumId: string,
+        @Query() query: ForumQueryDto
+    ): Promise<PaginatedResult<ThreadDto>> {
         return this.threadService.findByForum(forumId, query);
     }
 
@@ -64,7 +67,10 @@ export class ThreadController {
      * Soft-deletes a thread. Author, moderators, and admins may delete.
      */
     @Delete("threads/:id")
-    async remove(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async remove(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ success: boolean }> {
         await this.threadService.remove(id, user.userId, user.role);
         return { success: true };
     }

@@ -79,14 +79,12 @@ export class AuthFacade {
     }
 
     updateProfile(payload: UpdateProfilePayload): Observable<UserProfile> {
-        return this.http
-            .patch<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.profile()}`, payload)
-            .pipe(
-                tap((updated) => {
-                    this._currentUser.set(updated);
-                    localStorage.setItem(STORAGE_PROFILE, JSON.stringify(updated));
-                })
-            );
+        return this.http.patch<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.profile()}`, payload).pipe(
+            tap((updated) => {
+                this._currentUser.set(updated);
+                localStorage.setItem(STORAGE_PROFILE, JSON.stringify(updated));
+            })
+        );
     }
 
     changePassword(payload: ChangePasswordPayload): Observable<void> {

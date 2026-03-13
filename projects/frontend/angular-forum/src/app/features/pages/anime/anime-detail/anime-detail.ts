@@ -1,6 +1,7 @@
+import { Location } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { ActivatedRoute, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { DividerModule } from "primeng/divider";
@@ -89,8 +90,8 @@ export class AnimeDetail implements OnInit {
     protected readonly statusOptions = STATUS_OPTIONS;
 
     // ⑤ Private
+    private readonly location = inject(Location);
     private readonly route = inject(ActivatedRoute);
-    private readonly router = inject(Router);
     private animeId = 0;
 
     constructor() {
@@ -212,6 +213,6 @@ export class AnimeDetail implements OnInit {
     }
 
     protected back(): void {
-        void this.router.navigate(["/anime-top-list"]);
+        this.location.back();
     }
 }

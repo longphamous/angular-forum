@@ -32,14 +32,14 @@ const RANK_STYLES: RankStyle[] = [
                         <div class="flex items-center gap-3">
                             <p-skeleton shape="circle" size="2.5rem" />
                             <div class="flex flex-1 flex-col gap-2">
-                                <p-skeleton width="60%" height="1rem" />
-                                <p-skeleton width="30%" height="0.75rem" />
+                                <p-skeleton height="1rem" width="60%" />
+                                <p-skeleton height="0.75rem" width="30%" />
                             </div>
                         </div>
                     }
                 </div>
             } @else {
-                <div class="flex flex-col divide-y divide-surface-100 dark:divide-surface-700">
+                <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
                     @for (poster of facade.topPosters(); track poster.userId; let i = $index) {
                         <div class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                             <div
@@ -57,7 +57,11 @@ const RANK_STYLES: RankStyle[] = [
                                 <div class="text-surface-900 dark:text-surface-0 flex items-center gap-2 font-medium">
                                     <span class="truncate">{{ poster.displayName }}</span>
                                     @if (i < 3) {
-                                        <p-tag [value]="rankLabel(i)" [severity]="rankSeverity(i)" styleClass="text-xs" />
+                                        <p-tag
+                                            [severity]="rankSeverity(i)"
+                                            [value]="rankLabel(i)"
+                                            styleClass="text-xs"
+                                        />
                                     }
                                 </div>
                                 <div class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-sm">

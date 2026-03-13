@@ -117,8 +117,7 @@ export const routes: Routes = [
                 path: "admin/groups",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/admin/admin-groups/admin-groups").then((c) => c.AdminGroups)
+                loadComponent: () => import("./features/admin/admin-groups/admin-groups").then((c) => c.AdminGroups)
             },
             {
                 path: "admin/permissions",
