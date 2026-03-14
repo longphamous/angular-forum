@@ -1,11 +1,12 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, viewChild } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { MenuItem } from "primeng/api";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { DividerModule } from "primeng/divider";
-import { Popover, PopoverModule } from "primeng/popover";
+import { PopoverModule } from "primeng/popover";
 import { StyleClassModule } from "primeng/styleclass";
 
 import { AuthFacade } from "../../facade/auth/auth-facade";
@@ -23,9 +24,11 @@ import { LayoutService } from "./service/layout.service";
         PopoverModule,
         ButtonModule,
         AvatarModule,
-        DividerModule
+        DividerModule,
+        TranslocoModule
     ],
-    template: ` <div class="layout-topbar">
+    template: ` <ng-container *transloco="let t">
+        <div class="layout-topbar">
             <div class="layout-topbar-logo-container">
                 <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                     <i class="pi pi-bars"></i>
@@ -65,6 +68,14 @@ import { LayoutService } from "./service/layout.service";
 
             <div class="layout-topbar-actions">
                 <div class="layout-config-menu">
+                    <button
+                        class="layout-topbar-action"
+                        (click)="toggleLanguage()"
+                        type="button"
+                        [title]="currentLang() === 'de' ? 'Switch to English' : 'Zu Deutsch wechseln'"
+                    >
+                        <span class="text-xs font-semibold">{{ currentLang() === 'de' ? 'EN' : 'DE' }}</span>
+                    </button>
                     <button class="layout-topbar-action" (click)="toggleDarkMode()" type="button">
                         <i
                             [ngClass]="{
@@ -116,7 +127,7 @@ import { LayoutService } from "./service/layout.service";
                                 <i class="pi pi-user"></i>
                             }
                             <span>{{
-                                authFacade.isAuthenticated() ? authFacade.currentUser()?.displayName : "Profile"
+                                authFacade.isAuthenticated() ? authFacade.currentUser()?.displayName : t('nav.profile')
                             }}</span>
                         </button>
                     </div>
@@ -141,7 +152,7 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/profile"
                     >
                         <i class="pi pi-user text-surface-500"></i>
-                        <span>Profil</span>
+                        <span>{{ t('nav.profile') }}</span>
                     </a>
                     @if (authFacade.isAdmin()) {
                         <a
@@ -150,7 +161,7 @@ import { LayoutService } from "./service/layout.service";
                             routerLink="/admin"
                         >
                             <i class="pi pi-shield text-surface-500"></i>
-                            <span>Administration</span>
+                            <span>{{ t('nav.admin') }}</span>
                         </a>
                     }
                     <p-divider styleClass="my-0" />
@@ -160,7 +171,7 @@ import { LayoutService } from "./service/layout.service";
                         type="button"
                     >
                         <i class="pi pi-sign-out"></i>
-                        <span>Abmelden</span>
+                        <span>{{ t('nav.logout') }}</span>
                     </button>
                 </div>
             } @else {
@@ -171,7 +182,7 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/login"
                     >
                         <i class="pi pi-sign-in text-surface-500"></i>
-                        <span>Anmelden</span>
+                        <span>{{ t('nav.login') }}</span>
                     </a>
                     <a
                         class="hover:bg-surface-100 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-inherit no-underline"
@@ -179,19 +190,29 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/register"
                     >
                         <i class="pi pi-user-plus text-surface-500"></i>
-                        <span>Registrieren</span>
+                        <span>{{ t('nav.register') }}</span>
                     </a>
                 </div>
             }
-        </p-popover>`
+        </p-popover>
+    </ng-container>`
 })
 export class AppTopbar {
     items!: MenuItem[];
 
     readonly layoutService = inject(LayoutService);
     readonly authFacade = inject(AuthFacade);
+    private readonly translocoService = inject(TranslocoService);
 
-    readonly userMenu = viewChild.required<Popover>("userMenu");
+    currentLang(): string {
+        return this.translocoService.getActiveLang();
+    }
+
+    toggleLanguage(): void {
+        const next = this.currentLang() === "de" ? "en" : "de";
+        localStorage.setItem("lang", next);
+        this.translocoService.setActiveLang(next);
+    }
 
     userInitial(): string {
         const name = this.authFacade.currentUser()?.displayName ?? this.authFacade.currentUser()?.username ?? "?";

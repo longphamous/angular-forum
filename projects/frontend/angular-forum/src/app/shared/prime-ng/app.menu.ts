@@ -1,7 +1,10 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
+import { TranslocoService } from "@jsverse/transloco";
 import { MenuItem } from "primeng/api";
+import { Subscription } from "rxjs";
+import { startWith, switchMap } from "rxjs/operators";
 
 import { AppMenuitem } from "./app.menuitem";
 
@@ -16,49 +19,70 @@ import { AppMenuitem } from "./app.menuitem";
         </ng-container>
     </ul> `
 })
-export class AppMenu implements OnInit {
+export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
 
+    private readonly translocoService = inject(TranslocoService);
+    private langSub?: Subscription;
+
     ngOnInit() {
+        this.langSub = this.translocoService.langChanges$
+            .pipe(
+                startWith(this.translocoService.getActiveLang()),
+                switchMap((lang) => this.translocoService.selectTranslation(lang))
+            )
+            .subscribe(() => this.buildMenu());
+    }
+
+    ngOnDestroy(): void {
+        this.langSub?.unsubscribe();
+    }
+
+    private t(key: string): string {
+        return this.translocoService.translate(key);
+    }
+
+    private buildMenu(): void {
         this.model = [
             {
-                label: "Home",
-                items: [{ label: "Dashboard", icon: "pi pi-fw pi-home", routerLink: ["/dashboard"] }]
+                label: this.t("nav.home"),
+                items: [{ label: this.t("nav.dashboard"), icon: "pi pi-fw pi-home", routerLink: ["/dashboard"] }]
             },
             {
-                label: "Forum",
-                items: [{ label: "Forum Übersicht", icon: "pi pi-fw pi-comments", routerLink: ["/forum"] }]
+                label: this.t("nav.forum"),
+                items: [{ label: this.t("nav.forumOverview"), icon: "pi pi-fw pi-comments", routerLink: ["/forum"] }]
             },
             {
-                label: "Anime",
+                label: this.t("nav.anime"),
                 items: [
-                    { label: "Top Anime", icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
-                    { label: "Anime Database", icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] },
-                    { label: "Meine Liste", icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }
-                ]
-            },
-
-            {
-                label: "Admin",
-                items: [
-                    { label: "Übersicht", icon: "pi pi-fw pi-chart-bar", routerLink: ["/admin/overview"] },
-                    { label: "Forenstruktur", icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] },
-                    { label: "Benutzerverwaltung", icon: "pi pi-fw pi-users", routerLink: ["/admin/users"] },
-                    { label: "Gruppenverwaltung", icon: "pi pi-fw pi-shield", routerLink: ["/admin/groups"] },
-                    { label: "Seitenberechtigungen", icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] },
-                    { label: "Gamification", icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] }
+                    { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
+                    { label: this.t("nav.animeDatabase"), icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] },
+                    { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }
                 ]
             },
             {
-                label: "Further Links",
+                label: this.t("nav.adminSection"),
+                items: [
+                    { label: this.t("nav.overview"), icon: "pi pi-fw pi-chart-bar", routerLink: ["/admin/overview"] },
+                    { label: this.t("nav.forumStructure"), icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] },
+                    { label: this.t("nav.userManagement"), icon: "pi pi-fw pi-users", routerLink: ["/admin/users"] },
+                    { label: this.t("nav.groupManagement"), icon: "pi pi-fw pi-shield", routerLink: ["/admin/groups"] },
+                    { label: this.t("nav.pagePermissions"), icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] },
+                    { label: this.t("nav.gamification"), icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] },
+                    { label: this.t("nav.achievements"), icon: "pi pi-fw pi-trophy", routerLink: ["/admin/achievements"] },
+                    { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] }
+                ]
+            },
+            {
+                label: this.t("nav.furtherLinks"),
                 items: [
                     {
-                        label: "Documentation",
+                        label: this.t("nav.documentation"),
                         icon: "pi pi-fw pi-book",
                         routerLink: ["/documentation"]
                     },
                     {
-                        label: "View Source",
+                        label: this.t("nav.viewSource"),
                         icon: "pi pi-fw pi-github",
                         url: "https://github.com/primefaces/sakai-ng",
                         target: "_blank"

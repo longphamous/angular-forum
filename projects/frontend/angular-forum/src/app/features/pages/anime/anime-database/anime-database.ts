@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
 import { SkeletonModule } from "primeng/skeleton";
@@ -12,7 +13,7 @@ import { AnimeListStateService } from "../../../../facade/anime/anime-list-state
 
 @Component({
     selector: "anime-database",
-    imports: [TableModule, TagModule, ButtonModule, SkeletonModule, TooltipModule, MessageModule],
+    imports: [TableModule, TagModule, ButtonModule, SkeletonModule, TooltipModule, MessageModule, TranslocoModule],
     templateUrl: "./anime-database.html",
     styleUrl: "./anime-database.scss",
     changeDetection: ChangeDetectionStrategy.OnPush

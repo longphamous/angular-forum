@@ -1,9 +1,9 @@
-<div class="bg-surface-50 dark:bg-surface-950 flex min-h-screen items-center justify-center px-4">
+<div class="bg-surface-50 dark:bg-surface-950 flex min-h-screen items-center justify-center px-4" *transloco="let t">
     <div class="w-full max-w-md">
         <div class="surface-card rounded-2xl p-8 shadow-lg">
             <div class="mb-8 text-center">
-                <h1 class="text-surface-900 dark:text-surface-0 mb-2 text-3xl font-bold">Konto erstellen</h1>
-                <p class="text-surface-500">Werde Teil der Aniverse Community</p>
+                <h1 class="text-surface-900 dark:text-surface-0 mb-2 text-3xl font-bold">{{ t('register.title') }}</h1>
+                <p class="text-surface-500">{{ t('register.subtitle') }}</p>
             </div>
 
             @if (errorMessage()) {
@@ -13,7 +13,7 @@
             <form class="flex flex-col gap-4" (ngSubmit)="onSubmit()">
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-700 dark:text-surface-200 font-medium" for="username"
-                        >Benutzername <span class="text-red-500">*</span></label
+                        >{{ t('register.username') }} <span class="text-red-500">*</span></label
                     >
                     <input
                         class="w-full"
@@ -22,7 +22,7 @@
                         autocomplete="username"
                         name="username"
                         pInputText
-                        placeholder="Benutzername"
+                        [placeholder]="t('register.usernamePlaceholder')"
                         required
                         type="text"
                     />
@@ -30,7 +30,7 @@
 
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-700 dark:text-surface-200 font-medium" for="displayName"
-                        >Anzeigename</label
+                        >{{ t('register.displayName') }}</label
                     >
                     <input
                         class="w-full"
@@ -39,14 +39,14 @@
                         autocomplete="name"
                         name="displayName"
                         pInputText
-                        placeholder="Anzeigename (optional)"
+                        [placeholder]="t('register.displayNamePlaceholder')"
                         type="text"
                     />
                 </div>
 
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-700 dark:text-surface-200 font-medium" for="email"
-                        >E-Mail <span class="text-red-500">*</span></label
+                        >{{ t('register.email') }} <span class="text-red-500">*</span></label
                     >
                     <input
                         class="w-full"
@@ -55,7 +55,7 @@
                         autocomplete="email"
                         name="email"
                         pInputText
-                        placeholder="E-Mail-Adresse"
+                        [placeholder]="t('register.emailPlaceholder')"
                         required
                         type="email"
                     />
@@ -63,7 +63,7 @@
 
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-700 dark:text-surface-200 font-medium" for="password"
-                        >Passwort <span class="text-red-500">*</span></label
+                        >{{ t('register.password') }} <span class="text-red-500">*</span></label
                     >
                     <p-password
                         [(ngModel)]="password"
@@ -72,7 +72,7 @@
                         inputId="password"
                         inputStyleClass="w-full"
                         name="password"
-                        placeholder="Passwort"
+                        [placeholder]="t('register.passwordPlaceholder')"
                         required
                         styleClass="w-full"
                     />
@@ -81,15 +81,15 @@
                 <p-button
                     [disabled]="!username || !email || !password"
                     [loading]="loading()"
-                    label="Registrieren"
+                    [label]="t('register.submit')"
                     styleClass="w-full mt-2"
                     type="submit"
                 />
             </form>
 
             <div class="text-surface-500 mt-6 text-center">
-                Bereits ein Konto?
-                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/login">Jetzt anmelden</a>
+                {{ t('register.hasAccount') }}
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/login">{{ t('register.loginLink') }}</a>
             </div>
         </div>
     </div>

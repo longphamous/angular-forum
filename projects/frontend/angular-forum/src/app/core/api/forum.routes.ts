@@ -11,7 +11,8 @@ export const FORUM_ROUTES = {
     },
     threads: {
         detail: (id: string) => `/forum/threads/${id}`,
-        posts: (threadId: string) => `/forum/threads/${threadId}/posts`
+        posts: (threadId: string) => `/forum/threads/${threadId}/posts`,
+        myReactions: (threadId: string) => `/forum/threads/${threadId}/my-reactions`
     },
     posts: {
         react: (postId: string) => `/forum/posts/${postId}/react`

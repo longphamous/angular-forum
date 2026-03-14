@@ -1,11 +1,11 @@
-<div class="mx-auto max-w-5xl">
+<div class="mx-auto max-w-5xl" *transloco="let t">
     <!-- Back -->
     <div class="mb-4">
         <p-button
             (onClick)="back()"
             [text]="true"
             icon="pi pi-arrow-left"
-            label="Zurück zur Liste"
+            [label]="t('anime.detail.backToList')"
             severity="secondary"
         />
     </div>
@@ -52,17 +52,17 @@
             <div class="grid grid-cols-2 gap-2 text-center text-sm">
                 @if (anime()!.rank) {
                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">Rang</div>
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.rank') }}</div>
                     <div class="font-bold">#{{ anime()!.rank }}</div>
                 </div>
                 } @if (anime()!.popularity) {
                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">Popularität</div>
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.popularity') }}</div>
                     <div class="font-bold">#{{ anime()!.popularity }}</div>
                 </div>
                 } @if (anime()!.member) {
                 <div class="bg-surface-50 dark:bg-surface-800 col-span-2 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">Mitglieder</div>
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.members') }}</div>
                     <div class="font-bold">{{ anime()!.member!.toLocaleString() }}</div>
                 </div>
                 }
@@ -71,24 +71,24 @@
             <!-- Add to list panel -->
             <p-panel
                 [collapsed]="!listEntry()"
-                [header]="listEntry() ? 'Meine Liste ✓' : 'Zur Liste hinzufügen'"
+                [header]="listEntry() ? t('anime.detail.myListActive') : t('anime.detail.addToList')"
                 [toggleable]="true"
             >
                 <form class="flex flex-col gap-3" (ngSubmit)="saveEntry()" [formGroup]="listForm">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listStatus"> Status </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listStatus"> {{ t('anime.detail.statusLabel') }} </label>
                         <p-select
                             [options]="statusOptions"
                             formControlName="status"
                             inputId="listStatus"
                             optionLabel="label"
                             optionValue="value"
-                            placeholder="Status wählen"
+                            [placeholder]="t('anime.detail.statusPlaceholder')"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listScore"> Bewertung (1–10) </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listScore"> {{ t('anime.detail.scoreLabel') }} </label>
                         <p-rating
                             [stars]="10"
                             formControlName="score"
@@ -101,7 +101,7 @@
                     </div>
                     @if (anime()!.episode && anime()!.episode! > 1) {
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes"> Gesehene Folgen </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes"> {{ t('anime.detail.episodesLabel') }} </label>
                         <p-inputnumber
                             [max]="anime()!.episode ?? 9999"
                             [min]="0"
@@ -114,21 +114,21 @@
                     }
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium" for="listReview">
-                            Review <span class="font-normal">(optional)</span>
+                            {{ t('anime.detail.reviewLabel') }} <span class="font-normal">{{ t('anime.detail.reviewOptional') }}</span>
                         </label>
                         <textarea
                             class="w-full text-sm"
                             id="listReview"
                             [autoResize]="true"
                             formControlName="review"
-                            placeholder="Dein Kommentar…"
+                            [placeholder]="t('anime.detail.reviewPlaceholder')"
                             pTextarea
                             rows="3"
                         ></textarea>
                     </div>
 
                     @if (saveSuccess()) {
-                    <p-message class="w-full" severity="success">Gespeichert!</p-message>
+                    <p-message class="w-full" severity="success">{{ t('anime.detail.saved') }}</p-message>
                     } @if (saveError()) {
                     <p-message class="w-full" severity="error"> {{ saveError() }} </p-message>
                     }
@@ -138,7 +138,7 @@
                             class="flex-1"
                             [disabled]="listForm.invalid"
                             [icon]="listEntry() ? 'pi pi-check' : 'pi pi-plus'"
-                            [label]="listEntry() ? 'Aktualisieren' : 'Hinzufügen'"
+                            [label]="listEntry() ? t('anime.detail.update') : t('anime.detail.add')"
                             [loading]="saving()"
                             type="submit"
                         />
@@ -148,7 +148,7 @@
                             [loading]="removing()"
                             [outlined]="true"
                             icon="pi pi-trash"
-                            pTooltip="Aus Liste entfernen"
+                            [pTooltip]="t('anime.detail.removeFromList')"
                             severity="danger"
                         />
                         }
@@ -212,7 +212,7 @@
             @if (anime()!.synopsis) {
             <div>
                 <h3 class="text-surface-700 dark:text-surface-300 mb-2 text-sm font-semibold tracking-wide uppercase">
-                    Synopsis
+                    {{ t('anime.detail.synopsis') }}
                 </h3>
                 <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed">
                     {{ showFullSynopsis() ? anime()!.synopsis : truncatedSynopsis() }} @if (anime()!.synopsis!.length >
@@ -221,7 +221,7 @@
                         class="text-primary ml-1 cursor-pointer border-none bg-transparent text-sm font-medium"
                         (click)="showFullSynopsis.set(!showFullSynopsis())"
                     >
-                        {{ showFullSynopsis() ? "Weniger anzeigen" : "Mehr anzeigen" }}
+                        {{ showFullSynopsis() ? t('anime.detail.showLess') : t('anime.detail.showMore') }}
                     </button>
                     }
                 </p>
@@ -232,50 +232,50 @@
             <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                 @if (anime()!.episode) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Folgen</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.episodes') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.episode }}</div>
                 </div>
                 } @if (anime()!.episodeDuration) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Dauer/Folge</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.duration') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ anime()!.episodeDuration }} Min.
                     </div>
                 </div>
                 } @if (anime()!.source) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Quelle</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.source') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.source }}</div>
                 </div>
                 } @if (anime()!.rating) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">FSK</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.rating') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.rating }}</div>
                 </div>
                 } @if (anime()!.season || anime()!.seasonYear) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Saison</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.season') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium capitalize">
                         {{ anime()!.season }} {{ anime()!.seasonYear }}
                     </div>
                 </div>
                 } @if (anime()!.startYear) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Start</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.start') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ formatDate( anime()!.startYear, anime()!.startMonth, anime()!.startDay ) }}
                     </div>
                 </div>
                 } @if (anime()!.endYear) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Ende</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.end') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ formatDate( anime()!.endYear, anime()!.endMonth, anime()!.endDay ) }}
                     </div>
                 </div>
                 } @if (anime()!.broadcastDay) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">Ausstrahlung</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.broadcast') }}</div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ anime()!.broadcastDay }} {{ anime()!.broadcastTime }}
                     </div>
@@ -288,7 +288,7 @@
             <p-divider styleClass="my-0" />
             <div>
                 <h3 class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-semibold tracking-wide uppercase">
-                    Verwandte Anime
+                    {{ t('anime.detail.relatedAnime') }}
                 </h3>
                 <div class="flex flex-col gap-2">
                     @for (related of anime()!.relatedAnime!; track related.animeId) {
@@ -338,8 +338,8 @@
     } @else {
     <div class="flex flex-col items-center justify-center py-20 text-center">
         <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
-        <p class="text-surface-500">Anime nicht gefunden.</p>
-        <p-button (onClick)="back()" icon="pi pi-arrow-left" label="Zurück" severity="secondary" styleClass="mt-4" />
+        <p class="text-surface-500">{{ t('anime.detail.notFound') }}</p>
+        <p-button (onClick)="back()" icon="pi pi-arrow-left" [label]="t('anime.detail.back')" severity="secondary" styleClass="mt-4" />
     </div>
     }
 </div>

@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, injec
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { DividerModule } from "primeng/divider";
@@ -25,12 +26,12 @@ interface StatusOption {
     value: AnimeListStatus;
 }
 
-const STATUS_OPTIONS: StatusOption[] = [
-    { icon: "pi pi-play", label: "Am Schauen", value: "watching" },
-    { icon: "pi pi-check", label: "Abgeschlossen", value: "completed" },
-    { icon: "pi pi-clock", label: "Plan to Watch", value: "plan_to_watch" },
-    { icon: "pi pi-pause", label: "Pausiert", value: "on_hold" },
-    { icon: "pi pi-times", label: "Abgebrochen", value: "dropped" }
+const STATUS_OPTION_VALUES: { icon: string; value: AnimeListStatus; key: string }[] = [
+    { icon: "pi pi-play", value: "watching", key: "anime.detail.listStatuses.watching" },
+    { icon: "pi pi-check", value: "completed", key: "anime.detail.listStatuses.completed" },
+    { icon: "pi pi-clock", value: "plan_to_watch", key: "anime.detail.listStatuses.plan_to_watch" },
+    { icon: "pi pi-pause", value: "on_hold", key: "anime.detail.listStatuses.on_hold" },
+    { icon: "pi pi-times", value: "dropped", key: "anime.detail.listStatuses.dropped" }
 ];
 
 const STATUS_SEVERITY: Record<AnimeListStatus, "success" | "info" | "warn" | "danger" | "secondary"> = {
@@ -57,7 +58,8 @@ const STATUS_SEVERITY: Record<AnimeListStatus, "success" | "info" | "warn" | "da
         SkeletonModule,
         TagModule,
         TextareaModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     selector: "app-anime-detail",
     templateUrl: "./anime-detail.html"
@@ -88,12 +90,13 @@ export class AnimeDetail implements OnInit {
     protected readonly saveSuccess = signal(false);
     protected readonly saving = signal(false);
     protected readonly showFullSynopsis = signal(false);
-    protected readonly statusOptions = STATUS_OPTIONS;
+    protected statusOptions: StatusOption[] = [];
 
     // ⑤ Private
     private readonly destroyRef = inject(DestroyRef);
     private readonly location = inject(Location);
     private readonly route = inject(ActivatedRoute);
+    private readonly translocoService = inject(TranslocoService);
 
     constructor() {
         effect(() => {
@@ -120,6 +123,8 @@ export class AnimeDetail implements OnInit {
     }
 
     ngOnInit(): void {
+        this.buildStatusOptions();
+        this.translocoService.langChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.buildStatusOptions());
         this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
             const id = Number(params.get("id"));
             this.showFullSynopsis.set(false);
@@ -157,7 +162,15 @@ export class AnimeDetail implements OnInit {
     protected listStatusLabel(): string {
         const entry = this.listEntry();
         if (!entry) return "";
-        return STATUS_OPTIONS.find((o) => o.value === entry.status)?.label ?? entry.status;
+        return this.translocoService.translate("anime.detail.listStatuses." + entry.status);
+    }
+
+    private buildStatusOptions(): void {
+        this.statusOptions = STATUS_OPTION_VALUES.map((opt) => ({
+            icon: opt.icon,
+            label: this.translocoService.translate(opt.key),
+            value: opt.value
+        }));
     }
 
     protected listStatusSeverity(): "success" | "info" | "warn" | "danger" | "secondary" {
@@ -195,7 +208,7 @@ export class AnimeDetail implements OnInit {
                 setTimeout(() => this.saveSuccess.set(false), 3000);
             },
             error: () => {
-                this.saveError.set("Fehler beim Speichern.");
+                this.saveError.set(this.translocoService.translate("common.saveError"));
                 this.saving.set(false);
             }
         });

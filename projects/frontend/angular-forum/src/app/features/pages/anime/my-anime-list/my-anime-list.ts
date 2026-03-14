@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
@@ -23,12 +24,12 @@ interface StatCard {
     status: AnimeListStatus;
 }
 
-const STATUS_LABELS: Record<AnimeListStatus, string> = {
-    completed: "Abgeschlossen",
-    dropped: "Abgebrochen",
-    on_hold: "Pausiert",
-    plan_to_watch: "Plan to Watch",
-    watching: "Am Schauen"
+const STATUS_KEYS: Record<AnimeListStatus, string> = {
+    completed: "anime.detail.listStatuses.completed",
+    dropped: "anime.detail.listStatuses.dropped",
+    on_hold: "anime.detail.listStatuses.on_hold",
+    plan_to_watch: "anime.detail.listStatuses.plan_to_watch",
+    watching: "anime.detail.listStatuses.watching"
 };
 
 const STATUS_SEVERITY: Record<AnimeListStatus, "success" | "info" | "warn" | "danger" | "secondary"> = {
@@ -52,7 +53,8 @@ const ALL_STATUSES: AnimeListStatus[] = ["watching", "completed", "plan_to_watch
         SkeletonModule,
         TabsModule,
         TagModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     selector: "app-my-anime-list",
     templateUrl: "./my-anime-list.html"
@@ -71,7 +73,7 @@ export class MyAnimeList implements OnInit {
     protected readonly statCards = computed((): StatCard[] =>
         ALL_STATUSES.map((status) => ({
             count: this.list().filter((e) => e.status === status).length,
-            label: STATUS_LABELS[status],
+            label: this.translocoService.translate(STATUS_KEYS[status]),
             status
         }))
     );
@@ -84,6 +86,7 @@ export class MyAnimeList implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly translocoService = inject(TranslocoService);
     private readonly userId = signal<string | null>(null);
 
     ngOnInit(): void {
@@ -112,7 +115,8 @@ export class MyAnimeList implements OnInit {
 
     protected formatDate(dateStr?: string): string {
         if (!dateStr) return "—";
-        return new Date(dateStr).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+        const locale = this.translocoService.getActiveLang() === "de" ? "de-DE" : "en-US";
+        return new Date(dateStr).toLocaleDateString(locale, { month: "long", year: "numeric" });
     }
 
     protected goToDetail(animeId: number): void {
@@ -120,13 +124,7 @@ export class MyAnimeList implements OnInit {
     }
 
     protected roleLabel(role: string): string {
-        const map: Record<string, string> = {
-            admin: "Admin",
-            moderator: "Moderator",
-            member: "Mitglied",
-            guest: "Gast"
-        };
-        return map[role] ?? role;
+        return this.translocoService.translate("userProfile.roles." + role);
     }
 
     protected roleSeverity(role: string): "danger" | "warn" | "info" | "secondary" {
@@ -137,7 +135,7 @@ export class MyAnimeList implements OnInit {
     }
 
     protected statusLabel(status: AnimeListStatus): string {
-        return STATUS_LABELS[status];
+        return this.translocoService.translate(STATUS_KEYS[status]);
     }
 
     protected statusSeverity(status: AnimeListStatus): "success" | "info" | "warn" | "danger" | "secondary" {

@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { CreditService } from "../../credit/credit.service";
 import { GamificationService } from "../../gamification/gamification.service";
 import { UserXpData } from "../../gamification/level.config";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
@@ -24,6 +25,7 @@ interface AuthorInfo {
     avatarUrl?: string;
     signature?: string;
     xpData?: UserXpData;
+    balance?: number;
 }
 
 function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
@@ -38,6 +40,7 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
         authorSignature: author?.signature,
         authorLevel: author?.xpData?.level ?? 1,
         authorLevelName: author?.xpData?.levelName ?? "Neuling",
+        authorBalance: author?.balance,
         content: entity.content,
         isFirstPost: entity.isFirstPost,
         isEdited: entity.isEdited,
@@ -78,7 +81,8 @@ export class PostService {
         private readonly forumRepo: Repository<ForumEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly gamificationService: GamificationService
+        private readonly gamificationService: GamificationService,
+        private readonly creditService: CreditService
     ) {}
 
     async findByThread(threadId: string, query: ForumQueryDto): Promise<PaginatedResult<PostDto>> {
@@ -94,7 +98,7 @@ export class PostService {
         });
 
         const authorIds = [...new Set(posts.map((p) => p.authorId))];
-        const [users, postCountRows, xpMap] = await Promise.all([
+        const [users, postCountRows, xpMap, balanceMap] = await Promise.all([
             authorIds.length
                 ? this.userRepo.find({ where: { id: In(authorIds) }, select: ["id", "displayName", "role", "avatarUrl", "signature"] })
                 : Promise.resolve([]),
@@ -104,7 +108,8 @@ export class PostService {
                       [authorIds]
                   )
                 : Promise.resolve([]),
-            this.gamificationService.getUserXpDataBatch(authorIds)
+            this.gamificationService.getUserXpDataBatch(authorIds),
+            this.creditService.getBalances(authorIds)
         ]);
 
         const postCountMap = new Map(postCountRows.map((r) => [r.author_id, Number(r.count)]));
@@ -118,7 +123,8 @@ export class PostService {
                     postCount: postCountMap.get(u.id) ?? 0,
                     avatarUrl: u.avatarUrl,
                     signature: u.signature,
-                    xpData: xpMap.get(u.id)
+                    xpData: xpMap.get(u.id),
+                    balance: balanceMap.get(u.id)
                 }
             ])
         );
@@ -152,6 +158,8 @@ export class PostService {
 
         // Award XP for creating a post
         void this.gamificationService.awardXp(authorId, "create_post", post.id);
+        // Award 5 coins for creating a post
+        void this.creditService.addCredits(authorId, 5, "reward", "Coins für neuen Beitrag").catch(() => undefined);
 
         return toDto(post);
     }
@@ -221,10 +229,25 @@ export class PostService {
             void this.gamificationService.awardXp(userId, "give_reaction", postId);
             if (post.authorId !== userId) {
                 void this.gamificationService.awardXp(post.authorId, "receive_reaction", postId);
+                // Award 2 coins to post author for receiving a reaction
+                void this.creditService.addCredits(post.authorId, 2, "reward", "Coins für erhaltene Reaktion").catch(() => undefined);
             }
         }
 
         return toReactionDto(reaction);
+    }
+
+    async getMyReactions(threadId: string, userId: string): Promise<string[]> {
+        const rows = await this.reactionRepo.query<{ post_id: string }[]>(
+            `SELECT r.post_id
+               FROM forum_post_reactions r
+               JOIN forum_posts p ON p.id = r.post_id
+              WHERE p.thread_id = $1
+                AND r.user_id  = $2
+                AND p.deleted_at IS NULL`,
+            [threadId, userId]
+        );
+        return rows.map((r) => r.post_id);
     }
 
     async unreact(postId: string, userId: string): Promise<void> {

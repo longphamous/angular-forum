@@ -77,6 +77,18 @@ export class PostController {
     }
 
     /**
+     * GET /forum/threads/:threadId/my-reactions
+     * Returns postIds in this thread that the current user has reacted to.
+     */
+    @Get("threads/:threadId/my-reactions")
+    getMyReactions(
+        @Param("threadId", ParseUUIDPipe) threadId: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<string[]> {
+        return this.postService.getMyReactions(threadId, user.userId);
+    }
+
+    /**
      * POST /forum/posts/:id/react
      * Adds or updates a reaction on a post. Requires authentication.
      */

@@ -1,34 +1,40 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from "@angular/core";
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
+import { HttpClient } from "@angular/common/http";
+import { ChangeDetectionStrategy, Component, effect, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { Subscription } from "rxjs";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { DatePickerModule } from "primeng/datepicker";
+import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
+import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 import { PasswordModule } from "primeng/password";
 import { SelectModule } from "primeng/select";
+import { SkeletonModule } from "primeng/skeleton";
 import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
+import { TooltipModule } from "primeng/tooltip";
 
+import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
+import { AchievementCard } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
+import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
+import { UserAchievement } from "../../../core/models/gamification/achievement";
+import { WalletTransaction } from "../../../core/models/wallet/wallet";
 import { UserRole } from "../../../core/models/user/user";
 import { AuthFacade, ChangePasswordPayload, UpdateProfilePayload } from "../../../facade/auth/auth-facade";
+import { WalletFacade } from "../../../facade/wallet/wallet-facade";
 
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const newPw = group.get("newPassword")?.value as string;
     const confirm = group.get("confirmPassword")?.value as string;
     return newPw && confirm && newPw !== confirm ? { passwordMismatch: true } : null;
 }
-
-const ROLE_LABELS: Record<UserRole, string> = {
-    admin: "Administrator",
-    moderator: "Moderator",
-    member: "Mitglied",
-    guest: "Gast"
-};
 
 const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" | "secondary" | "contrast"> = {
     admin: "danger",
@@ -40,24 +46,31 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AchievementCard,
         AvatarModule,
         ButtonModule,
         CardModule,
         DatePickerModule,
+        DialogModule,
         DividerModule,
+        FormsModule,
+        InputNumberModule,
         InputTextModule,
         LevelProgress,
         MessageModule,
         PasswordModule,
         ReactiveFormsModule,
         SelectModule,
+        SkeletonModule,
         TabsModule,
         TagModule,
-        TextareaModule
+        TextareaModule,
+        TooltipModule,
+        TranslocoModule
     ],
     selector: "app-profile-page",
     template: `
-        <div class="mx-auto max-w-3xl">
+        <div class="mx-auto max-w-3xl" *transloco="let t">
             <!-- Header -->
             <p-card styleClass="mb-6">
                 <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -87,12 +100,12 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                         >
                             <span class="flex items-center gap-1">
                                 <i class="pi pi-calendar"></i>
-                                Mitglied seit {{ formatDate(user()?.createdAt) }}
+                                {{ t('profile.header.memberSince') }} {{ formatDate(user()?.createdAt) }}
                             </span>
                             @if (user()?.lastLoginAt) {
                                 <span class="flex items-center gap-1">
                                     <i class="pi pi-clock"></i>
-                                    Zuletzt aktiv {{ formatDate(user()?.lastLoginAt) }}
+                                    {{ formatDate(user()?.lastLoginAt) }}
                                 </span>
                             }
                         </div>
@@ -107,6 +120,13 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                 />
                             </div>
                         }
+                        @if (walletFacade.wallet()) {
+                            <div class="mt-2 flex items-center gap-1.5">
+                                <i class="pi pi-wallet text-yellow-500 text-sm"></i>
+                                <span class="text-yellow-600 dark:text-yellow-400 text-sm font-semibold">{{ walletFacade.wallet()!.balance }}</span>
+                                <span class="text-surface-400 text-xs">{{ t('wallet.currency') }}</span>
+                            </div>
+                        }
                     </div>
                 </div>
             </p-card>
@@ -114,9 +134,17 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
             <!-- Tabs -->
             <p-tabs value="overview">
                 <p-tablist>
-                    <p-tab value="overview"> <i class="pi pi-user mr-2"></i>Übersicht </p-tab>
-                    <p-tab value="edit"> <i class="pi pi-pencil mr-2"></i>Bearbeiten </p-tab>
-                    <p-tab value="security"> <i class="pi pi-lock mr-2"></i>Sicherheit </p-tab>
+                    <p-tab value="overview"> <i class="pi pi-user mr-2"></i>{{ t('profile.tabs.profile') }} </p-tab>
+                    <p-tab value="achievements">
+                        <i class="pi pi-trophy mr-2"></i>{{ t('profile.tabs.achievements') }}
+                        @if (achievements().length > 0) {
+                            <span class="bg-primary/15 text-primary ml-1 rounded-full px-1.5 py-0.5 text-xs font-semibold">{{ achievements().length }}</span>
+                        }
+                    </p-tab>
+                    <p-tab value="edit"> <i class="pi pi-pencil mr-2"></i>{{ t('profile.header.editTitle') }} </p-tab>
+                    <p-tab value="wallet"> <i class="pi pi-wallet mr-2"></i>{{ t('profile.tabs.wallet') }} </p-tab>
+                    <p-tab value="preferences"> <i class="pi pi-cog mr-2"></i>{{ t('profile.tabs.preferences') }} </p-tab>
+                    <p-tab value="security"> <i class="pi pi-lock mr-2"></i>{{ t('profile.tabs.security') }} </p-tab>
                 </p-tablist>
 
                 <p-tabpanels>
@@ -128,7 +156,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     <div
                                         class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
                                     >
-                                        Benutzername
+                                        {{ t('profile.header.username') }}
                                     </div>
                                     <div class="text-surface-900 dark:text-surface-0 font-medium">
                                         {{ user()?.username }}
@@ -148,7 +176,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     <div
                                         class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
                                     >
-                                        Rolle
+                                        {{ t('adminUsers.table.role') }}
                                     </div>
                                     <p-tag [severity]="roleSeverity()" [value]="roleLabel()" styleClass="text-xs" />
                                 </div>
@@ -156,7 +184,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     <div
                                         class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase"
                                     >
-                                        Status
+                                        {{ t('adminUsers.table.status') }}
                                     </div>
                                     <div class="text-surface-900 dark:text-surface-0 font-medium capitalize">
                                         {{ user()?.status }}
@@ -169,11 +197,35 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     <div
                                         class="text-surface-500 dark:text-surface-400 mb-2 text-xs font-medium tracking-wide uppercase"
                                     >
-                                        Bio
+                                        {{ t('profile.form.bio') }}
                                     </div>
                                     <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed">
                                         {{ user()?.bio }}
                                     </p>
+                                </div>
+                            }
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- Achievements -->
+                    <p-tabpanel value="achievements">
+                        <div class="pt-2">
+                            @if (achievementsLoading()) {
+                                <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                                    @for (_ of [1,2,3,4,5]; track $index) {
+                                        <p-skeleton height="6rem" styleClass="rounded-xl" />
+                                    }
+                                </div>
+                            } @else if (achievements().length === 0) {
+                                <div class="flex flex-col items-center justify-center py-12 text-center">
+                                    <i class="pi pi-trophy text-surface-300 mb-3 text-4xl"></i>
+                                    <p class="text-surface-500 text-sm">{{ t('profile.achievements.noAchievements') }}</p>
+                                </div>
+                            } @else {
+                                <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                                    @for (a of achievements(); track a.id) {
+                                        <achievement-card [achievement]="a" />
+                                    }
                                 </div>
                             }
                         </div>
@@ -194,7 +246,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                     for="displayName"
                                 >
-                                    Anzeigename
+                                    {{ t('profile.form.displayName') }}
                                 </label>
                                 <input
                                     class="w-full"
@@ -205,33 +257,33 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     "
                                     formControlName="displayName"
                                     pInputText
-                                    placeholder="Dein Anzeigename"
+                                    [placeholder]="t('profile.form.displayName')"
                                     type="text"
                                 />
                                 @if (
                                     profileForm.get("displayName")?.errors?.["required"] &&
                                     profileForm.get("displayName")?.touched
                                 ) {
-                                    <small class="text-red-500">Anzeigename ist erforderlich.</small>
+                                    <small class="text-red-500">{{ t('profile.form.requiredField', { field: t('profile.form.displayName') }) }}</small>
                                 }
                                 @if (
                                     profileForm.get("displayName")?.errors?.["minlength"] &&
                                     profileForm.get("displayName")?.touched
                                 ) {
-                                    <small class="text-red-500">Mindestens 2 Zeichen erforderlich.</small>
+                                    <small class="text-red-500">{{ t('profile.form.minLength', { min: 2 }) }}</small>
                                 }
                             </div>
 
                             <div class="flex flex-col gap-2">
                                 <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="bio">
-                                    Bio <span class="text-surface-400 font-normal">(optional)</span>
+                                    {{ t('profile.form.bio') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                 </label>
                                 <textarea
                                     class="w-full"
                                     id="bio"
                                     [autoResize]="true"
                                     formControlName="bio"
-                                    placeholder="Erzähl etwas über dich…"
+                                    [placeholder]="t('profile.form.bioPlaceholder')"
                                     pTextarea
                                     rows="4"
                                 ></textarea>
@@ -246,7 +298,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                         class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                         for="gender"
                                     >
-                                        Geschlecht <span class="text-surface-400 font-normal">(optional)</span>
+                                        {{ t('profile.form.gender') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                     </label>
                                     <p-select
                                         [options]="genderOptions"
@@ -263,7 +315,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                         class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                         for="birthday"
                                     >
-                                        Geburtstag <span class="text-surface-400 font-normal">(optional)</span>
+                                        {{ t('profile.form.birthday') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                     </label>
                                     <p-datepicker
                                         [maxDate]="today"
@@ -280,14 +332,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                         class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                         for="location"
                                     >
-                                        Ort <span class="text-surface-400 font-normal">(optional)</span>
+                                        {{ t('profile.form.location') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                     </label>
                                     <input
                                         class="w-full"
                                         id="location"
                                         formControlName="location"
                                         pInputText
-                                        placeholder="Stadt, Land…"
+                                        [placeholder]="t('profile.form.locationPlaceholder')"
                                         type="text"
                                     />
                                 </div>
@@ -297,14 +349,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                         class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                         for="website"
                                     >
-                                        Website <span class="text-surface-400 font-normal">(optional)</span>
+                                        {{ t('profile.form.website') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                     </label>
                                     <input
                                         class="w-full"
                                         id="website"
                                         formControlName="website"
                                         pInputText
-                                        placeholder="https://…"
+                                        [placeholder]="t('profile.form.websitePlaceholder')"
                                         type="url"
                                     />
                                 </div>
@@ -315,14 +367,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                     for="signature"
                                 >
-                                    Signatur <span class="text-surface-400 font-normal">(optional)</span>
+                                    {{ t('profile.form.signature') }} <span class="text-surface-400 font-normal">({{ t('common.optional') }})</span>
                                 </label>
                                 <textarea
                                     class="w-full"
                                     id="signature"
                                     [autoResize]="true"
                                     formControlName="signature"
-                                    placeholder="Deine Signatur, die unter deinen Beiträgen erscheint…"
+                                    [placeholder]="t('profile.form.signaturePlaceholder')"
                                     pTextarea
                                     rows="3"
                                 ></textarea>
@@ -336,11 +388,139 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     [disabled]="profileForm.invalid || profileForm.pristine"
                                     [loading]="saving()"
                                     icon="pi pi-check"
-                                    label="Speichern"
+                                    [label]="t('profile.form.saveBtn')"
                                     type="submit"
                                 />
                             </div>
                         </form>
+                    </p-tabpanel>
+
+                    <!-- Wallet -->
+                    <p-tabpanel value="wallet">
+                        <div class="flex flex-col gap-5 pt-2">
+
+                            <!-- Balance card -->
+                            @if (walletFacade.walletLoading()) {
+                                <p-skeleton height="6rem" styleClass="rounded-xl" />
+                            } @else if (walletFacade.wallet()) {
+                                <div class="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 rounded-xl border p-5">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-surface-500 dark:text-surface-400 mb-1 text-xs font-medium tracking-wide uppercase">
+                                                {{ t('wallet.balance') }}
+                                            </p>
+                                            <div class="flex items-center gap-2">
+                                                <i class="pi pi-wallet text-primary text-2xl"></i>
+                                                <span class="text-primary text-3xl font-bold">{{ walletFacade.wallet()!.balance }}</span>
+                                                <span class="text-surface-400 text-sm">{{ t('wallet.currency') }}</span>
+                                            </div>
+                                        </div>
+                                        <p-button
+                                            icon="pi pi-arrow-right-arrow-left"
+                                            [label]="t('wallet.transfer')"
+                                            size="small"
+                                            (onClick)="openTransferDialog()"
+                                        />
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Transaction history -->
+                            <div>
+                                <h3 class="text-surface-900 dark:text-surface-0 mb-3 text-sm font-semibold">
+                                    {{ t('wallet.history') }}
+                                </h3>
+                                @if (walletFacade.transactionsLoading()) {
+                                    <div class="flex flex-col gap-2">
+                                        @for (_ of [1,2,3,4,5]; track $index) {
+                                            <p-skeleton height="3rem" styleClass="rounded-lg" />
+                                        }
+                                    </div>
+                                } @else if (walletFacade.transactions().length === 0) {
+                                    <div class="text-surface-400 py-8 text-center text-sm">
+                                        <i class="pi pi-inbox mb-2 block text-2xl"></i>
+                                        {{ t('wallet.noTransactions') }}
+                                    </div>
+                                } @else {
+                                    <div class="flex flex-col gap-2">
+                                        @for (tx of walletFacade.transactions(); track tx.id) {
+                                            <div class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800/50 flex items-center gap-3 rounded-lg border px-4 py-3 transition-colors">
+                                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                                    [class]="txIconBg(tx)">
+                                                    <i class="text-sm" [class]="txIcon(tx)"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-surface-800 dark:text-surface-100 m-0 text-sm font-medium">{{ tx.description }}</p>
+                                                    <p class="text-surface-400 m-0 text-xs">{{ formatDate(tx.createdAt) }}</p>
+                                                </div>
+                                                <span class="shrink-0 text-sm font-semibold"
+                                                    [class]="txAmountClass(tx)">
+                                                    {{ txSign(tx) }}{{ tx.amount }} {{ t('wallet.currency') }}
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Transfer dialog -->
+                        <p-dialog
+                            [(visible)]="transferDialogVisible"
+                            [header]="t('wallet.transferDialog.title')"
+                            [modal]="true"
+                            [style]="{ width: '420px' }"
+                            [closable]="!walletFacade.transferring()"
+                        >
+                            <div class="flex flex-col gap-4 pt-2">
+                                @if (transferError()) {
+                                    <p-message [text]="transferError()!" severity="error" styleClass="w-full" />
+                                }
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-sm font-medium">{{ t('wallet.transferDialog.toUserId') }} <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="transferToUserId" [placeholder]="t('wallet.transferDialog.toUserIdPlaceholder')" class="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-sm font-medium">{{ t('wallet.transferDialog.amount') }} <span class="text-red-500">*</span></label>
+                                    <p-inputnumber [(ngModel)]="transferAmount" [min]="1" [max]="walletFacade.wallet()?.balance ?? 0" [showButtons]="true" decrementButtonIcon="pi pi-minus" incrementButtonIcon="pi pi-plus" buttonLayout="horizontal" inputStyleClass="w-16 text-center" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-sm font-medium">{{ t('wallet.transferDialog.description') }}</label>
+                                    <input pInputText [(ngModel)]="transferNote" [placeholder]="t('wallet.transferDialog.descriptionPlaceholder')" class="w-full" />
+                                </div>
+                            </div>
+                            <ng-template #footer>
+                                <p-button (onClick)="transferDialogVisible = false" [disabled]="walletFacade.transferring()" [label]="t('common.cancel')" severity="secondary" [text]="true" />
+                                <p-button (onClick)="submitTransfer()" [disabled]="!transferToUserId || !transferAmount" [loading]="walletFacade.transferring()" [label]="t('wallet.transferDialog.submit')" icon="pi pi-send" />
+                            </ng-template>
+                        </p-dialog>
+                    </p-tabpanel>
+
+                    <!-- Einstellungen -->
+                    <p-tabpanel value="preferences">
+                        <div class="flex flex-col gap-6 pt-2">
+                            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-5">
+                                <h3 class="text-surface-900 dark:text-surface-0 mb-4 text-sm font-semibold">
+                                    {{ t('profile.preferences.title') }}
+                                </h3>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                                        {{ t('profile.preferences.language') }}
+                                    </label>
+                                    <p-select
+                                        [ngModel]="activeLang()"
+                                        [options]="languageOptions"
+                                        (ngModelChange)="changeLanguage($event)"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        styleClass="w-full sm:w-64"
+                                    />
+                                    <small class="text-surface-400 dark:text-surface-500">
+                                        {{ t('profile.preferences.languageHint') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                     </p-tabpanel>
 
                     <!-- Sicherheit -->
@@ -358,7 +538,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                     for="currentPassword"
                                 >
-                                    Aktuelles Passwort
+                                    {{ t('profile.security.currentPassword') }}
                                 </label>
                                 <p-password
                                     [feedback]="false"
@@ -366,14 +546,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     formControlName="currentPassword"
                                     inputId="currentPassword"
                                     inputStyleClass="w-full"
-                                    placeholder="Aktuelles Passwort"
+                                    [placeholder]="t('profile.security.currentPassword')"
                                     styleClass="w-full"
                                 />
                                 @if (
                                     passwordForm.get("currentPassword")?.errors?.["required"] &&
                                     passwordForm.get("currentPassword")?.touched
                                 ) {
-                                    <small class="text-red-500">Aktuelles Passwort ist erforderlich.</small>
+                                    <small class="text-red-500">{{ t('profile.form.requiredField', { field: t('profile.security.currentPassword') }) }}</small>
                                 }
                             </div>
 
@@ -384,31 +564,31 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                     for="newPassword"
                                 >
-                                    Neues Passwort
+                                    {{ t('profile.security.newPassword') }}
                                 </label>
                                 <p-password
                                     [toggleMask]="true"
                                     formControlName="newPassword"
                                     inputId="newPassword"
                                     inputStyleClass="w-full"
-                                    mediumLabel="Mittel"
-                                    placeholder="Neues Passwort"
-                                    promptLabel="Passwort eingeben"
-                                    strongLabel="Stark"
+                                    [mediumLabel]="t('profile.security.mediumLabel')"
+                                    [placeholder]="t('profile.security.newPassword')"
+                                    [promptLabel]="t('profile.security.promptLabel')"
+                                    [strongLabel]="t('profile.security.strongLabel')"
                                     styleClass="w-full"
-                                    weakLabel="Schwach"
+                                    [weakLabel]="t('profile.security.weakLabel')"
                                 />
                                 @if (
                                     passwordForm.get("newPassword")?.errors?.["required"] &&
                                     passwordForm.get("newPassword")?.touched
                                 ) {
-                                    <small class="text-red-500">Neues Passwort ist erforderlich.</small>
+                                    <small class="text-red-500">{{ t('profile.form.requiredField', { field: t('profile.security.newPassword') }) }}</small>
                                 }
                                 @if (
                                     passwordForm.get("newPassword")?.errors?.["minlength"] &&
                                     passwordForm.get("newPassword")?.touched
                                 ) {
-                                    <small class="text-red-500">Mindestens 8 Zeichen erforderlich.</small>
+                                    <small class="text-red-500">{{ t('profile.form.minLength', { min: 8 }) }}</small>
                                 }
                             </div>
 
@@ -417,7 +597,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     class="text-surface-700 dark:text-surface-300 text-sm font-medium"
                                     for="confirmPassword"
                                 >
-                                    Passwort bestätigen
+                                    {{ t('profile.security.confirmPassword') }}
                                 </label>
                                 <p-password
                                     [feedback]="false"
@@ -425,14 +605,14 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     formControlName="confirmPassword"
                                     inputId="confirmPassword"
                                     inputStyleClass="w-full"
-                                    placeholder="Passwort wiederholen"
+                                    [placeholder]="t('profile.security.confirmPassword')"
                                     styleClass="w-full"
                                 />
                                 @if (
                                     passwordForm.errors?.["passwordMismatch"] &&
                                     passwordForm.get("confirmPassword")?.touched
                                 ) {
-                                    <small class="text-red-500">Passwörter stimmen nicht überein.</small>
+                                    <small class="text-red-500">{{ t('profile.security.mismatch') }}</small>
                                 }
                             </div>
 
@@ -441,7 +621,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     [disabled]="passwordForm.invalid"
                                     [loading]="savingPassword()"
                                     icon="pi pi-lock"
-                                    label="Passwort ändern"
+                                    [label]="t('profile.security.submit')"
                                     severity="warn"
                                     type="submit"
                                 />
@@ -453,11 +633,31 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
         </div>
     `
 })
-export class ProfilePage {
+export class ProfilePage implements OnInit, OnDestroy {
     private readonly authFacade = inject(AuthFacade);
     private readonly fb = inject(FormBuilder);
+    private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly translocoService = inject(TranslocoService);
+    private readonly langChangesSubscription: Subscription;
+
+    protected readonly walletFacade = inject(WalletFacade);
+
+    protected transferDialogVisible = false;
+    protected transferToUserId = "";
+    protected transferAmount = 1;
+    protected transferNote = "";
+    protected readonly transferError = signal<string | null>(null);
 
     protected readonly user = this.authFacade.currentUser;
+    protected readonly activeLang = signal(this.translocoService.getActiveLang());
+    protected readonly languageOptions = [
+        { label: "Deutsch", value: "de" },
+        { label: "English", value: "en" }
+    ];
+
+    protected readonly achievements = signal<UserAchievement[]>([]);
+    protected readonly achievementsLoading = signal(false);
 
     protected readonly saving = signal(false);
     protected readonly savingPassword = signal(false);
@@ -468,13 +668,7 @@ export class ProfilePage {
 
     protected readonly today = new Date();
 
-    protected readonly genderOptions = [
-        { label: "Keine Angabe", value: "" },
-        { label: "Männlich", value: "male" },
-        { label: "Weiblich", value: "female" },
-        { label: "Divers", value: "other" },
-        { label: "Lieber nicht angeben", value: "prefer_not_to_say" }
-    ];
+    protected genderOptions: { label: string; value: string }[] = [];
 
     protected readonly profileForm = this.fb.group({
         bio: ["", Validators.maxLength(500)],
@@ -496,6 +690,12 @@ export class ProfilePage {
     );
 
     constructor() {
+        this.buildGenderOptions();
+        this.langChangesSubscription = this.translocoService.langChanges$.subscribe((lang) => {
+            this.activeLang.set(lang);
+            this.buildGenderOptions();
+        });
+
         effect(() => {
             const u = this.user();
             if (u) {
@@ -513,13 +713,45 @@ export class ProfilePage {
         });
     }
 
+    ngOnInit(): void {
+        const userId = this.user()?.id;
+        if (userId) {
+            this.achievementsLoading.set(true);
+            this.http.get<UserAchievement[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.user(userId)}`).subscribe({
+                next: (data) => { this.achievements.set(data); this.achievementsLoading.set(false); },
+                error: () => this.achievementsLoading.set(false)
+            });
+            this.walletFacade.loadWallet();
+            this.walletFacade.loadTransactions();
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.langChangesSubscription.unsubscribe();
+    }
+
+    private buildGenderOptions(): void {
+        this.genderOptions = [
+            { label: this.translocoService.translate("profile.genders.prefer_not_to_say"), value: "" },
+            { label: this.translocoService.translate("profile.genders.male"), value: "male" },
+            { label: this.translocoService.translate("profile.genders.female"), value: "female" },
+            { label: this.translocoService.translate("profile.genders.other"), value: "other" },
+            { label: this.translocoService.translate("profile.genders.prefer_not_to_say"), value: "prefer_not_to_say" }
+        ];
+    }
+
+    protected changeLanguage(lang: string): void {
+        localStorage.setItem("lang", lang);
+        this.translocoService.setActiveLang(lang);
+    }
+
     protected userInitial(): string {
         const u = this.user();
         return (u?.displayName ?? u?.username ?? "?").charAt(0).toUpperCase();
     }
 
     protected roleLabel(): string {
-        return ROLE_LABELS[this.user()?.role ?? "guest"];
+        return this.translocoService.translate("userProfile.roles." + (this.user()?.role ?? "guest"));
     }
 
     protected roleSeverity(): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" {
@@ -550,15 +782,76 @@ export class ProfilePage {
 
         this.authFacade.updateProfile(payload).subscribe({
             next: () => {
-                this.profileSuccess.set("Profil erfolgreich gespeichert.");
+                this.profileSuccess.set(this.translocoService.translate("profile.form.successMsg"));
                 this.profileForm.markAsPristine();
                 this.saving.set(false);
             },
             error: () => {
-                this.profileError.set("Fehler beim Speichern. Bitte versuche es erneut.");
+                this.profileError.set(this.translocoService.translate("common.saveError"));
                 this.saving.set(false);
             }
         });
+    }
+
+    protected openTransferDialog(): void {
+        this.transferToUserId = "";
+        this.transferAmount = 1;
+        this.transferNote = "";
+        this.transferError.set(null);
+        this.transferDialogVisible = true;
+    }
+
+    protected submitTransfer(): void {
+        this.transferError.set(null);
+        this.walletFacade.transfer(this.transferToUserId, this.transferAmount, this.transferNote || undefined).subscribe({
+            next: () => {
+                this.transferDialogVisible = false;
+            },
+            error: () => {
+                this.transferError.set(this.translocoService.translate("wallet.transferError"));
+            }
+        });
+    }
+
+    protected txIcon(tx: WalletTransaction): string {
+        const userId = this.user()?.id;
+        switch (tx.type) {
+            case "transfer":
+                return tx.fromUserId === userId ? "pi pi-arrow-up-right text-red-500" : "pi pi-arrow-down-left text-green-500";
+            case "deposit":
+                return "pi pi-plus text-green-500";
+            case "withdrawal":
+                return "pi pi-minus text-red-500";
+            case "reward":
+                return "pi pi-star-fill text-yellow-500";
+            case "lotto_win":
+                return "pi pi-trophy text-yellow-500";
+            case "lotto_ticket":
+                return "pi pi-ticket text-orange-500";
+            default:
+                return "pi pi-wallet text-primary";
+        }
+    }
+
+    protected txIconBg(tx: WalletTransaction): string {
+        const userId = this.user()?.id;
+        if (tx.type === "transfer" && tx.fromUserId === userId) return "bg-red-50 dark:bg-red-900/20";
+        if (tx.type === "withdrawal" || tx.type === "lotto_ticket") return "bg-red-50 dark:bg-red-900/20";
+        return "bg-green-50 dark:bg-green-900/20";
+    }
+
+    protected txSign(tx: WalletTransaction): string {
+        const userId = this.user()?.id;
+        if (tx.type === "withdrawal" || tx.type === "lotto_ticket") return "-";
+        if (tx.type === "transfer" && tx.fromUserId === userId) return "-";
+        return "+";
+    }
+
+    protected txAmountClass(tx: WalletTransaction): string {
+        const userId = this.user()?.id;
+        if (tx.type === "withdrawal" || tx.type === "lotto_ticket") return "text-red-500";
+        if (tx.type === "transfer" && tx.fromUserId === userId) return "text-red-500";
+        return "text-green-600 dark:text-green-400";
     }
 
     protected changePassword(): void {
@@ -574,12 +867,12 @@ export class ProfilePage {
 
         this.authFacade.changePassword(payload).subscribe({
             next: () => {
-                this.passwordSuccess.set("Passwort erfolgreich geändert.");
+                this.passwordSuccess.set(this.translocoService.translate("profile.security.successMsg"));
                 this.passwordForm.reset();
                 this.savingPassword.set(false);
             },
             error: () => {
-                this.passwordError.set("Fehler beim Ändern des Passworts. Prüfe dein aktuelles Passwort.");
+                this.passwordError.set(this.translocoService.translate("profile.security.changeError"));
                 this.savingPassword.set(false);
             }
         });

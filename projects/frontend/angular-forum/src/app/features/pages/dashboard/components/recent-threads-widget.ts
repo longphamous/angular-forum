@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { CardModule } from "primeng/card";
 import { SkeletonModule } from "primeng/skeleton";
@@ -7,24 +8,14 @@ import { TagModule } from "primeng/tag";
 
 import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
 
-function relativeTime(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return "gerade eben";
-    if (minutes < 60) return `vor ${minutes} Min.`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `vor ${hours} Std.`;
-    const days = Math.floor(hours / 24);
-    return `vor ${days} Tag${days === 1 ? "" : "en"}`;
-}
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule],
+    imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule, TranslocoModule],
     selector: "app-recent-threads-widget",
     template: `
-        <p-card>
-            <ng-template #title>Neueste Themen</ng-template>
+        <p-card *transloco="let t">
+            <ng-template #title>{{ t('dashboard.recentThreads') }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -75,7 +66,7 @@ function relativeTime(dateStr: string): string {
                             <i class="pi pi-chevron-right text-surface-300 shrink-0 self-center text-xs"></i>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">Keine Themen gefunden.</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noThreads') }}</p>
                     }
                 </div>
             }
@@ -84,6 +75,17 @@ function relativeTime(dateStr: string): string {
 })
 export class RecentThreadsWidget {
     protected readonly facade = inject(DashboardFacade);
-    protected readonly relativeTime = relativeTime;
     protected readonly skeletonItems = [1, 2, 3, 4, 5];
+    private readonly translocoService = inject(TranslocoService);
+
+    protected relativeTime(dateStr: string): string {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) return this.translocoService.translate("common.justNow");
+        if (minutes < 60) return this.translocoService.translate("common.minutesAgo", { count: minutes });
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return this.translocoService.translate("common.hoursAgo", { count: hours });
+        const days = Math.floor(hours / 24);
+        return this.translocoService.translate(days === 1 ? "common.daysAgo" : "common.daysAgoPlural", { count: days });
+    }
 }

@@ -1,9 +1,9 @@
-<div class="card">
+<div class="card" *transloco="let t">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h2 class="m-0 text-2xl font-bold">Anime Database</h2>
+            <h2 class="m-0 text-2xl font-bold">{{ t('anime.database.title') }}</h2>
             @if (facade.total() > 0) {
-            <p class="text-surface-500 mt-1 mb-0">{{ facade.total().toLocaleString() }} Einträge</p>
+            <p class="text-surface-500 mt-1 mb-0">{{ t('anime.database.entries', { count: facade.total().toLocaleString() }) }}</p>
             }
         </div>
     </div>
@@ -30,15 +30,15 @@
         <ng-template #header>
             <tr>
                 <th class="text-surface-400 text-center" style="width: 3.5rem">#</th>
-                <th style="min-width: 22rem">Anime</th>
-                <th style="width: 6.5rem">Typ</th>
-                <th class="text-center" style="width: 5.5rem">Folgen</th>
-                <th class="text-center" style="width: 5.5rem">Score</th>
-                <th style="min-width: 11rem">Status</th>
-                <th style="width: 8rem">Start</th>
-                <th style="width: 8rem">Ende</th>
-                <th style="min-width: 8rem">Saison</th>
-                <th style="width: 6rem">Rating</th>
+                <th style="min-width: 22rem">{{ t('anime.topList.table.anime') }}</th>
+                <th style="width: 6.5rem">{{ t('anime.topList.table.type') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('anime.topList.table.episodes') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('anime.topList.table.score') }}</th>
+                <th style="min-width: 11rem">{{ t('anime.topList.table.status') }}</th>
+                <th style="width: 8rem">{{ t('anime.topList.table.start') }}</th>
+                <th style="width: 8rem">{{ t('anime.topList.table.end') }}</th>
+                <th style="min-width: 8rem">{{ t('anime.topList.table.season') }}</th>
+                <th style="width: 6rem">{{ t('anime.topList.table.rating') }}</th>
             </tr>
         </ng-template>
 
@@ -160,7 +160,7 @@
                 <td colspan="10">
                     <div class="text-surface-400 flex flex-col items-center justify-center py-12">
                         <i class="pi pi-inbox mb-3 text-5xl"></i>
-                        <span class="text-lg">Keine Anime gefunden.</span>
+                        <span class="text-lg">{{ t('anime.database.noAnime') }}</span>
                     </div>
                 </td>
             </tr>

@@ -1,7 +1,11 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+
+<app-teaser-slideshow />
+
 <div class="card">
     <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Forum</h1>
-        <p-button icon="pi pi-plus" label="Neues Forum erstellen" severity="secondary" />
+        <h1 class="text-2xl font-bold">{{ t('forum.title') }}</h1>
+        <p-button icon="pi pi-plus" [label]="t('forum.newForum')" severity="secondary" />
     </div>
 
     @if (facade.error()) {
@@ -32,7 +36,7 @@
 
                 <div class="border-surface-200 dark:border-surface-700 rounded-b border border-t-0">
                     @if (!category.forums || category.forums.length === 0) {
-                        <div class="text-surface-500 px-4 py-6 text-center text-sm">Keine Foren vorhanden.</div>
+                        <div class="text-surface-500 px-4 py-6 text-center text-sm">{{ t('forum.noForums') }}</div>
                     } @else {
                         @for (forum of category.forums; track forum.id; let last = $last) {
                             <a
@@ -56,10 +60,10 @@
                                             forum.name
                                         }}</span>
                                         @if (forum.isLocked) {
-                                            <p-tag severity="danger" value="Gesperrt" />
+                                            <p-tag severity="danger" [value]="t('forum.locked')" />
                                         }
                                         @if (forum.isPrivate) {
-                                            <p-tag severity="warn" value="Privat" />
+                                            <p-tag severity="warn" [value]="t('forum.private')" />
                                         }
                                     </div>
                                     @if (forum.description) {
@@ -74,13 +78,13 @@
                                         <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
                                             {{ forum.threadCount }}
                                         </div>
-                                        <div class="text-surface-500 text-xs">Threads</div>
+                                        <div class="text-surface-500 text-xs">{{ t('forum.threads') }}</div>
                                     </div>
                                     <div class="hidden sm:block">
                                         <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
                                             {{ forum.postCount }}
                                         </div>
-                                        <div class="text-surface-500 text-xs">Beiträge</div>
+                                        <div class="text-surface-500 text-xs">{{ t('forum.posts') }}</div>
                                     </div>
                                     <div class="hidden md:block">
                                         @if (forum.lastPostAt) {
@@ -90,7 +94,7 @@
                                         } @else {
                                             <div class="text-surface-400 text-xs">—</div>
                                         }
-                                        <div class="text-surface-400 text-xs">Letzter Beitrag</div>
+                                        <div class="text-surface-400 text-xs">{{ t('forum.lastPost') }}</div>
                                     </div>
                                 </div>
                             </a>
@@ -101,7 +105,9 @@
         }
 
         @if (facade.categories().length === 0) {
-            <div class="card text-surface-500 py-12 text-center">Keine Kategorien vorhanden.</div>
+            <div class="card text-surface-500 py-12 text-center">{{ t('forum.noCategories') }}</div>
         }
     }
+</div>
+
 </div>

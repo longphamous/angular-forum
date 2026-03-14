@@ -1,91 +1,91 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 
-import { Public } from "../auth/auth.decorators";
-import { CreditService } from "./credit.service";
-import { Transaction } from "./models/transaction.model";
-import { Wallet } from "./models/wallet.model";
+import { Public, Roles } from "../auth/auth.decorators";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { AuthenticatedUser } from "../auth/models/jwt.model";
+import { CreditService, PaginatedTransactions, TransactionDto, WalletDto, WalletLeaderboardEntry } from "./credit.service";
 
-@Public()
 @Controller("credit")
 export class CreditController {
     constructor(private readonly creditService: CreditService) {}
 
-    // ─── Wallets ──────────────────────────────────────────────────────────────
+    // ─── Own wallet (any authenticated user) ──────────────────────────────────
 
     /**
-     * GET /credit/wallets/:userId
-     * Returns the wallet (balance) for a given user.
+     * GET /credit/wallet
+     * Returns the caller's wallet.
      */
-    @Get("wallets/:userId")
-    getWallet(@Param("userId") userId: string): Wallet {
-        return this.creditService.getWallet(userId);
+    @Get("wallet")
+    getMyWallet(@CurrentUser() user: AuthenticatedUser): Promise<WalletDto> {
+        return this.creditService.getWallet(user.userId);
     }
 
     /**
-     * POST /credit/wallets
-     * Creates a new wallet for a user.
-     *
-     * Body: { userId: string; username: string }
+     * GET /credit/transactions?page=1&limit=20
+     * Returns the caller's transaction history (paginated).
      */
-    @Post("wallets")
-    createWallet(@Body() body: { userId: string; username: string }): Wallet {
-        return this.creditService.createWallet(body.userId, body.username);
-    }
-
-    // ─── Transactions ─────────────────────────────────────────────────────────
-
-    /**
-     * GET /credit/transactions/:userId
-     * Returns all transactions for a user.
-     */
-    @Get("transactions/:userId")
-    getTransactions(@Param("userId") userId: string): Transaction[] {
-        return this.creditService.getTransactions(userId);
-    }
-
-    /**
-     * POST /credit/deposit
-     * Deposits credits into a user's wallet.
-     *
-     * Body: { userId: string; amount: number; description?: string }
-     */
-    @Post("deposit")
-    deposit(@Body() body: { userId: string; amount: number; description?: string }): Transaction {
-        return this.creditService.deposit(body.userId, body.amount, body.description);
-    }
-
-    /**
-     * POST /credit/withdraw
-     * Withdraws credits from a user's wallet.
-     *
-     * Body: { userId: string; amount: number; description?: string }
-     */
-    @Post("withdraw")
-    withdraw(@Body() body: { userId: string; amount: number; description?: string }): Transaction {
-        return this.creditService.withdraw(body.userId, body.amount, body.description);
+    @Get("transactions")
+    getMyTransactions(
+        @CurrentUser() user: AuthenticatedUser,
+        @Query("page") page?: string,
+        @Query("limit") limit?: string
+    ): Promise<PaginatedTransactions> {
+        return this.creditService.getTransactions(
+            user.userId,
+            page ? parseInt(page, 10) : 1,
+            limit ? parseInt(limit, 10) : 20
+        );
     }
 
     /**
      * POST /credit/transfer
-     * Transfers credits from one user to another.
+     * Transfer credits from the caller to another user.
      *
-     * Body: { fromUserId: string; toUserId: string; amount: number; description?: string }
+     * Body: { toUserId: string; amount: number; description?: string }
      */
     @Post("transfer")
     transfer(
-        @Body() body: { fromUserId: string; toUserId: string; amount: number; description?: string }
-    ): Transaction {
-        return this.creditService.transfer(body.fromUserId, body.toUserId, body.amount, body.description);
+        @CurrentUser() user: AuthenticatedUser,
+        @Body() body: { toUserId: string; amount: number; description?: string }
+    ): Promise<TransactionDto> {
+        return this.creditService.transfer(user.userId, body.toUserId, body.amount, body.description);
+    }
+
+    // ─── Public leaderboard ───────────────────────────────────────────────────
+
+    /**
+     * GET /credit/leaderboard?limit=5
+     * Returns the top N users by balance. Publicly accessible.
+     */
+    @Get("leaderboard")
+    @Public()
+    getLeaderboard(@Query("limit") limit?: string): Promise<WalletLeaderboardEntry[]> {
+        return this.creditService.getLeaderboard(limit ? parseInt(limit, 10) : 5);
+    }
+
+    // ─── Admin endpoints ───────────────────────────────────────────────────────
+
+    /**
+     * POST /credit/deposit
+     * Admin: deposit credits into any user's wallet.
+     *
+     * Body: { userId: string; amount: number; description?: string }
+     */
+    @Post("deposit")
+    @Roles("admin")
+    deposit(@Body() body: { userId: string; amount: number; description?: string }): Promise<TransactionDto> {
+        return this.creditService.deposit(body.userId, body.amount, body.description);
     }
 
     /**
      * POST /credit/reward
-     * Awards bonus credits to a user (e.g. from gamification events).
+     * Admin: reward any user with credits.
      *
      * Body: { userId: string; amount: number; description?: string }
      */
     @Post("reward")
-    reward(@Body() body: { userId: string; amount: number; description?: string }): Transaction {
+    @Roles("admin")
+    reward(@Body() body: { userId: string; amount: number; description?: string }): Promise<TransactionDto> {
         return this.creditService.reward(body.userId, body.amount, body.description);
     }
 }

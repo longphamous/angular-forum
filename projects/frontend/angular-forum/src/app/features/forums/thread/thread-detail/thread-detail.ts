@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
@@ -14,6 +15,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { Post } from "../../../../core/models/forum/post";
+import { AuthFacade } from "../../../../facade/auth/auth-facade";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
@@ -31,7 +33,8 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         SkeletonModule,
         TagModule,
         TextareaModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     templateUrl: "./thread-detail.html",
     styleUrl: "./thread-detail.scss",
@@ -42,6 +45,8 @@ export class ThreadDetail implements OnInit {
     readonly route = inject(ActivatedRoute);
     readonly router = inject(Router);
     readonly cd = inject(ChangeDetectorRef);
+    private readonly authFacade = inject(AuthFacade);
+    private readonly translocoService = inject(TranslocoService);
     readonly pageSize = 20;
 
     replyContent = "";
@@ -65,6 +70,7 @@ export class ThreadDetail implements OnInit {
             this.reactionAdjust.clear();
             this.facade.loadThread(this.threadId);
             this.facade.loadPosts(this.threadId, 1, this.pageSize);
+            this.loadMyReactions();
         });
     }
 
@@ -88,7 +94,7 @@ export class ThreadDetail implements OnInit {
                 this.cd.markForCheck();
             },
             error: () => {
-                this.replyError = "Fehler beim Senden der Antwort.";
+                this.replyError = this.translocoService.translate("common.saveError");
                 this.submittingReply = false;
                 this.cd.markForCheck();
             }
@@ -121,6 +127,18 @@ export class ThreadDetail implements OnInit {
         if (role === "moderator") return "warn";
         if (role === "member") return "info";
         return "secondary";
+    }
+
+    // ── Private ───────────────────────────────────────────────────────────────
+
+    private loadMyReactions(): void {
+        if (!this.authFacade.isAuthenticated()) return;
+        this.facade.getMyReactions(this.threadId).subscribe({
+            next: (ids) => {
+                ids.forEach((id) => this.reactedPostIds.add(id));
+                this.cd.markForCheck();
+            }
+        });
     }
 
     // ── Reactions ─────────────────────────────────────────────────────────────

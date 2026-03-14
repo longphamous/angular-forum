@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
@@ -22,7 +23,8 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         FluidModule,
         DividerModule,
         MessageModule,
-        RouterModule
+        RouterModule,
+        TranslocoModule
     ],
     templateUrl: "./thread-create.html",
     styleUrl: "./thread-create.scss",
@@ -33,6 +35,7 @@ export class ThreadCreate implements OnInit {
     readonly router = inject(Router);
     readonly facade = inject(ForumFacade);
     readonly cd = inject(ChangeDetectorRef);
+    private readonly translocoService = inject(TranslocoService);
 
     title = "";
     content = "";
@@ -51,7 +54,7 @@ export class ThreadCreate implements OnInit {
 
     submit(): void {
         if (!this.title.trim() || !this.content.trim()) {
-            this.error = "Titel und Inhalt sind erforderlich.";
+            this.error = this.translocoService.translate("threadCreate.requiredFields");
             return;
         }
         this.submitting = true;
@@ -61,7 +64,7 @@ export class ThreadCreate implements OnInit {
                 this.router.navigate(["/forum/threads", thread.id]);
             },
             error: () => {
-                this.error = "Fehler beim Erstellen des Threads.";
+                this.error = this.translocoService.translate("threadCreate.createError");
                 this.submitting = false;
                 this.cd.markForCheck();
             }

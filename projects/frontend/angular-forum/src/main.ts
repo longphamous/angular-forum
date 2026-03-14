@@ -11,6 +11,9 @@ import { MockInterceptor } from "./app/core/mocks/mock-interceptor/mock-intercep
 import { environment } from "./environments/environment";
 import { TranslocoHttpLoader } from "./transloco-loader";
 
+const storedLang = localStorage.getItem("lang");
+const initialLang = storedLang === "de" || storedLang === "en" ? storedLang : "en";
+
 const mockProvider = environment.useMock
     ? [
           {
@@ -33,7 +36,7 @@ bootstrapApplication(AppComponent, {
         provideTransloco({
             config: {
                 availableLangs: ["en", "de"],
-                defaultLang: "en",
+                defaultLang: initialLang,
                 fallbackLang: "en",
                 // Remove this option if your application doesn't support changing language in runtime.
                 reRenderOnLangChange: true,

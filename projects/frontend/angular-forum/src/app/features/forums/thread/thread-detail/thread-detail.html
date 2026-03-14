@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4" *transloco="let t">
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-start gap-3">
@@ -22,17 +22,17 @@
                         {{ facade.currentThread()!.title }}
                     </h1>
                     @if (facade.currentThread()!.isPinned) {
-                    <p-tag severity="warn" value="Angepinnt" />
+                    <p-tag severity="warn" [value]="t('threadDetail.pinned')" />
                     } @if (facade.currentThread()!.isSticky) {
-                    <p-tag severity="info" value="Wichtig" />
+                    <p-tag severity="info" [value]="t('threadDetail.sticky')" />
                     } @if (facade.currentThread()!.isLocked) {
-                    <p-tag severity="danger" value="Gesperrt" />
+                    <p-tag severity="danger" [value]="t('threadDetail.locked')" />
                     }
                 </div>
                 <div class="text-surface-500 mt-2 flex flex-wrap gap-4 text-sm">
                     <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(facade.currentThread()!.createdAt) }}</span>
-                    <span><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} Aufrufe</span>
-                    <span><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} Antworten</span>
+                    <span><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} {{ t('threadDetail.views') }}</span>
+                    <span><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} {{ t('threadDetail.replies') }}</span>
                 </div>
                 }
             </div>
@@ -91,7 +91,12 @@
                 >{{ post.authorName }}</a>
                 <p-tag [value]="post.authorRole" styleClass="text-xs" [severity]="authorRoleSeverity(post.authorRole)" />
                 <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
-                <span class="text-surface-400 text-xs">{{ post.authorPostCount }} Beiträge</span>
+                <span class="text-surface-400 text-xs">{{ post.authorPostCount }} {{ t('threadDetail.posts') }}</span>
+                @if (post.authorBalance !== undefined) {
+                <span class="text-yellow-600 dark:text-yellow-400 flex items-center gap-0.5 text-xs">
+                    <i class="pi pi-wallet text-xs"></i>{{ post.authorBalance }}
+                </span>
+                }
             </div>
 
             <!-- Post content -->
@@ -114,11 +119,11 @@
                     <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
                     <div class="flex items-center gap-2">
                         @if (post.isFirstPost) {
-                        <p-tag severity="info" value="Erster Beitrag" styleClass="text-xs" />
+                        <p-tag severity="info" [value]="t('threadDetail.firstPost')" styleClass="text-xs" />
                         }
                         @if (post.isEdited) {
                         <span class="text-surface-400 text-xs italic">
-                            bearbeitet {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
                         </span>
                         }
                         @if (post.reactionCount > 0) {
@@ -152,19 +157,19 @@
                     <button
                         class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
                         (click)="quotePost(post); $event.stopPropagation()"
-                        pTooltip="Diesen Beitrag zitieren"
+                        [pTooltip]="t('threadDetail.quoteTooltip')"
                     >
                         <i class="pi pi-reply text-sm"></i>
-                        <span>Zitieren</span>
+                        <span>{{ t('threadDetail.quote') }}</span>
                     </button>
 
                     <button
                         class="text-surface-400 dark:text-surface-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
                         (click)="openReport(post); $event.stopPropagation()"
-                        pTooltip="Diesen Beitrag melden"
+                        [pTooltip]="t('threadDetail.reportTooltip')"
                     >
                         <i class="pi pi-flag text-sm"></i>
-                        <span>Melden</span>
+                        <span>{{ t('threadDetail.report') }}</span>
                     </button>
                 </div>
 
@@ -185,7 +190,7 @@
     <!-- Reply form -->
     @if (!facade.currentThread()?.isLocked) {
     <div class="card" id="reply-section">
-        <h2 class="mb-4 text-lg font-semibold">Antworten</h2>
+        <h2 class="mb-4 text-lg font-semibold">{{ t('threadDetail.replyHeader') }}</h2>
 
         @if (replyError) {
         <p-message [text]="replyError" severity="error" styleClass="mb-3 w-full" />
@@ -195,7 +200,7 @@
             [(ngModel)]="replyContent"
             [readonly]="submittingReply"
             [style]="{ height: '200px' }"
-            placeholder="Deine Antwort..."
+            [placeholder]="t('threadDetail.replyPlaceholder')"
         />
 
         <div class="mt-3 flex justify-end">
@@ -204,48 +209,49 @@
                 [disabled]="!replyContent.trim()"
                 [loading]="submittingReply"
                 icon="pi pi-send"
-                label="Antwort senden"
+                [label]="t('threadDetail.replySend')"
             />
         </div>
     </div>
     } @else {
     <div class="card text-surface-500 py-6 text-center">
-        <i class="pi pi-lock mr-2"></i>Dieser Thread ist gesperrt. Keine weiteren Antworten möglich.
+        <i class="pi pi-lock mr-2"></i>{{ t('threadDetail.lockedMessage') }}
     </div>
     }
 </div>
 
 <!-- Report dialog -->
+<ng-container *transloco="let t">
 <p-dialog
     [visible]="reportVisible()"
     (visibleChange)="reportVisible.set($event)"
-    header="Beitrag melden"
+    [header]="t('threadDetail.reportDialog.header')"
     [modal]="true"
     [style]="{ width: '28rem' }"
     [draggable]="false"
 >
     @if (reportSuccess()) {
-    <p-message severity="success" text="Danke! Der Beitrag wurde gemeldet." styleClass="w-full mb-3" />
+    <p-message severity="success" [text]="t('threadDetail.reportDialog.success')" styleClass="w-full mb-3" />
     } @else {
     <p class="text-surface-600 dark:text-surface-400 mb-4 text-sm">
-        Bitte schildere kurz, warum du diesen Beitrag meldest.
+        {{ t('threadDetail.reportDialog.description') }}
     </p>
     <textarea
         pTextarea
         [(ngModel)]="reportReason"
         class="w-full"
         rows="4"
-        placeholder="Grund der Meldung (z.B. Spam, unangemessener Inhalt…)"
+        [placeholder]="t('threadDetail.reportDialog.placeholder')"
         [autoResize]="false"
     ></textarea>
     }
     <ng-template #footer>
         @if (reportSuccess()) {
-        <p-button label="Schließen" (onClick)="reportVisible.set(false); reportSuccess.set(false)" />
+        <p-button [label]="t('common.close')" (onClick)="reportVisible.set(false); reportSuccess.set(false)" />
         } @else {
-        <p-button label="Abbrechen" severity="secondary" [outlined]="true" (onClick)="reportVisible.set(false)" />
+        <p-button [label]="t('common.cancel')" severity="secondary" [outlined]="true" (onClick)="reportVisible.set(false)" />
         <p-button
-            label="Melden"
+            [label]="t('threadDetail.reportDialog.submit')"
             icon="pi pi-flag"
             severity="warn"
             [disabled]="!reportReason.trim()"
@@ -254,3 +260,4 @@
         }
     </ng-template>
 </p-dialog>
+</ng-container>

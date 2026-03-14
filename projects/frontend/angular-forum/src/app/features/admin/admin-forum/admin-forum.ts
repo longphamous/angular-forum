@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
@@ -37,7 +38,8 @@ import {
         SkeletonModule,
         TagModule,
         TextareaModule,
-        ToastModule
+        ToastModule,
+        TranslocoModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: "./admin-forum.html",
@@ -68,6 +70,7 @@ export class AdminForum implements OnInit {
 
     private readonly confirmationService = inject(ConfirmationService);
     private readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
 
     ngOnInit(): void {
         this.facade.loadCategories();
@@ -112,8 +115,8 @@ export class AdminForum implements OnInit {
                     this.categoryDialogSaving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: "Gespeichert",
-                        detail: "Kategorie aktualisiert."
+                        summary: this.translocoService.translate("common.saved"),
+                        detail: this.translocoService.translate("adminForum.category.saveSuccess")
                     });
                     this.facade.loadCategories();
                 },
@@ -121,8 +124,8 @@ export class AdminForum implements OnInit {
                     this.categoryDialogSaving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: "Fehler",
-                        detail: "Kategorie konnte nicht gespeichert werden."
+                        summary: this.translocoService.translate("common.error"),
+                        detail: this.translocoService.translate("adminForum.category.saveError")
                     });
                 }
             });
@@ -138,8 +141,8 @@ export class AdminForum implements OnInit {
                     this.categoryDialogSaving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: "Erstellt",
-                        detail: "Kategorie wurde erstellt."
+                        summary: this.translocoService.translate("common.created"),
+                        detail: this.translocoService.translate("adminForum.category.createSuccess")
                     });
                     this.facade.loadCategories();
                 },
@@ -147,8 +150,8 @@ export class AdminForum implements OnInit {
                     this.categoryDialogSaving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: "Fehler",
-                        detail: "Kategorie konnte nicht erstellt werden."
+                        summary: this.translocoService.translate("common.error"),
+                        detail: this.translocoService.translate("adminForum.category.createError")
                     });
                 }
             });
@@ -157,8 +160,8 @@ export class AdminForum implements OnInit {
 
     confirmDeleteCategory(cat: ForumCategory): void {
         this.confirmationService.confirm({
-            message: `Kategorie "${cat.name}" wirklich löschen? Alle enthaltenen Foren werden ebenfalls gelöscht.`,
-            header: "Kategorie löschen",
+            message: this.translocoService.translate("adminForum.category.deleteConfirm", { name: cat.name }),
+            header: this.translocoService.translate("adminForum.category.deleteHeader"),
             icon: "pi pi-exclamation-triangle",
             acceptButtonStyleClass: "p-button-danger",
             accept: () => {
@@ -166,16 +169,16 @@ export class AdminForum implements OnInit {
                     next: () => {
                         this.messageService.add({
                             severity: "success",
-                            summary: "Gelöscht",
-                            detail: "Kategorie wurde gelöscht."
+                            summary: this.translocoService.translate("common.deleted"),
+                            detail: this.translocoService.translate("adminForum.category.deleteSuccess")
                         });
                         this.facade.loadCategories();
                     },
                     error: () => {
                         this.messageService.add({
                             severity: "error",
-                            summary: "Fehler",
-                            detail: "Kategorie konnte nicht gelöscht werden."
+                            summary: this.translocoService.translate("common.error"),
+                            detail: this.translocoService.translate("adminForum.category.deleteError")
                         });
                     }
                 });
@@ -228,8 +231,8 @@ export class AdminForum implements OnInit {
                     this.forumDialogSaving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: "Gespeichert",
-                        detail: "Forum aktualisiert."
+                        summary: this.translocoService.translate("common.saved"),
+                        detail: this.translocoService.translate("adminForum.forum.saveSuccess")
                     });
                     this.facade.loadCategories();
                 },
@@ -237,8 +240,8 @@ export class AdminForum implements OnInit {
                     this.forumDialogSaving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: "Fehler",
-                        detail: "Forum konnte nicht gespeichert werden."
+                        summary: this.translocoService.translate("common.error"),
+                        detail: this.translocoService.translate("adminForum.forum.saveError")
                     });
                 }
             });
@@ -256,8 +259,8 @@ export class AdminForum implements OnInit {
                     this.forumDialogSaving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: "Erstellt",
-                        detail: "Forum wurde erstellt."
+                        summary: this.translocoService.translate("common.created"),
+                        detail: this.translocoService.translate("adminForum.forum.createSuccess")
                     });
                     this.facade.loadCategories();
                 },
@@ -265,8 +268,8 @@ export class AdminForum implements OnInit {
                     this.forumDialogSaving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: "Fehler",
-                        detail: "Forum konnte nicht erstellt werden."
+                        summary: this.translocoService.translate("common.error"),
+                        detail: this.translocoService.translate("adminForum.forum.createError")
                     });
                 }
             });
@@ -275,8 +278,8 @@ export class AdminForum implements OnInit {
 
     confirmDeleteForum(forum: Forum): void {
         this.confirmationService.confirm({
-            message: `Forum "${forum.name}" wirklich löschen? Alle Threads und Beiträge werden ebenfalls gelöscht.`,
-            header: "Forum löschen",
+            message: this.translocoService.translate("adminForum.forum.deleteConfirm", { name: forum.name }),
+            header: this.translocoService.translate("adminForum.forum.deleteHeader"),
             icon: "pi pi-exclamation-triangle",
             acceptButtonStyleClass: "p-button-danger",
             accept: () => {
@@ -284,16 +287,16 @@ export class AdminForum implements OnInit {
                     next: () => {
                         this.messageService.add({
                             severity: "success",
-                            summary: "Gelöscht",
-                            detail: "Forum wurde gelöscht."
+                            summary: this.translocoService.translate("common.deleted"),
+                            detail: this.translocoService.translate("adminForum.forum.deleteSuccess")
                         });
                         this.facade.loadCategories();
                     },
                     error: () => {
                         this.messageService.add({
                             severity: "error",
-                            summary: "Fehler",
-                            detail: "Forum konnte nicht gelöscht werden."
+                            summary: this.translocoService.translate("common.error"),
+                            detail: this.translocoService.translate("adminForum.forum.deleteError")
                         });
                     }
                 });

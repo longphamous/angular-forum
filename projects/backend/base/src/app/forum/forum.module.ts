@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { CreditModule } from "../credit/credit.module";
 import { GamificationModule } from "../gamification/gamification.module";
 import { CategoryController } from "./controllers/category.controller";
 import { ForumController } from "./controllers/forum.controller";
@@ -19,6 +20,7 @@ import { ThreadService } from "./services/thread.service";
 
 @Module({
     imports: [
+        CreditModule,
         GamificationModule,
         TypeOrmModule.forFeature([
             ForumCategoryEntity,

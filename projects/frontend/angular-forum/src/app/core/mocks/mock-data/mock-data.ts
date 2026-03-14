@@ -5,6 +5,9 @@ import { Group, PagePermission } from "../../models/group/group";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { UserProfile } from "../../models/user/user";
+import { Achievement, UserAchievement } from "../../models/gamification/achievement";
+import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
+import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 
 export interface User {
     id: string;
@@ -211,6 +214,14 @@ export const mockPagePermissions: Record<string, PagePermission> = {
         id: "pp-admin-gamification",
         route: "/admin/gamification",
         name: "Admin Gamification",
+        groups: [{ id: "g-admin", name: "Admin" }],
+        createdAt: now,
+        updatedAt: now
+    },
+    "pp-admin-achievements": {
+        id: "pp-admin-achievements",
+        route: "/admin/achievements",
+        name: "Admin Achievements",
         groups: [{ id: "g-admin", name: "Admin" }],
         createdAt: now,
         updatedAt: now
@@ -662,3 +673,135 @@ export const mockAnimeListStore: Record<string, AnimeListEntry> = {
         anime: mockAnimeDetails[9253]
     }
 };
+
+// ── Achievements ───────────────────────────────────────────────────────────────
+
+export const mockAchievements: Record<string, Achievement> = {
+    "ach-001": { id: "ach-001", key: "first_post", name: "Erster Schritt", description: "Schreibe deinen ersten Beitrag", icon: "pi pi-comment", rarity: "bronze", triggerType: "post_count", triggerValue: 1, isActive: true, createdAt: now, updatedAt: now },
+    "ach-002": { id: "ach-002", key: "active_writer", name: "Aktiver Schreiber", description: "Schreibe 10 Beiträge", icon: "pi pi-pencil", rarity: "silver", triggerType: "post_count", triggerValue: 10, isActive: true, createdAt: now, updatedAt: now },
+    "ach-003": { id: "ach-003", key: "prolific_writer", name: "Vielschreiber", description: "Schreibe 50 Beiträge", icon: "pi pi-file-edit", rarity: "gold", triggerType: "post_count", triggerValue: 50, isActive: true, createdAt: now, updatedAt: now },
+    "ach-004": { id: "ach-004", key: "posting_legend", name: "Posting-Legende", description: "Schreibe 100 Beiträge", icon: "pi pi-crown", rarity: "platinum", triggerType: "post_count", triggerValue: 100, isActive: true, createdAt: now, updatedAt: now },
+    "ach-005": { id: "ach-005", key: "thread_starter", name: "Themen-Starter", description: "Erstelle deinen ersten Thread", icon: "pi pi-plus-circle", rarity: "bronze", triggerType: "thread_count", triggerValue: 1, isActive: true, createdAt: now, updatedAt: now },
+    "ach-006": { id: "ach-006", key: "discussion_pro", name: "Diskussionsprofi", description: "Erstelle 10 Threads", icon: "pi pi-sitemap", rarity: "silver", triggerType: "thread_count", triggerValue: 10, isActive: true, createdAt: now, updatedAt: now },
+    "ach-007": { id: "ach-007", key: "first_reaction", name: "Beliebter Beitrag", description: "Erhalte deine erste Reaktion", icon: "pi pi-heart-fill", rarity: "bronze", triggerType: "reaction_received_count", triggerValue: 1, isActive: true, createdAt: now, updatedAt: now },
+    "ach-008": { id: "ach-008", key: "community_star", name: "Community-Star", description: "Erhalte 10 Reaktionen", icon: "pi pi-star-fill", rarity: "silver", triggerType: "reaction_received_count", triggerValue: 10, isActive: true, createdAt: now, updatedAt: now },
+    "ach-009": { id: "ach-009", key: "fan_favorite", name: "Fan-Liebling", description: "Erhalte 50 Reaktionen", icon: "pi pi-star", rarity: "gold", triggerType: "reaction_received_count", triggerValue: 50, isActive: true, createdAt: now, updatedAt: now },
+    "ach-010": { id: "ach-010", key: "generous_reactor", name: "Reaktionskönig", description: "Reagiere auf 10 Beiträge", icon: "pi pi-heart", rarity: "bronze", triggerType: "reaction_given_count", triggerValue: 10, isActive: true, createdAt: now, updatedAt: now },
+    "ach-011": { id: "ach-011", key: "level_5", name: "Aufsteiger", description: "Erreiche Level 5", icon: "pi pi-chart-line", rarity: "silver", triggerType: "level_reached", triggerValue: 5, isActive: true, createdAt: now, updatedAt: now },
+    "ach-012": { id: "ach-012", key: "level_8", name: "Veteranenstatus", description: "Erreiche Level 8", icon: "pi pi-shield", rarity: "gold", triggerType: "level_reached", triggerValue: 8, isActive: true, createdAt: now, updatedAt: now },
+    "ach-013": { id: "ach-013", key: "level_10", name: "Legende", description: "Erreiche Level 10", icon: "pi pi-crown", rarity: "platinum", triggerType: "level_reached", triggerValue: 10, isActive: true, createdAt: now, updatedAt: now }
+};
+
+// User achievements (userId → earned achievements)
+export const mockUserAchievements: Record<string, UserAchievement[]> = {
+    // Admin (level 5): first_post, thread_starter, first_reaction, active_writer, level_5
+    "00000000-0000-0000-0000-000000000001": [
+        { ...mockAchievements["ach-001"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-005"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-007"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-002"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-011"], earnedAt: twoDaysAgo }
+    ],
+    // Mod (level 7): first_post, thread_starter, active_writer, first_reaction, community_star, prolific_writer, level_5
+    "00000000-0000-0000-0000-000000000002": [
+        { ...mockAchievements["ach-001"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-005"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-002"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-007"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-008"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-003"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-011"], earnedAt: twoDaysAgo }
+    ],
+    // Member (level 3): first_post, thread_starter, first_reaction
+    "00000000-0000-0000-0000-000000000003": [
+        { ...mockAchievements["ach-001"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-005"], earnedAt: twoDaysAgo },
+        { ...mockAchievements["ach-007"], earnedAt: twoDaysAgo }
+    ]
+};
+
+// ── Wallets ───────────────────────────────────────────────────────────────────
+
+export const mockWallets: Record<string, Wallet> = {
+    "00000000-0000-0000-0000-000000000001": {
+        id: "wallet-001",
+        userId: "00000000-0000-0000-0000-000000000001",
+        balance: 850,
+        createdAt: twoDaysAgo,
+        updatedAt: now
+    },
+    "00000000-0000-0000-0000-000000000002": {
+        id: "wallet-002",
+        userId: "00000000-0000-0000-0000-000000000002",
+        balance: 1340,
+        createdAt: twoDaysAgo,
+        updatedAt: now
+    },
+    "00000000-0000-0000-0000-000000000003": {
+        id: "wallet-003",
+        userId: "00000000-0000-0000-0000-000000000003",
+        balance: 210,
+        createdAt: twoDaysAgo,
+        updatedAt: now
+    }
+};
+
+export const mockWalletTransactions: Record<string, WalletTransaction[]> = {
+    "00000000-0000-0000-0000-000000000001": [
+        { id: "tx-a1", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000001", amount: 500, type: "deposit", description: "Willkommensbonus", createdAt: twoDaysAgo },
+        { id: "tx-a2", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000001", amount: 5, type: "reward", description: "Coins für neuen Beitrag", createdAt: oneHourAgo },
+        { id: "tx-a3", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000001", amount: 5, type: "reward", description: "Coins für neuen Beitrag", createdAt: now }
+    ],
+    "00000000-0000-0000-0000-000000000002": [
+        { id: "tx-b1", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000002", amount: 500, type: "deposit", description: "Willkommensbonus", createdAt: twoDaysAgo },
+        { id: "tx-b2", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000002", amount: 200, type: "reward", description: "Moderator-Belohnung", createdAt: twoDaysAgo },
+        { id: "tx-b3", fromUserId: "00000000-0000-0000-0000-000000000001", toUserId: "00000000-0000-0000-0000-000000000002", amount: 100, type: "transfer", description: "Danke für deine Hilfe!", createdAt: oneHourAgo },
+        { id: "tx-b4", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000002", amount: 2, type: "reward", description: "Coins für erhaltene Reaktion", createdAt: now }
+    ],
+    "00000000-0000-0000-0000-000000000003": [
+        { id: "tx-c1", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000003", amount: 200, type: "deposit", description: "Willkommensbonus", createdAt: twoDaysAgo },
+        { id: "tx-c2", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000003", amount: 5, type: "reward", description: "Coins für neuen Beitrag", createdAt: oneHourAgo },
+        { id: "tx-c3", fromUserId: null, toUserId: "00000000-0000-0000-0000-000000000003", amount: 2, type: "reward", description: "Coins für erhaltene Reaktion", createdAt: thirtySecondsAgo }
+    ]
+};
+
+// ── Teaser Slideshow mock data ────────────────────────────────────────────────
+
+export const mockSlides: TeaserSlide[] = [
+    {
+        id: "slide-1",
+        title: "Willkommen bei Aniverse",
+        description: "Deine Community für Anime, Manga & Forum-Diskussionen.",
+        imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=400&fit=crop",
+        linkUrl: "/forum",
+        linkLabel: "Zum Forum",
+        isActive: true,
+        sortOrder: 0,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "slide-2",
+        title: "Top Anime entdecken",
+        description: "Durchsuche unsere Anime-Datenbank und finde deinen nächsten Lieblings-Anime.",
+        imageUrl: "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?w=1200&h=400&fit=crop",
+        linkUrl: "/anime-top-list",
+        linkLabel: "Jetzt entdecken",
+        isActive: true,
+        sortOrder: 1,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "slide-3",
+        title: "Dein Guthaben wächst",
+        description: "Schreibe Beiträge, erhalte Reaktionen und sammle Coins für deine Aktivität.",
+        imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=400&fit=crop",
+        linkUrl: "/profile",
+        linkLabel: "Mein Profil",
+        isActive: true,
+        sortOrder: 2,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    }
+];

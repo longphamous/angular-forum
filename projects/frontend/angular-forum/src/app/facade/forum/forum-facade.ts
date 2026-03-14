@@ -164,6 +164,10 @@ export class ForumFacade {
         return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, { content });
     }
 
+    getMyReactions(threadId: string): Observable<string[]> {
+        return this.http.get<string[]>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.myReactions(threadId)}`);
+    }
+
     reactToPost(postId: string): Observable<void> {
         return this.http.post<void>(
             `${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`,

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+import { TranslocoModule } from "@jsverse/transloco";
 import { TooltipModule } from "primeng/tooltip";
 
 const LEVEL_COLORS: Record<number, string> = {
@@ -54,10 +55,10 @@ export class LevelBadge {
 
 @Component({
     selector: "level-progress",
-    imports: [TooltipModule],
+    imports: [TooltipModule, TranslocoModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <div class="flex flex-col gap-1.5">
+        <div class="flex flex-col gap-1.5" *transloco="let t">
             <div class="flex items-center justify-between">
                 <span
                     class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
@@ -76,9 +77,9 @@ export class LevelBadge {
                 ></div>
             </div>
             @if (xpToNextLevel() > 0) {
-                <span class="text-surface-400 text-xs">{{ xpToNextLevel() }} XP bis nächstes Level</span>
+                <span class="text-surface-400 text-xs">{{ t('levelBadge.xpToNextLevel', { xp: xpToNextLevel() }) }}</span>
             } @else {
-                <span class="text-yellow-600 dark:text-yellow-400 text-xs font-medium">Maximales Level erreicht!</span>
+                <span class="text-yellow-600 dark:text-yellow-400 text-xs font-medium">{{ t('levelBadge.maxLevel') }}</span>
             }
         </div>
     `

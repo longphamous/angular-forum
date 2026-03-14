@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-4xl">
+<div class="mx-auto max-w-4xl" *transloco="let t">
 
     @if (loading()) {
     <!-- Skeleton -->
@@ -62,7 +62,7 @@
                 <div class="mt-4 flex flex-wrap gap-5 text-sm">
                     <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
                         <i class="pi pi-calendar text-xs"></i>
-                        Dabei seit {{ formatDate(profile()!.createdAt) }}
+                        {{ t('userProfile.memberSince') }} {{ formatDate(profile()!.createdAt) }}
                     </span>
                     @if (profile()!.location) {
                     <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
@@ -87,7 +87,7 @@
                 <div class="mt-5 flex flex-wrap gap-3">
                     <div class="bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-2 text-center">
                         <div class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ profile()!.postCount }}</div>
-                        <div class="text-surface-500 text-xs">Beiträge</div>
+                        <div class="text-surface-500 text-xs">{{ t('userProfile.posts') }}</div>
                     </div>
                 </div>
 
@@ -106,7 +106,7 @@
                 <!-- Actions -->
                 @if (isOwnProfile()) {
                 <div class="mt-5">
-                    <p-button icon="pi pi-pencil" label="Profil bearbeiten" routerLink="/profile" severity="secondary" [outlined]="true" size="small" />
+                    <p-button icon="pi pi-pencil" [label]="t('userProfile.editProfile')" routerLink="/profile" severity="secondary" [outlined]="true" size="small" />
                 </div>
                 }
             </div>
@@ -118,33 +118,33 @@
 
         <!-- About card -->
         <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6 md:col-span-1">
-            <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">Über mich</h2>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">{{ t('userProfile.about') }}</h2>
             <div class="flex flex-col gap-3 text-sm">
                 @if (profile()!.gender) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-user text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Geschlecht</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.gender') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ genderLabel(profile()!.gender) }}</span>
                 </div>
                 }
                 @if (profile()!.birthday) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-gift text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Geburtstag</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.birthday') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.birthday, 'full') }}</span>
                 </div>
                 }
                 @if (profile()!.location) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-map-marker text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Ort</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.location') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ profile()!.location }}</span>
                 </div>
                 }
                 @if (profile()!.website) {
                 <div class="flex items-start gap-2">
                     <i class="pi pi-globe text-surface-400 w-4 text-xs mt-0.5"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Website</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.website') }}</span>
                     <a
                         class="text-primary min-w-0 truncate font-medium no-underline hover:underline"
                         [href]="profile()!.website"
@@ -154,7 +154,7 @@
                 </div>
                 }
                 @if (!profile()!.gender && !profile()!.birthday && !profile()!.location && !profile()!.website) {
-                <p class="text-surface-400 text-xs">Keine weiteren Angaben.</p>
+                <p class="text-surface-400 text-xs">{{ t('userProfile.noInfo') }}</p>
                 }
             </div>
 
@@ -163,34 +163,52 @@
             <div class="flex flex-col gap-3 text-sm">
                 <div class="flex items-center gap-2">
                     <i class="pi pi-calendar text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Mitglied</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.member') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.createdAt) }}</span>
                 </div>
                 @if (profile()!.lastLoginAt) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-clock text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Zuletzt aktiv</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.lastActive') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.lastLoginAt) }}</span>
                 </div>
                 }
                 <div class="flex items-center gap-2">
                     <i class="pi pi-comments text-surface-400 w-4 text-xs"></i>
-                    <span class="text-surface-500 w-20 shrink-0">Beiträge</span>
+                    <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.posts') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ profile()!.postCount }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Right column: Anime list shortcut -->
+        <!-- Right column -->
         <div class="md:col-span-2 flex flex-col gap-4">
+
+            <!-- Achievements card -->
+            @if (achievements().length > 0) {
             <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
-                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">Anime-Liste</h2>
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 flex items-center gap-2 text-base font-semibold">
+                    <i class="pi pi-trophy text-yellow-500"></i>
+                    {{ t('userProfile.achievements') }}
+                    <span class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">{{ achievements().length }}</span>
+                </h2>
+                <div class="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                    @for (a of achievements(); track a.id) {
+                        <achievement-badge [achievement]="a" />
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Anime list shortcut -->
+            <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">{{ t('userProfile.animeListTitle') }}</h2>
                 <p class="text-surface-500 mb-4 text-sm">
-                    Schau dir an, welche Anime {{ profile()!.displayName }} schaut oder abgeschlossen hat.
+                    {{ t('userProfile.animeListDesc', { name: profile()!.displayName }) }}
                 </p>
                 <p-button
                     icon="pi pi-list"
-                    [label]="'Anime-Liste von ' + profile()!.displayName + ' ansehen'"
+                    [label]="t('userProfile.animeListBtn', { name: profile()!.displayName })"
                     [routerLink]="['/users', profile()!.id, 'anime-list']"
                     severity="secondary"
                     [outlined]="true"
@@ -202,7 +220,7 @@
     } @else {
     <div class="flex flex-col items-center justify-center py-24 text-center">
         <i class="pi pi-user-minus text-surface-300 mb-4 text-6xl"></i>
-        <p class="text-surface-500 text-lg">Benutzer nicht gefunden.</p>
+        <p class="text-surface-500 text-lg">{{ t('userProfile.notFound') }}</p>
     </div>
     }
 </div>

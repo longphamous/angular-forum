@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
@@ -9,29 +10,18 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
+import { AchievementBadge } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { USER_ROUTES } from "../../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
+import { UserAchievement } from "../../../core/models/gamification/achievement";
 import { UserProfile, UserRole } from "../../../core/models/user/user";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
-const ROLE_LABELS: Record<UserRole, string> = {
-    admin: "Administrator",
-    guest: "Gast",
-    member: "Mitglied",
-    moderator: "Moderator"
-};
-
-const GENDER_LABELS: Record<string, string> = {
-    male: "Männlich",
-    female: "Weiblich",
-    other: "Divers",
-    prefer_not_to_say: "Keine Angabe"
-};
-
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AvatarModule, ButtonModule, CardModule, DividerModule, LevelProgress, RouterModule, SkeletonModule, TagModule, TooltipModule],
+    imports: [AchievementBadge, AvatarModule, ButtonModule, CardModule, DividerModule, LevelProgress, RouterModule, SkeletonModule, TagModule, TooltipModule, TranslocoModule],
     selector: "app-user-profile-page",
     templateUrl: "./user-profile-page.html"
 })
@@ -42,12 +32,14 @@ export class UserProfilePage implements OnInit {
     });
     protected readonly loading = signal(true);
     protected readonly profile = signal<UserProfile | null>(null);
+    protected readonly achievements = signal<UserAchievement[]>([]);
 
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly authFacade = inject(AuthFacade);
     private readonly http = inject(HttpClient);
     private readonly profileUserId = signal<string | null>(null);
     private readonly route = inject(ActivatedRoute);
+    private readonly translocoService = inject(TranslocoService);
 
     ngOnInit(): void {
         const userId = this.route.snapshot.paramMap.get("userId")!;
@@ -58,6 +50,10 @@ export class UserProfilePage implements OnInit {
                 this.loading.set(false);
             },
             error: () => this.loading.set(false)
+        });
+        this.http.get<UserAchievement[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.user(userId)}`).subscribe({
+            next: (data) => this.achievements.set(data),
+            error: () => undefined
         });
     }
 
@@ -72,11 +68,11 @@ export class UserProfilePage implements OnInit {
 
     protected genderLabel(gender?: string): string {
         if (!gender) return "—";
-        return GENDER_LABELS[gender] ?? gender;
+        return this.translocoService.translate("userProfile.genders." + gender) ?? gender;
     }
 
     protected roleLabel(role: UserRole): string {
-        return ROLE_LABELS[role];
+        return this.translocoService.translate("userProfile.roles." + role);
     }
 
     protected roleSeverity(role: UserRole): "danger" | "warn" | "info" | "secondary" {

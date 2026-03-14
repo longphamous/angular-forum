@@ -1,3 +1,4 @@
+<ng-container *transloco="let t">
 <div class="mx-auto max-w-5xl">
 
     <!-- ── Public profile header ─────────────────────────────────────── -->
@@ -57,11 +58,11 @@
                     <div class="mt-4 flex flex-wrap gap-4 text-xs">
                         <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
                             <i class="pi pi-calendar"></i>
-                            Dabei seit {{ formatDate(viewedProfile()!.createdAt) }}
+                            {{ t('anime.myList.memberSince') }} {{ formatDate(viewedProfile()!.createdAt) }}
                         </span>
                         <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
                             <i class="pi pi-list"></i>
-                            {{ list().length }} Anime in der Liste
+                            {{ list().length }} {{ t('anime.myList.animeInList') }}
                         </span>
                     </div>
                 </div>
@@ -75,22 +76,22 @@
     @if (isOwnList()) {
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">Meine Anime-Liste</h2>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('anime.myList.title') }}</h2>
             @if (list().length > 0) {
-            <p class="text-surface-500 mt-1 mb-0 text-sm">{{ list().length }} Einträge gesamt</p>
+            <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('anime.myList.entriesTotal', { count: list().length }) }}</p>
             }
         </div>
         <p-button
             [outlined]="true"
             icon="pi pi-search"
-            label="Anime entdecken"
+            [label]="t('anime.myList.discover')"
             routerLink="/anime-top-list"
             severity="secondary"
         />
     </div>
     } @else {
     <!-- Anime list section title -->
-    <h2 class="text-surface-900 dark:text-surface-0 mb-4 mt-0 text-lg font-semibold">Anime-Liste</h2>
+    <h2 class="text-surface-900 dark:text-surface-0 mb-4 mt-0 text-lg font-semibold">{{ t('anime.myList.listTitle') }}</h2>
     }
 
     @if (facade.listLoading()) {
@@ -109,10 +110,10 @@
     } @else if (list().length === 0) {
     <div class="flex flex-col items-center justify-center py-20 text-center">
         <i class="pi pi-inbox text-surface-300 mb-4 text-6xl"></i>
-        <p class="text-surface-500 text-lg">Noch keine Einträge.</p>
+        <p class="text-surface-500 text-lg">{{ t('anime.myList.noEntries') }}</p>
         @if (isOwnList()) {
-        <p class="text-surface-400 text-sm">Füge Anime aus der Liste hinzu!</p>
-        <p-button class="mt-4" icon="pi pi-search" label="Anime entdecken" routerLink="/anime-top-list" />
+        <p class="text-surface-400 text-sm">{{ t('anime.myList.addHint') }}</p>
+        <p-button class="mt-4" icon="pi pi-search" [label]="t('anime.myList.discover')" routerLink="/anime-top-list" />
         }
     </div>
     } @else {
@@ -130,7 +131,7 @@
     <p-tabs (valueChange)="activeTab = $any($event)" [value]="activeTab">
         <p-tablist>
             <p-tab value="all">
-                Alle
+                {{ t('anime.myList.allTab') }}
                 <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
                     {{ list().length }}
                 </span>
@@ -162,7 +163,7 @@
 
 <ng-template #entryList let-entries>
     @if (entries.length === 0) {
-    <div class="text-surface-400 py-10 text-center text-sm">Keine Einträge in dieser Kategorie.</div>
+    <div class="text-surface-400 py-10 text-center text-sm">{{ t('anime.myList.noCategoryEntries') }}</div>
     } @else {
     <div class="flex flex-col gap-3 pt-3">
         @for (entry of entries; track entry.animeId) {
@@ -171,7 +172,7 @@
         >
             <!-- Cover -->
             <div
-                class="flex-shrink-0 cursor-pointer"
+                class="group relative flex-shrink-0 cursor-pointer"
                 (click)="goToDetail(entry.animeId)"
                 (keydown.enter)="goToDetail(entry.animeId)"
                 role="button"
@@ -184,6 +185,14 @@
                     [src]="entry.anime!.picture"
                     style="width: 3.5rem; height: 5rem"
                 />
+                <div class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-36 group-hover:block">
+                    <img
+                        class="w-full rounded-lg object-cover shadow-xl"
+                        [alt]="entry.anime?.title"
+                        [src]="entry.anime!.picture"
+                        style="aspect-ratio: 2/3"
+                    />
+                </div>
                 } @else {
                 <div
                     class="bg-surface-200 dark:bg-surface-700 flex items-center justify-center rounded"
@@ -219,7 +228,7 @@
                     </span>
                     } @if (entry.episodesWatched !== null && entry.anime?.episode) {
                     <span class="text-surface-400 text-xs">
-                        {{ entry.episodesWatched }}/{{ entry.anime!.episode }} Folgen
+                        {{ entry.episodesWatched }}/{{ entry.anime!.episode }} {{ t('anime.myList.episodesSuffix') }}
                     </span>
                     } @if (entry.anime?.type) {
                     <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
@@ -249,7 +258,7 @@
                     (onClick)="goToDetail(entry.animeId)"
                     [text]="true"
                     icon="pi pi-pencil"
-                    pTooltip="Bearbeiten"
+                    [pTooltip]="t('anime.myList.editTooltip')"
                     severity="secondary"
                     size="small"
                 />
@@ -258,7 +267,7 @@
                     [loading]="removingId() === entry.animeId"
                     [text]="true"
                     icon="pi pi-trash"
-                    pTooltip="Entfernen"
+                    [pTooltip]="t('anime.myList.removeTooltip')"
                     severity="danger"
                     size="small"
                 />
@@ -269,3 +278,4 @@
     </div>
     }
 </ng-template>
+</ng-container>

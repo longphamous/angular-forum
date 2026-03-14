@@ -1,8 +1,8 @@
-<p-fluid>
+<p-fluid *transloco="let t">
     <div class="card">
         <div class="mb-6 flex items-center gap-3">
             <p-button (onClick)="cancel()" [text]="true" icon="pi pi-arrow-left" />
-            <h1 class="text-xl font-semibold">Neuen Thread erstellen</h1>
+            <h1 class="text-xl font-semibold">{{ t('threadCreate.title') }}</h1>
         </div>
 
         @if (error) {
@@ -11,23 +11,23 @@
 
         <div class="flex">
             <div class="card flex w-full flex-col gap-6">
-                <div class="text-lg font-semibold">Thread-Informationen</div>
+                <div class="text-lg font-semibold">{{ t('threadCreate.info') }}</div>
                 <p-divider />
                 <div class="flex w-full flex-wrap gap-2">
-                    <label class="w-full font-medium" for="thread-title">Titel</label>
+                    <label class="w-full font-medium" for="thread-title">{{ t('threadCreate.titleLabel') }}</label>
                     <input
                         class="w-full"
                         id="thread-title"
                         [(ngModel)]="title"
                         [disabled]="submitting"
                         pInputText
-                        placeholder="Thread-Titel eingeben..."
+                        [placeholder]="t('threadCreate.titlePlaceholder')"
                         type="text"
                     />
                 </div>
                 <div class="flex w-full flex-col gap-2">
                     <label class="font-medium" for="thread-tags">
-                        Tags <span class="text-surface-400 font-normal text-sm">(optional – Enter oder Komma zum Hinzufügen)</span>
+                        {{ t('threadCreate.tagsLabel') }} <span class="text-surface-400 font-normal text-sm">{{ t('threadCreate.tagsHint') }}</span>
                     </label>
                     <div class="border-surface-300 dark:border-surface-600 focus-within:border-primary flex flex-wrap items-center gap-2 rounded-md border bg-white px-3 py-2 dark:bg-surface-900">
                         @for (tag of tags; track tag) {
@@ -43,18 +43,18 @@
                             [(ngModel)]="tagInput"
                             [disabled]="submitting"
                             (keydown)="addTag($event)"
-                            placeholder="Tag eingeben…"
+                            [placeholder]="t('threadCreate.tagsPlaceholder')"
                             type="text"
                         />
                     </div>
-                    <span class="text-surface-400 text-xs">{{ tags.length }} Tag(s) hinzugefügt</span>
+                    <span class="text-surface-400 text-xs">{{ tags.length }} {{ t('threadCreate.tagsCount') }}</span>
                 </div>
             </div>
         </div>
 
         <div class="mt-8 flex">
             <div class="card flex w-full flex-col gap-6">
-                <div class="text-lg font-semibold">Inhalt</div>
+                <div class="text-lg font-semibold">{{ t('threadCreate.contentLabel') }}</div>
                 <p-divider />
                 <div class="flex w-full flex-wrap">
                     <p-editor
@@ -69,10 +69,10 @@
                         (onClick)="cancel()"
                         [disabled]="submitting"
                         [outlined]="true"
-                        label="Abbrechen"
+                        [label]="t('common.cancel')"
                         severity="secondary"
                     />
-                    <p-button (onClick)="submit()" [loading]="submitting" icon="pi pi-check" label="Thread erstellen" />
+                    <p-button (onClick)="submit()" [loading]="submitting" icon="pi pi-check" [label]="t('threadCreate.submit')" />
                 </div>
             </div>
         </div>

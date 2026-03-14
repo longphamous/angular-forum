@@ -20,6 +20,7 @@ import { Thread } from "../../models/forum/thread";
 import { Group } from "../../models/group/group";
 import { UserProfile } from "../../models/user/user";
 import {
+    mockAchievements,
     mockAnimeDetails,
     mockAnimeListStore,
     mockCategories,
@@ -27,7 +28,11 @@ import {
     mockGroups,
     mockPagePermissions,
     mockPosts,
+    mockSlides,
     mockThreads,
+    mockWalletTransactions,
+    mockWallets,
+    mockUserAchievements,
     mockUserGroupMap,
     mockUserProfiles,
     mockUsers,
@@ -35,6 +40,9 @@ import {
 } from "../mock-data/mock-data";
 
 const SIMULATED_LATENCY_MS = 300;
+
+// Tracks which postIds the mock member user has reacted to (persists for the session)
+const mockReactedPostIds = new Set<string>();
 
 interface LoginRequest {
     username: string;
@@ -238,7 +246,9 @@ export class MockInterceptor implements HttpInterceptor {
         const threadPostsMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/posts/);
         if (method === "GET" && threadPostsMatch) {
             const threadId = threadPostsMatch[1];
-            const posts = Object.values(mockPosts).filter((p) => p.threadId === threadId);
+            const posts = Object.values(mockPosts)
+                .filter((p) => p.threadId === threadId)
+                .map((p) => ({ ...p, authorBalance: mockWallets[p.authorId]?.balance }));
             return this.ok({ data: posts, total: posts.length, page: 1, limit: 20 });
         }
 
@@ -277,13 +287,24 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(newThread);
         }
 
+        // GET /api/forum/threads/:threadId/my-reactions
+        const myReactionsMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/my-reactions$/);
+        if (method === "GET" && myReactionsMatch) {
+            const threadId = myReactionsMatch[1];
+            const reacted = [...mockReactedPostIds].filter((postId) => mockPosts[postId]?.threadId === threadId);
+            return this.ok(reacted);
+        }
+
         // POST /api/forum/posts/:id/react
         const postReactMatch = lowerUrl.match(/\/api\/forum\/posts\/([^/]+)\/react$/);
         if (method === "POST" && postReactMatch) {
             const postId = postReactMatch[1];
             const post = mockPosts[postId];
             if (!post) return this.error("Beitrag nicht gefunden", 404);
-            post.reactionCount = (post.reactionCount ?? 0) + 1;
+            if (!mockReactedPostIds.has(postId)) {
+                mockReactedPostIds.add(postId);
+                post.reactionCount = (post.reactionCount ?? 0) + 1;
+            }
             return this.ok({ id: "mock-reaction", postId, userId: "00000000-0000-0000-0000-000000000003", reactionType: "heart", createdAt: new Date().toISOString() });
         }
 
@@ -291,7 +312,10 @@ export class MockInterceptor implements HttpInterceptor {
         if (method === "DELETE" && postReactMatch) {
             const postId = postReactMatch[1];
             const post = mockPosts[postId];
-            if (post) post.reactionCount = Math.max(0, (post.reactionCount ?? 0) - 1);
+            if (post && mockReactedPostIds.has(postId)) {
+                mockReactedPostIds.delete(postId);
+                post.reactionCount = Math.max(0, (post.reactionCount ?? 0) - 1);
+            }
             return this.ok({ success: true });
         }
 
@@ -746,6 +770,54 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok({ updatedUsers: Object.keys(mockUserProfiles).length });
         }
 
+        // GET /api/gamification/achievements/admin
+        if (method === "GET" && lowerUrl.match(/\/api\/gamification\/achievements\/admin$/)) {
+            return this.ok(Object.values(mockAchievements));
+        }
+
+        // GET /api/gamification/achievements/user/:userId
+        const achievementsUserMatch = lowerUrl.match(/\/api\/gamification\/achievements\/user\/([0-9a-f-]+)$/i);
+        if (method === "GET" && achievementsUserMatch) {
+            const userId = achievementsUserMatch[1];
+            return this.ok(mockUserAchievements[userId] ?? []);
+        }
+
+        // GET /api/gamification/achievements
+        if (method === "GET" && lowerUrl.match(/\/api\/gamification\/achievements$/)) {
+            return this.ok(Object.values(mockAchievements).filter((a) => a.isActive));
+        }
+
+        // POST /api/gamification/achievements/admin
+        if (method === "POST" && lowerUrl.match(/\/api\/gamification\/achievements\/admin$/)) {
+            const payload = body as Partial<typeof mockAchievements[string]> | null;
+            if (!payload?.key || !payload.name) return this.error("Pflichtfelder fehlen", 400);
+            const id = "ach-" + Math.random().toString(36).substring(2, 8);
+            const ts = new Date().toISOString();
+            const created = { ...payload, id, isActive: payload.isActive ?? true, createdAt: ts, updatedAt: ts } as typeof mockAchievements[string];
+            mockAchievements[id] = created;
+            return this.ok(created);
+        }
+
+        // PATCH /api/gamification/achievements/admin/:id
+        const achievementPatchMatch = lowerUrl.match(/\/api\/gamification\/achievements\/admin\/([^/]+)$/);
+        if (method === "PATCH" && achievementPatchMatch) {
+            const id = achievementPatchMatch[1];
+            const achievement = mockAchievements[id];
+            if (!achievement) return this.error("Achievement nicht gefunden", 404);
+            const patch = body as Partial<typeof mockAchievements[string]>;
+            Object.assign(achievement, patch, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...achievement });
+        }
+
+        // DELETE /api/gamification/achievements/admin/:id
+        const achievementDeleteMatch = url.match(/\/api\/gamification\/achievements\/admin\/([^/]+)$/i);
+        if (method === "DELETE" && achievementDeleteMatch) {
+            const id = achievementDeleteMatch[1];
+            if (!mockAchievements[id]) return this.error("Achievement nicht gefunden", 404);
+            delete mockAchievements[id];
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS));
+        }
+
         // GET /api/dashboard/stats
         if (method === "GET" && lowerUrl.match(/\/api\/dashboard\/stats$/)) {
             const stats: DashboardStats = {
@@ -786,6 +858,125 @@ export class MockInterceptor implements HttpInterceptor {
                 { displayName: "Otaku42", postCount: 41, userId: "mock-5", username: "otaku_42" }
             ];
             return this.ok(topPosters);
+        }
+
+        // GET /api/credit/leaderboard
+        if (method === "GET" && lowerUrl.match(/\/api\/credit\/leaderboard/)) {
+            const entries = Object.values(mockWallets)
+                .sort((a, b) => b.balance - a.balance)
+                .map((w) => {
+                    const profile = mockUserProfiles[w.userId];
+                    return {
+                        userId: w.userId,
+                        displayName: profile?.displayName ?? w.userId,
+                        username: profile?.username ?? w.userId,
+                        balance: w.balance
+                    };
+                });
+            return this.ok(entries);
+        }
+
+        // GET /api/credit/wallet
+        if (method === "GET" && lowerUrl.match(/\/api\/credit\/wallet$/)) {
+            const authHeader = req.headers.get("Authorization");
+            const token = authHeader?.replace("Bearer ", "");
+            if (!token) return this.error("Nicht authentifiziert", 401);
+            try {
+                const decoded = JSON.parse(atob(token)) as { sub: string };
+                const wallet = mockWallets[decoded.sub];
+                if (!wallet) return this.error("Wallet nicht gefunden", 404);
+                return this.ok(wallet);
+            } catch {
+                return this.error("Ungültiger Token", 401);
+            }
+        }
+
+        // GET /api/credit/transactions
+        if (method === "GET" && lowerUrl.match(/\/api\/credit\/transactions/)) {
+            const authHeader = req.headers.get("Authorization");
+            const token = authHeader?.replace("Bearer ", "");
+            if (!token) return this.error("Nicht authentifiziert", 401);
+            try {
+                const decoded = JSON.parse(atob(token)) as { sub: string };
+                const txs = mockWalletTransactions[decoded.sub] ?? [];
+                return this.ok({ data: txs, total: txs.length, page: 1, limit: 20 });
+            } catch {
+                return this.error("Ungültiger Token", 401);
+            }
+        }
+
+        // POST /api/credit/transfer
+        if (method === "POST" && lowerUrl.match(/\/api\/credit\/transfer$/)) {
+            const authHeader = req.headers.get("Authorization");
+            const token = authHeader?.replace("Bearer ", "");
+            if (!token) return this.error("Nicht authentifiziert", 401);
+            try {
+                const decoded = JSON.parse(atob(token)) as { sub: string };
+                const payload = body as { toUserId: string; amount: number; description?: string } | null;
+                if (!payload?.toUserId || !payload.amount) return this.error("Pflichtfelder fehlen", 400);
+                const senderWallet = mockWallets[decoded.sub];
+                const receiverWallet = mockWallets[payload.toUserId];
+                if (!senderWallet) return this.error("Sender-Wallet nicht gefunden", 404);
+                if (!receiverWallet) return this.error("Empfänger-Wallet nicht gefunden", 404);
+                if (senderWallet.balance < payload.amount) return this.error("Unzureichendes Guthaben", 400);
+                senderWallet.balance -= payload.amount;
+                receiverWallet.balance += payload.amount;
+                const ts = new Date().toISOString();
+                const tx = { id: "tx-" + Math.random().toString(36).substring(2), fromUserId: decoded.sub, toUserId: payload.toUserId, amount: payload.amount, type: "transfer" as const, description: payload.description ?? "Transfer", createdAt: ts };
+                (mockWalletTransactions[decoded.sub] ??= []).unshift(tx);
+                (mockWalletTransactions[payload.toUserId] ??= []).unshift({ ...tx, fromUserId: decoded.sub });
+                return this.ok(tx);
+            } catch {
+                return this.error("Ungültiger Token", 401);
+            }
+        }
+
+        // ── Slideshow ──────────────────────────────────────────────────────────
+
+        if (method === "GET" && url.includes("/api/slideshow/admin")) {
+            return this.ok([...mockSlides]);
+        }
+
+        if (method === "GET" && url.includes("/api/slideshow")) {
+            return this.ok(mockSlides.filter((s) => s.isActive));
+        }
+
+        if (method === "POST" && url.includes("/api/slideshow/admin/upload")) {
+            return this.ok({ url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=400&fit=crop" });
+        }
+
+        if (method === "POST" && url.includes("/api/slideshow/admin")) {
+            const body = req.body as { title: string; description?: string; imageUrl: string; linkUrl?: string; linkLabel?: string; isActive?: boolean; sortOrder?: number };
+            const newSlide = {
+                id: `slide-${Date.now()}`,
+                title: body.title,
+                description: body.description ?? null,
+                imageUrl: body.imageUrl,
+                linkUrl: body.linkUrl ?? null,
+                linkLabel: body.linkLabel ?? null,
+                isActive: body.isActive ?? true,
+                sortOrder: body.sortOrder ?? 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockSlides.push(newSlide);
+            return this.ok(newSlide);
+        }
+
+        if (method === "PATCH" && url.includes("/api/slideshow/admin/")) {
+            const id = url.split("/api/slideshow/admin/")[1].split("?")[0];
+            const idx = mockSlides.findIndex((s) => s.id === id);
+            if (idx === -1) return this.error("Not found", 404);
+            const body = req.body as Partial<typeof mockSlides[0]>;
+            mockSlides[idx] = { ...mockSlides[idx], ...body, id, updatedAt: new Date().toISOString() };
+            return this.ok(mockSlides[idx]);
+        }
+
+        if (method === "DELETE" && url.includes("/api/slideshow/admin/")) {
+            const id = url.split("/api/slideshow/admin/")[1].split("?")[0];
+            const idx = mockSlides.findIndex((s) => s.id === id);
+            if (idx !== -1) mockSlides.splice(idx, 1);
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
         }
 
         // Fallback: durchreichen

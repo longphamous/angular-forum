@@ -1,0 +1,260 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+
+    <p-confirmdialog />
+
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="m-0 text-2xl font-bold">{{ t('adminSlideshow.title') }}</h2>
+                <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminSlideshow.subtitle') }}</p>
+            </div>
+            <p-button
+                (onClick)="openCreate()"
+                icon="pi pi-plus"
+                [label]="t('adminSlideshow.addSlide')"
+            />
+        </div>
+    </div>
+
+    @if (error()) {
+    <p-message [text]="error()!" severity="error" styleClass="w-full" />
+    }
+    @if (successMsg()) {
+    <p-message [text]="successMsg()!" severity="success" styleClass="w-full" />
+    }
+
+    <!-- Table -->
+    <div class="card">
+        @if (loading()) {
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3]; track $index) {
+            <p-skeleton height="4rem" />
+            }
+        </div>
+        } @else {
+        <p-table [value]="slides()" styleClass="p-datatable-sm">
+            <ng-template #header>
+                <tr>
+                    <th class="w-24">{{ t('adminSlideshow.table.preview') }}</th>
+                    <th>{{ t('adminSlideshow.table.title') }}</th>
+                    <th class="hidden md:table-cell">{{ t('adminSlideshow.table.link') }}</th>
+                    <th class="w-24 text-center">{{ t('adminSlideshow.table.order') }}</th>
+                    <th class="w-24 text-center">{{ t('common.status') }}</th>
+                    <th class="w-28 text-right">{{ t('common.actions') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-slide>
+                <tr>
+                    <td>
+                        @if (slide.imageUrl) {
+                        <img
+                            [src]="slide.imageUrl"
+                            [alt]="slide.title"
+                            class="h-12 w-20 rounded object-cover"
+                            loading="lazy"
+                        />
+                        } @else {
+                        <div class="bg-surface-100 dark:bg-surface-700 flex h-12 w-20 items-center justify-center rounded">
+                            <i class="pi pi-image text-surface-400 text-xl"></i>
+                        </div>
+                        }
+                    </td>
+                    <td>
+                        <div class="font-medium">{{ slide.title }}</div>
+                        @if (slide.description) {
+                        <div class="text-surface-400 mt-0.5 truncate text-xs max-w-xs">{{ slide.description }}</div>
+                        }
+                    </td>
+                    <td class="hidden md:table-cell">
+                        @if (slide.linkUrl) {
+                        <span class="text-primary text-sm">{{ slide.linkUrl }}</span>
+                        } @else {
+                        <span class="text-surface-400 text-sm">—</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <span class="text-sm font-medium">{{ slide.sortOrder }}</span>
+                    </td>
+                    <td class="text-center">
+                        @if (slide.isActive) {
+                        <p-tag severity="success" [value]="t('common.active')" />
+                        } @else {
+                        <p-tag severity="secondary" [value]="t('common.inactive')" />
+                        }
+                    </td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-1">
+                            <p-button
+                                (onClick)="openEdit(slide)"
+                                icon="pi pi-pencil"
+                                size="small"
+                                severity="secondary"
+                                [pTooltip]="t('common.edit')"
+                                tooltipPosition="top"
+                            />
+                            <p-button
+                                (onClick)="confirmDelete(slide)"
+                                icon="pi pi-trash"
+                                size="small"
+                                severity="danger"
+                                [pTooltip]="t('common.delete')"
+                                tooltipPosition="top"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="6" class="text-surface-500 py-8 text-center">{{ t('adminSlideshow.noSlides') }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        }
+    </div>
+
+    <!-- Create / Edit Dialog -->
+    <p-dialog
+        [visible]="dialogVisible()"
+        (visibleChange)="dialogVisible.set($event)"
+        [header]="editingId() ? t('adminSlideshow.dialog.editHeader') : t('adminSlideshow.dialog.createHeader')"
+        [modal]="true"
+        [style]="{ width: '560px' }"
+        [closable]="true"
+    >
+        <div class="flex flex-col gap-4 pt-2">
+
+            @if (error() && dialogVisible()) {
+            <p-message [text]="error()!" severity="error" styleClass="w-full" />
+            }
+
+            <!-- Title -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.title') }} *</label>
+                <input
+                    pInputText
+                    [ngModel]="form().title"
+                    (ngModelChange)="updateForm({ title: $event })"
+                    [placeholder]="t('adminSlideshow.dialog.titlePlaceholder')"
+                    class="w-full"
+                />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.description') }}</label>
+                <textarea
+                    pTextarea
+                    [ngModel]="form().description"
+                    (ngModelChange)="updateForm({ description: $event })"
+                    [placeholder]="t('adminSlideshow.dialog.descriptionPlaceholder')"
+                    rows="3"
+                    class="w-full"
+                ></textarea>
+            </div>
+
+            <!-- Image URL + Upload -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.imageUrl') }} *</label>
+                <div class="flex gap-2">
+                    <input
+                        pInputText
+                        [ngModel]="form().imageUrl"
+                        (ngModelChange)="updateForm({ imageUrl: $event })"
+                        [placeholder]="t('adminSlideshow.dialog.imageUrlPlaceholder')"
+                        class="flex-1"
+                    />
+                    <p-button
+                        icon="pi pi-upload"
+                        [loading]="uploading()"
+                        severity="secondary"
+                        [pTooltip]="t('adminSlideshow.dialog.uploadTooltip')"
+                        tooltipPosition="top"
+                        (onClick)="fileInput.click()"
+                    />
+                    <input #fileInput type="file" accept="image/*" class="hidden" (change)="uploadImage($event)" />
+                </div>
+                @if (form().imageUrl) {
+                <img [src]="form().imageUrl" alt="Preview" class="mt-2 h-28 w-full rounded object-cover" />
+                }
+            </div>
+
+            <!-- Link URL -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkUrl') }}</label>
+                <input
+                    pInputText
+                    [ngModel]="form().linkUrl"
+                    (ngModelChange)="updateForm({ linkUrl: $event })"
+                    [placeholder]="t('adminSlideshow.dialog.linkUrlPlaceholder')"
+                    class="w-full"
+                />
+            </div>
+
+            <!-- Link Label -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkLabel') }}</label>
+                <input
+                    pInputText
+                    [ngModel]="form().linkLabel"
+                    (ngModelChange)="updateForm({ linkLabel: $event })"
+                    [placeholder]="t('adminSlideshow.dialog.linkLabelPlaceholder')"
+                    class="w-full"
+                />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Sort Order -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.sortOrder') }}</label>
+                    <p-inputnumber
+                        [ngModel]="form().sortOrder"
+                        (ngModelChange)="updateForm({ sortOrder: $event ?? 0 })"
+                        [min]="0"
+                        [max]="999"
+                        [showButtons]="true"
+                        buttonLayout="horizontal"
+                        decrementButtonIcon="pi pi-minus"
+                        incrementButtonIcon="pi pi-plus"
+                        inputStyleClass="w-16 text-center"
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <!-- Active toggle -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.isActive') }}</label>
+                    <div class="flex items-center gap-2 pt-2">
+                        <p-checkbox
+                            [ngModel]="form().isActive"
+                            (ngModelChange)="updateForm({ isActive: $event })"
+                            [binary]="true"
+                            inputId="slideActive"
+                        />
+                        <label for="slideActive" class="text-sm cursor-pointer">
+                            {{ t('adminSlideshow.dialog.isActiveLabel') }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button
+                    [label]="t('common.cancel')"
+                    severity="secondary"
+                    (onClick)="dialogVisible.set(false)"
+                />
+                <p-button
+                    [label]="t('adminSlideshow.dialog.submit')"
+                    [loading]="saving()"
+                    [disabled]="!form().title.trim() || !form().imageUrl.trim()"
+                    (onClick)="saveSlide()"
+                />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+</div>

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RouterModule } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { CardModule } from "primeng/card";
 import { SkeletonModule } from "primeng/skeleton";
@@ -14,18 +15,18 @@ interface RankStyle {
 }
 
 const RANK_STYLES: RankStyle[] = [
-    { bg: "bg-yellow-100 dark:bg-yellow-400/10", label: "Gold", text: "text-yellow-600 dark:text-yellow-400" },
-    { bg: "bg-surface-100 dark:bg-surface-700", label: "Silber", text: "text-surface-500 dark:text-surface-400" },
-    { bg: "bg-orange-100 dark:bg-orange-400/10", label: "Bronze", text: "text-orange-600 dark:text-orange-400" }
+    { bg: "bg-yellow-100 dark:bg-yellow-400/10", label: "adminAchievements.rarities.gold", text: "text-yellow-600 dark:text-yellow-400" },
+    { bg: "bg-surface-100 dark:bg-surface-700", label: "adminAchievements.rarities.silver", text: "text-surface-500 dark:text-surface-400" },
+    { bg: "bg-orange-100 dark:bg-orange-400/10", label: "adminAchievements.rarities.bronze", text: "text-orange-600 dark:text-orange-400" }
 ];
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule],
+    imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule, TranslocoModule],
     selector: "app-top-posters-widget",
     template: `
-        <p-card>
-            <ng-template #title>Top Poster</ng-template>
+        <p-card *transloco="let t">
+            <ng-template #title>{{ t('dashboard.topPosters') }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -70,13 +71,13 @@ const RANK_STYLES: RankStyle[] = [
                                 </div>
                                 <div class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-sm">
                                     <i class="pi pi-comment text-xs"></i>
-                                    <span>{{ poster.postCount }} Beiträge</span>
+                                    <span>{{ poster.postCount }} {{ t('dashboard.posts') }}</span>
                                 </div>
                             </div>
                             <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">Keine Daten vorhanden.</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noPosters') }}</p>
                     }
                 </div>
             }
@@ -85,6 +86,7 @@ const RANK_STYLES: RankStyle[] = [
 })
 export class TopPostersWidget {
     protected readonly facade = inject(DashboardFacade);
+    private readonly translocoService = inject(TranslocoService);
     protected readonly skeletonItems = [1, 2, 3, 4, 5];
 
     protected rankBg(index: number): string {
@@ -92,7 +94,8 @@ export class TopPostersWidget {
     }
 
     protected rankLabel(index: number): string {
-        return RANK_STYLES[index]?.label ?? "";
+        const key = RANK_STYLES[index]?.label;
+        return key ? this.translocoService.translate(key) : "";
     }
 
     protected rankSeverity(index: number): "warn" | "secondary" | "contrast" {

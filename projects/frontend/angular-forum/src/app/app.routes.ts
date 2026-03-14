@@ -139,6 +139,20 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-gamification/admin-gamification").then((c) => c.AdminGamification)
+            },
+            {
+                path: "admin/achievements",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-achievements/admin-achievements").then((c) => c.AdminAchievements)
+            },
+            {
+                path: "admin/slideshow",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-slideshow/admin-slideshow").then((c) => c.AdminSlideshow)
             }
         ]
     }

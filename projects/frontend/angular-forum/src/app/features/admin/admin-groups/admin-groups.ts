@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
@@ -30,7 +31,8 @@ import { CreateGroupPayload, GroupFacade, UpdateGroupPayload } from "../../../fa
         TableModule,
         TagModule,
         TextareaModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     selector: "app-admin-groups",
     templateUrl: "./admin-groups.html"
@@ -38,6 +40,7 @@ import { CreateGroupPayload, GroupFacade, UpdateGroupPayload } from "../../../fa
 export class AdminGroups implements OnInit {
     protected readonly facade = inject(GroupFacade);
     protected readonly adminFacade = inject(AdminFacade);
+    private readonly translocoService = inject(TranslocoService);
 
     // ── Group dialog ──────────────────────────────────────────────────────────
     protected readonly showGroupDialog = signal(false);
@@ -98,7 +101,7 @@ export class AdminGroups implements OnInit {
                     this.showGroupDialog.set(false);
                 },
                 error: () => {
-                    this.groupError.set("Fehler beim Speichern.");
+                    this.groupError.set(this.translocoService.translate("common.saveError"));
                     this.groupSaving.set(false);
                 }
             });
@@ -112,7 +115,7 @@ export class AdminGroups implements OnInit {
                     this.showGroupDialog.set(false);
                 },
                 error: () => {
-                    this.groupError.set("Fehler beim Erstellen.");
+                    this.groupError.set(this.translocoService.translate("common.saveError"));
                     this.groupSaving.set(false);
                 }
             });

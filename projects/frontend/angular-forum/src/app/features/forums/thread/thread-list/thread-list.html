@@ -1,8 +1,8 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4" *transloco="let t">
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-center gap-3">
-            <p-button [text]="true" icon="pi pi-arrow-left" pTooltip="Zurück zum Forum" routerLink="/forum" />
+            <p-button [text]="true" icon="pi pi-arrow-left" [pTooltip]="t('thread.backToForum')" routerLink="/forum" />
             <div class="flex-1">
                 @if (facade.currentForum()) {
                 <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ facade.currentForum()!.name }}</h1>
@@ -18,15 +18,15 @@
             <div class="hidden shrink-0 gap-6 text-right sm:flex">
                 <div>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.threadCount }}</div>
-                    <div class="text-surface-500 text-xs">Threads</div>
+                    <div class="text-surface-500 text-xs">{{ t('forum.threads') }}</div>
                 </div>
                 <div>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.postCount }}</div>
-                    <div class="text-surface-500 text-xs">Beiträge</div>
+                    <div class="text-surface-500 text-xs">{{ t('forum.posts') }}</div>
                 </div>
             </div>
             }
-            <p-button (onClick)="createThread()" icon="pi pi-plus" label="Neuen Thread erstellen" />
+            <p-button (onClick)="createThread()" icon="pi pi-plus" [label]="t('thread.newThread')" />
         </div>
     </div>
 
@@ -55,7 +55,7 @@
         } @else if (facade.threads().length === 0) {
         <div class="text-surface-500 py-16 text-center">
             <i class="pi pi-comments text-surface-300 mb-3 block text-4xl"></i>
-            Noch keine Threads vorhanden.
+            {{ t('thread.noThreads') }}
         </div>
         } @else {
         <div class="divide-surface-100 dark:divide-surface-700 -mx-2 divide-y">
@@ -90,11 +90,11 @@
                     <!-- Title + badges row -->
                     <div class="flex flex-wrap items-center gap-2">
                         @if (thread.isLocked) {
-                        <i class="pi pi-lock text-red-500 text-xs" pTooltip="Gesperrt"></i>
+                        <i class="pi pi-lock text-red-500 text-xs" [pTooltip]="t('thread.locked')"></i>
                         } @if (thread.isPinned) {
-                        <i class="pi pi-bookmark text-primary text-xs" pTooltip="Angepinnt"></i>
+                        <i class="pi pi-bookmark text-primary text-xs" [pTooltip]="t('thread.pinned')"></i>
                         } @if (thread.isSticky) {
-                        <i class="pi pi-star text-yellow-500 text-xs" pTooltip="Wichtig"></i>
+                        <i class="pi pi-star text-yellow-500 text-xs" [pTooltip]="t('thread.sticky')"></i>
                         }
                         <span
                             class="text-surface-900 dark:text-surface-0 font-semibold transition-colors group-hover:text-primary"
@@ -102,9 +102,9 @@
                             {{ thread.title }}
                         </span>
                         @if (thread.isPinned) {
-                        <p-tag severity="warn" value="Angepinnt" styleClass="text-xs" />
+                        <p-tag severity="warn" [value]="t('thread.pinned')" styleClass="text-xs" />
                         } @if (thread.isLocked) {
-                        <p-tag severity="danger" value="Gesperrt" styleClass="text-xs" />
+                        <p-tag severity="danger" [value]="t('thread.locked')" styleClass="text-xs" />
                         }
                         @for (tag of thread.tags; track tag) {
                         <span
@@ -126,7 +126,7 @@
                         </span>
                         @if (thread.lastPostAt) {
                         <span class="flex items-center gap-1">
-                            <i class="pi pi-clock text-xs"></i>Letzte Antwort {{ formatRelative(thread.lastPostAt) }}
+                            <i class="pi pi-clock text-xs"></i>{{ t('thread.lastReply') }} {{ formatRelative(thread.lastPostAt) }}
                         </span>
                         }
                         <!-- Mobile stats -->
@@ -143,11 +143,11 @@
                 <div class="hidden shrink-0 flex-col items-end gap-1.5 text-xs text-surface-500 dark:text-surface-400 sm:flex">
                     <span class="flex items-center gap-1.5">
                         <i class="pi pi-comments text-xs"></i>
-                        <span>{{ thread.replyCount }} Antworten</span>
+                        <span>{{ thread.replyCount }} {{ t('thread.replies') }}</span>
                     </span>
                     <span class="flex items-center gap-1.5">
                         <i class="pi pi-eye text-xs"></i>
-                        <span>{{ thread.viewCount }} Aufrufe</span>
+                        <span>{{ thread.viewCount }} {{ t('thread.views') }}</span>
                     </span>
                 </div>
 

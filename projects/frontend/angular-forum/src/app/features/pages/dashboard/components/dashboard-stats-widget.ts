@@ -1,19 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { TranslocoModule } from "@jsverse/transloco";
 import { CardModule } from "primeng/card";
 
 import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CardModule],
+    imports: [CardModule, TranslocoModule],
     selector: "app-dashboard-stats-widget",
     template: `
+        <ng-container *transloco="let t">
         <!-- Threads -->
         <div class="col-span-12 sm:col-span-6 lg:col-span-3">
             <p-card styleClass="h-full">
                 <div class="flex items-start justify-between">
                     <div class="flex flex-col gap-1">
-                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">Themen</span>
+                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{ t('dashboard.threads') }}</span>
                         <span class="text-surface-900 dark:text-surface-0 text-3xl font-bold">
                             @if (facade.loading()) {
                                 —
@@ -27,7 +29,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-primary text-sm font-semibold">+5% diese Woche</span>
+                    <span class="text-primary text-sm font-semibold">+5%</span>
                 </div>
             </p-card>
         </div>
@@ -37,7 +39,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
             <p-card styleClass="h-full">
                 <div class="flex items-start justify-between">
                     <div class="flex flex-col gap-1">
-                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">Beiträge</span>
+                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{ t('dashboard.posts') }}</span>
                         <span class="text-surface-900 dark:text-surface-0 text-3xl font-bold">
                             @if (facade.loading()) {
                                 —
@@ -53,7 +55,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-sm font-semibold text-green-500">+12% diese Woche</span>
+                    <span class="text-sm font-semibold text-green-500">+12%</span>
                 </div>
             </p-card>
         </div>
@@ -63,7 +65,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
             <p-card styleClass="h-full">
                 <div class="flex items-start justify-between">
                     <div class="flex flex-col gap-1">
-                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">Mitglieder</span>
+                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{ t('dashboard.stats.users') }}</span>
                         <span class="text-surface-900 dark:text-surface-0 text-3xl font-bold">
                             @if (facade.loading()) {
                                 —
@@ -79,7 +81,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-sm font-semibold text-orange-500">+3% diese Woche</span>
+                    <span class="text-sm font-semibold text-orange-500">+3%</span>
                 </div>
             </p-card>
         </div>
@@ -89,7 +91,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
             <p-card styleClass="h-full">
                 <div class="flex items-start justify-between">
                     <div class="flex flex-col gap-1">
-                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">Anime</span>
+                        <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{ t('nav.anime') }}</span>
                         <span class="text-surface-900 dark:text-surface-0 text-3xl font-bold">
                             @if (facade.loading()) {
                                 —
@@ -105,10 +107,11 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                     </div>
                 </div>
                 <div class="mt-4">
-                    <span class="text-sm font-semibold text-purple-500">+8% diese Woche</span>
+                    <span class="text-sm font-semibold text-purple-500">+8%</span>
                 </div>
             </p-card>
         </div>
+        </ng-container>
     `
 })
 export class DashboardStatsWidget {

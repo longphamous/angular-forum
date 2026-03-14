@@ -1,6 +1,10 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { AchievementController } from "./achievement.controller";
+import { AchievementService } from "./achievement.service";
+import { AchievementEntity } from "./entities/achievement.entity";
+import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { XpConfigEntity } from "./entities/xp-config.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpEventEntity } from "./entities/xp-event.entity";
@@ -8,9 +12,17 @@ import { GamificationController } from "./gamification.controller";
 import { GamificationService } from "./gamification.service";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserXpEntity, XpEventEntity, XpConfigEntity])],
-    controllers: [GamificationController],
-    providers: [GamificationService],
-    exports: [GamificationService]
+    imports: [
+        TypeOrmModule.forFeature([
+            AchievementEntity,
+            UserAchievementEntity,
+            UserXpEntity,
+            XpEventEntity,
+            XpConfigEntity
+        ])
+    ],
+    controllers: [GamificationController, AchievementController],
+    providers: [GamificationService, AchievementService],
+    exports: [GamificationService, AchievementService]
 })
 export class GamificationModule {}

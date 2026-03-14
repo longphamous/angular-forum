@@ -1,19 +1,19 @@
-<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-6" *transloco="let t">
 
     <!-- Header -->
     <div class="card">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="m-0 text-2xl font-bold">Gamification</h2>
-                <p class="text-surface-500 mt-1 mb-0 text-sm">XP-Einstellungen, Level-Übersicht und User-Neuberechnung</p>
+                <h2 class="m-0 text-2xl font-bold">{{ t('adminGamification.title') }}</h2>
+                <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminGamification.subtitle') }}</p>
             </div>
             <p-button
                 (onClick)="recalculate()"
                 [loading]="recalculating()"
                 icon="pi pi-refresh"
-                label="XP neu berechnen"
+                [label]="t('adminGamification.recalculate')"
                 severity="warn"
-                pTooltip="Berechnet die Erfahrungspunkte aller Benutzer anhand der aktuellen Konfiguration und dem vorhandenen Content neu"
+                [pTooltip]="t('adminGamification.recalculateTooltip')"
                 tooltipPosition="left"
             />
         </div>
@@ -28,8 +28,8 @@
 
     <!-- XP Config -->
     <div class="card">
-        <h3 class="mb-1 text-lg font-semibold">XP-Konfiguration</h3>
-        <p class="text-surface-500 mb-4 text-sm">Lege fest, wie viele Erfahrungspunkte Benutzer für jede Aktion erhalten.</p>
+        <h3 class="mb-1 text-lg font-semibold">{{ t('adminGamification.xpConfig') }}</h3>
+        <p class="text-surface-500 mb-4 text-sm">{{ t('adminGamification.xpConfigDesc') }}</p>
 
         @if (loading()) {
         <div class="flex flex-col gap-3">
@@ -42,10 +42,10 @@
             <ng-template #header>
                 <tr>
                     <th class="w-8"></th>
-                    <th>Aktion</th>
-                    <th>Beschreibung</th>
-                    <th class="w-40 text-right">XP pro Aktion</th>
-                    <th class="w-24 text-right">Speichern</th>
+                    <th>{{ t('adminGamification.eventType') }}</th>
+                    <th>{{ t('adminGamification.description') }}</th>
+                    <th class="w-40 text-right">{{ t('adminGamification.xpPerAction') }}</th>
+                    <th class="w-24 text-right">{{ t('common.save') }}</th>
                 </tr>
             </ng-template>
             <ng-template #body let-entry>
@@ -90,17 +90,17 @@
 
     <!-- Level Table -->
     <div class="card">
-        <h3 class="mb-1 text-lg font-semibold">Level-Übersicht</h3>
-        <p class="text-surface-500 mb-4 text-sm">Alle Level und die benötigten Erfahrungspunkte. Diese Schwellwerte sind fest im System verankert.</p>
+        <h3 class="mb-1 text-lg font-semibold">{{ t('adminGamification.levelTable') }}</h3>
+        <p class="text-surface-500 mb-4 text-sm">{{ t('adminGamification.levelTableDesc') }}</p>
 
         <p-table [value]="levels" styleClass="p-datatable-sm">
             <ng-template #header>
                 <tr>
-                    <th class="w-16">Level</th>
-                    <th>Bezeichnung</th>
-                    <th class="text-right">Ab (XP)</th>
-                    <th class="text-right">Bis (XP)</th>
-                    <th class="text-right">Bereich</th>
+                    <th class="w-16">{{ t('adminGamification.level') }}</th>
+                    <th>{{ t('adminGamification.levelName') }}</th>
+                    <th class="text-right">{{ t('adminGamification.fromXP') }}</th>
+                    <th class="text-right">{{ t('adminGamification.toXP') }}</th>
+                    <th class="text-right">{{ t('adminGamification.range') }}</th>
                 </tr>
             </ng-template>
             <ng-template #body let-lvl let-i="rowIndex">

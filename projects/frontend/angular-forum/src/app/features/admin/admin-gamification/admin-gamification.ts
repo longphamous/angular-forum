@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { DecimalPipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DividerModule } from "primeng/divider";
 import { InputNumberModule } from "primeng/inputnumber";
@@ -35,13 +36,15 @@ export interface XpConfigEntry {
         SkeletonModule,
         TableModule,
         TagModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     templateUrl: "./admin-gamification.html"
 })
 export class AdminGamification implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly t = inject(TranslocoService);
 
     readonly loading = signal(true);
     readonly saving = signal<string | null>(null);
@@ -68,7 +71,7 @@ export class AdminGamification implements OnInit {
                 this.loading.set(false);
             },
             error: () => {
-                this.error.set("Konfiguration konnte nicht geladen werden.");
+                this.error.set(this.t.translate("adminGamification.loadError"));
                 this.loading.set(false);
             }
         });
@@ -90,11 +93,11 @@ export class AdminGamification implements OnInit {
                     this.configs.update((list) =>
                         list.map((e) => (e.eventType === updated.eventType ? { ...e, xpAmount: updated.xpAmount } : e))
                     );
-                    this.successMsg.set(`"${entry.label}" auf ${amount} XP gespeichert.`);
+                    this.successMsg.set(this.t.translate("adminGamification.saveSuccess", { label: entry.label, amount }));
                     this.saving.set(null);
                 },
                 error: () => {
-                    this.error.set("Fehler beim Speichern.");
+                    this.error.set(this.t.translate("adminGamification.saveError"));
                     this.saving.set(null);
                 }
             });
@@ -106,11 +109,11 @@ export class AdminGamification implements OnInit {
         this.successMsg.set(null);
         this.http.post<{ updatedUsers: number }>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.recalculate()}`, {}).subscribe({
             next: (result) => {
-                this.successMsg.set(`XP für ${result.updatedUsers} Benutzer neu berechnet.`);
+                this.successMsg.set(this.t.translate("adminGamification.recalculateSuccessCount", { count: result.updatedUsers }));
                 this.recalculating.set(false);
             },
             error: () => {
-                this.error.set("Fehler bei der Neuberechnung.");
+                this.error.set(this.t.translate("adminGamification.recalculateError"));
                 this.recalculating.set(false);
             }
         });

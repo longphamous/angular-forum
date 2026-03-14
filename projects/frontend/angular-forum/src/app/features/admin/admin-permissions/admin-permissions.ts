@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
@@ -23,13 +24,15 @@ import { GroupFacade } from "../../../facade/group/group-facade";
         SkeletonModule,
         TableModule,
         TagModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     selector: "app-admin-permissions",
     templateUrl: "./admin-permissions.html"
 })
 export class AdminPermissions implements OnInit {
     protected readonly facade = inject(GroupFacade);
+    private readonly translocoService = inject(TranslocoService);
 
     protected readonly showEditDialog = signal(false);
     protected readonly editingPermission = signal<PagePermission | null>(null);
@@ -66,7 +69,7 @@ export class AdminPermissions implements OnInit {
                 this.showEditDialog.set(false);
             },
             error: () => {
-                this.saveError.set("Fehler beim Speichern.");
+                this.saveError.set(this.translocoService.translate("common.saveError"));
                 this.saving.set(false);
             }
         });

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
@@ -12,6 +13,7 @@ import { SkeletonModule } from "primeng/skeleton";
 import { Table, TableLazyLoadEvent, TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
+import { Subscription } from "rxjs";
 
 import { AnimeFilter, AnimeSortField } from "../../../../core/models/anime/anime";
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
@@ -36,19 +38,23 @@ interface SelectOption {
         InputIconModule,
         SkeletonModule,
         MessageModule,
-        TooltipModule
+        TooltipModule,
+        TranslocoModule
     ],
     templateUrl: "./anime-top-list.html",
     styleUrl: "./anime-top-list.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnimeTopList implements OnInit {
+export class AnimeTopList implements OnInit, OnDestroy {
     @ViewChild("dt") dt!: Table;
 
     readonly facade = inject(AnimeFacade);
     private readonly router = inject(Router);
     private readonly listStateService = inject(AnimeListStateService);
+    private readonly translocoService = inject(TranslocoService);
     readonly pageSize = 20;
+
+    private langSub?: Subscription;
 
     // Table binding state (restored from service when navigating back)
     tableFirst = 0;
@@ -70,12 +76,7 @@ export class AnimeTopList implements OnInit {
         { label: "Not yet aired", value: "Not yet aired" }
     ];
 
-    readonly seasonOptions: SelectOption[] = [
-        { label: "Frühling", value: "spring" },
-        { label: "Sommer", value: "summer" },
-        { label: "Herbst", value: "fall" },
-        { label: "Winter", value: "winter" }
-    ];
+    seasonOptions: SelectOption[] = [];
 
     readonly sourceOptions: SelectOption[] = [
         { label: "Manga", value: "Manga" },
@@ -116,7 +117,13 @@ export class AnimeTopList implements OnInit {
     private sortField: AnimeSortField = "mean";
     private sortOrder: "ASC" | "DESC" = "DESC";
 
+    ngOnDestroy(): void {
+        this.langSub?.unsubscribe();
+    }
+
     ngOnInit(): void {
+        this.buildSeasonOptions();
+        this.langSub = this.translocoService.langChanges$.subscribe(() => this.buildSeasonOptions());
         this.facade.loadGenres();
         const saved = this.listStateService.consumeTopListState();
         if (saved) {
@@ -268,6 +275,15 @@ export class AnimeTopList implements OnInit {
             selectedMaxScore: this.selectedMaxScore
         });
         void this.router.navigate(["/anime", id]);
+    }
+
+    private buildSeasonOptions(): void {
+        this.seasonOptions = [
+            { label: this.translocoService.translate("anime.topList.seasons.spring"), value: "spring" },
+            { label: this.translocoService.translate("anime.topList.seasons.summer"), value: "summer" },
+            { label: this.translocoService.translate("anime.topList.seasons.fall"), value: "fall" },
+            { label: this.translocoService.translate("anime.topList.seasons.winter"), value: "winter" }
+        ];
     }
 
     private loadData(page: number): void {

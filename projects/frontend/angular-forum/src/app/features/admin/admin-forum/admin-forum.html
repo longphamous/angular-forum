@@ -1,10 +1,11 @@
 <p-toast />
 <p-confirmdialog />
 
+<ng-container *transloco="let t">
 <div class="card">
     <div class="mb-6 flex items-center justify-between">
-        <h2 class="m-0 text-2xl font-bold">Forenstruktur verwalten</h2>
-        <p-button (onClick)="openCreateCategory()" icon="pi pi-plus" label="Kategorie erstellen" />
+        <h2 class="m-0 text-2xl font-bold">{{ t('adminForum.title') }}</h2>
+        <p-button (onClick)="openCreateCategory()" icon="pi pi-plus" [label]="t('adminForum.createCategory')" />
     </div>
 
     @if (facade.error()) {
@@ -30,7 +31,7 @@
                             class="ml-2 rounded-full px-2 py-0.5 text-xs"
                             [class]="category.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-surface-200 text-surface-500 dark:bg-surface-700'"
                         >
-                            {{ category.isActive ? 'Aktiv' : 'Inaktiv' }}
+                            {{ category.isActive ? t('adminForum.active') : t('adminForum.inactive') }}
                         </span>
                         @if (category.description) {
                         <p class="text-surface-400 m-0 text-xs">{{ category.description }}</p>
@@ -42,7 +43,7 @@
                         (onClick)="openCreateForum(category.id)"
                         [outlined]="true"
                         icon="pi pi-plus"
-                        label="Forum"
+                        [label]="t('adminForum.addForum')"
                         severity="secondary"
                         size="small"
                     />
@@ -75,13 +76,13 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-medium">{{ forum.name }}</span>
                                 @if (forum.isLocked) {
-                                <p-tag icon="pi pi-lock" severity="warn" styleClass="text-xs" value="Gesperrt" />
+                                <p-tag icon="pi pi-lock" severity="warn" styleClass="text-xs" [value]="t('forum.locked')" />
                                 } @if (forum.isPrivate) {
                                 <p-tag
                                     icon="pi pi-eye-slash"
                                     severity="secondary"
                                     styleClass="text-xs"
-                                    value="Privat"
+                                    [value]="t('forum.private')"
                                 />
                                 }
                             </div>
@@ -89,7 +90,7 @@
                             <p class="text-surface-400 m-0 text-xs">{{ forum.description }}</p>
                             }
                             <p class="text-surface-400 m-0 text-xs">
-                                {{ forum.threadCount }} Threads &middot; {{ forum.postCount }} Beiträge
+                                {{ forum.threadCount }} Threads &middot; {{ forum.postCount }} {{ t('forum.posts') }}
                             </p>
                         </div>
                     </div>
@@ -113,12 +114,12 @@
                     </div>
                 </div>
                 } @empty {
-                <div class="text-surface-400 px-4 py-3 text-sm italic">Keine Foren in dieser Kategorie.</div>
+                <div class="text-surface-400 px-4 py-3 text-sm italic">{{ t('adminForum.noForumsInCategory') }}</div>
                 }
             </div>
         </div>
         } @empty {
-        <p class="text-surface-400 text-center">Keine Kategorien vorhanden. Erstelle die erste Kategorie.</p>
+        <p class="text-surface-400 text-center">{{ t('adminForum.noCategories') }}</p>
         }
     </div>
     }
@@ -127,34 +128,34 @@
 <!-- Category Dialog -->
 <p-dialog
     (onHide)="categoryDialogVisible.set(false)"
-    [header]="editingCategory() ? 'Kategorie bearbeiten' : 'Kategorie erstellen'"
+    [header]="editingCategory() ? t('adminForum.categoryDialog.editHeader') : t('adminForum.categoryDialog.createHeader')"
     [modal]="true"
     [style]="{ width: '32rem' }"
     [visible]="categoryDialogVisible()"
 >
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="cat-name">Name *</label>
-            <input id="cat-name" [(ngModel)]="categoryName" pInputText placeholder="z.B. Allgemeines" />
+            <label class="text-sm font-medium" for="cat-name">{{ t('adminForum.categoryDialog.nameLabel') }} *</label>
+            <input id="cat-name" [(ngModel)]="categoryName" pInputText [placeholder]="t('adminForum.categoryDialog.namePlaceholder')" />
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="cat-desc">Beschreibung</label>
+            <label class="text-sm font-medium" for="cat-desc">{{ t('adminForum.categoryDialog.descLabel') }}</label>
             <textarea
                 id="cat-desc"
                 [(ngModel)]="categoryDescription"
-                placeholder="Optionale Beschreibung"
+                [placeholder]="t('adminForum.categoryDialog.descPlaceholder')"
                 pTextarea
                 rows="3"
             ></textarea>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="cat-pos">Position</label>
+            <label class="text-sm font-medium" for="cat-pos">{{ t('adminForum.categoryDialog.positionLabel') }}</label>
             <p-inputnumber id="cat-pos" [(ngModel)]="categoryPosition" [min]="0" placeholder="0" styleClass="w-full" />
         </div>
         @if (editingCategory()) {
         <div class="flex items-center gap-2">
             <p-checkbox [(ngModel)]="categoryIsActive" [binary]="true" inputId="cat-active" />
-            <label class="text-sm" for="cat-active">Kategorie aktiv</label>
+            <label class="text-sm" for="cat-active">{{ t('adminForum.categoryDialog.categoryActive') }}</label>
         </div>
         }
     </div>
@@ -163,14 +164,14 @@
         <p-button
             (onClick)="categoryDialogVisible.set(false)"
             [outlined]="true"
-            label="Abbrechen"
+            [label]="t('common.cancel')"
             severity="secondary"
         />
         <p-button
             (onClick)="saveCategory()"
             [disabled]="!categoryName.trim()"
             [loading]="categoryDialogSaving()"
-            label="Speichern"
+            [label]="t('common.save')"
         />
     </ng-template>
 </p-dialog>
@@ -178,49 +179,50 @@
 <!-- Forum Dialog -->
 <p-dialog
     (onHide)="forumDialogVisible.set(false)"
-    [header]="editingForum() ? 'Forum bearbeiten' : 'Forum erstellen'"
+    [header]="editingForum() ? t('adminForum.forumDialog.editHeader') : t('adminForum.forumDialog.createHeader')"
     [modal]="true"
     [style]="{ width: '32rem' }"
     [visible]="forumDialogVisible()"
 >
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="forum-name">Name *</label>
-            <input id="forum-name" [(ngModel)]="forumName" pInputText placeholder="z.B. Allgemeine Diskussion" />
+            <label class="text-sm font-medium" for="forum-name">{{ t('adminForum.forumDialog.nameLabel') }} *</label>
+            <input id="forum-name" [(ngModel)]="forumName" pInputText [placeholder]="t('adminForum.forumDialog.namePlaceholder')" />
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="forum-desc">Beschreibung</label>
+            <label class="text-sm font-medium" for="forum-desc">{{ t('adminForum.forumDialog.descLabel') }}</label>
             <textarea
                 id="forum-desc"
                 [(ngModel)]="forumDescription"
-                placeholder="Optionale Beschreibung"
+                [placeholder]="t('adminForum.forumDialog.descPlaceholder')"
                 pTextarea
                 rows="3"
             ></textarea>
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium" for="forum-pos">Position</label>
+            <label class="text-sm font-medium" for="forum-pos">{{ t('adminForum.forumDialog.positionLabel') }}</label>
             <p-inputnumber id="forum-pos" [(ngModel)]="forumPosition" [min]="0" placeholder="0" styleClass="w-full" />
         </div>
         <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2">
                 <p-checkbox [(ngModel)]="forumIsLocked" [binary]="true" inputId="forum-locked" />
-                <label class="text-sm" for="forum-locked">Forum gesperrt (keine neuen Threads/Beiträge)</label>
+                <label class="text-sm" for="forum-locked">{{ t('adminForum.forumDialog.locked') }}</label>
             </div>
             <div class="flex items-center gap-2">
                 <p-checkbox [(ngModel)]="forumIsPrivate" [binary]="true" inputId="forum-private" />
-                <label class="text-sm" for="forum-private">Privates Forum (nur für Mitglieder)</label>
+                <label class="text-sm" for="forum-private">{{ t('adminForum.forumDialog.private') }}</label>
             </div>
         </div>
     </div>
 
     <ng-template #footer>
-        <p-button (onClick)="forumDialogVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+        <p-button (onClick)="forumDialogVisible.set(false)" [outlined]="true" [label]="t('common.cancel')" severity="secondary" />
         <p-button
             (onClick)="saveForum()"
             [disabled]="!forumName.trim()"
             [loading]="forumDialogSaving()"
-            label="Speichern"
+            [label]="t('common.save')"
         />
     </ng-template>
 </p-dialog>
+</ng-container>

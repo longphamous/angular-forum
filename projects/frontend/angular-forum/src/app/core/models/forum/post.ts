@@ -9,6 +9,7 @@ export interface Post {
     authorSignature?: string;
     authorLevel: number;
     authorLevelName: string;
+    authorBalance?: number;
     content: string;
     isFirstPost: boolean;
     isEdited: boolean;

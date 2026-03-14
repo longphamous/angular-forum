@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
+import { AchievementService } from "./achievement.service";
 import { XpConfigEntity } from "./entities/xp-config.entity";
 import { XpEventType, XpEventEntity } from "./entities/xp-event.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
@@ -31,7 +32,8 @@ export class GamificationService {
         @InjectRepository(XpConfigEntity)
         private readonly xpConfigRepo: Repository<XpConfigEntity>,
         @InjectDataSource()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly achievementService: AchievementService
     ) {}
 
     // ── XP Config ─────────────────────────────────────────────────────────────
@@ -70,6 +72,9 @@ export class GamificationService {
 
         const event = this.xpEventRepo.create({ userId, eventType, xpGained: amount, referenceId });
         await this.xpEventRepo.save(event);
+
+        // Fire-and-forget achievement check
+        void this.achievementService.checkAndAward(userId, eventType).catch(() => undefined);
     }
 
     // ── Read XP ───────────────────────────────────────────────────────────────

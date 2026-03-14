@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { TranslocoModule } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { MessageModule } from "primeng/message";
@@ -22,7 +23,8 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         SkeletonModule,
         MessageModule,
         TooltipModule,
-        PaginatorModule
+        PaginatorModule,
+        TranslocoModule
     ],
     templateUrl: "./thread-list.html",
     styleUrl: "./thread-list.scss",
