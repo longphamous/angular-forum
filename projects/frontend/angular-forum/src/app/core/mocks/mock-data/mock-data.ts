@@ -772,11 +772,19 @@ export const mockSlides: TeaserSlide[] = [
         id: "slide-1",
         title: "Willkommen bei Aniverse",
         description: "Deine Community für Anime, Manga & Forum-Diskussionen.",
+        translations: {
+            en: { title: "Welcome to Aniverse", description: "Your community for anime, manga & forum discussions." }
+        },
         imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=400&fit=crop",
         linkUrl: "/forum",
         linkLabel: "Zum Forum",
+        linkFullSlide: false,
+        textStyle: "overlay",
+        textAlign: "left",
         isActive: true,
         sortOrder: 0,
+        validFrom: null,
+        validUntil: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     },
@@ -784,11 +792,19 @@ export const mockSlides: TeaserSlide[] = [
         id: "slide-2",
         title: "Top Anime entdecken",
         description: "Durchsuche unsere Anime-Datenbank und finde deinen nächsten Lieblings-Anime.",
+        translations: {
+            en: { title: "Discover Top Anime", description: "Browse our anime database and find your next favourite." }
+        },
         imageUrl: "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?w=1200&h=400&fit=crop",
         linkUrl: "/anime-top-list",
         linkLabel: "Jetzt entdecken",
+        linkFullSlide: true,
+        textStyle: "glass",
+        textAlign: "center",
         isActive: true,
         sortOrder: 1,
+        validFrom: null,
+        validUntil: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     },
@@ -796,11 +812,19 @@ export const mockSlides: TeaserSlide[] = [
         id: "slide-3",
         title: "Dein Guthaben wächst",
         description: "Schreibe Beiträge, erhalte Reaktionen und sammle Coins für deine Aktivität.",
+        translations: {
+            en: { title: "Your balance grows", description: "Write posts, receive reactions and collect coins for your activity." }
+        },
         imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=400&fit=crop",
         linkUrl: "/profile",
         linkLabel: "Mein Profil",
+        linkFullSlide: false,
+        textStyle: "glass",
+        textAlign: "left",
         isActive: true,
         sortOrder: 2,
+        validFrom: null,
+        validUntil: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     }

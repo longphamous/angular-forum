@@ -946,16 +946,22 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && url.includes("/api/slideshow/admin")) {
-            const body = req.body as { title: string; description?: string; imageUrl: string; linkUrl?: string; linkLabel?: string; isActive?: boolean; sortOrder?: number };
+            const body = req.body as { title: string; description?: string; translations?: Record<string, { title?: string; description?: string }>; imageUrl: string; linkUrl?: string; linkLabel?: string; linkFullSlide?: boolean; textStyle?: string; textAlign?: string; isActive?: boolean; sortOrder?: number; validFrom?: string | null; validUntil?: string | null };
             const newSlide = {
                 id: `slide-${Date.now()}`,
                 title: body.title,
                 description: body.description ?? null,
+                translations: body.translations ?? null,
                 imageUrl: body.imageUrl,
                 linkUrl: body.linkUrl ?? null,
                 linkLabel: body.linkLabel ?? null,
+                linkFullSlide: body.linkFullSlide ?? false,
+                textStyle: (body.textStyle ?? "overlay") as "overlay" | "glass",
+                textAlign: (body.textAlign ?? "left") as "left" | "center",
                 isActive: body.isActive ?? true,
                 sortOrder: body.sortOrder ?? 0,
+                validFrom: body.validFrom ?? null,
+                validUntil: body.validUntil ?? null,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };

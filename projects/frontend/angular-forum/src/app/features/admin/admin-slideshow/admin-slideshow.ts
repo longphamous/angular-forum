@@ -1,4 +1,5 @@
 import { HttpClient } from "@angular/common/http";
+import { SlicePipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
@@ -9,9 +10,11 @@ import { DialogModule } from "primeng/dialog";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
+import { RadioButtonModule } from "primeng/radiobutton";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
+import { TabsModule } from "primeng/tabs";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 import { ConfirmationService } from "primeng/api";
@@ -26,8 +29,17 @@ export interface SlideFormData {
     imageUrl: string;
     linkUrl: string;
     linkLabel: string;
+    linkFullSlide: boolean;
+    textStyle: "overlay" | "glass";
+    textAlign: "left" | "center";
     isActive: boolean;
     sortOrder: number;
+    validFrom: string;
+    validUntil: string;
+    translationEnTitle: string;
+    translationEnDescription: string;
+    translationDeTitle: string;
+    translationDeDescription: string;
 }
 
 const EMPTY_FORM: SlideFormData = {
@@ -36,14 +48,24 @@ const EMPTY_FORM: SlideFormData = {
     imageUrl: "",
     linkUrl: "",
     linkLabel: "",
+    linkFullSlide: false,
+    textStyle: "overlay",
+    textAlign: "left",
     isActive: true,
-    sortOrder: 0
+    sortOrder: 0,
+    validFrom: "",
+    validUntil: "",
+    translationEnTitle: "",
+    translationEnDescription: "",
+    translationDeTitle: "",
+    translationDeDescription: ""
 };
 
 @Component({
     selector: "admin-slideshow",
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        SlicePipe,
         ButtonModule,
         CheckboxModule,
         ConfirmDialogModule,
@@ -52,8 +74,10 @@ const EMPTY_FORM: SlideFormData = {
         InputNumberModule,
         InputTextModule,
         MessageModule,
+        RadioButtonModule,
         SkeletonModule,
         TableModule,
+        TabsModule,
         TagModule,
         TextareaModule,
         TooltipModule,
@@ -112,8 +136,17 @@ export class AdminSlideshow implements OnInit {
             imageUrl: slide.imageUrl,
             linkUrl: slide.linkUrl ?? "",
             linkLabel: slide.linkLabel ?? "",
+            linkFullSlide: slide.linkFullSlide,
+            textStyle: slide.textStyle as "overlay" | "glass",
+            textAlign: slide.textAlign as "left" | "center",
             isActive: slide.isActive,
-            sortOrder: slide.sortOrder
+            sortOrder: slide.sortOrder,
+            validFrom: slide.validFrom ? slide.validFrom.substring(0, 10) : "",
+            validUntil: slide.validUntil ? slide.validUntil.substring(0, 10) : "",
+            translationEnTitle: slide.translations?.["en"]?.title ?? "",
+            translationEnDescription: slide.translations?.["en"]?.description ?? "",
+            translationDeTitle: slide.translations?.["de"]?.title ?? "",
+            translationDeDescription: slide.translations?.["de"]?.description ?? ""
         });
         this.error.set(null);
         this.successMsg.set(null);
@@ -127,14 +160,34 @@ export class AdminSlideshow implements OnInit {
         this.error.set(null);
 
         const id = this.editingId();
+        const translations: Record<string, { title?: string; description?: string }> = {};
+        if (f.translationEnTitle.trim() || f.translationEnDescription.trim()) {
+            translations["en"] = {
+                ...(f.translationEnTitle.trim() && { title: f.translationEnTitle.trim() }),
+                ...(f.translationEnDescription.trim() && { description: f.translationEnDescription.trim() })
+            };
+        }
+        if (f.translationDeTitle.trim() || f.translationDeDescription.trim()) {
+            translations["de"] = {
+                ...(f.translationDeTitle.trim() && { title: f.translationDeTitle.trim() }),
+                ...(f.translationDeDescription.trim() && { description: f.translationDeDescription.trim() })
+            };
+        }
+
         const payload = {
             title: f.title,
             description: f.description || undefined,
+            translations: Object.keys(translations).length ? translations : undefined,
             imageUrl: f.imageUrl,
             linkUrl: f.linkUrl || undefined,
             linkLabel: f.linkLabel || undefined,
+            linkFullSlide: f.linkFullSlide,
+            textStyle: f.textStyle,
+            textAlign: f.textAlign,
             isActive: f.isActive,
-            sortOrder: f.sortOrder
+            sortOrder: f.sortOrder,
+            validFrom: f.validFrom ? `${f.validFrom}T00:00:00.000Z` : null,
+            validUntil: f.validUntil ? `${f.validUntil}T23:59:59.000Z` : null
         };
 
         const req = id
@@ -189,16 +242,18 @@ export class AdminSlideshow implements OnInit {
         const formData = new FormData();
         formData.append("file", file);
         this.uploading.set(true);
-        this.http.post<{ url: string }>(`${this.apiConfig.baseUrl}${SLIDESHOW_ROUTES.admin.upload()}`, formData).subscribe({
-            next: (res) => {
-                this.form.update((f) => ({ ...f, imageUrl: res.url }));
-                this.uploading.set(false);
-            },
-            error: () => {
-                this.error.set(this.translocoService.translate("adminSlideshow.uploadError"));
-                this.uploading.set(false);
-            }
-        });
+        this.http
+            .post<{ url: string }>(`${this.apiConfig.baseUrl}${SLIDESHOW_ROUTES.admin.upload()}`, formData)
+            .subscribe({
+                next: (res) => {
+                    this.form.update((f) => ({ ...f, imageUrl: res.url }));
+                    this.uploading.set(false);
+                },
+                error: () => {
+                    this.error.set(this.translocoService.translate("adminSlideshow.uploadError"));
+                    this.uploading.set(false);
+                }
+            });
         input.value = "";
     }
 
