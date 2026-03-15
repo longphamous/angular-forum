@@ -5,13 +5,14 @@ import { TeaserSlideshowComponent } from "../../../core/components/teaser-slides
 import { ActiveForumsWidget } from "./components/active-forums-widget";
 import { DashboardStatsWidget } from "./components/dashboard-stats-widget";
 import { NewestAnimeWidget } from "./components/newest-anime-widget";
+import { OnlineUsersWidget } from "./components/online-users-widget";
 import { RecentThreadsWidget } from "./components/recent-threads-widget";
 import { TopPostersWidget } from "./components/top-posters-widget";
 import { TopWealthWidget } from "./components/top-wealth-widget";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [TeaserSlideshowComponent, ActiveForumsWidget, DashboardStatsWidget, NewestAnimeWidget, RecentThreadsWidget, TopPostersWidget, TopWealthWidget],
+    imports: [TeaserSlideshowComponent, ActiveForumsWidget, DashboardStatsWidget, NewestAnimeWidget, OnlineUsersWidget, RecentThreadsWidget, TopPostersWidget, TopWealthWidget],
     selector: "app-dashboard",
     template: `
         <div class="grid grid-cols-12 gap-6">
@@ -25,6 +26,7 @@ import { TopWealthWidget } from "./components/top-wealth-widget";
             <div class="col-span-12 xl:col-span-4 flex flex-col gap-6">
                 <app-top-posters-widget />
                 <app-top-wealth-widget />
+                <app-online-users-widget />
             </div>
             <div class="col-span-12 xl:col-span-7">
                 <app-newest-anime-widget />

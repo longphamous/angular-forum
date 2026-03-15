@@ -7,6 +7,7 @@ import { Thread } from "../../models/forum/thread";
 import { UserProfile } from "../../models/user/user";
 import { Achievement, UserAchievement } from "../../models/gamification/achievement";
 import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
+import { OnlineUser } from "../../models/user/online-user";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 
 export interface User {
@@ -829,3 +830,12 @@ export const mockSlides: TeaserSlide[] = [
         updatedAt: twoDaysAgo
     }
 ];
+
+// ── Online Users mock data ────────────────────────────────────────────────────
+
+export const mockOnlineUsers: OnlineUser[] = [
+    { userId: "00000000-0000-0000-0000-000000000001", username: "admin", displayName: "Aniverse Admin", avatarUrl: null, lastSeenAt: now },
+    { userId: "00000000-0000-0000-0000-000000000002", username: "sakura_mod", displayName: "Sakura", avatarUrl: null, lastSeenAt: thirtySecondsAgo },
+    { userId: "00000000-0000-0000-0000-000000000003", username: "naruto_fan", displayName: "Naruto Fan", avatarUrl: null, lastSeenAt: oneHourAgo }
+];
+

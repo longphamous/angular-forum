@@ -60,6 +60,9 @@ export class UserEntity {
     @Column({ name: "last_login_at", nullable: true, type: "timestamptz" })
     lastLoginAt?: Date;
 
+    @Column({ name: "last_seen_at", nullable: true, type: "timestamptz" })
+    lastSeenAt?: Date;
+
     @ManyToMany(() => GroupEntity, (group) => group.users)
     groups?: GroupEntity[];
 

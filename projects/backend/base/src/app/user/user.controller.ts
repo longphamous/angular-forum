@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -9,7 +9,7 @@ import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { AuthSession, UserProfile } from "./models/user.model";
-import { UserService } from "./user.service";
+import { OnlineUserDto, UserService } from "./user.service";
 
 @Controller("user")
 export class UserController {
@@ -46,6 +46,28 @@ export class UserController {
     @Post("refresh")
     refresh(@Body() body: { refreshToken: string }): Promise<AuthSession> {
         return this.userService.refreshTokens(body.refreshToken);
+    }
+
+    // ─── Online presence (public) ─────────────────────────────────────────────
+
+    /**
+     * GET /user/online
+     * Returns users who were seen today or in the last 24 h.
+     */
+    @Public()
+    @Get("online")
+    getOnlineUsers(
+        @Query("window") window = "today",
+        @Query("sort") sort = "lastSeen",
+        @Query("order") order = "desc",
+        @Query("limit") limit = "20"
+    ): Promise<OnlineUserDto[]> {
+        return this.userService.findOnlineUsers({
+            window: window === "24h" ? "24h" : "today",
+            sort: sort === "username" ? "username" : "lastSeen",
+            order: order === "asc" ? "asc" : "desc",
+            limit: Math.min(Math.max(parseInt(limit) || 20, 1), 100)
+        });
     }
 
     // ─── Profile (any authenticated user) ────────────────────────────────────

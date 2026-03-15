@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, In, MoreThanOrEqual, Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
@@ -14,6 +14,16 @@ import { RegisterDto } from "./dto/register.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UserEntity } from "./entities/user.entity";
 import { AuthSession, UserProfile } from "./models/user.model";
+
+// ─── DTOs ─────────────────────────────────────────────────────────────────────
+
+export interface OnlineUserDto {
+    userId: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    lastSeenAt: string;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -194,6 +204,39 @@ export class UserService {
     async deleteUser(userId: string): Promise<void> {
         const user = await this.findById(userId);
         await this.userRepo.remove(user);
+    }
+
+    // ── Presence ──────────────────────────────────────────────────────────────
+
+    async findOnlineUsers(options: {
+        window: "today" | "24h";
+        sort: "lastSeen" | "username";
+        order: "asc" | "desc";
+        limit: number;
+    }): Promise<OnlineUserDto[]> {
+        const since =
+            options.window === "today"
+                ? (() => {
+                      const d = new Date();
+                      d.setHours(0, 0, 0, 0);
+                      return d;
+                  })()
+                : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        const dir = options.order === "asc" ? ("ASC" as const) : ("DESC" as const);
+        const users = await this.userRepo.find({
+            where: { lastSeenAt: MoreThanOrEqual(since), status: "active" },
+            order: options.sort === "username" ? { username: dir } : { lastSeenAt: dir },
+            take: options.limit
+        });
+
+        return users.map((u) => ({
+            userId: u.id,
+            username: u.username,
+            displayName: u.displayName,
+            avatarUrl: u.avatarUrl ?? null,
+            lastSeenAt: u.lastSeenAt!.toISOString()
+        }));
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

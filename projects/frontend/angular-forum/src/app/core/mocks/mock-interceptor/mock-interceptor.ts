@@ -26,6 +26,7 @@ import {
     mockCategories,
     mockForums,
     mockGroups,
+    mockOnlineUsers,
     mockPagePermissions,
     mockPosts,
     mockSlides,
@@ -929,6 +930,24 @@ export class MockInterceptor implements HttpInterceptor {
             } catch {
                 return this.error("Ungültiger Token", 401);
             }
+        }
+
+        // ── Online users ───────────────────────────────────────────────────────
+
+        if (method === "GET" && url.includes("/api/user/online")) {
+            const params = new URL(url, "http://localhost").searchParams;
+            const sort = params.get("sort") ?? "lastSeen";
+            const order = params.get("order") ?? "desc";
+            const limit = Math.min(parseInt(params.get("limit") ?? "20") || 20, 100);
+
+            let result = [...mockOnlineUsers];
+            if (sort === "username") {
+                result.sort((a, b) => a.username.localeCompare(b.username));
+            } else {
+                result.sort((a, b) => new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime());
+            }
+            if (order === "asc") result.reverse();
+            return this.ok(result.slice(0, limit));
         }
 
         // ── Slideshow ──────────────────────────────────────────────────────────

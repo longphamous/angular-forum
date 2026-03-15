@@ -648,6 +648,22 @@
     "xpToNextLevel": "{{xp}} XP until next level",
     "maxLevel": "Maximum level reached!"
   },
+  "onlineUsers": {
+    "title": "Online Today",
+    "footerLabel": "{{count}} online today",
+    "noUsers": "No users active yet.",
+    "modeAvatars": "Avatar view",
+    "modeList": "List view",
+    "today": "Today",
+    "last24h": "Last 24 h",
+    "sortLastSeen": "Last seen",
+    "sortUsername": "Name",
+    "orderAsc": "Ascending",
+    "orderDesc": "Descending"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
   "adminSlideshow": {
     "title": "Teaser Slideshow",
     "subtitle": "Create and manage teaser slides displayed on the dashboard and forum overview",
