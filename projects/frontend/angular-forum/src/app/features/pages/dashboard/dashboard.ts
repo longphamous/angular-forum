@@ -9,10 +9,11 @@ import { OnlineUsersWidget } from "./components/online-users-widget";
 import { RecentThreadsWidget } from "./components/recent-threads-widget";
 import { TopPostersWidget } from "./components/top-posters-widget";
 import { TopWealthWidget } from "./components/top-wealth-widget";
+import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [TeaserSlideshowComponent, ActiveForumsWidget, DashboardStatsWidget, NewestAnimeWidget, OnlineUsersWidget, RecentThreadsWidget, TopPostersWidget, TopWealthWidget],
+    imports: [TeaserSlideshowComponent, ActiveForumsWidget, DashboardStatsWidget, NewestAnimeWidget, OnlineUsersWidget, RecentThreadsWidget, TopPostersWidget, TopWealthWidget, UpcomingEventsWidget],
     selector: "app-dashboard",
     template: `
         <div class="grid grid-cols-12 gap-6">
@@ -24,6 +25,7 @@ import { TopWealthWidget } from "./components/top-wealth-widget";
                 <app-recent-threads-widget />
             </div>
             <div class="col-span-12 xl:col-span-4 flex flex-col gap-6">
+                <app-upcoming-events-widget />
                 <app-top-posters-widget />
                 <app-top-wealth-widget />
                 <app-online-users-widget />

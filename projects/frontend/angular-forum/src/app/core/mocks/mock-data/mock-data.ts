@@ -10,6 +10,7 @@ import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
 import { OnlineUser } from "../../models/user/online-user";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
+import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
 
 export interface User {
     id: string;
@@ -915,4 +916,102 @@ export const mockUserInventory: UserInventoryItem[] = [
         purchasedAt: twoDaysAgo
     }
 ];
+
+// ── Calendar Events ───────────────────────────────────────────────────────────
+
+const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+const nextWeekEnd = new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000);
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+const tomorrowEnd = new Date(tomorrow.getTime() + 3 * 60 * 60 * 1000);
+const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+export const mockCalendarEvents: CalendarEvent[] = [
+    {
+        id: "c0000000-0000-0000-0000-000000000001",
+        title: "Anime Movie Night",
+        description: "Wir schauen zusammen die neuesten Anime-Filme! Snacks bitte mitbringen.",
+        location: "Discord – Aniverse Lounge",
+        startDate: new Date(nextWeek.getFullYear(), nextWeek.getMonth(), nextWeek.getDate(), 20, 0).toISOString(),
+        endDate: new Date(nextWeek.getFullYear(), nextWeek.getMonth(), nextWeek.getDate(), 23, 0).toISOString(),
+        allDay: false,
+        isPublic: true,
+        maxAttendees: 20,
+        createdByUserId: "00000000-0000-0000-0000-000000000001",
+        createdByDisplayName: "Aniverse Admin",
+        threadId: null,
+        recurrenceRule: null,
+        color: "purple",
+        attendeeCount: 3,
+        acceptedCount: 2,
+        myStatus: "accepted",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "c0000000-0000-0000-0000-000000000002",
+        title: "Community Meeting",
+        description: "Monatliches Treffen der Community-Moderatoren. Tagesordnung: neue Regeln, Feedback-Runden.",
+        location: "Discord – Moderatoren-Kanal",
+        startDate: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 18, 0).toISOString(),
+        endDate: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 19, 30).toISOString(),
+        allDay: false,
+        isPublic: false,
+        maxAttendees: null,
+        createdByUserId: "00000000-0000-0000-0000-000000000002",
+        createdByDisplayName: "Sakura",
+        threadId: null,
+        recurrenceRule: { frequency: "monthly", interval: 1 },
+        color: "blue",
+        attendeeCount: 2,
+        acceptedCount: 2,
+        myStatus: "accepted",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "c0000000-0000-0000-0000-000000000003",
+        title: "Manga-Lesekreis",
+        description: "Diesen Monat lesen wir Attack on Titan Band 1-5.",
+        location: "Online – Jitsi Meet",
+        startDate: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextMonth.getDate(), 16, 0).toISOString(),
+        endDate: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextMonth.getDate(), 18, 0).toISOString(),
+        allDay: false,
+        isPublic: true,
+        maxAttendees: 15,
+        createdByUserId: "00000000-0000-0000-0000-000000000003",
+        createdByDisplayName: "Naruto Fan",
+        threadId: null,
+        recurrenceRule: { frequency: "weekly", interval: 2, byDay: ["SA"] },
+        color: "green",
+        attendeeCount: 1,
+        acceptedCount: 0,
+        myStatus: null,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    }
+];
+
+export const mockCalendarEventDetails: Map<string, CalendarEventDetail> = new Map([
+    ["c0000000-0000-0000-0000-000000000001", {
+        ...mockCalendarEvents[0]!,
+        attendees: [
+            { id: "att-1", userId: "00000000-0000-0000-0000-000000000001", displayName: "Aniverse Admin", username: "admin", status: "accepted", companions: 0, declineReason: null, respondedAt: twoDaysAgo },
+            { id: "att-2", userId: "00000000-0000-0000-0000-000000000002", displayName: "Sakura", username: "sakura_mod", status: "accepted", companions: 1, declineReason: null, respondedAt: twoDaysAgo },
+            { id: "att-3", userId: "00000000-0000-0000-0000-000000000003", displayName: "Naruto Fan", username: "naruto_fan", status: "pending", companions: 0, declineReason: null, respondedAt: null }
+        ]
+    }],
+    ["c0000000-0000-0000-0000-000000000002", {
+        ...mockCalendarEvents[1]!,
+        attendees: [
+            { id: "att-4", userId: "00000000-0000-0000-0000-000000000001", displayName: "Aniverse Admin", username: "admin", status: "accepted", companions: 0, declineReason: null, respondedAt: twoDaysAgo },
+            { id: "att-5", userId: "00000000-0000-0000-0000-000000000002", displayName: "Sakura", username: "sakura_mod", status: "accepted", companions: 0, declineReason: null, respondedAt: twoDaysAgo }
+        ]
+    }],
+    ["c0000000-0000-0000-0000-000000000003", {
+        ...mockCalendarEvents[2]!,
+        attendees: [
+            { id: "att-6", userId: "00000000-0000-0000-0000-000000000003", displayName: "Naruto Fan", username: "naruto_fan", status: "pending", companions: 0, declineReason: null, respondedAt: null }
+        ]
+    }]
+]);
 

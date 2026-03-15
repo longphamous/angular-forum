@@ -1,0 +1,101 @@
+<p-toast />
+<p-confirmDialog />
+
+<div *transloco="let t">
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 text-2xl font-bold flex items-center gap-2">
+                <i class="pi pi-calendar text-primary"></i>
+                {{ t('adminCalendar.title') }}
+            </h1>
+            <p class="text-surface-500 text-sm mt-1">{{ t('adminCalendar.subtitle') }}</p>
+        </div>
+    </div>
+
+    @if (loading()) {
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3,4,5]; track $index) {
+                <p-skeleton height="3rem" />
+            }
+        </div>
+    } @else {
+        <p-table
+            [value]="events()"
+            [paginator]="events().length > 15"
+            [rows]="15"
+            styleClass="p-datatable-sm"
+            dataKey="id"
+        >
+            <ng-template #header>
+                <tr>
+                    <th style="width:2rem"></th>
+                    <th>{{ t('adminCalendar.table.title') }}</th>
+                    <th style="width:11rem">{{ t('adminCalendar.table.start') }}</th>
+                    <th style="width:11rem">{{ t('adminCalendar.table.end') }}</th>
+                    <th style="width:8rem">{{ t('adminCalendar.table.organizer') }}</th>
+                    <th style="width:6rem" class="text-center">{{ t('adminCalendar.table.attendees') }}</th>
+                    <th style="width:5rem" class="text-center">{{ t('adminCalendar.table.public') }}</th>
+                    <th style="width:5rem" class="text-right">{{ t('common.actions') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-ev>
+                <tr>
+                    <td>
+                        <div class="h-4 w-4 rounded-full" [class]="getEventColorClass(ev.color)"></div>
+                    </td>
+                    <td>
+                        <div class="font-medium text-sm text-surface-900 dark:text-surface-0 flex items-center gap-1.5">
+                            {{ ev.title }}
+                            @if (ev.recurrenceRule) {
+                                <i class="pi pi-refresh text-xs text-surface-400"></i>
+                            }
+                        </div>
+                        @if (ev.location) {
+                            <div class="text-surface-400 text-xs flex items-center gap-1">
+                                <i class="pi pi-map-marker text-xs"></i> {{ ev.location }}
+                            </div>
+                        }
+                    </td>
+                    <td class="text-sm text-surface-600 dark:text-surface-300">
+                        @if (ev.allDay) {
+                            {{ ev.startDate.substring(0, 10) }} <span class="text-xs text-surface-400">{{ t('calendar.allDay') }}</span>
+                        } @else {
+                            {{ formatDateTime(ev.startDate) }}
+                        }
+                    </td>
+                    <td class="text-sm text-surface-600 dark:text-surface-300">
+                        @if (!ev.allDay) { {{ formatDateTime(ev.endDate) }} }
+                    </td>
+                    <td class="text-sm text-surface-500">{{ ev.createdByDisplayName }}</td>
+                    <td class="text-center">
+                        <span class="text-sm font-semibold text-green-600 dark:text-green-400">{{ ev.acceptedCount }}</span>
+                        <span class="text-xs text-surface-400">/{{ ev.attendeeCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        <i
+                            class="pi text-base"
+                            [class.pi-globe]="ev.isPublic" [class.text-green-500]="ev.isPublic"
+                            [class.pi-lock]="!ev.isPublic" [class.text-surface-400]="!ev.isPublic"
+                        ></i>
+                    </td>
+                    <td>
+                        <div class="flex justify-end">
+                            <p-button
+                                icon="pi pi-trash"
+                                size="small"
+                                severity="danger"
+                                [pTooltip]="t('common.delete')"
+                                (click)="confirmDelete(ev)"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="8" class="text-center py-8 text-surface-400">{{ t('adminCalendar.empty') }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    }
+</div>

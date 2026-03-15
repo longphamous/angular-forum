@@ -36,7 +36,8 @@
     "error": "Fehler",
     "saved": "Gespeichert",
     "created": "Erstellt",
-    "deleted": "Gelöscht"
+    "deleted": "Gelöscht",
+    "more": "Mehr"
   },
   "nav": {
     "profile": "Profil",
@@ -64,6 +65,9 @@
     "shopSection": "Shop",
     "shop": "Virtueller Shop",
     "shopManagement": "Shop Verwaltung",
+    "calendarSection": "Kalender",
+    "calendar": "Kalender",
+    "calendarManagement": "Kalender Verwaltung",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -799,6 +803,82 @@
       "icon": "PrimeNG Icon",
       "iconHint": "Wird als Fallback verwendet, wenn kein Bild gesetzt ist. Beispiel: pi pi-star",
       "isActive": "Item ist aktiv (im Shop sichtbar)"
+    }
+  },
+  "calendar": {
+    "title": "Kalender",
+    "createEvent": "Termin erstellen",
+    "editEvent": "Termin bearbeiten",
+    "today": "Heute",
+    "monthView": "Monat",
+    "weekView": "Woche",
+    "listView": "Liste",
+    "allDay": "Ganztägig",
+    "noEvents": "Keine bevorstehenden Termine.",
+    "more": "weitere",
+    "recurring": "Wiederkehrender Termin",
+    "private": "Privater Termin",
+    "by": "von",
+    "attendees": "Teilnehmer",
+    "accepted": "Zugesagt",
+    "maxAttendees": "Max. Teilnehmer",
+    "attendeeList": "Teilnehmerliste",
+    "organizer": "Organisator",
+    "rsvp": "Rückmeldung geben",
+    "changeRsvp": "Rückmeldung ändern",
+    "rsvpTitle": "Deine Rückmeldung",
+    "companions": "Begleitpersonen",
+    "declineReason": "Grund für Absage",
+    "declineReasonPlaceholder": "Optional...",
+    "downloadIcal": "iCal herunterladen",
+    "myIcal": "Mein Kalender (iCal)",
+    "invite": "Einladen",
+    "inviteTitle": "Teilnehmer einladen",
+    "inviteHint": "Gib Benutzer-IDs kommagetrennt ein.",
+    "invitePlaceholder": "uuid-1, uuid-2, ...",
+    "sendInvitations": "Einladungen senden",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Zugesagt",
+      "declined": "Abgesagt",
+      "maybe": "Vielleicht"
+    },
+    "week": {
+      "mo": "Mo", "tu": "Di", "we": "Mi", "th": "Do", "fr": "Fr", "sa": "Sa", "su": "So"
+    },
+    "form": {
+      "title": "Titel",
+      "titlePlaceholder": "Terminbezeichnung...",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung des Termins...",
+      "location": "Ort",
+      "locationPlaceholder": "z.B. Online, Discord, ...",
+      "allDay": "Ganztägiger Termin",
+      "startDate": "Start",
+      "endDate": "Ende",
+      "color": "Farbe",
+      "maxAttendees": "Max. Teilnehmer",
+      "maxAttendeesUnlimited": "Unbegrenzt",
+      "isPublic": "Termin ist öffentlich sichtbar",
+      "recurring": "Wiederkehrender Termin",
+      "frequency": "Häufigkeit",
+      "interval": "Alle",
+      "byDay": "An welchen Tagen",
+      "recurrenceUntil": "Wiederholen bis",
+      "recurrenceUntilHint": "Leer lassen für kein Enddatum"
+    }
+  },
+  "adminCalendar": {
+    "title": "Kalender Verwaltung",
+    "subtitle": "Übersicht aller Community-Termine",
+    "empty": "Keine Termine vorhanden.",
+    "table": {
+      "title": "Titel",
+      "start": "Start",
+      "end": "Ende",
+      "organizer": "Organisator",
+      "attendees": "Teilnehmer",
+      "public": "Öffentlich"
     }
   }
 }

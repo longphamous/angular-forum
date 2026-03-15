@@ -57,6 +57,10 @@ export class AppMenu implements OnInit, OnDestroy {
                 items: [{ label: this.t("nav.shop"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/shop"] }]
             },
             {
+                label: this.t("nav.calendarSection"),
+                items: [{ label: this.t("nav.calendar"), icon: "pi pi-fw pi-calendar", routerLink: ["/calendar"] }]
+            },
+            {
                 label: this.t("nav.anime"),
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
@@ -75,7 +79,8 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.gamification"), icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] },
                     { label: this.t("nav.achievements"), icon: "pi pi-fw pi-trophy", routerLink: ["/admin/achievements"] },
                     { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] },
-                    { label: this.t("nav.shopManagement"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/admin/shop"] }
+                    { label: this.t("nav.shopManagement"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/admin/shop"] },
+                    { label: this.t("nav.calendarManagement"), icon: "pi pi-fw pi-calendar", routerLink: ["/admin/calendar"] }
                 ]
             },
             {

@@ -19,10 +19,13 @@ import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { Group } from "../../models/group/group";
 import { UserProfile } from "../../models/user/user";
+import { AttendeeStatus, RecurrenceRule } from "../../models/calendar/calendar";
 import {
     mockAchievements,
     mockAnimeDetails,
     mockAnimeListStore,
+    mockCalendarEventDetails,
+    mockCalendarEvents,
     mockCategories,
     mockForums,
     mockGroups,
@@ -1081,6 +1084,126 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/shop/admin/")[1].split("?")[0];
             const idx = mockShopItems.findIndex((i) => i.id === id);
             if (idx !== -1) mockShopItems.splice(idx, 1);
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+        }
+
+        // ── Calendar ───────────────────────────────────────────────────────────
+
+        if (method === "GET" && url.includes("/api/calendar/admin/all")) {
+            return this.ok([...mockCalendarEventDetails.values()]);
+        }
+
+        if (method === "GET" && url.includes("/api/calendar/my")) {
+            return this.ok([...mockCalendarEvents]);
+        }
+
+        if (method === "GET" && url.includes("/api/calendar/ical/feed")) {
+            return this.ok("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
+        }
+
+        if (method === "GET" && /\/api\/calendar\/[^/]+\/ical/.test(url)) {
+            return this.ok("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
+        }
+
+        if (method === "GET" && /\/api\/calendar\/[^/?]+(\?|$)/.test(url)) {
+            const id = url.split("/api/calendar/")[1]!.split("?")[0]!;
+            const detail = mockCalendarEventDetails.get(id);
+            if (!detail) return this.error("Not found", 404);
+            return this.ok(detail);
+        }
+
+        if (method === "GET" && /\/api\/calendar(\?|$)/.test(url)) {
+            const params = new URL(url, "http://localhost").searchParams;
+            const from = params.get("from") ? new Date(params.get("from")!) : new Date(0);
+            const to = params.get("to") ? new Date(params.get("to")!) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+            return this.ok(mockCalendarEvents.filter((e) => {
+                const d = new Date(e.startDate);
+                return d >= from && d <= to;
+            }));
+        }
+
+        if (method === "POST" && /\/api\/calendar\/[^/]+\/respond/.test(url)) {
+            const eventId = url.split("/api/calendar/")[1]!.split("/respond")[0]!;
+            const body = req.body as { status: string; companions?: number; declineReason?: string | null };
+            const detail = mockCalendarEventDetails.get(eventId);
+            if (detail) {
+                const existing = detail.attendees.find((a) => a.userId === "00000000-0000-0000-0000-000000000001");
+                if (existing) {
+                    existing.status = body.status as "pending" | "accepted" | "declined" | "maybe";
+                    existing.companions = body.companions ?? 0;
+                    existing.declineReason = body.declineReason ?? null;
+                    existing.respondedAt = new Date().toISOString();
+                }
+                const ev = mockCalendarEvents.find((e) => e.id === eventId);
+                if (ev) ev.myStatus = body.status as "pending" | "accepted" | "declined" | "maybe";
+            }
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+        }
+
+        if (method === "POST" && /\/api\/calendar\/[^/]+\/invite/.test(url)) {
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+        }
+
+        if (method === "POST" && /\/api\/calendar(\?|$)/.test(url)) {
+            const body = req.body as { title: string; description?: string | null; location?: string | null; startDate: string; endDate: string; allDay?: boolean; isPublic?: boolean; maxAttendees?: number | null; color?: string | null; recurrenceRule?: unknown };
+            const newEvent = {
+                id: `cal-${Date.now()}`,
+                title: body.title,
+                description: body.description ?? null,
+                location: body.location ?? null,
+                startDate: body.startDate,
+                endDate: body.endDate,
+                allDay: body.allDay ?? false,
+                isPublic: body.isPublic ?? true,
+                maxAttendees: body.maxAttendees ?? null,
+                createdByUserId: "00000000-0000-0000-0000-000000000001",
+                createdByDisplayName: "Aniverse Admin",
+                threadId: null,
+                recurrenceRule: (body.recurrenceRule as RecurrenceRule | null) ?? null,
+                color: body.color ?? "blue",
+                attendeeCount: 0,
+                acceptedCount: 0,
+                myStatus: null as AttendeeStatus | null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockCalendarEvents.push(newEvent);
+            const detail = { ...newEvent, attendees: [] };
+            mockCalendarEventDetails.set(newEvent.id, detail);
+            return this.ok(detail);
+        }
+
+        if (method === "PATCH" && /\/api\/calendar\/admin\//.test(url)) {
+            const id = url.split("/api/calendar/admin/")[1]!.split("?")[0]!;
+            const ev = mockCalendarEvents.find((e) => e.id === id);
+            if (!ev) return this.error("Not found", 404);
+            Object.assign(ev, req.body);
+            return this.ok(mockCalendarEventDetails.get(id) ?? ev);
+        }
+
+        if (method === "PATCH" && /\/api\/calendar\/[^/]+$/.test(url)) {
+            const id = url.split("/api/calendar/")[1]!.split("?")[0]!;
+            const ev = mockCalendarEvents.find((e) => e.id === id);
+            if (!ev) return this.error("Not found", 404);
+            Object.assign(ev, req.body);
+            const detail = mockCalendarEventDetails.get(id);
+            if (detail) Object.assign(detail, req.body);
+            return this.ok(detail ?? ev);
+        }
+
+        if (method === "DELETE" && /\/api\/calendar\/admin\//.test(url)) {
+            const id = url.split("/api/calendar/admin/")[1]!.split("?")[0]!;
+            const idx = mockCalendarEvents.findIndex((e) => e.id === id);
+            if (idx !== -1) mockCalendarEvents.splice(idx, 1);
+            mockCalendarEventDetails.delete(id);
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+        }
+
+        if (method === "DELETE" && /\/api\/calendar\/[^/]+$/.test(url)) {
+            const id = url.split("/api/calendar/")[1]!.split("?")[0]!;
+            const idx = mockCalendarEvents.findIndex((e) => e.id === id);
+            if (idx !== -1) mockCalendarEvents.splice(idx, 1);
+            mockCalendarEventDetails.delete(id);
             return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
         }
 

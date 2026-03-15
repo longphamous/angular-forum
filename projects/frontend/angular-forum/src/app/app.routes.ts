@@ -165,6 +165,18 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/pages/shop/shop-page").then((c) => c.ShopPage)
+            },
+            {
+                path: "calendar",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/calendar/calendar-page").then((c) => c.CalendarPage)
+            },
+            {
+                path: "admin/calendar",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-calendar/admin-calendar").then((c) => c.AdminCalendar)
             }
         ]
     }

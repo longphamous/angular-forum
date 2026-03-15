@@ -36,7 +36,8 @@
     "error": "Error",
     "saved": "Saved",
     "created": "Created",
-    "deleted": "Deleted"
+    "deleted": "Deleted",
+    "more": "More"
   },
   "nav": {
     "profile": "Profile",
@@ -64,6 +65,9 @@
     "shopSection": "Shop",
     "shop": "Virtual Shop",
     "shopManagement": "Shop Management",
+    "calendarSection": "Calendar",
+    "calendar": "Calendar",
+    "calendarManagement": "Calendar Management",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -799,6 +803,82 @@
       "icon": "PrimeNG Icon",
       "iconHint": "Used as fallback if no image is set. Example: pi pi-star",
       "isActive": "Item is active (visible in shop)"
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "createEvent": "New Event",
+    "editEvent": "Edit Event",
+    "today": "Today",
+    "monthView": "Month",
+    "weekView": "Week",
+    "listView": "List",
+    "allDay": "All day",
+    "noEvents": "No upcoming events.",
+    "more": "more",
+    "recurring": "Recurring event",
+    "private": "Private event",
+    "by": "by",
+    "attendees": "attendees",
+    "accepted": "Accepted",
+    "maxAttendees": "Max. attendees",
+    "attendeeList": "Participants",
+    "organizer": "Organizer",
+    "rsvp": "Respond",
+    "changeRsvp": "Change response",
+    "rsvpTitle": "Your response",
+    "companions": "Companions",
+    "declineReason": "Reason for declining",
+    "declineReasonPlaceholder": "Optional...",
+    "downloadIcal": "Download iCal",
+    "myIcal": "My Calendar (iCal)",
+    "invite": "Invite",
+    "inviteTitle": "Invite participants",
+    "inviteHint": "Enter user IDs separated by commas.",
+    "invitePlaceholder": "uuid-1, uuid-2, ...",
+    "sendInvitations": "Send invitations",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "maybe": "Maybe"
+    },
+    "week": {
+      "mo": "Mon", "tu": "Tue", "we": "Wed", "th": "Thu", "fr": "Fri", "sa": "Sat", "su": "Sun"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Event title...",
+      "description": "Description",
+      "descriptionPlaceholder": "Short description of the event...",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Online, Discord, ...",
+      "allDay": "All-day event",
+      "startDate": "Start",
+      "endDate": "End",
+      "color": "Color",
+      "maxAttendees": "Max. attendees",
+      "maxAttendeesUnlimited": "Unlimited",
+      "isPublic": "Event is publicly visible",
+      "recurring": "Recurring event",
+      "frequency": "Frequency",
+      "interval": "Every",
+      "byDay": "On which days",
+      "recurrenceUntil": "Repeat until",
+      "recurrenceUntilHint": "Leave empty for no end date"
+    }
+  },
+  "adminCalendar": {
+    "title": "Calendar Management",
+    "subtitle": "Overview of all community events",
+    "empty": "No events found.",
+    "table": {
+      "title": "Title",
+      "start": "Start",
+      "end": "End",
+      "organizer": "Organizer",
+      "attendees": "Attendees",
+      "public": "Public"
     }
   }
 }
