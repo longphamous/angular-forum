@@ -1,13 +1,21 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
+import { getDataSourceToken, getRepositoryToken } from "@nestjs/typeorm";
 
+import { AchievementService } from "./achievement.service";
+import { AchievementEntity } from "./entities/achievement.entity";
+import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
+import { XpConfigEntity } from "./entities/xp-config.entity";
 import { XpEventEntity } from "./entities/xp-event.entity";
 import { GamificationController } from "./gamification.controller";
 import { GamificationService } from "./gamification.service";
 
 const mockUserXpRepo = { findOneBy: jest.fn(), find: jest.fn(), findBy: jest.fn(), create: jest.fn(), save: jest.fn() };
 const mockXpEventRepo = { create: jest.fn(), save: jest.fn() };
+const mockXpConfigRepo = { find: jest.fn(), findOneBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+const mockAchievementRepo = { find: jest.fn(), findOneBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+const mockUserAchievementRepo = { find: jest.fn(), findOneBy: jest.fn(), findBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+const mockDataSource = { query: jest.fn().mockResolvedValue([]) };
 
 describe("GamificationController", () => {
     let controller: GamificationController;
@@ -17,8 +25,13 @@ describe("GamificationController", () => {
             controllers: [GamificationController],
             providers: [
                 GamificationService,
+                AchievementService,
                 { provide: getRepositoryToken(UserXpEntity), useValue: mockUserXpRepo },
-                { provide: getRepositoryToken(XpEventEntity), useValue: mockXpEventRepo }
+                { provide: getRepositoryToken(XpEventEntity), useValue: mockXpEventRepo },
+                { provide: getRepositoryToken(XpConfigEntity), useValue: mockXpConfigRepo },
+                { provide: getRepositoryToken(AchievementEntity), useValue: mockAchievementRepo },
+                { provide: getRepositoryToken(UserAchievementEntity), useValue: mockUserAchievementRepo },
+                { provide: getDataSourceToken(), useValue: mockDataSource }
             ]
         }).compile();
 
