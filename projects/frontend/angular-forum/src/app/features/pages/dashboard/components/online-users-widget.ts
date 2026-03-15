@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
@@ -209,7 +209,7 @@ import {
         </p-card>
     `
 })
-export class OnlineUsersWidget implements OnInit {
+export class OnlineUsersWidget {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
@@ -229,10 +229,6 @@ export class OnlineUsersWidget implements OnInit {
             const order = this.sortOrder();
             this.load(window, sort, order);
         });
-    }
-
-    ngOnInit(): void {
-        // Initial load handled by effect
     }
 
     protected toggleOrder(): void {

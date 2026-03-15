@@ -58,7 +58,7 @@ export interface CreateCalendarEventDto {
     inviteUserIds?: string[];
 }
 
-export interface UpdateCalendarEventDto extends Partial<CreateCalendarEventDto> {}
+export type UpdateCalendarEventDto = Partial<CreateCalendarEventDto>;
 
 export interface RespondDto {
     status: AttendeeStatus;

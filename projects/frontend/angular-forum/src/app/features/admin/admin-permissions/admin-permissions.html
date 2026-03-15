@@ -84,13 +84,13 @@
             <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-2 rounded-lg border p-3">
                 @for (group of groupOptions(); track group.id) {
                 <label
-                    class="hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
-                    [class.bg-primary-50]="isGroupSelected(group.id)"
-                    [class.dark:bg-primary-900/20]="isGroupSelected(group.id)"
+                    [class]="'hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ' + (isGroupSelected(group.id) ? 'bg-primary-50 dark:bg-primary-900/20' : '')"
+                    [for]="'perm-group-' + group.id"
                 >
                     <p-checkbox
                         (ngModelChange)="toggleGroup(group.id)"
                         [binary]="true"
+                        [inputId]="'perm-group-' + group.id"
                         [ngModel]="isGroupSelected(group.id)"
                     />
                     <div class="min-w-0">

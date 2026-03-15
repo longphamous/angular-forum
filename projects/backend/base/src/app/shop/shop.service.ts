@@ -44,7 +44,7 @@ export interface CreateShopItemDto {
     sortOrder?: number;
 }
 
-export interface UpdateShopItemDto extends Partial<CreateShopItemDto> {}
+export type UpdateShopItemDto = Partial<CreateShopItemDto>;
 
 function toItemDto(e: ShopItemEntity): ShopItemDto {
     return {

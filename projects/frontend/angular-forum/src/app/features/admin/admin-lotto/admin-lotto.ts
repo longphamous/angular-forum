@@ -53,8 +53,13 @@ export class AdminLotto implements OnInit {
     protected readonly config = signal<DrawScheduleConfig | null>(null);
 
     protected readonly dayOptions: DayOption[] = [
-        { value: 1, label: "Mo" }, { value: 2, label: "Di" }, { value: 3, label: "Mi" },
-        { value: 4, label: "Do" }, { value: 5, label: "Fr" }, { value: 6, label: "Sa" }, { value: 0, label: "So" }
+        { value: 1, label: "Mo" },
+        { value: 2, label: "Di" },
+        { value: 3, label: "Mi" },
+        { value: 4, label: "Do" },
+        { value: 5, label: "Fr" },
+        { value: 6, label: "Sa" },
+        { value: 0, label: "So" }
     ];
 
     protected form: DrawScheduleConfig = {
@@ -80,7 +85,10 @@ export class AdminLotto implements OnInit {
             }
         });
         this.http.get<LottoDraw[]>(`${base}${LOTTO_ROUTES.draws()}`).subscribe({
-            next: (d) => { this.draws.set(d); this.loading.set(false); },
+            next: (d) => {
+                this.draws.set(d);
+                this.loading.set(false);
+            },
             error: () => this.loading.set(false)
         });
     }
@@ -150,8 +158,11 @@ export class AdminLotto implements OnInit {
 
     protected formatDate(dateStr: string): string {
         return new Date(dateStr).toLocaleDateString("de-DE", {
-            day: "2-digit", month: "2-digit", year: "numeric",
-            hour: "2-digit", minute: "2-digit"
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         });
     }
 

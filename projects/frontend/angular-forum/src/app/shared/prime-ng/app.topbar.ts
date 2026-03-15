@@ -9,6 +9,7 @@ import { DividerModule } from "primeng/divider";
 import { PopoverModule } from "primeng/popover";
 import { StyleClassModule } from "primeng/styleclass";
 
+import { NotificationBell } from "../../core/components/notification-bell/notification-bell";
 import { AuthFacade } from "../../facade/auth/auth-facade";
 import { AppConfigurator } from "./app.configurator";
 import { LayoutService } from "./service/layout.service";
@@ -25,7 +26,8 @@ import { LayoutService } from "./service/layout.service";
         ButtonModule,
         AvatarModule,
         DividerModule,
-        TranslocoModule
+        TranslocoModule,
+        NotificationBell
     ],
     template: ` <ng-container *transloco="let t">
         <div class="layout-topbar">
@@ -115,6 +117,9 @@ import { LayoutService } from "./service/layout.service";
 
                 <div class="layout-topbar-menu hidden lg:block">
                     <div class="layout-topbar-menu-content">
+                        @if (authFacade.isAuthenticated()) {
+                            <app-notification-bell />
+                        }
                         <button class="layout-topbar-action" (click)="userMenu.toggle($event)" type="button">
                             @if (authFacade.isAuthenticated()) {
                                 <p-avatar

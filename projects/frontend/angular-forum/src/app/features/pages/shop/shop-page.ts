@@ -17,7 +17,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { SHOP_ROUTES } from "../../../core/api/shop.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { ShopItem, UserInventoryItem } from "../../../core/models/shop/shop";
+import { ShopItem } from "../../../core/models/shop/shop";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
 
 @Component({

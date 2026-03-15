@@ -147,14 +147,9 @@
             <!-- Post actions -->
             <div class="mt-4 flex items-center gap-1">
                 <button
-                    class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
                     (click)="toggleReact(post); $event.stopPropagation()"
-                    [class.dark:hover:bg-red-900\/10]="true"
-                    [class.dark:text-surface-500]="!hasReacted(post.id)"
-                    [class.hover:bg-red-50]="true"
-                    [class.hover:text-red-400]="!hasReacted(post.id)"
-                    [class.text-red-500]="hasReacted(post.id)"
-                    [class.text-surface-400]="!hasReacted(post.id)"
+                    [class]="'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-red-50 dark:hover:bg-red-900/10 ' + (hasReacted(post.id) ? 'text-red-500' : 'text-surface-400 dark:text-surface-500 hover:text-red-400')"
+                    type="button"
                 >
                     <i
                         class="pi text-sm"

@@ -531,19 +531,20 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     <p-message [text]="transferError()!" severity="error" styleClass="w-full" />
                                 }
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-sm font-medium"
+                                    <label class="text-sm font-medium" for="transfer-to-user-id"
                                         >{{ t("wallet.transferDialog.toUserId") }}
                                         <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         class="w-full"
+                                        id="transfer-to-user-id"
                                         [(ngModel)]="transferToUserId"
                                         [placeholder]="t('wallet.transferDialog.toUserIdPlaceholder')"
                                         pInputText
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-sm font-medium"
+                                    <label class="text-sm font-medium" for="transfer-amount"
                                         >{{ t("wallet.transferDialog.amount") }}
                                         <span class="text-red-500">*</span></label
                                     >
@@ -555,16 +556,18 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                         buttonLayout="horizontal"
                                         decrementButtonIcon="pi pi-minus"
                                         incrementButtonIcon="pi pi-plus"
+                                        inputId="transfer-amount"
                                         inputStyleClass="w-16 text-center"
                                         styleClass="w-full"
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-sm font-medium">{{
+                                    <label class="text-sm font-medium" for="transfer-description">{{
                                         t("wallet.transferDialog.description")
                                     }}</label>
                                     <input
                                         class="w-full"
+                                        id="transfer-description"
                                         [(ngModel)]="transferNote"
                                         [placeholder]="t('wallet.transferDialog.descriptionPlaceholder')"
                                         pInputText
@@ -598,13 +601,17 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                                     {{ t("profile.preferences.title") }}
                                 </h3>
                                 <div class="flex flex-col gap-2">
-                                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                                    <label
+                                        class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                                        for="pref-language"
+                                    >
                                         {{ t("profile.preferences.language") }}
                                     </label>
                                     <p-select
                                         [ngModel]="activeLang()"
                                         [options]="languageOptions"
                                         (ngModelChange)="changeLanguage($event)"
+                                        inputId="pref-language"
                                         optionLabel="label"
                                         optionValue="value"
                                         styleClass="w-full sm:w-64"

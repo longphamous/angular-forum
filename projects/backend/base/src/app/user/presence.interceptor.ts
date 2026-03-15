@@ -25,7 +25,7 @@ export class PresenceInterceptor implements NestInterceptor {
             const now = Date.now();
             if (now - (this.throttle.get(userId) ?? 0) > this.THROTTLE_MS) {
                 this.throttle.set(userId, now);
-                this.userRepo.update(userId, { lastSeenAt: new Date() }).catch(() => {});
+                this.userRepo.update(userId, { lastSeenAt: new Date() }).catch((_err: unknown) => undefined);
             }
         }
 

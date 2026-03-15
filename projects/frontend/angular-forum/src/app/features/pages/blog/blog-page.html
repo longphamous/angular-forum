@@ -1,0 +1,282 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <div class="mx-auto max-w-7xl">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl font-bold">{{ t("blog.title") }}</h1>
+                <p class="text-surface-500 mt-1 text-sm">{{ t("blog.subtitle") }}</p>
+            </div>
+            <p-button (onClick)="writePost()" [label]="t('blog.writePost')" icon="pi pi-pencil" />
+        </div>
+
+        <!-- Filter bar -->
+        <div class="mb-6 flex flex-wrap items-center gap-3">
+            <p-iconfield class="min-w-48 flex-1">
+                <p-inputicon class="pi pi-search" />
+                <input
+                    class="w-full"
+                    (ngModelChange)="setSearchQuery($event)"
+                    [ngModel]="searchQuery()"
+                    [placeholder]="t('common.search')"
+                    pInputText
+                />
+            </p-iconfield>
+            <p-select
+                (ngModelChange)="setSelectedType($event)"
+                [ngModel]="selectedType()"
+                [options]="typeOptions"
+                [placeholder]="t('common.type')"
+                [showClear]="true"
+                optionValue="value"
+                styleClass="min-w-40"
+            >
+                <ng-template let-opt pTemplate="selectedItem"> {{ t(opt.label) }} </ng-template>
+                <ng-template let-opt pTemplate="item"> {{ t(opt.label) }} </ng-template>
+            </p-select>
+            <p-select
+                (ngModelChange)="setSelectedCategory($event)"
+                [ngModel]="selectedCategory()"
+                [options]="categories()"
+                [placeholder]="t('blog.allCategories')"
+                [showClear]="true"
+                optionLabel="name"
+                optionValue="id"
+                styleClass="min-w-44"
+            />
+            @if (searchQuery() || selectedType() || selectedCategory()) {
+            <p-button
+                (onClick)="clearFilters()"
+                [label]="t('common.cancel')"
+                [text]="true"
+                icon="pi pi-times"
+                severity="secondary"
+            />
+            }
+        </div>
+
+        <div class="flex flex-col gap-6 lg:flex-row">
+            <!-- Main content -->
+            <div class="min-w-0 flex-1">
+                <!-- Loading skeleton -->
+                @if (loading()) {
+                <div class="flex flex-col gap-4">
+                    @for (i of [1,2,3,4]; track i) {
+                    <div
+                        class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-5"
+                    >
+                        <div class="flex gap-4">
+                            <p-skeleton height="90px" styleClass="rounded-lg flex-shrink-0" width="120px" />
+                            <div class="flex-1">
+                                <p-skeleton height="1.2rem" styleClass="mb-2" width="60px" />
+                                <p-skeleton height="1.5rem" styleClass="mb-2" width="80%" />
+                                <p-skeleton height="1rem" styleClass="mb-1" width="100%" />
+                                <p-skeleton height="1rem" width="70%" />
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Empty state -->
+                @if (!loading() && filteredPosts().length === 0) {
+                <div class="text-surface-400 flex flex-col items-center justify-center py-20">
+                    <i class="pi pi-file-edit mb-4 text-6xl"></i>
+                    <p class="m-0 text-lg font-medium">{{ t("blog.noPosts") }}</p>
+                    <p-button
+                        (onClick)="writePost()"
+                        [label]="t('blog.writePost')"
+                        icon="pi pi-pencil"
+                        styleClass="mt-4"
+                    />
+                </div>
+                }
+
+                <!-- Post list -->
+                @if (!loading() && filteredPosts().length > 0) {
+                <div class="flex flex-col gap-4">
+                    @for (post of filteredPosts(); track post.id) {
+                    <div
+                        class="bg-surface-0 dark:bg-surface-800 group border-surface-200 dark:border-surface-700 cursor-pointer rounded-xl border p-5 transition-shadow hover:shadow-md"
+                        (click)="openPost(post)"
+                        (keydown.enter)="openPost(post)"
+                        role="button"
+                        tabindex="0"
+                    >
+                        <div class="flex gap-4">
+                            <!-- Cover image -->
+                            @if (post.coverImageUrl) {
+                            <div class="h-24 w-32 flex-shrink-0 overflow-hidden rounded-lg">
+                                <img
+                                    class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                    [alt]="post.title"
+                                    [src]="post.coverImageUrl"
+                                />
+                            </div>
+                            } @else {
+                            <div
+                                class="bg-surface-100 dark:bg-surface-700 flex h-24 w-32 flex-shrink-0 items-center justify-center rounded-lg"
+                            >
+                                <i class="pi pi-file-edit text-surface-300 text-3xl"></i>
+                            </div>
+                            }
+
+                            <!-- Content -->
+                            <div class="flex min-w-0 flex-1 flex-col">
+                                <div class="mb-2 flex flex-wrap items-center gap-2">
+                                    <p-tag
+                                        [severity]="typeBadgeSeverity(post.type)"
+                                        [value]="t('blog.types.' + post.type)"
+                                        styleClass="text-xs"
+                                    />
+                                    @if (post.categoryName) {
+                                    <span
+                                        class="rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                                        [style.background-color]="post.categoryColor ?? '#6b7280'"
+                                        >{{ post.categoryName }}</span
+                                    >
+                                    }
+                                </div>
+
+                                <h2
+                                    class="text-surface-900 dark:text-surface-0 group-hover:text-primary m-0 line-clamp-2 text-lg leading-snug font-semibold"
+                                >
+                                    {{ post.title }}
+                                </h2>
+
+                                @if (post.excerpt) {
+                                <p class="text-surface-500 m-0 mt-1 line-clamp-2 text-sm leading-relaxed">
+                                    {{ post.excerpt }}
+                                </p>
+                                }
+
+                                <div class="text-surface-400 mt-auto flex flex-wrap items-center gap-3 pt-2 text-xs">
+                                    <span class="flex items-center gap-1">
+                                        <i class="pi pi-user text-xs"></i>
+                                        {{ post.authorName }}
+                                    </span>
+                                    @if (post.publishedAt) {
+                                    <span class="flex items-center gap-1">
+                                        <i class="pi pi-calendar text-xs"></i>
+                                        {{ formatDate(post.publishedAt) }}
+                                    </span>
+                                    }
+                                    <span class="flex items-center gap-1">
+                                        <i class="pi pi-eye text-xs"></i>
+                                        {{ post.viewCount }}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <i class="pi pi-comment text-xs"></i>
+                                        {{ post.commentCount }}
+                                    </span>
+                                    @for (tag of post.tags.slice(0, 3); track tag) {
+                                    <span class="text-primary">#{{ tag }}</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="w-full flex-shrink-0 lg:w-72">
+                <!-- Categories -->
+                @if (!loading() && categories().length > 0) {
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 mb-4 rounded-xl border p-5"
+                >
+                    <h3 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">
+                        {{ t("blog.categories") }}
+                    </h3>
+                    <div class="flex flex-col gap-1">
+                        <button
+                            class="flex w-full cursor-pointer items-center justify-between rounded-lg border-none px-3 py-2 text-left text-sm transition-colors"
+                            (click)="setSelectedCategory(null)"
+                            [class.bg-primary-50]="selectedCategory() === null"
+                            [class.bg-transparent]="selectedCategory() !== null"
+                            [class.dark:bg-primary-950]="selectedCategory() === null"
+                            [class.dark:hover:bg-surface-700]="selectedCategory() !== null"
+                            [class.hover:bg-surface-100]="selectedCategory() !== null"
+                            [class.text-primary]="selectedCategory() === null"
+                            type="button"
+                        >
+                            <span>{{ t("blog.allCategories") }}</span>
+                            <span class="bg-surface-200 dark:bg-surface-600 rounded-full px-2 py-0.5 text-xs"
+                                >{{ posts().length }}</span
+                            >
+                        </button>
+                        @for (cat of categories(); track cat.id) {
+                        <button
+                            class="flex w-full cursor-pointer items-center justify-between rounded-lg border-none px-3 py-2 text-left text-sm transition-colors"
+                            (click)="setSelectedCategory(cat.id)"
+                            [class.bg-primary-50]="selectedCategory() === cat.id"
+                            [class.bg-transparent]="selectedCategory() !== cat.id"
+                            [class.dark:bg-primary-950]="selectedCategory() === cat.id"
+                            [class.dark:hover:bg-surface-700]="selectedCategory() !== cat.id"
+                            [class.hover:bg-surface-100]="selectedCategory() !== cat.id"
+                            [class.text-primary]="selectedCategory() === cat.id"
+                            type="button"
+                        >
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                                    [style.background-color]="cat.color ?? '#6b7280'"
+                                ></span>
+                                <span>{{ cat.name }}</span>
+                            </div>
+                            <span class="bg-surface-200 dark:bg-surface-600 rounded-full px-2 py-0.5 text-xs"
+                                >{{ cat.postCount }}</span
+                            >
+                        </button>
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- Types filter -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-5"
+                >
+                    <h3 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">
+                        {{ t("common.type") }}
+                    </h3>
+                    <div class="flex flex-col gap-1">
+                        <button
+                            class="flex w-full cursor-pointer items-center rounded-lg border-none px-3 py-2 text-left text-sm transition-colors"
+                            (click)="setSelectedType(null)"
+                            [class.bg-primary-50]="selectedType() === null"
+                            [class.bg-transparent]="selectedType() !== null"
+                            [class.dark:bg-primary-950]="selectedType() === null"
+                            [class.dark:hover:bg-surface-700]="selectedType() !== null"
+                            [class.hover:bg-surface-100]="selectedType() !== null"
+                            [class.text-primary]="selectedType() === null"
+                            type="button"
+                        >
+                            {{ t("blog.allPosts") }}
+                        </button>
+                        @for (opt of typeOptions; track opt.value) {
+                        <button
+                            class="flex w-full cursor-pointer items-center rounded-lg border-none px-3 py-2 text-left text-sm transition-colors"
+                            (click)="setSelectedType(opt.value)"
+                            [class.bg-primary-50]="selectedType() === opt.value"
+                            [class.bg-transparent]="selectedType() !== opt.value"
+                            [class.dark:bg-primary-950]="selectedType() === opt.value"
+                            [class.dark:hover:bg-surface-700]="selectedType() !== opt.value"
+                            [class.hover:bg-surface-100]="selectedType() !== opt.value"
+                            [class.text-primary]="selectedType() === opt.value"
+                            type="button"
+                        >
+                            {{ t(opt.label) }}
+                        </button>
+                        }
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</ng-container>

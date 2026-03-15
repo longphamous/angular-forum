@@ -1,0 +1,255 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <div class="mx-auto max-w-5xl">
+        <!-- Header -->
+        <div class="mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <p-button (onClick)="goBack()" [text]="true" icon="pi pi-arrow-left" />
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
+                    {{ isEditMode() ? t("blog.editPost") : t("blog.writePost") }}
+                </h1>
+            </div>
+            <div class="flex gap-2">
+                <p-button
+                    (onClick)="saveDraft()"
+                    [label]="t('blog.saveDraft')"
+                    [loading]="saving() && form().status === 'draft'"
+                    [outlined]="true"
+                    icon="pi pi-save"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="publish()"
+                    [label]="t('blog.publishPost')"
+                    [loading]="saving() && form().status === 'published'"
+                    icon="pi pi-send"
+                />
+            </div>
+        </div>
+
+        @if (loading()) {
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="flex flex-col gap-4 lg:col-span-2">
+                <p-skeleton height="3rem" />
+                <p-skeleton height="2rem" />
+                <p-skeleton height="300px" />
+            </div>
+            <div class="flex flex-col gap-4">
+                <p-skeleton height="10rem" />
+                <p-skeleton height="8rem" />
+            </div>
+        </div>
+        } @if (!loading()) {
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <!-- Main editor column -->
+            <div class="flex flex-col gap-5 lg:col-span-2">
+                <!-- Title -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="blog-title">
+                        {{ t("blog.titlePlaceholder") }} <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        class="w-full text-xl font-semibold"
+                        id="blog-title"
+                        (ngModelChange)="setTitle($event)"
+                        [ngModel]="form().title"
+                        [placeholder]="t('blog.titlePlaceholder')"
+                        pInputText
+                    />
+                </div>
+
+                <!-- Excerpt -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="blog-excerpt">
+                        {{ t("blog.excerpt") }}
+                        <span class="text-surface-400 text-xs">({{ t("common.optional") }})</span>
+                    </label>
+                    <textarea
+                        class="w-full"
+                        id="blog-excerpt"
+                        (ngModelChange)="setExcerpt($event)"
+                        [ngModel]="form().excerpt"
+                        [placeholder]="t('blog.excerptPlaceholder')"
+                        pTextarea
+                        rows="2"
+                    ></textarea>
+                </div>
+
+                <!-- Content -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="blog-content">
+                        {{ t("common.description") }} <span class="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        class="w-full font-mono text-sm"
+                        id="blog-content"
+                        (ngModelChange)="setContent($event)"
+                        [ngModel]="form().content"
+                        [placeholder]="t('blog.contentPlaceholder')"
+                        pTextarea
+                        rows="18"
+                    ></textarea>
+                    <span class="text-surface-400 text-xs">HTML wird unterstützt.</span>
+                </div>
+            </div>
+
+            <!-- Settings sidebar -->
+            <div class="flex flex-col gap-4">
+                <!-- Status & Type -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <h3
+                        class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-sm font-semibold tracking-wide uppercase"
+                    >
+                        {{ t("common.status") }}
+                    </h3>
+
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-surface-500 text-xs" for="blog-type">{{ t("blog.typeLabel") }}</label>
+                            <p-select
+                                (ngModelChange)="setType($event)"
+                                [ngModel]="form().type"
+                                [options]="typeOptions"
+                                inputId="blog-type"
+                                optionValue="value"
+                                styleClass="w-full"
+                            >
+                                <ng-template let-opt pTemplate="selectedItem">{{ t(opt.label) }}</ng-template>
+                                <ng-template let-opt pTemplate="item">{{ t(opt.label) }}</ng-template>
+                            </p-select>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <label class="text-surface-500 text-xs" for="blog-status"
+                                >{{ t("blog.statusLabel") }}</label
+                            >
+                            <p-select
+                                (ngModelChange)="setStatus($event)"
+                                [ngModel]="form().status"
+                                [options]="statusOptions"
+                                inputId="blog-status"
+                                optionValue="value"
+                                styleClass="w-full"
+                            >
+                                <ng-template let-opt pTemplate="selectedItem">{{ t(opt.label) }}</ng-template>
+                                <ng-template let-opt pTemplate="item">{{ t(opt.label) }}</ng-template>
+                            </p-select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <h3
+                        class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-sm font-semibold tracking-wide uppercase"
+                    >
+                        {{ t("blog.categoryLabel") }}
+                    </h3>
+                    <p-select
+                        (ngModelChange)="setCategoryId($event)"
+                        [ngModel]="form().categoryId"
+                        [options]="categories()"
+                        [placeholder]="t('blog.allCategories')"
+                        [showClear]="true"
+                        optionLabel="name"
+                        optionValue="id"
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <!-- Cover image -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <h3
+                        class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-sm font-semibold tracking-wide uppercase"
+                    >
+                        {{ t("blog.coverImage") }}
+                    </h3>
+                    <input
+                        class="w-full"
+                        (ngModelChange)="setCoverImageUrl($event)"
+                        [ngModel]="form().coverImageUrl"
+                        pInputText
+                        placeholder="https://..."
+                    />
+                    @if (form().coverImageUrl) {
+                    <div class="mt-3 overflow-hidden rounded-lg">
+                        <img class="h-32 w-full object-cover" [src]="form().coverImageUrl" alt="Cover preview" />
+                    </div>
+                    }
+                </div>
+
+                <!-- Tags -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <h3
+                        class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-sm font-semibold tracking-wide uppercase"
+                    >
+                        {{ t("blog.tags") }}
+                    </h3>
+
+                    @if ((form().tags ?? []).length > 0) {
+                    <div class="mb-3 flex flex-wrap gap-2">
+                        @for (tag of form().tags ?? []; track tag) {
+                        <p-chip (onRemove)="removeTag(tag)" [label]="tag" [removable]="true" />
+                        }
+                    </div>
+                    }
+
+                    <div class="flex gap-2">
+                        <input
+                            class="flex-1 text-sm"
+                            (keydown.enter)="addTag()"
+                            (ngModelChange)="tagInput.set($event)"
+                            [ngModel]="tagInput()"
+                            pInputText
+                            placeholder="Tag hinzufügen..."
+                        />
+                        <p-button (onClick)="addTag()" icon="pi pi-plus" size="small" />
+                    </div>
+                </div>
+
+                <!-- Allow comments -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium">{{ t("blog.allowComments") }}</span>
+                        <p-toggleswitch
+                            (ngModelChange)="setAllowComments($event)"
+                            [ngModel]="form().allowComments ?? true"
+                        />
+                    </div>
+                </div>
+
+                <!-- Save actions (bottom) -->
+                <div class="flex flex-col gap-2">
+                    <p-button
+                        (onClick)="publish()"
+                        [label]="t('blog.publishPost')"
+                        [loading]="saving()"
+                        icon="pi pi-send"
+                        styleClass="w-full"
+                    />
+                    <p-button
+                        (onClick)="saveDraft()"
+                        [label]="t('blog.saveDraft')"
+                        [loading]="saving()"
+                        [outlined]="true"
+                        icon="pi pi-save"
+                        severity="secondary"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</ng-container>

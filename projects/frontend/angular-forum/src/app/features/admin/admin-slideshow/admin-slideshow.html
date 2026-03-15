@@ -166,7 +166,7 @@
 
                         <!-- Default title (fallback) -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium">
+                            <label class="text-sm font-medium" for="slide-title">
                                 {{ t('adminSlideshow.dialog.title') }} *
                                 <span class="text-surface-400 ml-1 text-xs font-normal"
                                     >({{ t('adminSlideshow.dialog.defaultLang') }})</span
@@ -174,6 +174,7 @@
                             </label>
                             <input
                                 class="w-full"
+                                id="slide-title"
                                 (ngModelChange)="updateForm({ title: $event })"
                                 [ngModel]="form().title"
                                 [placeholder]="t('adminSlideshow.dialog.titlePlaceholder')"
@@ -183,7 +184,7 @@
 
                         <!-- Default description (fallback) -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium">
+                            <label class="text-sm font-medium" for="slide-description">
                                 {{ t('adminSlideshow.dialog.description') }}
                                 <span class="text-surface-400 ml-1 text-xs font-normal"
                                     >({{ t('adminSlideshow.dialog.defaultLang') }})</span
@@ -191,6 +192,7 @@
                             </label>
                             <textarea
                                 class="w-full"
+                                id="slide-description"
                                 (ngModelChange)="updateForm({ description: $event })"
                                 [ngModel]="form().description"
                                 [placeholder]="t('adminSlideshow.dialog.descriptionPlaceholder')"
@@ -201,10 +203,13 @@
 
                         <!-- Image URL + Upload -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.imageUrl') }} *</label>
+                            <label class="text-sm font-medium" for="slide-imageUrl"
+                                >{{ t('adminSlideshow.dialog.imageUrl') }} *</label
+                            >
                             <div class="flex gap-2">
                                 <input
                                     class="flex-1"
+                                    id="slide-imageUrl"
                                     (ngModelChange)="updateForm({ imageUrl: $event })"
                                     [ngModel]="form().imageUrl"
                                     [placeholder]="t('adminSlideshow.dialog.imageUrlPlaceholder')"
@@ -237,9 +242,12 @@
 
                         <!-- Link URL -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkUrl') }}</label>
+                            <label class="text-sm font-medium" for="slide-linkUrl"
+                                >{{ t('adminSlideshow.dialog.linkUrl') }}</label
+                            >
                             <input
                                 class="w-full"
+                                id="slide-linkUrl"
                                 (ngModelChange)="updateForm({ linkUrl: $event })"
                                 [ngModel]="form().linkUrl"
                                 [placeholder]="t('adminSlideshow.dialog.linkUrlPlaceholder')"
@@ -251,9 +259,12 @@
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Link label -->
                             <div class="flex flex-col gap-1">
-                                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkLabel') }}</label>
+                                <label class="text-sm font-medium" for="slide-linkLabel"
+                                    >{{ t('adminSlideshow.dialog.linkLabel') }}</label
+                                >
                                 <input
                                     class="w-full"
+                                    id="slide-linkLabel"
                                     (ngModelChange)="updateForm({ linkLabel: $event })"
                                     [disabled]="form().linkFullSlide"
                                     [ngModel]="form().linkLabel"
@@ -264,7 +275,7 @@
 
                             <!-- Link mode: button vs full image -->
                             <div class="flex flex-col gap-1">
-                                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkMode') }}</label>
+                                <span class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkMode') }}</span>
                                 <div class="flex items-center gap-2 pt-2">
                                     <p-checkbox
                                         (ngModelChange)="updateForm({ linkFullSlide: $event })"
@@ -294,11 +305,12 @@
                             </div>
                             <div class="flex flex-col gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs font-medium"
+                                    <label class="text-surface-500 text-xs font-medium" for="slide-en-title"
                                         >{{ t('adminSlideshow.dialog.title') }}</label
                                     >
                                     <input
                                         class="w-full"
+                                        id="slide-en-title"
                                         (ngModelChange)="updateForm({ translationEnTitle: $event })"
                                         [ngModel]="form().translationEnTitle"
                                         pInputText
@@ -306,11 +318,12 @@
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs font-medium"
+                                    <label class="text-surface-500 text-xs font-medium" for="slide-en-description"
                                         >{{ t('adminSlideshow.dialog.description') }}</label
                                     >
                                     <textarea
                                         class="w-full"
+                                        id="slide-en-description"
                                         (ngModelChange)="updateForm({ translationEnDescription: $event })"
                                         [ngModel]="form().translationEnDescription"
                                         placeholder="English description..."
@@ -329,11 +342,12 @@
                             </div>
                             <div class="flex flex-col gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs font-medium"
+                                    <label class="text-surface-500 text-xs font-medium" for="slide-de-title"
                                         >{{ t('adminSlideshow.dialog.title') }}</label
                                     >
                                     <input
                                         class="w-full"
+                                        id="slide-de-title"
                                         (ngModelChange)="updateForm({ translationDeTitle: $event })"
                                         [ngModel]="form().translationDeTitle"
                                         pInputText
@@ -341,11 +355,12 @@
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs font-medium"
+                                    <label class="text-surface-500 text-xs font-medium" for="slide-de-description"
                                         >{{ t('adminSlideshow.dialog.description') }}</label
                                     >
                                     <textarea
                                         class="w-full"
+                                        id="slide-de-description"
                                         (ngModelChange)="updateForm({ translationDeDescription: $event })"
                                         [ngModel]="form().translationDeDescription"
                                         placeholder="Beschreibung auf Deutsch..."
@@ -363,19 +378,16 @@
                     <div class="flex flex-col gap-5 pt-3">
                         <!-- Text style -->
                         <div class="flex flex-col gap-2">
-                            <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.textStyle') }}</label>
+                            <span class="text-sm font-medium">{{ t('adminSlideshow.dialog.textStyle') }}</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <label
-                                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.bg-primary-50]="form().textStyle === 'overlay'"
-                                    [class.border-primary]="form().textStyle === 'overlay'"
-                                    [class.border-surface-200]="form().textStyle !== 'overlay'"
-                                    [class.dark:bg-primary-950]="form().textStyle === 'overlay'"
-                                    [class.dark:border-surface-700]="form().textStyle !== 'overlay'"
+                                    [class]="'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ' + (form().textStyle === 'overlay' ? 'bg-primary-50 border-primary dark:bg-primary-950' : 'border-surface-200 dark:border-surface-700')"
+                                    for="textStyle-overlay"
                                 >
                                     <p-radiobutton
                                         (ngModelChange)="updateForm({ textStyle: $event })"
                                         [ngModel]="form().textStyle"
+                                        inputId="textStyle-overlay"
                                         name="textStyle"
                                         value="overlay"
                                     />
@@ -387,16 +399,13 @@
                                     </div>
                                 </label>
                                 <label
-                                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.bg-primary-50]="form().textStyle === 'glass'"
-                                    [class.border-primary]="form().textStyle === 'glass'"
-                                    [class.border-surface-200]="form().textStyle !== 'glass'"
-                                    [class.dark:bg-primary-950]="form().textStyle === 'glass'"
-                                    [class.dark:border-surface-700]="form().textStyle !== 'glass'"
+                                    [class]="'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ' + (form().textStyle === 'glass' ? 'bg-primary-50 border-primary dark:bg-primary-950' : 'border-surface-200 dark:border-surface-700')"
+                                    for="textStyle-glass"
                                 >
                                     <p-radiobutton
                                         (ngModelChange)="updateForm({ textStyle: $event })"
                                         [ngModel]="form().textStyle"
+                                        inputId="textStyle-glass"
                                         name="textStyle"
                                         value="glass"
                                     />
@@ -412,19 +421,16 @@
 
                         <!-- Text alignment -->
                         <div class="flex flex-col gap-2">
-                            <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.textAlign') }}</label>
+                            <span class="text-sm font-medium">{{ t('adminSlideshow.dialog.textAlign') }}</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <label
-                                    class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.bg-primary-50]="form().textAlign === 'left'"
-                                    [class.border-primary]="form().textAlign === 'left'"
-                                    [class.border-surface-200]="form().textAlign !== 'left'"
-                                    [class.dark:bg-primary-950]="form().textAlign === 'left'"
-                                    [class.dark:border-surface-700]="form().textAlign !== 'left'"
+                                    [class]="'flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ' + (form().textAlign === 'left' ? 'bg-primary-50 border-primary dark:bg-primary-950' : 'border-surface-200 dark:border-surface-700')"
+                                    for="textAlign-left"
                                 >
                                     <p-radiobutton
                                         (ngModelChange)="updateForm({ textAlign: $event })"
                                         [ngModel]="form().textAlign"
+                                        inputId="textAlign-left"
                                         name="textAlign"
                                         value="left"
                                     />
@@ -434,16 +440,13 @@
                                     </div>
                                 </label>
                                 <label
-                                    class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.bg-primary-50]="form().textAlign === 'center'"
-                                    [class.border-primary]="form().textAlign === 'center'"
-                                    [class.border-surface-200]="form().textAlign !== 'center'"
-                                    [class.dark:bg-primary-950]="form().textAlign === 'center'"
-                                    [class.dark:border-surface-700]="form().textAlign !== 'center'"
+                                    [class]="'flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ' + (form().textAlign === 'center' ? 'bg-primary-50 border-primary dark:bg-primary-950' : 'border-surface-200 dark:border-surface-700')"
+                                    for="textAlign-center"
                                 >
                                     <p-radiobutton
                                         (ngModelChange)="updateForm({ textAlign: $event })"
                                         [ngModel]="form().textAlign"
+                                        inputId="textAlign-center"
                                         name="textAlign"
                                         value="center"
                                     />
@@ -458,7 +461,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Active -->
                             <div class="flex flex-col gap-1">
-                                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.isActive') }}</label>
+                                <span class="text-sm font-medium">{{ t('adminSlideshow.dialog.isActive') }}</span>
                                 <div class="flex items-center gap-2 pt-2">
                                     <p-checkbox
                                         (ngModelChange)="updateForm({ isActive: $event })"
@@ -474,7 +477,9 @@
 
                             <!-- Sort order -->
                             <div class="flex flex-col gap-1">
-                                <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.sortOrder') }}</label>
+                                <label class="text-sm font-medium" for="slide-sortOrder"
+                                    >{{ t('adminSlideshow.dialog.sortOrder') }}</label
+                                >
                                 <p-inputnumber
                                     (ngModelChange)="updateForm({ sortOrder: $event ?? 0 })"
                                     [max]="999"
@@ -484,6 +489,7 @@
                                     buttonLayout="horizontal"
                                     decrementButtonIcon="pi pi-minus"
                                     incrementButtonIcon="pi pi-plus"
+                                    inputId="slide-sortOrder"
                                     inputStyleClass="w-16 text-center"
                                     styleClass="w-full"
                                 />
@@ -492,15 +498,16 @@
 
                         <!-- Validity period -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.validityPeriod') }}</label>
+                            <span class="text-sm font-medium">{{ t('adminSlideshow.dialog.validityPeriod') }}</span>
                             <p class="text-surface-400 m-0 text-xs">{{ t('adminSlideshow.dialog.validityHint') }}</p>
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs"
+                                    <label class="text-surface-500 text-xs" for="slide-validFrom"
                                         >{{ t('adminSlideshow.dialog.validFrom') }}</label
                                     >
                                     <input
                                         class="w-full"
+                                        id="slide-validFrom"
                                         (ngModelChange)="updateForm({ validFrom: $event })"
                                         [ngModel]="form().validFrom"
                                         pInputText
@@ -508,11 +515,12 @@
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-surface-500 text-xs"
+                                    <label class="text-surface-500 text-xs" for="slide-validUntil"
                                         >{{ t('adminSlideshow.dialog.validUntil') }}</label
                                     >
                                     <input
                                         class="w-full"
+                                        id="slide-validUntil"
                                         (ngModelChange)="updateForm({ validUntil: $event })"
                                         [ngModel]="form().validUntil"
                                         pInputText

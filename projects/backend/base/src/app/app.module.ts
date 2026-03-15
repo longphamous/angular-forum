@@ -6,13 +6,17 @@ import { AnimeListModule } from "./anime/anime-list.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
+import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { ForumModule } from "./forum/forum.module";
+import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { GroupModule } from "./group/group.module";
+import { MessagesModule } from "./messages/messages.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
 import { UserModule } from "./user/user.module";
@@ -36,7 +40,11 @@ import { UserModule } from "./user/user.module";
         SlideshowModule,
         ShopModule,
         CalendarModule,
-        DashboardModule
+        DashboardModule,
+        GalleryModule,
+        NotificationsModule,
+        MessagesModule,
+        BlogModule
     ],
     controllers: [AppController],
     providers: [AppService]

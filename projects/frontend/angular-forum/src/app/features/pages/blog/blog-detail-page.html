@@ -1,0 +1,263 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <div class="mx-auto max-w-4xl">
+        <!-- Loading skeleton -->
+        @if (loading()) {
+        <div>
+            <p-skeleton height="2rem" styleClass="mb-4" width="80px" />
+            <p-skeleton height="2.5rem" styleClass="mb-3" width="60%" />
+            <p-skeleton height="1rem" styleClass="mb-6" width="40%" />
+            <p-skeleton height="300px" styleClass="mb-6" width="100%" />
+            <p-skeleton height="1rem" styleClass="mb-2" width="100%" />
+            <p-skeleton height="1rem" styleClass="mb-2" width="100%" />
+            <p-skeleton height="1rem" width="70%" />
+        </div>
+        } @if (!loading() && post()) {
+        <!-- Back + actions -->
+        <div class="mb-4 flex items-center justify-between">
+            <p-button
+                (onClick)="goBack()"
+                [label]="t('common.back')"
+                [text]="true"
+                icon="pi pi-arrow-left"
+                size="small"
+            />
+            @if (post()!.isOwner || authFacade.isAdmin()) {
+            <div class="flex gap-2">
+                <p-button
+                    (onClick)="editPost()"
+                    [label]="t('blog.editPost')"
+                    [outlined]="true"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                />
+                <p-button
+                    (onClick)="deletePost()"
+                    [label]="t('blog.deletePost')"
+                    [loading]="deletingPost()"
+                    [outlined]="true"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                />
+            </div>
+            }
+        </div>
+
+        <!-- Post header -->
+        <div class="mb-6">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+                <p-tag [severity]="typeBadgeSeverity(post()!.type)" [value]="t('blog.types.' + post()!.type)" />
+                @if (post()!.categoryName) {
+                <span
+                    class="rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+                    [style.background-color]="post()!.categoryColor ?? '#6b7280'"
+                    >{{ post()!.categoryName }}</span
+                >
+                }
+            </div>
+
+            <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl leading-tight font-bold">
+                {{ post()!.title }}
+            </h1>
+
+            @if (post()!.excerpt) {
+            <p class="text-surface-500 m-0 mt-3 text-lg leading-relaxed">{{ post()!.excerpt }}</p>
+            }
+
+            <!-- Meta -->
+            <div class="text-surface-400 mt-4 flex flex-wrap items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <p-avatar
+                        [label]="userInitial(post()!.authorName)"
+                        shape="circle"
+                        size="normal"
+                        styleClass="text-xs font-semibold"
+                    />
+                    <span>{{ post()!.authorName }}</span>
+                </div>
+                @if (post()!.publishedAt) {
+                <span class="flex items-center gap-1">
+                    <i class="pi pi-calendar text-xs"></i>
+                    {{ formatDate(post()!.publishedAt) }}
+                </span>
+                }
+                <span class="flex items-center gap-1">
+                    <i class="pi pi-eye text-xs"></i>
+                    {{ post()!.viewCount }} {{ t("blog.views") }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <i class="pi pi-comment text-xs"></i>
+                    {{ post()!.commentCount }} {{ t("blog.comments") }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Cover image -->
+        @if (post()!.coverImageUrl) {
+        <div class="mb-6 overflow-hidden rounded-xl">
+            <img class="max-h-96 w-full object-cover" [alt]="post()!.title" [src]="post()!.coverImageUrl" />
+        </div>
+        }
+
+        <!-- Post content -->
+        <div class="blog-content prose prose-surface dark:prose-invert mb-8 max-w-none" [innerHTML]="safeContent"></div>
+
+        <!-- Tags -->
+        @if (post()!.tags.length > 0) {
+        <div class="mb-8 flex flex-wrap gap-2">
+            @for (tag of post()!.tags; track tag) {
+            <span
+                class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-3 py-1 text-sm"
+            >
+                #{{ tag }}
+            </span>
+            }
+        </div>
+        }
+
+        <!-- Divider -->
+        <div class="border-surface-200 dark:border-surface-700 mb-8 border-t"></div>
+
+        <!-- Comments section -->
+        @if (post()!.allowComments) {
+        <div>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-6 text-xl font-semibold">
+                {{ t("blog.comments") }} ({{ post()!.commentCount }})
+            </h2>
+
+            <!-- Comment form -->
+            <div
+                class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 mb-6 rounded-xl border p-4"
+            >
+                @if (replyTo()) {
+                <div
+                    class="bg-surface-100 dark:bg-surface-700 mb-3 flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                >
+                    <span class="text-surface-500"
+                        >{{ t("blog.replyTo") }}: <strong>{{ replyTo()!.authorName }}</strong></span
+                    >
+                    <button
+                        class="text-surface-400 hover:text-surface-600 cursor-pointer border-none bg-transparent"
+                        (click)="setReplyTo(null)"
+                        type="button"
+                    >
+                        <i class="pi pi-times text-xs"></i>
+                    </button>
+                </div>
+                }
+                <textarea
+                    class="w-full"
+                    (ngModelChange)="setCommentContent($event)"
+                    [ngModel]="commentContent()"
+                    [placeholder]="t('blog.contentPlaceholder')"
+                    pTextarea
+                    rows="3"
+                ></textarea>
+                <div class="mt-3 flex justify-end">
+                    <p-button
+                        (onClick)="submitComment()"
+                        [disabled]="!commentContent().trim()"
+                        [label]="t('blog.postComment')"
+                        [loading]="submittingComment()"
+                        icon="pi pi-send"
+                        size="small"
+                    />
+                </div>
+            </div>
+
+            <!-- Comment list -->
+            @if (post()!.comments.length === 0) {
+            <div class="text-surface-400 py-8 text-center">
+                <i class="pi pi-comment mb-3 block text-4xl"></i>
+                <p class="m-0">{{ t("blog.noComments") }}</p>
+            </div>
+            }
+
+            <div class="flex flex-col gap-4">
+                @for (comment of post()!.comments; track comment.id) {
+                <!-- Top-level comment -->
+                <div
+                    class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+                >
+                    <div class="flex gap-3">
+                        <p-avatar
+                            [label]="userInitial(comment.authorName)"
+                            shape="circle"
+                            size="normal"
+                            styleClass="text-xs font-semibold flex-shrink-0"
+                        />
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium">{{ comment.authorName }}</span>
+                                    <span class="text-surface-400 text-xs">{{ formatTime(comment.createdAt) }}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <p-button
+                                        (onClick)="setReplyTo(comment)"
+                                        [text]="true"
+                                        [title]="t('blog.replyTo')"
+                                        icon="pi pi-reply"
+                                        size="small"
+                                    />
+                                    @if (canModify(comment.authorId)) {
+                                    <p-button
+                                        (onClick)="deleteComment(comment.id, null)"
+                                        [text]="true"
+                                        [title]="t('blog.deleteComment')"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                    }
+                                </div>
+                            </div>
+                            <p class="m-0 mt-1 text-sm leading-relaxed">{{ comment.content }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Replies -->
+                    @if (comment.replies && comment.replies.length > 0) {
+                    <div
+                        class="border-surface-200 dark:border-surface-600 mt-3 ml-10 flex flex-col gap-3 border-l-2 pl-4"
+                    >
+                        @for (reply of comment.replies; track reply.id) {
+                        <div class="flex gap-3">
+                            <p-avatar
+                                [label]="userInitial(reply.authorName)"
+                                shape="circle"
+                                size="normal"
+                                styleClass="text-xs font-semibold flex-shrink-0"
+                            />
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium">{{ reply.authorName }}</span>
+                                        <span class="text-surface-400 text-xs">{{ formatTime(reply.createdAt) }}</span>
+                                    </div>
+                                    @if (canModify(reply.authorId)) {
+                                    <p-button
+                                        (onClick)="deleteComment(reply.id, comment.id)"
+                                        [text]="true"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                    }
+                                </div>
+                                <p class="m-0 mt-1 text-sm leading-relaxed">{{ reply.content }}</p>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+        } }
+    </div>
+</ng-container>

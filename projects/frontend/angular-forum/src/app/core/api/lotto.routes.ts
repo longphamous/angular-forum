@@ -8,5 +8,5 @@ export const LOTTO_ROUTES = {
     drawResults: (id: string) => `/credit/lotto/draws/${id}/results`,
     myTickets: () => "/credit/lotto/my-tickets",
     purchaseTicket: () => "/credit/lotto/tickets",
-    myResults: (drawId?: string) => drawId ? `/credit/lotto/my-results?drawId=${drawId}` : "/credit/lotto/my-results"
+    myResults: (drawId?: string) => (drawId ? `/credit/lotto/my-results?drawId=${drawId}` : "/credit/lotto/my-results")
 } as const;

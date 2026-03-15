@@ -13,28 +13,42 @@ import { delay } from "rxjs/operators";
 import { AdminCreateUserPayload, AdminUpdateUserPayload } from "../../../facade/admin/admin-facade";
 import { DashboardStats, RecentThread, TopPoster } from "../../../facade/dashboard/dashboard-facade";
 import { Anime, AnimeListEntry, AnimeListEntryPayload, AnimeListStatus } from "../../models/anime/anime";
+import { BlogCategory, BlogComment, BlogPost } from "../../models/blog/blog";
 import { AttendeeStatus, RecurrenceRule } from "../../models/calendar/calendar";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
+import { GalleryAlbum, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
 import { Group } from "../../models/group/group";
-import { UserProfile } from "../../models/user/user";
 import { DrawResult, LottoDraw, LottoResult, LottoTicket } from "../../models/lotto/lotto";
+import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
+import { UserProfile } from "../../models/user/user";
 import {
     mockAchievements,
     mockAnimeDetails,
     mockAnimeListStore,
+    mockBlogCategories,
+    mockBlogCommentsByPost,
+    mockBlogPostDetails,
+    mockBlogPosts,
     mockCalendarEventDetails,
     mockCalendarEvents,
     mockCategories,
+    mockConversationDetails,
+    mockConversations,
+    mockDrafts,
     mockForums,
+    mockGalleryAlbumDetails,
+    mockGalleryAlbums,
+    mockGalleryCommentsByMedia,
     mockGroups,
     mockLottoConfig,
     mockLottoDraws,
     mockLottoResults,
     mockLottoStats,
     mockLottoTickets,
+    mockNotifications,
     mockOnlineUsers,
     mockPagePermissions,
     mockPosts,
@@ -52,6 +66,7 @@ import {
 } from "../mock-data/mock-data";
 
 const SIMULATED_LATENCY_MS = 300;
+const MOCK_ADMIN_ID = "00000000-0000-0000-0000-000000000001";
 
 // Tracks which postIds the mock member user has reacted to (persists for the session)
 const mockReactedPostIds = new Set<string>();
@@ -1320,7 +1335,10 @@ export class MockInterceptor implements HttpInterceptor {
 
         if (method === "GET" && /\/api\/credit\/lotto\/stats$/.test(url)) {
             const pending = mockLottoDraws.find((d) => d.status === "pending") ?? null;
-            const lastDrawn = [...mockLottoDraws].filter((d) => d.status === "drawn").sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime())[0] ?? null;
+            const lastDrawn =
+                [...mockLottoDraws]
+                    .filter((d) => d.status === "drawn")
+                    .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime())[0] ?? null;
             return this.ok({ ...mockLottoStats, nextDraw: pending, lastDraw: lastDrawn });
         }
 
@@ -1333,9 +1351,11 @@ export class MockInterceptor implements HttpInterceptor {
             const draw = mockLottoDraws.find((d) => d.id === id);
             if (!draw) return this.error("Not found", 404);
             if (draw.status === "drawn") return this.error("Already drawn", 400);
-            const nums: number[] = [];
             const pool = Array.from({ length: 49 }, (_, i) => i + 1);
-            for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j]!, pool[i]!]; }
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j]!, pool[i]!];
+            }
             draw.winningNumbers = pool.slice(0, 6).sort((a, b) => a - b);
             draw.superNumber = Math.floor(Math.random() * 10);
             draw.status = "drawn";
@@ -1365,7 +1385,12 @@ export class MockInterceptor implements HttpInterceptor {
             const draw = mockLottoDraws.find((d) => d.id === id);
             if (!draw || draw.status !== "drawn") return this.error("Not drawn yet", 400);
             const winners = mockLottoResults.filter((r) => r.drawId === id && r.prizeAmount > 0);
-            return this.ok({ draw, totalTickets: draw.totalTickets ?? 0, winners, totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0) });
+            return this.ok({
+                draw,
+                totalTickets: draw.totalTickets ?? 0,
+                winners,
+                totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0)
+            });
         }
 
         if (method === "GET" && /\/api\/credit\/lotto\/draws\/[^/]+$/.test(url)) {
@@ -1412,6 +1437,549 @@ export class MockInterceptor implements HttpInterceptor {
             const wallet = mockWallets["00000000-0000-0000-0000-000000000001"];
             if (wallet) wallet.balance -= mockLottoConfig.ticketCost * repeatWeeks;
             return this.ok(createdTickets);
+        }
+
+        // ── Notifications ────────────────────────────────────────────────────────
+
+        // GET /api/notifications/unread-count  (must be before :id pattern)
+        if (method === "GET" && /\/api\/notifications\/unread-count$/.test(url)) {
+            const count = mockNotifications.filter((n) => !n.isRead).length;
+            return this.ok({ count });
+        }
+
+        // GET /api/notifications
+        if (method === "GET" && /\/api\/notifications$/.test(url)) {
+            return this.ok(
+                [...mockNotifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            );
+        }
+
+        // PATCH /api/notifications/read-all  (must be before :id/read)
+        if (method === "PATCH" && /\/api\/notifications\/read-all$/.test(url)) {
+            mockNotifications.forEach((n) => {
+                n.isRead = true;
+            });
+            return this.ok({ success: true });
+        }
+
+        // PATCH /api/notifications/:id/read
+        const notifReadMatch = url.match(/\/api\/notifications\/([^/]+)\/read$/);
+        if (method === "PATCH" && notifReadMatch) {
+            const notif = mockNotifications.find((n) => n.id === notifReadMatch[1]);
+            if (notif) notif.isRead = true;
+            return this.ok({ success: true });
+        }
+
+        // DELETE /api/notifications/:id
+        const notifDeleteMatch = url.match(/\/api\/notifications\/([^/]+)$/);
+        if (method === "DELETE" && notifDeleteMatch) {
+            const idx = mockNotifications.findIndex((n) => n.id === notifDeleteMatch[1]);
+            if (idx !== -1) mockNotifications.splice(idx, 1);
+            return this.ok({ success: true });
+        }
+
+        // ── Messages ─────────────────────────────────────────────────────────────
+
+        const CURRENT_USER_ID = "00000000-0000-0000-0000-000000000001";
+
+        // GET /api/messages/conversations
+        if (method === "GET" && /\/api\/messages\/conversations$/.test(url)) {
+            return this.ok([...mockConversations]);
+        }
+
+        // GET /api/messages/conversations/:id
+        const convDetailMatch = url.match(/\/api\/messages\/conversations\/([^/]+)$/);
+        if (method === "GET" && convDetailMatch) {
+            const convId = convDetailMatch[1]!;
+            const detail = mockConversationDetails.get(convId);
+            if (!detail) return this.error("Konversation nicht gefunden", 404);
+            // Mark all messages as read
+            detail.messages.forEach((m) => {
+                m.isRead = true;
+            });
+            const conv = mockConversations.find((c) => c.id === convId);
+            if (conv) conv.unreadCount = 0;
+            return this.ok({ ...detail });
+        }
+
+        // POST /api/messages/conversations/:id/messages
+        const convSendMatch = url.match(/\/api\/messages\/conversations\/([^/]+)\/messages$/);
+        if (method === "POST" && convSendMatch) {
+            const convId = convSendMatch[1]!;
+            const detail = mockConversationDetails.get(convId);
+            if (!detail) return this.error("Konversation nicht gefunden", 404);
+            const payload = req.body as { content: string };
+            const now = new Date().toISOString();
+            const newMsg: Message = {
+                id: `msg-${Date.now()}`,
+                conversationId: convId,
+                senderId: CURRENT_USER_ID,
+                senderName: "Aniverse Admin",
+                content: payload.content,
+                isDraft: false,
+                isRead: false,
+                createdAt: now,
+                updatedAt: now
+            };
+            detail.messages.push(newMsg);
+            const conv = mockConversations.find((c) => c.id === convId);
+            if (conv) {
+                conv.lastMessage = payload.content.slice(0, 100);
+                conv.lastMessageAt = now;
+            }
+            return this.ok(newMsg);
+        }
+
+        // POST /api/messages/conversations (create new)
+        if (method === "POST" && /\/api\/messages\/conversations$/.test(url)) {
+            const payload = req.body as { recipientId: string; subject?: string; content?: string };
+            const now = new Date().toISOString();
+            const newConv: Conversation = {
+                id: `conv-${Date.now()}`,
+                participantIds: [CURRENT_USER_ID, payload.recipientId],
+                participants: [
+                    { userId: CURRENT_USER_ID, username: "admin", displayName: "Aniverse Admin" },
+                    { userId: payload.recipientId, username: "user", displayName: "Benutzer" }
+                ],
+                subject: payload.subject ?? null,
+                lastMessage: payload.content?.slice(0, 100) ?? "",
+                lastMessageAt: now,
+                unreadCount: 0,
+                initiatedByUserId: CURRENT_USER_ID,
+                createdAt: now
+            };
+            mockConversations.unshift(newConv);
+            const messages: Message[] = [];
+            if (payload.content) {
+                messages.push({
+                    id: `msg-${Date.now()}`,
+                    conversationId: newConv.id,
+                    senderId: CURRENT_USER_ID,
+                    senderName: "Aniverse Admin",
+                    content: payload.content,
+                    isDraft: false,
+                    isRead: false,
+                    createdAt: now,
+                    updatedAt: now
+                });
+            }
+            const detail: ConversationDetail = { conversation: newConv, messages };
+            mockConversationDetails.set(newConv.id, detail);
+            return this.ok(newConv);
+        }
+
+        // GET /api/messages/drafts
+        if (method === "GET" && /\/api\/messages\/drafts$/.test(url)) {
+            return this.ok([...mockDrafts]);
+        }
+
+        // POST /api/messages/drafts
+        if (method === "POST" && /\/api\/messages\/drafts$/.test(url)) {
+            const payload = req.body as { recipientId?: string; subject?: string; content: string };
+            const now = new Date().toISOString();
+            const draft: Draft = {
+                id: `draft-${Date.now()}`,
+                recipientId: payload.recipientId,
+                subject: payload.subject,
+                content: payload.content,
+                createdAt: now,
+                updatedAt: now
+            };
+            mockDrafts.unshift(draft);
+            return this.ok(draft);
+        }
+
+        // DELETE /api/messages/drafts/:id
+        const draftIdMatch = url.match(/\/api\/messages\/drafts\/([^/]+)$/);
+        if (method === "DELETE" && draftIdMatch) {
+            const draftId = draftIdMatch[1]!;
+            const idx = mockDrafts.findIndex((d) => d.id === draftId);
+            if (idx === -1) return this.error("Entwurf nicht gefunden", 404);
+            mockDrafts.splice(idx, 1);
+            return this.ok({ success: true });
+        }
+
+        // PATCH /api/messages/drafts/:id
+        if (method === "PATCH" && draftIdMatch) {
+            const draftId = draftIdMatch[1]!;
+            const draft = mockDrafts.find((d) => d.id === draftId);
+            if (!draft) return this.error("Entwurf nicht gefunden", 404);
+            const patch = req.body as Partial<Draft>;
+            Object.assign(draft, patch, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...draft });
+        }
+
+        // ── Blog ─────────────────────────────────────────────────────────────
+
+        // GET /api/blog/categories
+        if (method === "GET" && /\/api\/blog\/categories$/.test(url)) {
+            return this.ok([...mockBlogCategories]);
+        }
+
+        // POST /api/blog/categories
+        if (method === "POST" && /\/api\/blog\/categories$/.test(url)) {
+            const payload = req.body as Partial<BlogCategory>;
+            const newCat: BlogCategory = {
+                id: `bc-${Date.now()}`,
+                name: payload.name ?? "Neue Kategorie",
+                slug: payload.slug ?? `kategorie-${Date.now()}`,
+                description: payload.description ?? null,
+                color: payload.color ?? "#6b7280",
+                postCount: 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockBlogCategories.push(newCat);
+            return this.ok(newCat);
+        }
+
+        // PUT /api/blog/categories/:id
+        const blogCatIdMatch = url.match(/\/api\/blog\/categories\/([^/]+)$/);
+        if (method === "PUT" && blogCatIdMatch) {
+            const catId = blogCatIdMatch[1]!;
+            const cat = mockBlogCategories.find((c) => c.id === catId);
+            if (!cat) return this.error("Kategorie nicht gefunden", 404);
+            const payload = req.body as Partial<BlogCategory>;
+            Object.assign(cat, payload, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...cat });
+        }
+
+        // DELETE /api/blog/categories/:id
+        if (method === "DELETE" && blogCatIdMatch) {
+            const catId = blogCatIdMatch[1]!;
+            const idx = mockBlogCategories.findIndex((c) => c.id === catId);
+            if (idx !== -1) mockBlogCategories.splice(idx, 1);
+            return this.ok({ success: true });
+        }
+
+        // DELETE /api/blog/comments/:id  (must be before posts/:slug)
+        const blogCommentIdMatch = url.match(/\/api\/blog\/comments\/([^/]+)$/);
+        if (method === "DELETE" && blogCommentIdMatch) {
+            const commentId = blogCommentIdMatch[1]!;
+            for (const [postId, comments] of mockBlogCommentsByPost) {
+                const idx = comments.findIndex((c) => c.id === commentId);
+                if (idx !== -1) {
+                    comments.splice(idx, 1);
+                    // Also remove from detail
+                    for (const [, detail] of mockBlogPostDetails) {
+                        detail.comments = detail.comments
+                            .filter((c) => c.id !== commentId)
+                            .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) }));
+                    }
+                    const post = mockBlogPosts.find((p) => p.id === postId);
+                    if (post) post.commentCount = Math.max(0, post.commentCount - 1);
+                    break;
+                }
+                // check replies
+                for (const c of comments) {
+                    const rIdx = (c.replies ?? []).findIndex((r) => r.id === commentId);
+                    if (rIdx !== -1) {
+                        c.replies!.splice(rIdx, 1);
+                        const post = mockBlogPosts.find((p) => p.id === postId);
+                        if (post) post.commentCount = Math.max(0, post.commentCount - 1);
+                        break;
+                    }
+                }
+            }
+            return this.ok({ success: true });
+        }
+
+        // GET /api/blog/posts/:postId/comments
+        const blogPostCommentsMatch = url.match(/\/api\/blog\/posts\/([^/]+)\/comments$/);
+        if (method === "GET" && blogPostCommentsMatch) {
+            const postId = blogPostCommentsMatch[1]!;
+            return this.ok(mockBlogCommentsByPost.get(postId) ?? []);
+        }
+
+        // POST /api/blog/posts/:postId/comments
+        if (method === "POST" && blogPostCommentsMatch) {
+            const postId = blogPostCommentsMatch[1]!;
+            const payload = req.body as { content: string; parentId?: string };
+            const newComment: BlogComment = {
+                id: `bc-c${Date.now()}`,
+                postId,
+                authorId: MOCK_ADMIN_ID,
+                authorName: "Aniverse Admin",
+                authorAvatar: null,
+                content: payload.content,
+                parentId: payload.parentId ?? null,
+                replies: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            const existing = mockBlogCommentsByPost.get(postId) ?? [];
+            if (payload.parentId) {
+                const parent = existing.find((c) => c.id === payload.parentId);
+                if (parent) (parent.replies = parent.replies ?? []).push(newComment);
+            } else {
+                existing.push(newComment);
+            }
+            mockBlogCommentsByPost.set(postId, existing);
+            // Update detail
+            const detail = [...mockBlogPostDetails.values()].find((d) => d.id === postId);
+            if (detail) {
+                if (payload.parentId) {
+                    const parent = detail.comments.find((c) => c.id === payload.parentId);
+                    if (parent) (parent.replies = parent.replies ?? []).push(newComment);
+                } else {
+                    detail.comments.push(newComment);
+                }
+                detail.commentCount++;
+            }
+            const post = mockBlogPosts.find((p) => p.id === postId);
+            if (post) post.commentCount++;
+            return this.ok(newComment);
+        }
+
+        // GET /api/blog/posts  (list)
+        if (method === "GET" && /\/api\/blog\/posts$/.test(url)) {
+            // Admin gets all, otherwise only published
+            const isAdminReq = url.includes("status=all");
+            const list = isAdminReq ? mockBlogPosts : mockBlogPosts.filter((p) => p.status === "published");
+            return this.ok(list.map((p) => ({ ...p, isOwner: p.authorId === MOCK_ADMIN_ID })));
+        }
+
+        // POST /api/blog/posts  (create)
+        if (method === "POST" && /\/api\/blog\/posts$/.test(url)) {
+            const payload = req.body as Partial<BlogPost>;
+            const title = payload.title ?? "Neuer Artikel";
+            const slug =
+                title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-+|-+$/g, "") + `-${Date.now()}`;
+            const now2 = new Date().toISOString();
+            const cat = mockBlogCategories.find((c) => c.id === payload.categoryId);
+            const newPost: BlogPost = {
+                id: `bp-${Date.now()}`,
+                title,
+                slug,
+                excerpt: payload.excerpt ?? null,
+                content: payload.content ?? "",
+                type: payload.type ?? "personal",
+                status: payload.status ?? "draft",
+                authorId: MOCK_ADMIN_ID,
+                authorName: "Aniverse Admin",
+                authorAvatar: null,
+                categoryId: payload.categoryId ?? null,
+                categoryName: cat?.name ?? null,
+                categoryColor: cat?.color ?? null,
+                coverImageUrl: payload.coverImageUrl ?? null,
+                tags: payload.tags ?? [],
+                viewCount: 0,
+                commentCount: 0,
+                allowComments: payload.allowComments ?? true,
+                isOwner: true,
+                publishedAt: payload.status === "published" ? now2 : null,
+                createdAt: now2,
+                updatedAt: now2
+            };
+            mockBlogPosts.unshift(newPost);
+            mockBlogPostDetails.set(slug, { ...newPost, comments: [] });
+            return this.ok({ ...newPost });
+        }
+
+        // PUT /api/blog/posts/:id  (update — id-based)
+        const blogPostIdMatch = url.match(/\/api\/blog\/posts\/([^/]+)$/);
+        if (method === "PUT" && blogPostIdMatch) {
+            const postId = blogPostIdMatch[1]!;
+            const post = mockBlogPosts.find((p) => p.id === postId);
+            if (!post) return this.error("Artikel nicht gefunden", 404);
+            const payload = req.body as Partial<BlogPost>;
+            const oldSlug = post.slug;
+            if (payload.title) {
+                post.slug =
+                    payload.title
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-+|-+$/g, "") + `-${Date.now()}`;
+            }
+            Object.assign(post, payload, {
+                updatedAt: new Date().toISOString(),
+                isOwner: true,
+                publishedAt: post.publishedAt ?? (payload.status === "published" ? new Date().toISOString() : null)
+            });
+            // Update detail map
+            const oldDetail = mockBlogPostDetails.get(oldSlug);
+            mockBlogPostDetails.delete(oldSlug);
+            mockBlogPostDetails.set(post.slug, { ...(oldDetail ?? { ...post, comments: [] }), ...post });
+            return this.ok({ ...post });
+        }
+
+        // DELETE /api/blog/posts/:id
+        if (method === "DELETE" && blogPostIdMatch) {
+            const postId = blogPostIdMatch[1]!;
+            const idx = mockBlogPosts.findIndex((p) => p.id === postId);
+            if (idx !== -1) {
+                const [removed] = mockBlogPosts.splice(idx, 1);
+                mockBlogPostDetails.delete(removed.slug);
+            }
+            return this.ok({ success: true });
+        }
+
+        // GET /api/blog/posts/:slug  (detail — slug-based)
+        if (method === "GET" && blogPostIdMatch) {
+            const slug = blogPostIdMatch[1]!;
+            const detail = mockBlogPostDetails.get(slug);
+            if (!detail) return this.error("Artikel nicht gefunden", 404);
+            detail.viewCount++;
+            const post = mockBlogPosts.find((p) => p.slug === slug);
+            if (post) post.viewCount++;
+            return this.ok({ ...detail, isOwner: detail.authorId === MOCK_ADMIN_ID });
+        }
+
+        // ── Gallery ──────────────────────────────────────────────────────────
+
+        // GET /api/gallery/albums
+        if (method === "GET" && url.match(/\/api\/gallery\/albums$/)) {
+            const albums = mockGalleryAlbums.map((a) => ({ ...a, isOwner: a.ownerId === MOCK_ADMIN_ID }));
+            return this.ok(albums);
+        }
+
+        // POST /api/gallery/albums
+        if (method === "POST" && url.match(/\/api\/gallery\/albums$/)) {
+            const payload = req.body as Partial<GalleryAlbum>;
+            const newAlbum: GalleryAlbum = {
+                id: `album-${Date.now()}`,
+                title: (payload.title as string | undefined) ?? "Neues Album",
+                description: payload.description ?? null,
+                category: payload.category ?? null,
+                coverUrl: null,
+                ownerId: MOCK_ADMIN_ID,
+                ownerName: "Aniverse Admin",
+                ownerAvatar: null,
+                accessLevel: payload.accessLevel ?? "public",
+                watermarkEnabled: payload.watermarkEnabled ?? false,
+                allowComments: payload.allowComments ?? true,
+                allowRatings: payload.allowRatings ?? true,
+                allowDownload: payload.allowDownload ?? true,
+                tags: payload.tags ?? [],
+                mediaCount: 0,
+                isOwner: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockGalleryAlbums.unshift(newAlbum);
+            mockGalleryAlbumDetails.set(newAlbum.id, { ...newAlbum, media: [] });
+            return this.ok(newAlbum);
+        }
+
+        // GET /api/gallery/albums/:id
+        const galleryAlbumIdMatch = url.match(/\/api\/gallery\/albums\/([^/]+)$/);
+        if (method === "GET" && galleryAlbumIdMatch) {
+            const albumId = galleryAlbumIdMatch[1]!;
+            const detail = mockGalleryAlbumDetails.get(albumId);
+            if (!detail) return this.error("Album nicht gefunden", 404);
+            return this.ok({ ...detail, isOwner: detail.ownerId === MOCK_ADMIN_ID });
+        }
+
+        // DELETE /api/gallery/albums/:id
+        if (method === "DELETE" && galleryAlbumIdMatch) {
+            const albumId = galleryAlbumIdMatch[1]!;
+            const idx = mockGalleryAlbums.findIndex((a) => a.id === albumId);
+            if (idx !== -1) mockGalleryAlbums.splice(idx, 1);
+            mockGalleryAlbumDetails.delete(albumId);
+            return this.ok({ success: true });
+        }
+
+        // POST /api/gallery/albums/:albumId/media
+        const galleryAlbumMediaMatch = url.match(/\/api\/gallery\/albums\/([^/]+)\/media$/);
+        if (method === "POST" && galleryAlbumMediaMatch) {
+            const albumId = galleryAlbumMediaMatch[1]!;
+            const detail = mockGalleryAlbumDetails.get(albumId);
+            if (!detail) return this.error("Album nicht gefunden", 404);
+            const payload = req.body as Partial<GalleryMedia>;
+            const newMedia: GalleryMedia = {
+                id: `media-${Date.now()}`,
+                albumId,
+                ownerId: MOCK_ADMIN_ID,
+                type: payload.type ?? "image",
+                url: payload.url ?? "",
+                youtubeId: payload.youtubeId ?? null,
+                title: payload.title ?? null,
+                description: payload.description ?? null,
+                filename: null,
+                mimeType: null,
+                fileSize: null,
+                width: null,
+                height: null,
+                takenAt: null,
+                latitude: null,
+                longitude: null,
+                sortOrder: detail.media.length,
+                commentCount: 0,
+                averageRating: 0,
+                userRating: null,
+                isOwner: true,
+                createdAt: new Date().toISOString()
+            };
+            detail.media.push(newMedia);
+            const albumEntry = mockGalleryAlbums.find((a) => a.id === albumId);
+            if (albumEntry) albumEntry.mediaCount++;
+            return this.ok(newMedia);
+        }
+
+        // DELETE /api/gallery/media/:id
+        const galleryMediaIdMatch = url.match(/\/api\/gallery\/media\/([^/]+)$/);
+        if (method === "DELETE" && galleryMediaIdMatch) {
+            const mediaId = galleryMediaIdMatch[1]!;
+            for (const [, detail] of mockGalleryAlbumDetails) {
+                const idx = detail.media.findIndex((m) => m.id === mediaId);
+                if (idx !== -1) {
+                    detail.media.splice(idx, 1);
+                    const albumEntry = mockGalleryAlbums.find((a) => a.id === detail.id);
+                    if (albumEntry) albumEntry.mediaCount = Math.max(0, albumEntry.mediaCount - 1);
+                    break;
+                }
+            }
+            return this.ok({ success: true });
+        }
+
+        // GET /api/gallery/media/:id/comments
+        const galleryCommentsMatch = url.match(/\/api\/gallery\/media\/([^/]+)\/comments$/);
+        if (method === "GET" && galleryCommentsMatch) {
+            const mediaId = galleryCommentsMatch[1]!;
+            return this.ok(mockGalleryCommentsByMedia.get(mediaId) ?? []);
+        }
+
+        // POST /api/gallery/media/:id/comments
+        if (method === "POST" && galleryCommentsMatch) {
+            const mediaId = galleryCommentsMatch[1]!;
+            const payload = req.body as { content: string };
+            const newComment: GalleryComment = {
+                id: `comment-${Date.now()}`,
+                mediaId,
+                authorId: MOCK_ADMIN_ID,
+                authorName: "Aniverse Admin",
+                authorAvatar: null,
+                content: payload.content,
+                createdAt: new Date().toISOString()
+            };
+            const existing = mockGalleryCommentsByMedia.get(mediaId) ?? [];
+            existing.push(newComment);
+            mockGalleryCommentsByMedia.set(mediaId, existing);
+            return this.ok(newComment);
+        }
+
+        // DELETE /api/gallery/comments/:id
+        const galleryCommentIdMatch = url.match(/\/api\/gallery\/comments\/([^/]+)$/);
+        if (method === "DELETE" && galleryCommentIdMatch) {
+            const commentId = galleryCommentIdMatch[1]!;
+            for (const [mediaId, comments] of mockGalleryCommentsByMedia) {
+                const idx = comments.findIndex((c) => c.id === commentId);
+                if (idx !== -1) {
+                    comments.splice(idx, 1);
+                    mockGalleryCommentsByMedia.set(mediaId, comments);
+                    break;
+                }
+            }
+            return this.ok({ success: true });
+        }
+
+        // POST /api/gallery/media/:id/rate
+        const galleryRateMatch = url.match(/\/api\/gallery\/media\/([^/]+)\/rate$/);
+        if (method === "POST" && galleryRateMatch) {
+            return this.ok({ success: true });
         }
 
         // Fallback: durchreichen

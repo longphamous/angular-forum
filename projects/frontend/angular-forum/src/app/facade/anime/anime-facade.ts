@@ -165,6 +165,7 @@ export class AnimeFacade {
         if (this._genres().length > 0) return;
         this.http.get<string[]>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.genres()}`).subscribe({
             next: (genres) => this._genres.set(genres),
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             error: () => {}
         });
     }

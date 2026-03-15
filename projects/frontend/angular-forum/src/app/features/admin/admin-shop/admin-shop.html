@@ -122,11 +122,12 @@
         <div class="flex flex-col gap-4">
             <!-- Name -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-name"
                     >{{ t('adminShop.form.name') }} *</label
                 >
                 <input
                     class="w-full"
+                    id="shop-name"
                     [(ngModel)]="form.name"
                     [placeholder]="t('adminShop.form.namePlaceholder')"
                     pInputText
@@ -135,11 +136,12 @@
 
             <!-- Description -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-description"
                     >{{ t('adminShop.form.description') }}</label
                 >
                 <textarea
                     class="w-full"
+                    id="shop-description"
                     [(ngModel)]="form.description"
                     [autoResize]="true"
                     [placeholder]="t('adminShop.form.descriptionPlaceholder')"
@@ -151,23 +153,35 @@
             <div class="grid grid-cols-2 gap-4">
                 <!-- Price -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-price"
                         >{{ t('adminShop.form.price') }} *</label
                     >
-                    <p-inputnumber [(ngModel)]="form.price" [min]="1" [showButtons]="true" styleClass="w-full" />
+                    <p-inputnumber
+                        [(ngModel)]="form.price"
+                        [min]="1"
+                        [showButtons]="true"
+                        inputId="shop-price"
+                        styleClass="w-full"
+                    />
                 </div>
 
                 <!-- Sort order -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-sortOrder"
                         >{{ t('adminShop.form.sortOrder') }}</label
                     >
-                    <p-inputnumber [(ngModel)]="form.sortOrder" [min]="0" [showButtons]="true" styleClass="w-full" />
+                    <p-inputnumber
+                        [(ngModel)]="form.sortOrder"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="shop-sortOrder"
+                        styleClass="w-full"
+                    />
                 </div>
 
                 <!-- Stock -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-stock"
                         >{{ t('adminShop.form.stock') }}</label
                     >
                     <p-inputnumber
@@ -175,13 +189,14 @@
                         [min]="0"
                         [placeholder]="t('adminShop.form.stockUnlimited')"
                         [showButtons]="true"
+                        inputId="shop-stock"
                         styleClass="w-full"
                     />
                 </div>
 
                 <!-- Max per user -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-maxPerUser"
                         >{{ t('adminShop.form.maxPerUser') }}</label
                     >
                     <p-inputnumber
@@ -189,6 +204,7 @@
                         [min]="1"
                         [placeholder]="t('adminShop.form.maxPerUserUnlimited')"
                         [showButtons]="true"
+                        inputId="shop-maxPerUser"
                         styleClass="w-full"
                     />
                 </div>
@@ -196,11 +212,12 @@
 
             <!-- Category -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-category"
                     >{{ t('adminShop.form.category') }}</label
                 >
                 <input
                     class="w-full"
+                    id="shop-category"
                     [(ngModel)]="form.category"
                     [placeholder]="t('adminShop.form.categoryPlaceholder')"
                     pInputText
@@ -209,11 +226,12 @@
 
             <!-- Image URL -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-imageUrl"
                     >{{ t('adminShop.form.imageUrl') }}</label
                 >
                 <input
                     class="w-full"
+                    id="shop-imageUrl"
                     [(ngModel)]="form.imageUrl"
                     [placeholder]="t('adminShop.form.imageUrlPlaceholder')"
                     pInputText
@@ -222,10 +240,10 @@
 
             <!-- Icon -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-icon"
                     >{{ t('adminShop.form.icon') }}</label
                 >
-                <input class="w-full" [(ngModel)]="form.icon" pInputText placeholder="pi pi-star" />
+                <input class="w-full" id="shop-icon" [(ngModel)]="form.icon" pInputText placeholder="pi pi-star" />
                 <div class="text-surface-400 text-xs">{{ t('adminShop.form.iconHint') }}</div>
             </div>
 

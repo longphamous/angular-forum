@@ -95,7 +95,7 @@ interface SelectOption<T> {
                                 />
                                 <div class="min-w-0">
                                     <div class="truncate text-sm font-semibold">{{ user.displayName }}</div>
-                                    <div class="text-surface-400 truncate text-xs">@{{ user.username }}</div>
+                                    <div class="text-surface-400 truncate text-xs">{{ "@" + user.username }}</div>
                                 </div>
                             </div>
                         </td>
@@ -194,23 +194,25 @@ interface SelectOption<T> {
             <form class="flex flex-col gap-4 pt-2" [formGroup]="createForm" (ngSubmit)="submitCreate()">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">
+                        <label class="text-surface-500 text-xs font-medium" for="create-username">
                             {{ translocoService.translate("adminUsers.createDialog.username") }}
                             <span class="text-red-400">*</span>
                         </label>
                         <input
                             class="w-full"
+                            id="create-username"
                             [placeholder]="translocoService.translate('adminUsers.createDialog.usernamePlaceholder')"
                             formControlName="username"
                             pInputText
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{
+                        <label class="text-surface-500 text-xs font-medium" for="create-displayName">{{
                             translocoService.translate("adminUsers.createDialog.displayName")
                         }}</label>
                         <input
                             class="w-full"
+                            id="create-displayName"
                             [placeholder]="translocoService.translate('adminUsers.createDialog.displayNamePlaceholder')"
                             formControlName="displayName"
                             pInputText
@@ -219,12 +221,13 @@ interface SelectOption<T> {
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-500 text-xs font-medium">
+                    <label class="text-surface-500 text-xs font-medium" for="create-email">
                         {{ translocoService.translate("adminUsers.createDialog.email") }}
                         <span class="text-red-400">*</span>
                     </label>
                     <input
                         class="w-full"
+                        id="create-email"
                         [placeholder]="translocoService.translate('adminUsers.createDialog.emailPlaceholder')"
                         formControlName="email"
                         pInputText
@@ -233,7 +236,7 @@ interface SelectOption<T> {
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-500 text-xs font-medium">
+                    <label class="text-surface-500 text-xs font-medium" for="create-password">
                         {{ translocoService.translate("adminUsers.createDialog.password") }}
                         <span class="text-red-400">*</span>
                     </label>
@@ -242,6 +245,7 @@ interface SelectOption<T> {
                         [placeholder]="translocoService.translate('adminUsers.createDialog.passwordPlaceholder')"
                         [toggleMask]="true"
                         formControlName="password"
+                        inputId="create-password"
                         inputStyleClass="w-full"
                         styleClass="w-full"
                     />
@@ -249,24 +253,26 @@ interface SelectOption<T> {
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{
+                        <label class="text-surface-500 text-xs font-medium" for="create-role">{{
                             translocoService.translate("adminUsers.createDialog.role")
                         }}</label>
                         <p-select
                             [options]="roleOptions"
                             formControlName="role"
+                            inputId="create-role"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{
+                        <label class="text-surface-500 text-xs font-medium" for="create-status">{{
                             translocoService.translate("adminUsers.createDialog.status")
                         }}</label>
                         <p-select
                             [options]="statusOptions"
                             formControlName="status"
+                            inputId="create-status"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
@@ -308,32 +314,34 @@ interface SelectOption<T> {
         >
             <form class="flex flex-col gap-4 pt-2" [formGroup]="editForm" (ngSubmit)="submitEdit()">
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-500 text-xs font-medium">{{
+                    <label class="text-surface-500 text-xs font-medium" for="edit-displayName">{{
                         translocoService.translate("adminUsers.editDialog.displayName")
                     }}</label>
-                    <input class="w-full" formControlName="displayName" pInputText />
+                    <input class="w-full" id="edit-displayName" formControlName="displayName" pInputText />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{
+                        <label class="text-surface-500 text-xs font-medium" for="edit-role">{{
                             translocoService.translate("adminUsers.editDialog.role")
                         }}</label>
                         <p-select
                             [options]="roleOptions"
                             formControlName="role"
+                            inputId="edit-role"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{
+                        <label class="text-surface-500 text-xs font-medium" for="edit-status">{{
                             translocoService.translate("adminUsers.editDialog.status")
                         }}</label>
                         <p-select
                             [options]="statusOptions"
                             formControlName="status"
+                            inputId="edit-status"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"

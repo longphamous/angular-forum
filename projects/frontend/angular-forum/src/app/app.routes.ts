@@ -190,6 +190,61 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-lotto/admin-lotto").then((c) => c.AdminLotto)
+            },
+            {
+                path: "messages",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/messages/messages-page").then((c) => c.MessagesPage)
+            },
+            {
+                path: "gallery",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/gallery/gallery-page").then((c) => c.GalleryPage)
+            },
+            {
+                path: "gallery/:albumId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/gallery/gallery-album-page").then((c) => c.GalleryAlbumPage)
+            },
+            {
+                path: "admin/gallery",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-gallery/admin-gallery").then((c) => c.AdminGallery)
+            },
+            {
+                path: "blog",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/blog/blog-page").then((c) => c.BlogPage)
+            },
+            {
+                path: "blog/write",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/blog/blog-write-page").then((c) => c.BlogWritePage)
+            },
+            {
+                path: "blog/:slug/edit",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/blog/blog-write-page").then((c) => c.BlogWritePage)
+            },
+            {
+                path: "blog/:slug",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/blog/blog-detail-page").then((c) => c.BlogDetailPage)
+            },
+            {
+                path: "admin/blog",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-blog/admin-blog").then((c) => c.AdminBlog)
             }
         ]
     }

@@ -97,6 +97,13 @@ export const PRIZE_CLASS_INFO: Record<LottoPrizeClass, PrizeClassInfo> = {
 };
 
 export const PRIZE_CLASSES: LottoPrizeClass[] = [
-    "class1", "class2", "class3", "class4", "class5",
-    "class6", "class7", "class8", "class9"
+    "class1",
+    "class2",
+    "class3",
+    "class4",
+    "class5",
+    "class6",
+    "class7",
+    "class8",
+    "class9"
 ];

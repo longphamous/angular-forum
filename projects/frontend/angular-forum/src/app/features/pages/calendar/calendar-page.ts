@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
@@ -111,7 +111,7 @@ function defaultForm(): EventFormData {
     selector: "app-calendar-page",
     templateUrl: "./calendar-page.html"
 })
-export class CalendarPage implements OnInit {
+export class CalendarPage {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly translocoService = inject(TranslocoService);
@@ -294,8 +294,6 @@ export class CalendarPage implements OnInit {
             this.loadEvents(date, v);
         });
     }
-
-    ngOnInit(): void {}
 
     // ─── Navigation ───────────────────────────────────────────────────────────
     protected prev(): void {

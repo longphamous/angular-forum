@@ -1,16 +1,20 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
+import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
+import { GalleryAlbum, GalleryAlbumDetail, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
 import { Achievement, UserAchievement } from "../../models/gamification/achievement";
 import { Group, PagePermission } from "../../models/group/group";
+import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
+import { Conversation, ConversationDetail, Draft } from "../../models/messages/messages";
+import { AppNotification } from "../../models/notifications/notification";
 import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
-import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
 import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
 
 export interface User {
@@ -1178,9 +1182,9 @@ export const mockUserInventory: UserInventoryItem[] = [
 // ── Calendar Events ───────────────────────────────────────────────────────────
 
 const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-const nextWeekEnd = new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000);
+const _nextWeekEnd = new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000);
 const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-const tomorrowEnd = new Date(tomorrow.getTime() + 3 * 60 * 60 * 1000);
+const _tomorrowEnd = new Date(tomorrow.getTime() + 3 * 60 * 60 * 1000);
 const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
 export const mockCalendarEvents: CalendarEvent[] = [
@@ -1449,3 +1453,603 @@ export const mockLottoStats: LottoStats = {
     hotNumbers: [5, 13, 21, 28, 34, 42, 48, 9, 17, 36],
     coldNumbers: [1, 4, 11, 15, 23, 29, 32, 37, 44, 46]
 };
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+
+const adminId = "00000000-0000-0000-0000-000000000001";
+const modId = "00000000-0000-0000-0000-000000000002";
+const memberId = "00000000-0000-0000-0000-000000000003";
+
+export const mockConversations: Conversation[] = [
+    {
+        id: "conv-001",
+        participantIds: [adminId, memberId],
+        participants: [
+            { userId: adminId, username: "admin", displayName: "Aniverse Admin" },
+            { userId: memberId, username: "naruto_fan", displayName: "NarutoFan99" }
+        ],
+        subject: "Anime Empfehlung",
+        lastMessage: "Hast du schon Attack on Titan gesehen?",
+        lastMessageAt: oneHourAgo,
+        unreadCount: 1,
+        initiatedByUserId: memberId,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "conv-002",
+        participantIds: [adminId, modId],
+        participants: [
+            { userId: adminId, username: "admin", displayName: "Aniverse Admin" },
+            { userId: modId, username: "sakura_mod", displayName: "Sakura" }
+        ],
+        subject: "Moderationsaufgabe",
+        lastMessage: "Klar, schaue ich mir gleich an!",
+        lastMessageAt: thirtySecondsAgo,
+        unreadCount: 0,
+        initiatedByUserId: adminId,
+        createdAt: twoDaysAgo
+    }
+];
+
+export const mockConversationDetails = new Map<string, ConversationDetail>([
+    [
+        "conv-001",
+        {
+            conversation: mockConversations[0]!,
+            messages: [
+                {
+                    id: "msg-001",
+                    conversationId: "conv-001",
+                    senderId: memberId,
+                    senderName: "NarutoFan99",
+                    content: "Hey! Hast du schon Attack on Titan gesehen? Ich finde die Story mega!",
+                    isDraft: false,
+                    isRead: false,
+                    createdAt: oneHourAgo,
+                    updatedAt: oneHourAgo
+                }
+            ]
+        }
+    ],
+    [
+        "conv-002",
+        {
+            conversation: mockConversations[1]!,
+            messages: [
+                {
+                    id: "msg-002",
+                    conversationId: "conv-002",
+                    senderId: adminId,
+                    senderName: "Aniverse Admin",
+                    content: "Hey Sakura, kannst du diesen Thread mal überprüfen? Ich glaube da ist Spam dabei.",
+                    isDraft: false,
+                    isRead: true,
+                    createdAt: twoDaysAgo,
+                    updatedAt: twoDaysAgo
+                },
+                {
+                    id: "msg-003",
+                    conversationId: "conv-002",
+                    senderId: modId,
+                    senderName: "Sakura",
+                    content: "Klar, schaue ich mir gleich an!",
+                    isDraft: false,
+                    isRead: true,
+                    createdAt: thirtySecondsAgo,
+                    updatedAt: thirtySecondsAgo
+                }
+            ]
+        }
+    ]
+]);
+
+export const mockDrafts: Draft[] = [
+    {
+        id: "draft-001",
+        recipientId: modId,
+        recipientName: "Sakura",
+        subject: "Wichtige Info",
+        content: "Hey, ich wollte dir sagen dass nächste Woche...",
+        createdAt: oneHourAgo,
+        updatedAt: oneHourAgo
+    }
+];
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+export const mockNotifications: AppNotification[] = [
+    {
+        id: "notif-001",
+        userId: adminId,
+        type: "new_message",
+        title: "Neue Nachricht",
+        body: "NarutoFan99 hat dir eine Nachricht gesendet",
+        link: "/messages",
+        isRead: false,
+        createdAt: oneHourAgo
+    },
+    {
+        id: "notif-002",
+        userId: adminId,
+        type: "achievement_unlocked",
+        title: "Achievement freigeschaltet!",
+        body: 'Du hast das Achievement "Erster Beitrag" verdient',
+        link: "/profile",
+        isRead: false,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "notif-003",
+        userId: adminId,
+        type: "coins_received",
+        title: "Coins erhalten",
+        body: "Du hast 500 Coins als Willkommensbonus erhalten",
+        link: "/shop",
+        isRead: true,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "notif-004",
+        userId: adminId,
+        type: "thread_reply",
+        title: "Neue Antwort",
+        body: "sakura_mod hat auf deinen Thread \u201EWillkommen bei Aniverse\u201C geantwortet",
+        link: "/forum",
+        isRead: true,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "notif-005",
+        userId: adminId,
+        type: "xp_gained",
+        title: "XP erhalten",
+        body: "Du hast 50 XP für das Erstellen eines Threads verdient",
+        link: null,
+        isRead: true,
+        createdAt: twoDaysAgo
+    }
+];
+
+// ── Gallery ───────────────────────────────────────────────────────────────────
+
+const mockGalleryMedia1: GalleryMedia[] = [
+    {
+        id: "media-001",
+        albumId: "album-001",
+        ownerId: adminId,
+        type: "image",
+        url: "https://picsum.photos/seed/aniverse1/800/600",
+        title: "Erster Eindruck",
+        description: "Ein wunderschönes Bild",
+        filename: "photo1.jpg",
+        mimeType: "image/jpeg",
+        fileSize: 245000,
+        width: 800,
+        height: 600,
+        takenAt: twoDaysAgo,
+        latitude: 48.137154,
+        longitude: 11.576124,
+        sortOrder: 0,
+        commentCount: 2,
+        averageRating: 4.5,
+        userRating: null,
+        isOwner: false,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "media-002",
+        albumId: "album-001",
+        ownerId: adminId,
+        type: "image",
+        url: "https://picsum.photos/seed/aniverse2/800/600",
+        title: "Sonnenuntergang",
+        description: null,
+        filename: "photo2.jpg",
+        mimeType: "image/jpeg",
+        fileSize: 312000,
+        width: 800,
+        height: 600,
+        takenAt: twoDaysAgo,
+        latitude: null,
+        longitude: null,
+        sortOrder: 1,
+        commentCount: 0,
+        averageRating: 0,
+        userRating: null,
+        isOwner: false,
+        createdAt: twoDaysAgo
+    },
+    {
+        id: "media-003",
+        albumId: "album-001",
+        ownerId: modId,
+        type: "youtube",
+        url: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+        youtubeId: "dQw4w9WgXcQ",
+        title: "Einführungsvideo",
+        description: "Willkommen bei Aniverse",
+        filename: null,
+        mimeType: null,
+        fileSize: null,
+        width: null,
+        height: null,
+        takenAt: null,
+        latitude: null,
+        longitude: null,
+        sortOrder: 2,
+        commentCount: 1,
+        averageRating: 5,
+        userRating: null,
+        isOwner: false,
+        createdAt: oneHourAgo
+    }
+];
+
+const mockGalleryComments: GalleryComment[] = [
+    {
+        id: "comment-001",
+        mediaId: "media-001",
+        authorId: modId,
+        authorName: "Sakura",
+        authorAvatar: null,
+        content: "Wunderschöne Aufnahme! 😍",
+        createdAt: oneHourAgo
+    },
+    {
+        id: "comment-002",
+        mediaId: "media-001",
+        authorId: memberId,
+        authorName: "NarutoFan99",
+        authorAvatar: null,
+        content: "Tolle Perspektive!",
+        createdAt: thirtySecondsAgo
+    }
+];
+
+export const mockGalleryAlbums: GalleryAlbum[] = [
+    {
+        id: "album-001",
+        title: "Aniverse Highlights 2024",
+        description: "Die besten Momente des Jahres",
+        category: "Events",
+        coverUrl: "https://picsum.photos/seed/aniverse1/400/300",
+        ownerId: adminId,
+        ownerName: "Aniverse Admin",
+        ownerAvatar: null,
+        accessLevel: "public",
+        watermarkEnabled: false,
+        allowComments: true,
+        allowRatings: true,
+        allowDownload: true,
+        tags: ["anime", "community", "2024"],
+        mediaCount: 3,
+        isOwner: false,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "album-002",
+        title: "Fan Art Sammlung",
+        description: "Kunstwerke unserer Community-Mitglieder",
+        category: "Fan Art",
+        coverUrl: "https://picsum.photos/seed/fanart/400/300",
+        ownerId: modId,
+        ownerName: "Sakura",
+        ownerAvatar: null,
+        accessLevel: "members_only",
+        watermarkEnabled: true,
+        allowComments: true,
+        allowRatings: true,
+        allowDownload: false,
+        tags: ["fanart", "art"],
+        mediaCount: 0,
+        isOwner: false,
+        createdAt: oneHourAgo,
+        updatedAt: oneHourAgo
+    }
+];
+
+export const mockGalleryAlbumDetails = new Map<string, GalleryAlbumDetail>([
+    [
+        "album-001",
+        {
+            ...mockGalleryAlbums[0],
+            media: mockGalleryMedia1
+        }
+    ],
+    [
+        "album-002",
+        {
+            ...mockGalleryAlbums[1],
+            media: []
+        }
+    ]
+]);
+
+export const mockGalleryCommentsByMedia = new Map<string, GalleryComment[]>([
+    ["media-001", mockGalleryComments],
+    ["media-002", []],
+    ["media-003", [mockGalleryComments[0]]]
+]);
+
+// ── Blog ──────────────────────────────────────────────────────────────────────
+
+export const mockBlogCategories: BlogCategory[] = [
+    {
+        id: "bc-1",
+        name: "Community News",
+        slug: "community-news",
+        description: "Neuigkeiten aus der Community",
+        color: "#3B82F6",
+        postCount: 2,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "bc-2",
+        name: "Tutorials",
+        slug: "tutorials",
+        description: "Anleitungen und Tipps",
+        color: "#10B981",
+        postCount: 1,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "bc-3",
+        name: "Tagebuch",
+        slug: "tagebuch",
+        description: "Persönliche Einträge",
+        color: "#F59E0B",
+        postCount: 1,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "bc-4",
+        name: "Events",
+        slug: "events",
+        description: "Veranstaltungen und Ankündigungen",
+        color: "#EC4899",
+        postCount: 0,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    }
+];
+
+export const mockBlogPosts: BlogPost[] = [
+    {
+        id: "bp-1",
+        title: "Willkommen in der Aniverse Community!",
+        slug: "willkommen-in-der-aniverse-community",
+        excerpt:
+            "Wir freuen uns, euch in unserer Anime-Community begrüßen zu dürfen. Aniverse ist der Ort für alle Anime-Fans!",
+        content: `<h2>Herzlich Willkommen bei Aniverse!</h2>
+<p>Wir sind begeistert, euch auf unserer Community-Plattform begrüßen zu dürfen. <strong>Aniverse</strong> ist ein Ort für alle Anime-Fans, die ihre Leidenschaft teilen, diskutieren und neue Freundschaften schließen möchten.</p>
+<h3>Was euch erwartet</h3>
+<ul>
+  <li><strong>Forum</strong>: Diskutiert über eure Lieblingsserien und aktuelle Anime-Themen</li>
+  <li><strong>Blog</strong>: Teilt eure eigenen Artikel, Meinungen und Tagebucheinträge</li>
+  <li><strong>Galerie</strong>: Zeigt eure Kunstwerke, Screenshots und Fan-Art</li>
+  <li><strong>Kalender</strong>: Bleibt über Community-Events informiert</li>
+  <li><strong>Shop</strong>: Sammelt Punkte und tauscht sie gegen virtuelle Items</li>
+</ul>
+<h3>Community-Regeln</h3>
+<p>Um eine angenehme Atmosphäre zu gewährleisten, bitten wir euch, respektvoll miteinander umzugehen und unsere Community-Regeln zu beachten. Spoiler bitte immer kennzeichnen!</p>
+<p>Wir freuen uns auf eine aktive und freundliche Community. <em>Willkommen bei Aniverse!</em> 🎌</p>`,
+        type: "editorial",
+        status: "published",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Aniverse Admin",
+        authorAvatar: null,
+        categoryId: "bc-1",
+        categoryName: "Community News",
+        categoryColor: "#3B82F6",
+        coverImageUrl: null,
+        tags: ["community", "willkommen", "aniverse"],
+        viewCount: 142,
+        commentCount: 2,
+        allowComments: true,
+        isOwner: false,
+        publishedAt: twoDaysAgo,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "bp-2",
+        title: "Frühjahrs-Anime 2026: Die heißesten neuen Serien",
+        slug: "fruehjahrs-anime-2026-die-heissesten-neuen-serien",
+        excerpt:
+            "Die Frühjahrssaison 2026 bringt einige sehr vielversprechende Titel. Hier ist unser Überblick über die heißerwartetsten Serien dieser Saison.",
+        content: `<h2>Frühjahrs-Anime 2026: Unser Überblick</h2>
+<p>Die Frühjahrssaison ist immer aufregend – und 2026 macht da keine Ausnahme. Wir haben die vielversprechendsten Neustarts für euch zusammengefasst.</p>
+<h3>Top-Picks dieser Saison</h3>
+<p>Besonders gespannt sind wir auf die Fortsetzungen etablierter Reihen sowie einige vielversprechende Neuanfänge aus dem Fantasy- und Isekai-Genre.</p>
+<h3>Unsere Empfehlung</h3>
+<p>Schaut in den Kalender – dort findet ihr alle Premiere-Termine und Community-Watch-Along-Events. Diskutiert mit uns im Forum über eure Favoriten dieser Saison!</p>`,
+        type: "news",
+        status: "published",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Aniverse Admin",
+        authorAvatar: null,
+        categoryId: "bc-1",
+        categoryName: "Community News",
+        categoryColor: "#3B82F6",
+        coverImageUrl: null,
+        tags: ["anime", "spring2026", "news"],
+        viewCount: 89,
+        commentCount: 0,
+        allowComments: true,
+        isOwner: false,
+        publishedAt: oneHourAgo,
+        createdAt: oneHourAgo,
+        updatedAt: oneHourAgo
+    },
+    {
+        id: "bp-3",
+        title: "Meine Top 5 Isekai-Serien aller Zeiten",
+        slug: "meine-top-5-isekai-serien-aller-zeiten",
+        excerpt:
+            "Als langjährige Anime-Enthusiastin habe ich unzählige Isekai-Serien gesehen. Heute teile ich meine persönlichen Top 5.",
+        content: `<h2>Meine persönlichen Isekai-Top-5</h2>
+<p>Isekai ist mittlerweile eines der beliebtesten Anime-Genres – und das nicht ohne Grund. Die Faszination, in eine völlig fremde Welt versetzt zu werden, ist zeitlos.</p>
+<h3>Platz 5: Sword Art Online</h3>
+<p>Der Klassiker, der das Genre für viele geprägt hat. Die ersten Arcs sind nach wie vor fesselnd.</p>
+<h3>Platz 4: Re:Zero</h3>
+<p>Dunkel, emotional und unberechenbar. Subaru ist ein Protagonist, den man lieben und hassen kann.</p>
+<h3>Platz 3: Mushoku Tensei</h3>
+<p>Beeindruckende Worldbuilding, tiefe Charakterentwicklung und eine emotionale Geschichte.</p>
+<h3>Platz 2: That Time I Got Reincarnated as a Slime</h3>
+<p>Entspannend, witzig und mit einem der sympathischsten Protagonisten des Genres.</p>
+<h3>Platz 1: Overlord</h3>
+<p>Ainz Ooal Gown ist für mich der faszinierendste Isekai-Protagonist. Die politischen Intrigen und die Weltentwicklung sind unübertroffen.</p>
+<p>Was sind eure Favoriten? Schreibt es gerne in die Kommentare!</p>`,
+        type: "personal",
+        status: "published",
+        authorId: "00000000-0000-0000-0000-000000000002",
+        authorName: "Sakura",
+        authorAvatar: null,
+        categoryId: null,
+        categoryName: null,
+        categoryColor: null,
+        coverImageUrl: null,
+        tags: ["isekai", "top5", "anime", "persönlich"],
+        viewCount: 57,
+        commentCount: 1,
+        allowComments: true,
+        isOwner: false,
+        publishedAt: oneHourAgo,
+        createdAt: oneHourAgo,
+        updatedAt: oneHourAgo
+    },
+    {
+        id: "bp-4",
+        title: "Profil-Guide: So richtest du dein Aniverse-Profil ein",
+        slug: "profil-guide-so-richtest-du-dein-aniverse-profil-ein",
+        excerpt:
+            "Ein gepflegtes Profil ist das Aushängeschild in jeder Community. In diesem Tutorial zeige ich euch, wie ihr euer Aniverse-Profil optimal gestaltet.",
+        content: `<h2>Dein Aniverse-Profil optimal gestalten</h2>
+<p>Ein aussagekräftiges Profil hilft anderen Community-Mitgliedern, euch besser kennenzulernen. Hier ist eine Schritt-für-Schritt-Anleitung.</p>
+<h3>Schritt 1: Avatar hochladen</h3>
+<p>Geht in eure Profileinstellungen und ladet ein Profilbild hoch. Anime-Avatare sind natürlich besonders willkommen!</p>
+<h3>Schritt 2: Bio schreiben</h3>
+<p>Erzählt etwas über euch: Welche Anime-Genres mögt ihr? Seit wann schaut ihr Anime? Was sind eure Lieblingsserien?</p>
+<h3>Schritt 3: Anime-Liste pflegen</h3>
+<p>Nutzt die Anime-Liste-Funktion, um eure gesehenen, laufenden und geplanten Anime zu verwalten. Das hilft euch und anderen bei Empfehlungen.</p>
+<h3>Schritt 4: Im Forum aktiv werden</h3>
+<p>Durch Forenbeiträge sammelt ihr Reputation-Punkte, die euer Profil aufwerten.</p>`,
+        type: "editorial",
+        status: "published",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Aniverse Admin",
+        authorAvatar: null,
+        categoryId: "bc-2",
+        categoryName: "Tutorials",
+        categoryColor: "#10B981",
+        coverImageUrl: null,
+        tags: ["tutorial", "profil", "guide"],
+        viewCount: 203,
+        commentCount: 0,
+        allowComments: true,
+        isOwner: false,
+        publishedAt: twoDaysAgo,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "bp-5",
+        title: "Tag 1 im Anime-Club: Mein erstes Treffen",
+        slug: "tag-1-im-anime-club-mein-erstes-treffen",
+        excerpt: "Heute hatte ich mein erstes Treffen im lokalen Anime-Club. Ich war nervös, aber es war großartig!",
+        content: `<h2>Mein erstes Anime-Club-Treffen</h2>
+<p>Lange hab ich gezögert, aber heute war es endlich so weit: Mein erstes Treffen beim lokalen Anime-Club in der Stadtbibliothek.</p>
+<p>Ich war ehrlich gesagt ziemlich nervös. Was, wenn die anderen viel mehr wissen als ich? Was, wenn ich die falschen Anime gemocht habe?</p>
+<p>Aber dann war alles ganz anders als befürchtet. Die Leute waren unglaublich nett und offen. Wir haben uns über aktuelle Serien unterhalten, Empfehlungen ausgetauscht und sogar die erste Episode von "Frieren" zusammen angeschaut.</p>
+<p>Ich freue mich schon auf das nächste Treffen!</p>`,
+        type: "diary",
+        status: "draft",
+        authorId: "00000000-0000-0000-0000-000000000003",
+        authorName: "NarutoFan99",
+        authorAvatar: null,
+        categoryId: "bc-3",
+        categoryName: "Tagebuch",
+        categoryColor: "#F59E0B",
+        coverImageUrl: null,
+        tags: ["tagebuch", "anime-club", "persönlich"],
+        viewCount: 0,
+        commentCount: 0,
+        allowComments: true,
+        isOwner: false,
+        publishedAt: null,
+        createdAt: now,
+        updatedAt: now
+    }
+];
+
+export const mockBlogCommentsByPost = new Map<string, BlogComment[]>([
+    [
+        "bp-1",
+        [
+            {
+                id: "bc-c1",
+                postId: "bp-1",
+                authorId: "00000000-0000-0000-0000-000000000002",
+                authorName: "Sakura",
+                authorAvatar: null,
+                content:
+                    "Großartig, endlich eine Anime-Community, die sich wirklich anfühlt wie Zuhause. Danke für die tolle Plattform!",
+                parentId: null,
+                replies: [
+                    {
+                        id: "bc-c1r1",
+                        postId: "bp-1",
+                        authorId: "00000000-0000-0000-0000-000000000001",
+                        authorName: "Aniverse Admin",
+                        authorAvatar: null,
+                        content: "Danke für das Feedback! Wir freuen uns, dich hier zu haben, Sakura 😊",
+                        parentId: "bc-c1",
+                        replies: [],
+                        createdAt: oneHourAgo,
+                        updatedAt: oneHourAgo
+                    }
+                ],
+                createdAt: twoDaysAgo,
+                updatedAt: twoDaysAgo
+            },
+            {
+                id: "bc-c2",
+                postId: "bp-1",
+                authorId: "00000000-0000-0000-0000-000000000003",
+                authorName: "NarutoFan99",
+                authorAvatar: null,
+                content: "Der Shop und das Lotto sind meine Lieblingsfeatures! Habt ihr noch mehr geplant?",
+                parentId: null,
+                replies: [],
+                createdAt: oneHourAgo,
+                updatedAt: oneHourAgo
+            }
+        ]
+    ],
+    [
+        "bp-3",
+        [
+            {
+                id: "bc-c3",
+                postId: "bp-3",
+                authorId: "00000000-0000-0000-0000-000000000003",
+                authorName: "NarutoFan99",
+                authorAvatar: null,
+                content:
+                    "Tolle Liste! Aber Overlord auf Platz 1? Das ist mutig 😄 Für mich ist Re:Zero der klare Sieger!",
+                parentId: null,
+                replies: [],
+                createdAt: thirtySecondsAgo,
+                updatedAt: thirtySecondsAgo
+            }
+        ]
+    ]
+]);
+
+export const mockBlogPostDetails = new Map<string, BlogPostDetail>(
+    mockBlogPosts.map((p) => [p.slug, { ...p, comments: mockBlogCommentsByPost.get(p.id) ?? [] }])
+);

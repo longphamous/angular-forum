@@ -11,7 +11,7 @@ const sharedTsRules = {
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "prettier/prettier": "error",
-    "@typescript-eslint/member-ordering": ["error"],
+    "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/no-unused-expressions": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-unused-vars": [

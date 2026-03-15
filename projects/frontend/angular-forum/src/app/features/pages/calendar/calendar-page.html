@@ -86,8 +86,11 @@
             <div
                 class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 min-h-[7rem] cursor-pointer border-r p-1.5 transition-colors last:border-r-0"
                 (click)="openCreate(day.date)"
+                (keydown.enter)="openCreate(day.date)"
                 [class.bg-surface-50]="!day.isCurrentMonth && !day.isToday"
                 [class.dark:bg-surface-800]="!day.isCurrentMonth"
+                role="button"
+                tabindex="0"
             >
                 <!-- Day number -->
                 <div class="mb-1 flex justify-end">
@@ -106,8 +109,11 @@
                 <div
                     class="mb-0.5 cursor-pointer truncate rounded px-1 py-0.5 text-xs text-white"
                     (click)="openDetail(ev); $event.stopPropagation()"
+                    (keydown.enter)="openDetail(ev); $event.stopPropagation()"
                     [class]="getEventColorClass(ev.color)"
                     [pTooltip]="ev.title"
+                    role="button"
+                    tabindex="0"
                 >
                     @if (!ev.allDay) { <span class="mr-0.5 opacity-80">{{ formatTime(ev.startDate) }}</span> } {{
                     ev.title }}
@@ -153,14 +159,23 @@
                     </div>
                 </div>
                 <!-- Events -->
-                <div class="flex min-h-[12rem] cursor-pointer flex-col gap-1 p-1.5" (click)="openCreate(day.date)">
+                <div
+                    class="flex min-h-[12rem] cursor-pointer flex-col gap-1 p-1.5"
+                    (click)="openCreate(day.date)"
+                    (keydown.enter)="openCreate(day.date)"
+                    role="button"
+                    tabindex="0"
+                >
                     @if (loading()) {
                     <p-skeleton height="2rem" styleClass="rounded" />
                     } @else { @for (ev of day.events; track ev.id) {
                     <div
                         class="cursor-pointer rounded px-2 py-1 text-xs text-white transition-opacity hover:opacity-90"
                         (click)="openDetail(ev); $event.stopPropagation()"
+                        (keydown.enter)="openDetail(ev); $event.stopPropagation()"
                         [class]="getEventColorClass(ev.color)"
+                        role="button"
+                        tabindex="0"
                     >
                         <div class="truncate font-medium">{{ ev.title }}</div>
                         @if (!ev.allDay) {
@@ -212,6 +227,9 @@
                 <div
                     class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex cursor-pointer overflow-hidden rounded-xl border transition-shadow hover:shadow-md"
                     (click)="openDetail(ev)"
+                    (keydown.enter)="openDetail(ev)"
+                    role="button"
+                    tabindex="0"
                 >
                     <!-- Color stripe -->
                     <div class="w-1 flex-shrink-0" [class]="getEventColorClass(ev.color)"></div>
@@ -284,11 +302,12 @@
     <div class="flex flex-col gap-4">
         <!-- Title -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-title"
                 >{{ t('calendar.form.title') }} *</label
             >
             <input
                 class="w-full"
+                id="cal-title"
                 [(ngModel)]="form.title"
                 [placeholder]="t('calendar.form.titlePlaceholder')"
                 pInputText
@@ -297,11 +316,12 @@
 
         <!-- Description -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-description"
                 >{{ t('calendar.form.description') }}</label
             >
             <textarea
                 class="w-full"
+                id="cal-description"
                 [(ngModel)]="form.description"
                 [autoResize]="true"
                 [placeholder]="t('calendar.form.descriptionPlaceholder')"
@@ -312,11 +332,12 @@
 
         <!-- Location -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-location"
                 >{{ t('calendar.form.location') }}</label
             >
             <input
                 class="w-full"
+                id="cal-location"
                 [(ngModel)]="form.location"
                 [placeholder]="t('calendar.form.locationPlaceholder')"
                 pInputText
@@ -334,7 +355,7 @@
         <!-- Start / End Date -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-start-date"
                     >{{ t('calendar.form.startDate') }} *</label
                 >
                 <p-datepicker
@@ -342,11 +363,12 @@
                     [dateFormat]="form.allDay ? 'dd.mm.yy' : 'dd.mm.yy'"
                     [showIcon]="true"
                     [showTime]="!form.allDay"
+                    inputId="cal-start-date"
                     styleClass="w-full"
                 />
             </div>
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-end-date"
                     >{{ t('calendar.form.endDate') }} *</label
                 >
                 <p-datepicker
@@ -354,6 +376,7 @@
                     [dateFormat]="form.allDay ? 'dd.mm.yy' : 'dd.mm.yy'"
                     [showIcon]="true"
                     [showTime]="!form.allDay"
+                    inputId="cal-end-date"
                     styleClass="w-full"
                 />
             </div>
@@ -363,26 +386,28 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <!-- Color -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
-                    >{{ t('calendar.form.color') }}</label
+                <span class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    >{{ t('calendar.form.color') }}</span
                 >
                 <div class="flex flex-wrap gap-2">
                     @for (c of eventColors; track c.value) {
                     <button
                         class="h-7 w-7 rounded-full border-2 transition-all"
                         (click)="form.color = c.value"
+                        [attr.aria-label]="c.label"
                         [class.border-surface-900]="form.color === c.value"
                         [class.border-transparent]="form.color !== c.value"
                         [class.dark:border-surface-0]="form.color === c.value"
                         [class]="c.css"
                         [pTooltip]="c.label"
+                        type="button"
                     ></button>
                     }
                 </div>
             </div>
             <!-- Max attendees -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="cal-max-attendees"
                     >{{ t('calendar.form.maxAttendees') }}</label
                 >
                 <p-inputnumber
@@ -390,6 +415,7 @@
                     [min]="1"
                     [placeholder]="t('calendar.form.maxAttendeesUnlimited')"
                     [showButtons]="true"
+                    inputId="cal-max-attendees"
                     styleClass="w-full"
                 />
             </div>
@@ -417,19 +443,20 @@
         >
             <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium" for="cal-frequency"
                         >{{ t('calendar.form.frequency') }}</label
                     >
                     <p-select
                         [(ngModel)]="form.recurrenceFrequency"
                         [options]="frequencyOptions"
+                        inputId="cal-frequency"
                         optionLabel="label"
                         optionValue="value"
                         styleClass="w-full"
                     />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium" for="cal-interval"
                         >{{ t('calendar.form.interval') }}</label
                     >
                     <p-inputnumber
@@ -437,14 +464,15 @@
                         [max]="99"
                         [min]="1"
                         [showButtons]="true"
+                        inputId="cal-interval"
                         styleClass="w-full"
                     />
                 </div>
             </div>
             @if (form.recurrenceFrequency === 'weekly') {
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
-                    >{{ t('calendar.form.byDay') }}</label
+                <span class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                    >{{ t('calendar.form.byDay') }}</span
                 >
                 <div class="flex flex-wrap gap-2">
                     @for (opt of byDayOptions; track opt.value) {
@@ -465,7 +493,7 @@
             </div>
             }
             <div class="flex flex-col gap-1.5">
-                <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                <label class="text-surface-600 dark:text-surface-400 text-xs font-medium" for="cal-recurrence-until"
                     >{{ t('calendar.form.recurrenceUntil') }}</label
                 >
                 <p-datepicker
@@ -473,6 +501,7 @@
                     [placeholder]="t('calendar.form.recurrenceUntilHint')"
                     [showIcon]="true"
                     dateFormat="dd.mm.yy"
+                    inputId="cal-recurrence-until"
                     styleClass="w-full"
                 />
             </div>
@@ -509,7 +538,7 @@
     <div class="flex justify-center py-8">
         <i class="pi pi-spin pi-spinner text-primary text-2xl"></i>
     </div>
-    } @else if (selectedEvent(); as ev) {
+    } @else { @if (selectedEvent(); as ev) {
     <div class="flex flex-col gap-4">
         <!-- Color bar -->
         <div class="h-1.5 w-full rounded-full" [class]="getEventColorClass(ev.color)"></div>
@@ -647,7 +676,7 @@
             }
         </div>
     </div>
-    }
+    } }
 </p-dialog>
 
 <!-- ── RSVP Dialog ────────────────────────────────────────────────────────────── -->
@@ -677,20 +706,28 @@
 
         <!-- Companions -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="rsvp-companions"
                 >{{ t('calendar.companions') }}</label
             >
-            <p-inputnumber [(ngModel)]="rsvpCompanions" [max]="20" [min]="0" [showButtons]="true" styleClass="w-full" />
+            <p-inputnumber
+                [(ngModel)]="rsvpCompanions"
+                [max]="20"
+                [min]="0"
+                [showButtons]="true"
+                inputId="rsvp-companions"
+                styleClass="w-full"
+            />
         </div>
 
         <!-- Decline reason -->
         @if (rsvpStatus() === 'declined') {
         <div class="flex flex-col gap-1.5">
-            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="rsvp-decline-reason"
                 >{{ t('calendar.declineReason') }}</label
             >
             <textarea
                 class="w-full"
+                id="rsvp-decline-reason"
                 [(ngModel)]="rsvpDeclineReason"
                 [placeholder]="t('calendar.declineReasonPlaceholder')"
                 pTextarea

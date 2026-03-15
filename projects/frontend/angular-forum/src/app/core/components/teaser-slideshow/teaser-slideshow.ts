@@ -24,8 +24,15 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
         @if (slides().length > 0) {
             <div
                 class="teaser-slideshow relative w-full overflow-hidden rounded-2xl shadow-lg"
+                [attr.role]="
+                    slides()[currentIndex()]?.linkFullSlide && slides()[currentIndex()]?.linkUrl ? 'button' : null
+                "
+                [attr.tabindex]="
+                    slides()[currentIndex()]?.linkFullSlide && slides()[currentIndex()]?.linkUrl ? 0 : null
+                "
                 [class.cursor-pointer]="slides()[currentIndex()]?.linkFullSlide && !!slides()[currentIndex()]?.linkUrl"
                 (click)="onSlideClick(slides()[currentIndex()], $event)"
+                (keydown.enter)="onSlideClick(slides()[currentIndex()])"
                 (mouseenter)="pause()"
                 (mouseleave)="resume()"
                 style="height: clamp(190px, 22vw, 310px);"
@@ -174,13 +181,13 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                     <div class="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 sm:bottom-3">
                         @for (slide of slides(); track slide.id; let i = $index) {
                             <button
-                                class="h-1.5 rounded-full transition-all duration-300 focus:outline-none"
                                 [attr.aria-label]="'Slide ' + (i + 1)"
-                                [class.bg-white]="i === currentIndex()"
-                                [class.bg-white/45]="i !== currentIndex()"
-                                [class.w-1.5]="i !== currentIndex()"
-                                [class.w-5]="i === currentIndex()"
+                                [class]="
+                                    'h-1.5 rounded-full transition-all duration-300 focus:outline-none ' +
+                                    (i === currentIndex() ? 'w-5 bg-white' : 'w-1.5 bg-white/45')
+                                "
                                 (click)="goTo(i); $event.stopPropagation()"
+                                type="button"
                             ></button>
                         }
                     </div>
@@ -214,6 +221,7 @@ export class TeaserSlideshowComponent implements OnInit, OnDestroy {
                 this.slides.set(data);
                 if (data.length > 1) this.startTimer();
             },
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             error: () => {}
         });
     }
@@ -269,7 +277,7 @@ export class TeaserSlideshowComponent implements OnInit, OnDestroy {
         return (slide[field] as string | null) ?? null;
     }
 
-    protected onSlideClick(slide: TeaserSlide | undefined, event: MouseEvent): void {
+    protected onSlideClick(slide: TeaserSlide | undefined, _event?: MouseEvent): void {
         if (!slide?.linkFullSlide || !slide.linkUrl) return;
         const url = this.normalizeUrl(slide.linkUrl);
         if (this.isExternal(url)) {

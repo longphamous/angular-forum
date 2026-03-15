@@ -65,6 +65,21 @@ export class AppMenu implements OnInit, OnDestroy {
                 items: [{ label: this.t("nav.lotto"), icon: "pi pi-fw pi-ticket", routerLink: ["/lotto"] }]
             },
             {
+                label: this.t("nav.messagesSection"),
+                items: [{ label: this.t("nav.messages"), icon: "pi pi-fw pi-envelope", routerLink: ["/messages"] }]
+            },
+            {
+                label: this.t("nav.gallerySection"),
+                items: [{ label: this.t("nav.gallery"), icon: "pi pi-fw pi-images", routerLink: ["/gallery"] }]
+            },
+            {
+                label: this.t("nav.blogSection"),
+                items: [
+                    { label: this.t("nav.blog"), icon: "pi pi-fw pi-file-edit", routerLink: ["/blog"] },
+                    { label: this.t("nav.writeBlog"), icon: "pi pi-fw pi-pencil", routerLink: ["/blog/write"] }
+                ]
+            },
+            {
                 label: this.t("nav.anime"),
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
@@ -113,6 +128,16 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.lottoManagement"),
                         icon: "pi pi-fw pi-ticket",
                         routerLink: ["/admin/lotto"]
+                    },
+                    {
+                        label: this.t("nav.galleryManagement"),
+                        icon: "pi pi-fw pi-images",
+                        routerLink: ["/admin/gallery"]
+                    },
+                    {
+                        label: this.t("nav.blogManagement"),
+                        icon: "pi pi-fw pi-file-edit",
+                        routerLink: ["/admin/blog"]
                     }
                 ]
             },

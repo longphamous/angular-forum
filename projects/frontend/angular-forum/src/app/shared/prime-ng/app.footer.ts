@@ -102,6 +102,7 @@ export class AppFooter implements OnInit {
                     this.visible.set(users.slice(0, MAX_FOOTER_AVATARS));
                     this.overflow.set(Math.max(0, users.length - MAX_FOOTER_AVATARS));
                 },
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 error: () => {}
             });
     }

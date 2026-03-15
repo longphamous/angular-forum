@@ -98,11 +98,13 @@ export class LottoPage implements OnInit, OnDestroy {
         const ticketList = this.myTickets();
         const drawList = this.draws();
         const resultList = this.myResults();
-        return ticketList.map((ticket) => {
-            const draw = drawList.find((d) => d.id === ticket.drawId);
-            const result = resultList.find((r) => r.ticketId === ticket.id);
-            return { ticket, draw: draw!, result };
-        }).filter((t) => t.draw);
+        return ticketList
+            .map((ticket) => {
+                const draw = drawList.find((d) => d.id === ticket.drawId);
+                const result = resultList.find((r) => r.ticketId === ticket.id);
+                return { ticket, draw: draw!, result };
+            })
+            .filter((t) => t.draw);
     });
 
     protected readonly hotNumbersSet = computed(() => new Set(this.stats()?.hotNumbers ?? []));
@@ -210,7 +212,7 @@ export class LottoPage implements OnInit, OnDestroy {
                 this.purchasing.set(false);
                 this.myTickets.update((t) => [...t, ...tickets]);
                 // Deduct from wallet display
-                this.wallet.update((w) => w ? { ...w, balance: w.balance - this.ticketCost() } : w);
+                this.wallet.update((w) => (w ? { ...w, balance: w.balance - this.ticketCost() } : w));
                 this.clearSelection();
                 this.messageService.add({
                     severity: "success",
@@ -248,7 +250,12 @@ export class LottoPage implements OnInit, OnDestroy {
     // ─── Helpers ──────────────────────────────────────────────────────────────
     protected formatDate(dateStr: string): string {
         return new Date(dateStr).toLocaleDateString("de-DE", {
-            weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         });
     }
 

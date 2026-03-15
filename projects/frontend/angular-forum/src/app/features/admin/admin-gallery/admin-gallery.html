@@ -1,0 +1,148 @@
+<p-toast />
+
+<div *transloco="let t">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                <i class="pi pi-images text-primary"></i>
+                {{ t("gallery.adminTitle") }}
+            </h1>
+            <p class="text-surface-500 mt-1 text-sm">{{ t("gallery.adminSubtitle") }}</p>
+        </div>
+        <p-button
+            (onClick)="loadAlbums()"
+            [label]="t('common.loading')"
+            [loading]="loading()"
+            [outlined]="true"
+            icon="pi pi-refresh"
+            severity="secondary"
+        />
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div
+            class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 rounded-xl border p-4 text-center"
+        >
+            <p class="text-primary m-0 text-3xl font-bold">{{ albums().length }}</p>
+            <p class="text-surface-500 m-0 mt-1 text-sm">{{ t("gallery.totalAlbums") }}</p>
+        </div>
+        <div
+            class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 rounded-xl border p-4 text-center"
+        >
+            <p class="m-0 text-3xl font-bold text-green-500">{{ publicCount() }}</p>
+            <p class="text-surface-500 m-0 mt-1 text-sm">{{ t("gallery.publicAlbums") }}</p>
+        </div>
+        <div
+            class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 rounded-xl border p-4 text-center"
+        >
+            <p class="m-0 text-3xl font-bold text-yellow-500">{{ membersOnlyCount() }}</p>
+            <p class="text-surface-500 m-0 mt-1 text-sm">{{ t("gallery.membersOnlyAlbums") }}</p>
+        </div>
+        <div
+            class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 rounded-xl border p-4 text-center"
+        >
+            <p class="m-0 text-3xl font-bold text-red-500">{{ privateCount() }}</p>
+            <p class="text-surface-500 m-0 mt-1 text-sm">{{ t("gallery.privateAlbums") }}</p>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <p-card>
+        <p-table
+            [globalFilterFields]="['title', 'ownerName', 'category']"
+            [loading]="loading()"
+            [paginator]="true"
+            [rows]="20"
+            [value]="albums()"
+            dataKey="id"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="caption">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold">{{ t("gallery.albumList") }}</span>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-search"></i>
+                        <input
+                            (ngModelChange)="globalFilter.set($event)"
+                            [ngModel]="globalFilter()"
+                            [placeholder]="t('common.search')"
+                            pInputText
+                            type="text"
+                        />
+                    </span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="title">{{ t("gallery.albumTitle") }} <p-sortIcon field="title" /></th>
+                    <th>{{ t("gallery.owner") }}</th>
+                    <th pSortableColumn="category">{{ t("gallery.category") }} <p-sortIcon field="category" /></th>
+                    <th pSortableColumn="accessLevel">
+                        {{ t("gallery.accessLevel") }} <p-sortIcon field="accessLevel" />
+                    </th>
+                    <th pSortableColumn="mediaCount">{{ t("gallery.media") }} <p-sortIcon field="mediaCount" /></th>
+                    <th>{{ t("common.actions") }}</th>
+                </tr>
+            </ng-template>
+
+            <ng-template let-album pTemplate="body">
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            @if (album.coverUrl) {
+                            <img class="h-8 w-10 rounded object-cover" [alt]="album.title" [src]="album.coverUrl" />
+                            } @else {
+                            <div
+                                class="bg-surface-100 dark:bg-surface-700 flex h-8 w-10 items-center justify-center rounded"
+                            >
+                                <i class="pi pi-images text-surface-400 text-xs"></i>
+                            </div>
+                            }
+                            <span class="text-sm font-medium">{{ album.title }}</span>
+                        </div>
+                    </td>
+                    <td class="text-surface-600 dark:text-surface-300 text-sm">{{ album.ownerName }}</td>
+                    <td class="text-surface-500 text-sm">{{ album.category || '—' }}</td>
+                    <td>
+                        <p-tag
+                            [severity]="accessSeverity(album.accessLevel)"
+                            [value]="accessLabel(album.accessLevel)"
+                        />
+                    </td>
+                    <td class="text-center text-sm">{{ album.mediaCount }}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button
+                                (onClick)="openAlbum(album)"
+                                [pTooltip]="t('gallery.viewAlbum')"
+                                [text]="true"
+                                icon="pi pi-eye"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="deleteAlbum(album)"
+                                [pTooltip]="t('common.delete')"
+                                [text]="true"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="6">
+                        <i class="pi pi-images mb-2 block text-3xl"></i>
+                        {{ t("gallery.empty") }}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+</div>

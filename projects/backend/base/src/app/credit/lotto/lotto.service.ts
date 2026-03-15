@@ -156,12 +156,18 @@ export class LottoService {
     }
 
     getNextDraw(): LottoDraw | null {
-        const pending = draws.filter((d) => d.status === "pending").sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime());
-        return pending[0] ? { ...pending[0], totalTickets: tickets.filter((t) => t.drawId === pending[0]!.id).length } : null;
+        const pending = draws
+            .filter((d) => d.status === "pending")
+            .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime());
+        return pending[0]
+            ? { ...pending[0], totalTickets: tickets.filter((t) => t.drawId === pending[0]!.id).length }
+            : null;
     }
 
     getLastDraw(): LottoDraw | null {
-        const drawn = draws.filter((d) => d.status === "drawn").sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
+        const drawn = draws
+            .filter((d) => d.status === "drawn")
+            .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
         return drawn[0] ? { ...drawn[0], totalTickets: tickets.filter((t) => t.drawId === drawn[0]!.id).length } : null;
     }
 
@@ -211,9 +217,7 @@ export class LottoService {
             const totalRevenue = ticketsForDraw.reduce((sum, t) => sum + t.cost, 0);
             const rolloverAmount = Math.floor(totalRevenue * (this.config.rolloverPercentage / 100));
             const nextJackpot = draw.jackpot + rolloverAmount;
-            this.logger.log(
-                `No jackpot winner – rolling over ${rolloverAmount} credits. Next jackpot: ${nextJackpot}`
-            );
+            this.logger.log(`No jackpot winner – rolling over ${rolloverAmount} credits. Next jackpot: ${nextJackpot}`);
             this.scheduleNextDraw(nextJackpot);
         } else {
             this.scheduleNextDraw(this.config.baseJackpot);
@@ -287,7 +291,8 @@ export class LottoService {
         for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
             const draw = draws.find((d) => d.id === currentDrawId);
             if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
-            if (draw.status === "drawn") throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
+            if (draw.status === "drawn")
+                throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
 
             const ticket: LottoTicket = {
                 id: `ticket-${Date.now()}-${week}`,
@@ -316,7 +321,15 @@ export class LottoService {
                     const nextDate = this.nextDrawDateAfter(nextDrawDate);
                     const nextId = `draw-${nextDate.toISOString().replace(/[:T]/g, "-").slice(0, 16)}`;
                     if (!draws.some((d) => d.id === nextId)) {
-                        draws.push({ id: nextId, drawDate: nextDate.toISOString(), winningNumbers: [], superNumber: -1, jackpot: this.config.baseJackpot, status: "pending", totalTickets: 0 });
+                        draws.push({
+                            id: nextId,
+                            drawDate: nextDate.toISOString(),
+                            winningNumbers: [],
+                            superNumber: -1,
+                            jackpot: this.config.baseJackpot,
+                            status: "pending",
+                            totalTickets: 0
+                        });
                     }
                     currentDrawId = nextId;
                 }
