@@ -1,0 +1,141 @@
+<p-toast />
+<p-confirmDialog />
+
+<div *transloco="let t">
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 text-2xl font-bold flex items-center gap-2">
+                <i class="pi pi-ticket text-primary"></i>
+                {{ t('adminLotto.title') }}
+            </h1>
+            <p class="text-surface-500 text-sm mt-1">{{ t('adminLotto.subtitle') }}</p>
+        </div>
+        <p-button [label]="t('adminLotto.scheduleNextDraw')" icon="pi pi-plus" (click)="scheduleNextDraw()" />
+    </div>
+
+    @if (loading()) {
+    <div class="flex flex-col gap-4">
+        @for (_ of [1,2,3]; track $index) { <p-skeleton height="3rem" /> }
+    </div>
+    } @else {
+
+    <!-- Config form -->
+    <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-6 mb-6">
+        <h2 class="font-semibold text-surface-900 dark:text-surface-0 mb-4 flex items-center gap-2">
+            <i class="pi pi-cog text-primary"></i> {{ t('adminLotto.config') }}
+        </h2>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+
+            <!-- Draw days -->
+            <div class="sm:col-span-2 flex flex-col gap-2">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.drawDays') }}</label>
+                <div class="flex gap-2 flex-wrap">
+                    @for (day of dayOptions; track day.value) {
+                    <button
+                        class="px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all"
+                        (click)="toggleDay(day.value)"
+                        [class.bg-primary]="isDaySelected(day.value)"
+                        [class.border-primary]="isDaySelected(day.value)"
+                        [class.text-white]="isDaySelected(day.value)"
+                        [class.border-surface-200]="!isDaySelected(day.value)"
+                        [class.dark:border-surface-600]="!isDaySelected(day.value)"
+                        [class.text-surface-600]="!isDaySelected(day.value)"
+                    >{{ day.label }}</button>
+                    }
+                </div>
+            </div>
+
+            <!-- Draw time -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.drawHour') }} (UTC)</label>
+                <p-inputnumber [(ngModel)]="form.drawHourUtc" [min]="0" [max]="23" [showButtons]="true" styleClass="w-full" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.drawMinute') }}</label>
+                <p-inputnumber [(ngModel)]="form.drawMinuteUtc" [min]="0" [max]="59" [showButtons]="true" styleClass="w-full" />
+            </div>
+
+            <!-- Ticket cost -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.ticketCost') }} (Coins)</label>
+                <p-inputnumber [(ngModel)]="form.ticketCost" [min]="1" [max]="1000" [showButtons]="true" styleClass="w-full" />
+            </div>
+
+            <!-- Base jackpot -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.baseJackpot') }} (Coins)</label>
+                <p-inputnumber [(ngModel)]="form.baseJackpot" [min]="1000" [showButtons]="true" styleClass="w-full" />
+            </div>
+
+            <!-- Rollover percentage -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('adminLotto.rolloverPercentage') }} (%)</label>
+                <p-inputnumber [(ngModel)]="form.rolloverPercentage" [min]="0" [max]="100" [showButtons]="true" styleClass="w-full" />
+            </div>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+            <p-button [label]="t('common.save')" icon="pi pi-check" [loading]="saving()" (click)="saveConfig()" />
+        </div>
+    </div>
+
+    <!-- Draws table -->
+    <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-surface-200 dark:border-surface-700">
+            <h2 class="font-semibold text-surface-900 dark:text-surface-0 flex items-center gap-2">
+                <i class="pi pi-list text-primary"></i> {{ t('adminLotto.draws') }}
+            </h2>
+        </div>
+        <p-table [value]="draws()" [paginator]="draws().length > 15" [rows]="15" styleClass="p-datatable-sm" dataKey="id">
+            <ng-template #header>
+                <tr>
+                    <th>{{ t('adminLotto.table.id') }}</th>
+                    <th style="width:12rem">{{ t('adminLotto.table.drawDate') }}</th>
+                    <th style="width:8rem" class="text-right">{{ t('adminLotto.table.jackpot') }}</th>
+                    <th style="width:6rem" class="text-center">{{ t('adminLotto.table.tickets') }}</th>
+                    <th style="width:6rem" class="text-center">{{ t('adminLotto.table.status') }}</th>
+                    <th style="width:7rem" class="text-right">{{ t('common.actions') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-draw>
+                <tr>
+                    <td class="text-sm font-mono text-surface-500 text-xs">{{ draw.id }}</td>
+                    <td class="text-sm">{{ formatDate(draw.drawDate) }}</td>
+                    <td class="text-sm text-right font-semibold">{{ formatCredits(draw.jackpot) }}</td>
+                    <td class="text-center text-sm">{{ draw.totalTickets ?? 0 }}</td>
+                    <td class="text-center">
+                        <p-tag
+                            [value]="draw.status === 'drawn' ? t('adminLotto.status.drawn') : t('adminLotto.status.pending')"
+                            [severity]="draw.status === 'drawn' ? 'success' : 'warn'"
+                            styleClass="text-xs"
+                        />
+                    </td>
+                    <td>
+                        <div class="flex justify-end">
+                            @if (draw.status === 'pending') {
+                            <p-button
+                                icon="pi pi-play"
+                                size="small"
+                                severity="danger"
+                                [pTooltip]="t('adminLotto.performDraw')"
+                                (click)="confirmPerformDraw(draw)"
+                            />
+                            } @else {
+                            <div class="flex flex-wrap gap-1">
+                                @for (n of draw.winningNumbers; track n) {
+                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">{{ n }}</span>
+                                }
+                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-white text-xs">{{ draw.superNumber }}</span>
+                            </div>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr><td colspan="6" class="text-center py-8 text-surface-400">{{ t('adminLotto.empty') }}</td></tr>
+            </ng-template>
+        </p-table>
+    </div>
+    }
+</div>

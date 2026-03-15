@@ -178,6 +178,18 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-calendar/admin-calendar").then((c) => c.AdminCalendar)
+            },
+            {
+                path: "lotto",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/lotto/lotto-page").then((c) => c.LottoPage)
+            },
+            {
+                path: "admin/lotto",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-lotto/admin-lotto").then((c) => c.AdminLotto)
             }
         ]
     }

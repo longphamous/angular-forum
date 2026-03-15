@@ -20,6 +20,7 @@ import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { Group } from "../../models/group/group";
 import { UserProfile } from "../../models/user/user";
+import { DrawResult, LottoDraw, LottoResult, LottoTicket } from "../../models/lotto/lotto";
 import {
     mockAchievements,
     mockAnimeDetails,
@@ -29,6 +30,11 @@ import {
     mockCategories,
     mockForums,
     mockGroups,
+    mockLottoConfig,
+    mockLottoDraws,
+    mockLottoResults,
+    mockLottoStats,
+    mockLottoTickets,
     mockOnlineUsers,
     mockPagePermissions,
     mockPosts,
@@ -1299,6 +1305,113 @@ export class MockInterceptor implements HttpInterceptor {
             return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
                 HttpEvent<never>
             >;
+        }
+
+        // ── Lotto ──────────────────────────────────────────────────────────────
+
+        if (method === "GET" && /\/api\/credit\/lotto\/config$/.test(url)) {
+            return this.ok({ ...mockLottoConfig });
+        }
+
+        if (method === "PATCH" && /\/api\/credit\/lotto\/config$/.test(url)) {
+            Object.assign(mockLottoConfig, req.body);
+            return this.ok({ ...mockLottoConfig });
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/stats$/.test(url)) {
+            const pending = mockLottoDraws.find((d) => d.status === "pending") ?? null;
+            const lastDrawn = [...mockLottoDraws].filter((d) => d.status === "drawn").sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime())[0] ?? null;
+            return this.ok({ ...mockLottoStats, nextDraw: pending, lastDraw: lastDrawn });
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/draws$/.test(url)) {
+            return this.ok([...mockLottoDraws]);
+        }
+
+        if (method === "POST" && /\/api\/credit\/lotto\/draws\/[^/]+\/perform$/.test(url)) {
+            const id = url.split("/api/credit/lotto/draws/")[1]!.split("/perform")[0]!;
+            const draw = mockLottoDraws.find((d) => d.id === id);
+            if (!draw) return this.error("Not found", 404);
+            if (draw.status === "drawn") return this.error("Already drawn", 400);
+            const nums: number[] = [];
+            const pool = Array.from({ length: 49 }, (_, i) => i + 1);
+            for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j]!, pool[i]!]; }
+            draw.winningNumbers = pool.slice(0, 6).sort((a, b) => a - b);
+            draw.superNumber = Math.floor(Math.random() * 10);
+            draw.status = "drawn";
+            const ticketsForDraw = mockLottoTickets.filter((t) => t.drawId === id);
+            const winners: LottoResult[] = [];
+            const result: DrawResult = { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid: 0 };
+            return this.ok(result);
+        }
+
+        if (method === "POST" && /\/api\/credit\/lotto\/draws$/.test(url)) {
+            const nextDate = new Date(Date.now() + 7 * 24 * 3600_000);
+            const newDraw: LottoDraw = {
+                id: `draw-${nextDate.toISOString().slice(0, 10)}`,
+                drawDate: nextDate.toISOString(),
+                winningNumbers: [],
+                superNumber: -1,
+                jackpot: mockLottoConfig.baseJackpot,
+                status: "pending",
+                totalTickets: 0
+            };
+            mockLottoDraws.push(newDraw);
+            return this.ok(newDraw);
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/draws\/[^/]+\/results$/.test(url)) {
+            const id = url.split("/api/credit/lotto/draws/")[1]!.split("/results")[0]!;
+            const draw = mockLottoDraws.find((d) => d.id === id);
+            if (!draw || draw.status !== "drawn") return this.error("Not drawn yet", 400);
+            const winners = mockLottoResults.filter((r) => r.drawId === id && r.prizeAmount > 0);
+            return this.ok({ draw, totalTickets: draw.totalTickets ?? 0, winners, totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0) });
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/draws\/[^/]+$/.test(url)) {
+            const id = url.split("/api/credit/lotto/draws/")[1]!.split("?")[0]!;
+            const draw = mockLottoDraws.find((d) => d.id === id);
+            if (!draw) return this.error("Not found", 404);
+            return this.ok({ ...draw });
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/my-tickets$/.test(url)) {
+            return this.ok([...mockLottoTickets]);
+        }
+
+        if (method === "GET" && /\/api\/credit\/lotto\/my-results/.test(url)) {
+            return this.ok([...mockLottoResults]);
+        }
+
+        if (method === "POST" && /\/api\/credit\/lotto\/tickets$/.test(url)) {
+            const body = req.body as { numbers: number[]; superNumber: number; drawId: string; repeatWeeks?: number };
+            const repeatWeeks = Math.max(1, body.repeatWeeks ?? 1);
+            const createdTickets: LottoTicket[] = [];
+            let currentDrawId = body.drawId;
+            for (let w = 0; w < repeatWeeks; w++) {
+                const draw = mockLottoDraws.find((d) => d.id === currentDrawId);
+                if (!draw || draw.status === "drawn") break;
+                const ticket: LottoTicket = {
+                    id: `lt-${Date.now()}-${w}`,
+                    userId: "00000000-0000-0000-0000-000000000001",
+                    numbers: [...body.numbers].sort((a, b) => a - b),
+                    superNumber: body.superNumber,
+                    drawId: currentDrawId,
+                    purchasedAt: new Date().toISOString(),
+                    cost: mockLottoConfig.ticketCost,
+                    repeatWeeks: repeatWeeks > 1 ? repeatWeeks : undefined
+                };
+                mockLottoTickets.push(ticket);
+                createdTickets.push(ticket);
+                // advance to next draw for next iteration
+                const nextDraw = mockLottoDraws.find((d) => d.status === "pending" && d.id !== currentDrawId);
+                if (nextDraw) currentDrawId = nextDraw.id;
+                else break;
+            }
+            // deduct from mock wallet
+            const wallet = mockWallets["00000000-0000-0000-0000-000000000001"];
+            if (wallet) wallet.balance -= mockLottoConfig.ticketCost * repeatWeeks;
+            return this.ok(createdTickets);
         }
 
         // Fallback: durchreichen

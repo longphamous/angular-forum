@@ -75,7 +75,7 @@ export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
      * Finds the next pending draw whose drawDate is in the past (or now),
      * executes it, and the service will schedule the following one automatically.
      */
-    private runDraw(): void {
+    private async runDraw(): Promise<void> {
         const now = new Date();
         const allDraws = this.lottoService.getAllDraws();
         const due = allDraws.find((d) => d.status === "pending" && new Date(d.drawDate) <= now);
@@ -88,7 +88,7 @@ export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
 
         this.logger.log(`Auto-performing draw "${due.id}"`);
         try {
-            const result = this.lottoService.performWeeklyDraw(due.id);
+            const result = await this.lottoService.performWeeklyDraw(due.id);
             this.logger.log(
                 `Draw "${due.id}" completed automatically. ` +
                     `Tickets: ${result.totalTickets}, Winners: ${result.winners.length}, Prizes paid: ${result.totalPrizesPaid}`

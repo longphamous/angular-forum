@@ -15,6 +15,8 @@ export interface DrawScheduleConfig {
      * when there is no class-1 winner.  Value 0–100, default 50.
      */
     rolloverPercentage: number;
+    /** Cost per ticket in virtual credits */
+    ticketCost: number;
 }
 
 export interface LottoTicket {
@@ -25,6 +27,8 @@ export interface LottoTicket {
     drawId: string;
     purchasedAt: string;
     cost: number;
+    /** Number of consecutive weeks this ticket was played (for recurring tickets) */
+    repeatWeeks?: number;
 }
 
 export interface LottoDraw {
@@ -34,6 +38,7 @@ export interface LottoDraw {
     superNumber: number;
     jackpot: number;
     status: "pending" | "drawn";
+    totalTickets?: number;
 }
 
 export type LottoPrizeClass =
@@ -64,4 +69,15 @@ export interface DrawResult {
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface LottoStats {
+    totalDraws: number;
+    totalTicketsSold: number;
+    totalPrizePaid: number;
+    biggestJackpot: number;
+    lastDraw: LottoDraw | null;
+    nextDraw: LottoDraw | null;
+    hotNumbers: number[];
+    coldNumbers: number[];
 }

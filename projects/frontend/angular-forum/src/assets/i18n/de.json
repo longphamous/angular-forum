@@ -68,6 +68,9 @@
     "calendarSection": "Kalender",
     "calendar": "Kalender",
     "calendarManagement": "Kalender Verwaltung",
+    "lottoSection": "Lotto",
+    "lotto": "Lotto 6 aus 49",
+    "lottoManagement": "Lotto Verwaltung",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -879,6 +882,108 @@
       "organizer": "Organisator",
       "attendees": "Teilnehmer",
       "public": "Öffentlich"
+    }
+  },
+  "lotto": {
+    "title": "Lotto 6 aus 49",
+    "subtitle": "Probiere dein Glück – kaufe ein Ticket und gewinne virtuelle Coins!",
+    "balance": "Kontostand",
+    "nextJackpot": "Nächster Jackpot",
+    "drawOn": "Ziehung am",
+    "lastDraw": "Letzte Ziehung",
+    "superNumber": "Superzahl",
+    "ticketsSold": "Tickets verkauft",
+    "jackpot": "Jackpot",
+    "prizeTable": "Gewinnplan",
+    "condition": "Bedingung",
+    "prize": "Gewinn",
+    "days": "Tage",
+    "hours": "Std",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "tabs": {
+      "overview": "Übersicht",
+      "buy": "Ticket kaufen",
+      "myTickets": "Meine Tickets",
+      "stats": "Statistiken"
+    },
+    "pick6": "Wähle 6 Zahlen (1–49)",
+    "pickSuperNumber": "Wähle Superzahl (0–9)",
+    "quickPick": "Zufallstipp",
+    "yourNumbers": "Deine Zahlen",
+    "repeatWeeks": "Mehrere Wochen spielen",
+    "repeatWeeksHint": "Die gleichen Zahlen werden für die ausgewählte Anzahl an Wochen eingetragen.",
+    "totalCost": "Gesamtkosten",
+    "buyTicket": "Ticket kaufen",
+    "insufficientBalance": "Guthaben nicht ausreichend",
+    "hotNumber": "Heiße Zahl (häufig gezogen)",
+    "coldNumber": "Kalte Zahl (selten gezogen)",
+    "noDrawPending": "Keine bevorstehende Ziehung geplant.",
+    "buyFor": "Ziehung",
+    "noTickets": "Du hast noch keine Tickets gekauft.",
+    "pending": "Ausstehend",
+    "noWin": "Kein Gewinn",
+    "matches": "Treffer",
+    "prizeClass": {
+      "label": "Gewinnklasse",
+      "class1": "Klasse 1",
+      "class2": "Klasse 2",
+      "class3": "Klasse 3",
+      "class4": "Klasse 4",
+      "class5": "Klasse 5",
+      "class6": "Klasse 6",
+      "class7": "Klasse 7",
+      "class8": "Klasse 8",
+      "class9": "Klasse 9",
+      "no_win": "Kein Gewinn"
+    },
+    "prizeDesc": {
+      "class1": "6 Richtige + Superzahl",
+      "class2": "6 Richtige",
+      "class3": "5 Richtige + Superzahl",
+      "class4": "5 Richtige",
+      "class5": "4 Richtige + Superzahl",
+      "class6": "4 Richtige",
+      "class7": "3 Richtige + Superzahl",
+      "class8": "3 Richtige",
+      "class9": "2 Richtige + Superzahl",
+      "no_win": "Weniger als 2 Richtige"
+    },
+    "stats": {
+      "totalTickets": "Tickets verkauft",
+      "totalDraws": "Ziehungen",
+      "totalPaid": "Preisgelder ausgezahlt",
+      "biggestJackpot": "Größter Jackpot",
+      "numberFrequency": "Zahlenhäufigkeit",
+      "hotNumbers": "Heiße Zahlen",
+      "coldNumbers": "Kalte Zahlen",
+      "pastDraws": "Vergangene Ziehungen"
+    }
+  },
+  "adminLotto": {
+    "title": "Lotto Verwaltung",
+    "subtitle": "Lotterie-Einstellungen konfigurieren und Ziehungen verwalten",
+    "config": "Konfiguration",
+    "drawDays": "Ziehungstage",
+    "drawHour": "Ziehungszeit – Stunde",
+    "drawMinute": "Ziehungszeit – Minute",
+    "ticketCost": "Ticketpreis",
+    "baseJackpot": "Basis-Jackpot",
+    "rolloverPercentage": "Rollover-Prozentsatz",
+    "scheduleNextDraw": "Nächste Ziehung planen",
+    "performDraw": "Ziehung jetzt ausführen",
+    "draws": "Ziehungen",
+    "empty": "Keine Ziehungen vorhanden.",
+    "status": {
+      "pending": "Ausstehend",
+      "drawn": "Gezogen"
+    },
+    "table": {
+      "id": "ID",
+      "drawDate": "Ziehungsdatum",
+      "jackpot": "Jackpot",
+      "tickets": "Tickets",
+      "status": "Status"
     }
   }
 }

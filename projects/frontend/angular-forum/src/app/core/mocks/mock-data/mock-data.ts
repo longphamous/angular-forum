@@ -10,6 +10,7 @@ import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
+import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
 import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
 
 export interface User {
@@ -1334,3 +1335,117 @@ export const mockCalendarEventDetails = new Map<string, CalendarEventDetail>([
         }
     ]
 ]);
+
+// ── Lotto ─────────────────────────────────────────────────────────────────────
+
+export const mockLottoConfig: DrawScheduleConfig = {
+    drawDays: [6],
+    drawHourUtc: 19,
+    drawMinuteUtc: 0,
+    baseJackpot: 1_000_000,
+    rolloverPercentage: 50,
+    ticketCost: 2
+};
+
+export const mockLottoDraws: LottoDraw[] = [
+    {
+        id: "draw-2026-02-28",
+        drawDate: "2026-02-28T19:00:00.000Z",
+        winningNumbers: [7, 14, 22, 31, 38, 45],
+        superNumber: 3,
+        jackpot: 3_500_000,
+        status: "drawn",
+        totalTickets: 18
+    },
+    {
+        id: "draw-2026-03-07",
+        drawDate: "2026-03-07T19:00:00.000Z",
+        winningNumbers: [2, 9, 17, 28, 36, 49],
+        superNumber: 6,
+        jackpot: 4_200_000,
+        status: "drawn",
+        totalTickets: 24
+    },
+    {
+        id: "draw-2026-03-14",
+        drawDate: "2026-03-14T19:00:00.000Z",
+        winningNumbers: [5, 13, 21, 34, 42, 48],
+        superNumber: 1,
+        jackpot: 5_500_000,
+        status: "drawn",
+        totalTickets: 31
+    },
+    {
+        id: "draw-2026-03-21",
+        drawDate: "2026-03-21T19:00:00.000Z",
+        winningNumbers: [],
+        superNumber: -1,
+        jackpot: 6_000_000,
+        status: "pending",
+        totalTickets: 7
+    }
+];
+
+export const mockLottoTickets: LottoTicket[] = [
+    {
+        id: "lt-001",
+        userId: "00000000-0000-0000-0000-000000000001",
+        numbers: [5, 9, 17, 28, 36, 49],
+        superNumber: 3,
+        drawId: "draw-2026-03-07",
+        purchasedAt: "2026-03-06T10:00:00.000Z",
+        cost: 2
+    },
+    {
+        id: "lt-002",
+        userId: "00000000-0000-0000-0000-000000000001",
+        numbers: [5, 13, 21, 34, 42, 48],
+        superNumber: 1,
+        drawId: "draw-2026-03-14",
+        purchasedAt: "2026-03-13T14:30:00.000Z",
+        cost: 2
+    },
+    {
+        id: "lt-003",
+        userId: "00000000-0000-0000-0000-000000000001",
+        numbers: [3, 14, 25, 36, 47, 49],
+        superNumber: 7,
+        drawId: "draw-2026-03-21",
+        purchasedAt: "2026-03-15T09:00:00.000Z",
+        cost: 2
+    }
+];
+
+export const mockLottoResults: LottoResult[] = [
+    {
+        ticketId: "lt-001",
+        userId: "00000000-0000-0000-0000-000000000001",
+        drawId: "draw-2026-03-07",
+        matchedNumbers: [9, 17, 28, 36, 49],
+        matchedCount: 5,
+        superNumberMatched: false,
+        prizeClass: "class4",
+        prizeAmount: 5_000
+    },
+    {
+        ticketId: "lt-002",
+        userId: "00000000-0000-0000-0000-000000000001",
+        drawId: "draw-2026-03-14",
+        matchedNumbers: [5, 13, 21, 34, 42, 48],
+        matchedCount: 6,
+        superNumberMatched: true,
+        prizeClass: "class1",
+        prizeAmount: 5_500_000
+    }
+];
+
+export const mockLottoStats: LottoStats = {
+    totalDraws: 3,
+    totalTicketsSold: 73,
+    totalPrizePaid: 5_515_000,
+    biggestJackpot: 5_500_000,
+    lastDraw: mockLottoDraws[2]!,
+    nextDraw: mockLottoDraws[3]!,
+    hotNumbers: [5, 13, 21, 28, 34, 42, 48, 9, 17, 36],
+    coldNumbers: [1, 4, 11, 15, 23, 29, 32, 37, 44, 46]
+};

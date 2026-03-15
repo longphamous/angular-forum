@@ -1,0 +1,102 @@
+export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type LottoPrizeClass =
+    | "class1"
+    | "class2"
+    | "class3"
+    | "class4"
+    | "class5"
+    | "class6"
+    | "class7"
+    | "class8"
+    | "class9"
+    | "no_win";
+
+export interface DrawScheduleConfig {
+    drawDays: Weekday[];
+    drawHourUtc: number;
+    drawMinuteUtc: number;
+    baseJackpot: number;
+    rolloverPercentage: number;
+    ticketCost: number;
+}
+
+export interface LottoTicket {
+    id: string;
+    userId: string;
+    numbers: number[];
+    superNumber: number;
+    drawId: string;
+    purchasedAt: string;
+    cost: number;
+    repeatWeeks?: number;
+}
+
+export interface LottoDraw {
+    id: string;
+    drawDate: string;
+    winningNumbers: number[];
+    superNumber: number;
+    jackpot: number;
+    status: "pending" | "drawn";
+    totalTickets?: number;
+}
+
+export interface LottoResult {
+    ticketId: string;
+    userId: string;
+    drawId: string;
+    matchedNumbers: number[];
+    matchedCount: number;
+    superNumberMatched: boolean;
+    prizeClass: LottoPrizeClass;
+    prizeAmount: number;
+}
+
+export interface DrawResult {
+    draw: LottoDraw;
+    totalTickets: number;
+    winners: LottoResult[];
+    totalPrizesPaid: number;
+}
+
+export interface LottoStats {
+    totalDraws: number;
+    totalTicketsSold: number;
+    totalPrizePaid: number;
+    biggestJackpot: number;
+    lastDraw: LottoDraw | null;
+    nextDraw: LottoDraw | null;
+    hotNumbers: number[];
+    coldNumbers: number[];
+}
+
+export interface MyTicketWithResult {
+    ticket: LottoTicket;
+    draw: LottoDraw;
+    result?: LottoResult;
+}
+
+export interface PrizeClassInfo {
+    label: string;
+    description: string;
+    amount: number;
+}
+
+export const PRIZE_CLASS_INFO: Record<LottoPrizeClass, PrizeClassInfo> = {
+    class1: { label: "lotto.prizeClass.class1", description: "lotto.prizeDesc.class1", amount: 10_000_000 },
+    class2: { label: "lotto.prizeClass.class2", description: "lotto.prizeDesc.class2", amount: 1_000_000 },
+    class3: { label: "lotto.prizeClass.class3", description: "lotto.prizeDesc.class3", amount: 100_000 },
+    class4: { label: "lotto.prizeClass.class4", description: "lotto.prizeDesc.class4", amount: 5_000 },
+    class5: { label: "lotto.prizeClass.class5", description: "lotto.prizeDesc.class5", amount: 500 },
+    class6: { label: "lotto.prizeClass.class6", description: "lotto.prizeDesc.class6", amount: 50 },
+    class7: { label: "lotto.prizeClass.class7", description: "lotto.prizeDesc.class7", amount: 20 },
+    class8: { label: "lotto.prizeClass.class8", description: "lotto.prizeDesc.class8", amount: 10 },
+    class9: { label: "lotto.prizeClass.class9", description: "lotto.prizeDesc.class9", amount: 5 },
+    no_win: { label: "lotto.prizeClass.no_win", description: "lotto.prizeDesc.no_win", amount: 0 }
+};
+
+export const PRIZE_CLASSES: LottoPrizeClass[] = [
+    "class1", "class2", "class3", "class4", "class5",
+    "class6", "class7", "class8", "class9"
+];

@@ -68,6 +68,9 @@
     "calendarSection": "Calendar",
     "calendar": "Calendar",
     "calendarManagement": "Calendar Management",
+    "lottoSection": "Lotto",
+    "lotto": "Lotto 6 aus 49",
+    "lottoManagement": "Lotto Management",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -879,6 +882,108 @@
       "organizer": "Organizer",
       "attendees": "Attendees",
       "public": "Public"
+    }
+  },
+  "lotto": {
+    "title": "Lotto 6 aus 49",
+    "subtitle": "Try your luck – buy a ticket and win virtual coins!",
+    "balance": "Balance",
+    "nextJackpot": "Next Jackpot",
+    "drawOn": "Draw on",
+    "lastDraw": "Last Draw",
+    "superNumber": "Super Number",
+    "ticketsSold": "tickets sold",
+    "jackpot": "Jackpot",
+    "prizeTable": "Prize Table",
+    "condition": "Condition",
+    "prize": "Prize",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "tabs": {
+      "overview": "Overview",
+      "buy": "Buy Ticket",
+      "myTickets": "My Tickets",
+      "stats": "Statistics"
+    },
+    "pick6": "Choose 6 numbers (1–49)",
+    "pickSuperNumber": "Choose super number (0–9)",
+    "quickPick": "Quick Pick",
+    "yourNumbers": "Your numbers",
+    "repeatWeeks": "Play for multiple weeks",
+    "repeatWeeksHint": "The same numbers are entered for the selected number of weeks.",
+    "totalCost": "Total cost",
+    "buyTicket": "Buy Ticket",
+    "insufficientBalance": "Insufficient balance",
+    "hotNumber": "Hot number (frequently drawn)",
+    "coldNumber": "Cold number (rarely drawn)",
+    "noDrawPending": "No upcoming draw scheduled.",
+    "buyFor": "Draw",
+    "noTickets": "You have not bought any tickets yet.",
+    "pending": "Pending",
+    "noWin": "No win",
+    "matches": "matches",
+    "prizeClass": {
+      "label": "Prize Class",
+      "class1": "Class 1",
+      "class2": "Class 2",
+      "class3": "Class 3",
+      "class4": "Class 4",
+      "class5": "Class 5",
+      "class6": "Class 6",
+      "class7": "Class 7",
+      "class8": "Class 8",
+      "class9": "Class 9",
+      "no_win": "No win"
+    },
+    "prizeDesc": {
+      "class1": "6 numbers + super number",
+      "class2": "6 numbers",
+      "class3": "5 numbers + super number",
+      "class4": "5 numbers",
+      "class5": "4 numbers + super number",
+      "class6": "4 numbers",
+      "class7": "3 numbers + super number",
+      "class8": "3 numbers",
+      "class9": "2 numbers + super number",
+      "no_win": "Less than 2 numbers"
+    },
+    "stats": {
+      "totalTickets": "Tickets sold",
+      "totalDraws": "Draws",
+      "totalPaid": "Prizes paid out",
+      "biggestJackpot": "Biggest jackpot",
+      "numberFrequency": "Number Frequency",
+      "hotNumbers": "Hot Numbers",
+      "coldNumbers": "Cold Numbers",
+      "pastDraws": "Past Draws"
+    }
+  },
+  "adminLotto": {
+    "title": "Lotto Management",
+    "subtitle": "Configure lottery settings and manage draws",
+    "config": "Configuration",
+    "drawDays": "Draw days",
+    "drawHour": "Draw time – hour",
+    "drawMinute": "Draw time – minute",
+    "ticketCost": "Ticket cost",
+    "baseJackpot": "Base jackpot",
+    "rolloverPercentage": "Rollover percentage",
+    "scheduleNextDraw": "Schedule next draw",
+    "performDraw": "Perform draw now",
+    "draws": "Draws",
+    "empty": "No draws found.",
+    "status": {
+      "pending": "Pending",
+      "drawn": "Drawn"
+    },
+    "table": {
+      "id": "ID",
+      "drawDate": "Draw date",
+      "jackpot": "Jackpot",
+      "tickets": "Tickets",
+      "status": "Status"
     }
   }
 }

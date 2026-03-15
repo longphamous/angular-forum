@@ -1,11 +1,13 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 
+import { CreditService } from "../credit.service";
 import {
     DrawResult,
     DrawScheduleConfig,
     LottoDraw,
     LottoPrizeClass,
     LottoResult,
+    LottoStats,
     LottoTicket,
     Weekday
 } from "./models/lotto.model";
@@ -37,15 +39,14 @@ const PRIZE_TABLE: Record<LottoPrizeClass, number> = {
     no_win: 0
 };
 
-const TICKET_COST = 2; // virtual credits per ticket
-
 /** Default schedule: every Saturday at 19:00 UTC */
 const DEFAULT_CONFIG: DrawScheduleConfig = {
     drawDays: [6],
     drawHourUtc: 19,
     drawMinuteUtc: 0,
     baseJackpot: 1_000_000,
-    rolloverPercentage: 50
+    rolloverPercentage: 50,
+    ticketCost: 2
 };
 
 const draws: LottoDraw[] = [
@@ -55,7 +56,8 @@ const draws: LottoDraw[] = [
         winningNumbers: [3, 12, 19, 27, 35, 42],
         superNumber: 7,
         jackpot: 8_500_000,
-        status: "drawn"
+        status: "drawn",
+        totalTickets: 3
     }
 ];
 
@@ -67,7 +69,7 @@ const tickets: LottoTicket[] = [
         superNumber: 7,
         drawId: "draw-2026-w01",
         purchasedAt: "2026-01-02T10:00:00.000Z",
-        cost: TICKET_COST
+        cost: 2
     },
     {
         id: "ticket-002",
@@ -76,7 +78,7 @@ const tickets: LottoTicket[] = [
         superNumber: 3,
         drawId: "draw-2026-w01",
         purchasedAt: "2026-01-02T11:00:00.000Z",
-        cost: TICKET_COST
+        cost: 2
     },
     {
         id: "ticket-003",
@@ -85,7 +87,7 @@ const tickets: LottoTicket[] = [
         superNumber: 5,
         drawId: "draw-2026-w01",
         purchasedAt: "2026-01-02T12:00:00.000Z",
-        cost: TICKET_COST
+        cost: 2
     }
 ];
 
@@ -93,6 +95,8 @@ const tickets: LottoTicket[] = [
 export class LottoService {
     private readonly logger = new Logger(LottoService.name);
     private config: DrawScheduleConfig = { ...DEFAULT_CONFIG };
+
+    constructor(@Inject(forwardRef(() => CreditService)) private readonly creditService: CreditService) {}
 
     // ─── Config ───────────────────────────────────────────────────────────────
 
@@ -125,6 +129,9 @@ export class LottoService {
         if (partial.baseJackpot !== undefined && partial.baseJackpot <= 0) {
             throw new BadRequestException("baseJackpot must be greater than 0");
         }
+        if (partial.ticketCost !== undefined && partial.ticketCost <= 0) {
+            throw new BadRequestException("ticketCost must be greater than 0");
+        }
 
         this.config = { ...this.config, ...partial };
         this.logger.log(`Schedule config updated: ${JSON.stringify(this.config)}`);
@@ -134,7 +141,10 @@ export class LottoService {
     // ─── Draws ────────────────────────────────────────────────────────────────
 
     getAllDraws(): LottoDraw[] {
-        return draws;
+        return draws.map((d) => ({
+            ...d,
+            totalTickets: tickets.filter((t) => t.drawId === d.id).length
+        }));
     }
 
     getDrawById(id: string): LottoDraw {
@@ -142,19 +152,25 @@ export class LottoService {
         if (!draw) {
             throw new NotFoundException(`Draw with id "${id}" not found`);
         }
-        return draw;
+        return { ...draw, totalTickets: tickets.filter((t) => t.drawId === draw.id).length };
+    }
+
+    getNextDraw(): LottoDraw | null {
+        const pending = draws.filter((d) => d.status === "pending").sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime());
+        return pending[0] ? { ...pending[0], totalTickets: tickets.filter((t) => t.drawId === pending[0]!.id).length } : null;
+    }
+
+    getLastDraw(): LottoDraw | null {
+        const drawn = draws.filter((d) => d.status === "drawn").sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
+        return drawn[0] ? { ...drawn[0], totalTickets: tickets.filter((t) => t.drawId === drawn[0]!.id).length } : null;
     }
 
     /**
      * Performs the weekly "6 aus 49" draw for the given drawId.
-     * Picks 6 unique random numbers from 1–49 and a super number from 0–9.
-     *
-     * Jackpot rollover: if there is no class-1 winner, the ticket revenue
-     * (rolloverPercentage % of total ticket cost) is carried over to the next draw.
      */
-    performWeeklyDraw(drawId: string): DrawResult {
-        const draw = this.getDrawById(drawId);
-
+    async performWeeklyDraw(drawId: string): Promise<DrawResult> {
+        const draw = draws.find((d) => d.id === drawId);
+        if (!draw) throw new NotFoundException(`Draw with id "${drawId}" not found`);
         if (draw.status === "drawn") {
             throw new BadRequestException(`Draw "${drawId}" has already been drawn`);
         }
@@ -175,6 +191,20 @@ export class LottoService {
             `Draw "${drawId}" completed. Numbers: [${winningNumbers.join(", ")}] Super: ${superNumber}. Winners: ${winners.length}`
         );
 
+        // ── Credit winners ────────────────────────────────────────────────────
+        for (const winner of winners) {
+            try {
+                await this.creditService.addCredits(
+                    winner.userId,
+                    winner.prizeAmount,
+                    "lotto_win",
+                    `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`
+                );
+            } catch (err) {
+                this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
+            }
+        }
+
         // ── Jackpot rollover ──────────────────────────────────────────────────
         const hasJackpotWinner = allResults.some((r) => r.prizeClass === "class1");
         if (!hasJackpotWinner) {
@@ -182,7 +212,7 @@ export class LottoService {
             const rolloverAmount = Math.floor(totalRevenue * (this.config.rolloverPercentage / 100));
             const nextJackpot = draw.jackpot + rolloverAmount;
             this.logger.log(
-                `No jackpot winner – rolling over ${rolloverAmount} credits (${this.config.rolloverPercentage}% of ${totalRevenue}). Next jackpot: ${nextJackpot}`
+                `No jackpot winner – rolling over ${rolloverAmount} credits. Next jackpot: ${nextJackpot}`
             );
             this.scheduleNextDraw(nextJackpot);
         } else {
@@ -199,7 +229,6 @@ export class LottoService {
 
     /**
      * Manually creates the next draw on the next configured draw day.
-     * Called automatically after each draw; can also be called via the API.
      */
     scheduleNextDraw(jackpot?: number): LottoDraw {
         const effectiveJackpot = jackpot ?? this.config.baseJackpot;
@@ -217,7 +246,8 @@ export class LottoService {
             winningNumbers: [],
             superNumber: -1,
             jackpot: effectiveJackpot,
-            status: "pending"
+            status: "pending",
+            totalTickets: 0
         };
 
         draws.push(newDraw);
@@ -231,33 +261,76 @@ export class LottoService {
         return tickets.filter((t) => t.userId === userId);
     }
 
-    purchaseTicket(userId: string, numbers: number[], superNumber: number, drawId: string): LottoTicket {
+    async purchaseTicket(
+        userId: string,
+        numbers: number[],
+        superNumber: number,
+        drawId: string,
+        repeatWeeks = 1
+    ): Promise<LottoTicket[]> {
         this.validateNumbers(numbers, superNumber);
 
-        const draw = this.getDrawById(drawId);
-        if (draw.status === "drawn") {
-            throw new BadRequestException(`Draw "${drawId}" has already taken place`);
+        const totalCost = this.config.ticketCost * Math.max(1, repeatWeeks);
+
+        // Deduct credits
+        await this.creditService.deductCredits(
+            userId,
+            totalCost,
+            "lotto_ticket",
+            `Lotto Ticket (${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"}): ${numbers.join(", ")} | SZ: ${superNumber}`
+        );
+
+        const createdTickets: LottoTicket[] = [];
+
+        // For repeat weeks, get or create draws for subsequent weeks
+        let currentDrawId = drawId;
+        for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
+            const draw = draws.find((d) => d.id === currentDrawId);
+            if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
+            if (draw.status === "drawn") throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
+
+            const ticket: LottoTicket = {
+                id: `ticket-${Date.now()}-${week}`,
+                userId,
+                numbers: [...numbers].sort((a, b) => a - b),
+                superNumber,
+                drawId: currentDrawId,
+                purchasedAt: new Date().toISOString(),
+                cost: this.config.ticketCost,
+                repeatWeeks: repeatWeeks > 1 ? repeatWeeks : undefined
+            };
+            tickets.push(ticket);
+            createdTickets.push(ticket);
+
+            // For next iteration: find or create the next draw
+            if (week < repeatWeeks - 1) {
+                const nextDrawDate = new Date(draw.drawDate);
+                // Find next draw after this one
+                const subsequentDraw = draws
+                    .filter((d) => d.status === "pending" && new Date(d.drawDate) > nextDrawDate)
+                    .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime())[0];
+                if (subsequentDraw) {
+                    currentDrawId = subsequentDraw.id;
+                } else {
+                    // Calculate next draw date and create it
+                    const nextDate = this.nextDrawDateAfter(nextDrawDate);
+                    const nextId = `draw-${nextDate.toISOString().replace(/[:T]/g, "-").slice(0, 16)}`;
+                    if (!draws.some((d) => d.id === nextId)) {
+                        draws.push({ id: nextId, drawDate: nextDate.toISOString(), winningNumbers: [], superNumber: -1, jackpot: this.config.baseJackpot, status: "pending", totalTickets: 0 });
+                    }
+                    currentDrawId = nextId;
+                }
+            }
         }
 
-        const ticket: LottoTicket = {
-            id: `ticket-${Date.now()}`,
-            userId,
-            numbers: [...numbers].sort((a, b) => a - b),
-            superNumber,
-            drawId,
-            purchasedAt: new Date().toISOString(),
-            cost: TICKET_COST
-        };
-
-        tickets.push(ticket);
-        return ticket;
+        return createdTickets;
     }
 
     // ─── Results ──────────────────────────────────────────────────────────────
 
     getDrawResults(drawId: string): DrawResult {
-        const draw = this.getDrawById(drawId);
-
+        const draw = draws.find((d) => d.id === drawId);
+        if (!draw) throw new NotFoundException(`Draw "${drawId}" not found`);
         if (draw.status !== "drawn") {
             throw new BadRequestException(`Draw "${drawId}" has not been drawn yet`);
         }
@@ -267,12 +340,7 @@ export class LottoService {
         const winners = results.filter((r) => r.prizeAmount > 0);
         const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
 
-        return {
-            draw,
-            totalTickets: ticketsForDraw.length,
-            winners,
-            totalPrizesPaid
-        };
+        return { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid };
     }
 
     getUserResults(userId: string, drawId?: string): LottoResult[] {
@@ -287,29 +355,56 @@ export class LottoService {
             .filter((r): r is LottoResult => r !== null);
     }
 
+    getStats(): LottoStats {
+        const drawnDraws = draws.filter((d) => d.status === "drawn");
+        const allWinningNumbers = drawnDraws.flatMap((d) => d.winningNumbers);
+        const numberFrequency = new Map<number, number>();
+        for (let n = 1; n <= 49; n++) numberFrequency.set(n, 0);
+        for (const n of allWinningNumbers) numberFrequency.set(n, (numberFrequency.get(n) ?? 0) + 1);
+
+        const sorted = [...numberFrequency.entries()].sort((a, b) => b[1] - a[1]);
+        const hotNumbers = sorted.slice(0, 10).map(([n]) => n);
+        const coldNumbers = sorted.slice(-10).map(([n]) => n);
+
+        const allResults = tickets.flatMap((t) => {
+            const draw = draws.find((d) => d.id === t.drawId);
+            if (!draw || draw.status !== "drawn") return [];
+            return [this.evaluateTicket(t, draw)];
+        });
+
+        return {
+            totalDraws: drawnDraws.length,
+            totalTicketsSold: tickets.length,
+            totalPrizePaid: allResults.reduce((sum, r) => sum + r.prizeAmount, 0),
+            biggestJackpot: Math.max(...draws.map((d) => d.jackpot), 0),
+            lastDraw: this.getLastDraw(),
+            nextDraw: this.getNextDraw(),
+            hotNumbers,
+            coldNumbers
+        };
+    }
+
     /**
      * Returns the next UTC datetime that matches one of the configured draw days,
-     * at the configured hour:minute.  Always returns a future time.
+     * at the configured hour:minute. Always returns a future time.
      */
     nextDrawDate(): Date {
-        const now = new Date();
+        return this.nextDrawDateAfter(new Date());
+    }
+
+    nextDrawDateAfter(after: Date): Date {
         const { drawDays, drawHourUtc, drawMinuteUtc } = this.config;
-
-        // Try today first, then iterate forward up to 7 days
-        for (let offset = 0; offset <= 7; offset++) {
-            const candidate = new Date(now);
-            candidate.setUTCDate(now.getUTCDate() + offset);
+        for (let offset = 1; offset <= 8; offset++) {
+            const candidate = new Date(after);
+            candidate.setUTCDate(after.getUTCDate() + offset);
             candidate.setUTCHours(drawHourUtc, drawMinuteUtc, 0, 0);
-
             const dayOfWeek = candidate.getUTCDay() as Weekday;
-            if (drawDays.includes(dayOfWeek) && candidate > now) {
+            if (drawDays.includes(dayOfWeek) && candidate > after) {
                 return candidate;
             }
         }
-
-        // Fallback: 7 days from now (should never be reached)
-        const fallback = new Date(now);
-        fallback.setUTCDate(now.getUTCDate() + 7);
+        const fallback = new Date(after);
+        fallback.setUTCDate(after.getUTCDate() + 7);
         fallback.setUTCHours(drawHourUtc, drawMinuteUtc, 0, 0);
         return fallback;
     }

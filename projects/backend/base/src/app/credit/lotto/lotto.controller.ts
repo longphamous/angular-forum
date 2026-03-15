@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { Request } from "express";
 
-import { Public } from "../../auth/auth.decorators";
+import { Public, Roles } from "../../auth/auth.decorators";
 import { LottoScheduler } from "./lotto.scheduler";
 import { LottoService } from "./lotto.service";
-import { DrawResult, DrawScheduleConfig, LottoDraw, LottoResult, LottoTicket } from "./models/lotto.model";
+import { DrawResult, DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "./models/lotto.model";
 
-@Public()
 @Controller("credit/lotto")
 export class LottoController {
     constructor(
@@ -15,81 +15,55 @@ export class LottoController {
 
     // ─── Schedule config ──────────────────────────────────────────────────────
 
-    /**
-     * GET /credit/lotto/config
-     * Returns the current draw schedule configuration.
-     */
+    @Public()
     @Get("config")
     getConfig(): DrawScheduleConfig {
         return this.lottoService.getConfig();
     }
 
-    /**
-     * PATCH /credit/lotto/config
-     * Updates the draw schedule configuration.
-     * All fields are optional – only the provided fields are changed.
-     *
-     * Body (all optional):
-     * {
-     *   drawDays?: number[];         // 0=Sun … 6=Sat, e.g. [3,6] for Wed+Sat
-     *   drawHourUtc?: number;        // 0–23
-     *   drawMinuteUtc?: number;      // 0–59
-     *   baseJackpot?: number;        // starting jackpot for fresh draws
-     *   rolloverPercentage?: number; // 0–100, % of ticket revenue added to next jackpot
-     * }
-     */
+    @Roles("admin")
     @Patch("config")
     updateConfig(@Body() body: Partial<DrawScheduleConfig>): DrawScheduleConfig {
         const updated = this.lottoService.updateConfig(body);
-        // Re-register cron jobs to reflect the new schedule
         this.lottoScheduler.updateSchedule(updated);
         return updated;
     }
 
+    // ─── Stats ────────────────────────────────────────────────────────────────
+
+    @Public()
+    @Get("stats")
+    getStats(): LottoStats {
+        return this.lottoService.getStats();
+    }
+
     // ─── Draws ────────────────────────────────────────────────────────────────
 
-    /**
-     * GET /credit/lotto/draws
-     * Returns all draws (past and upcoming).
-     */
+    @Public()
     @Get("draws")
     getAllDraws(): LottoDraw[] {
         return this.lottoService.getAllDraws();
     }
 
-    /**
-     * GET /credit/lotto/draws/:id
-     * Returns a single draw by id.
-     */
+    @Public()
     @Get("draws/:id")
     getDrawById(@Param("id") id: string): LottoDraw {
         return this.lottoService.getDrawById(id);
     }
 
-    /**
-     * POST /credit/lotto/draws
-     * Manually schedules the next draw (uses configured next draw day).
-     * Body: { jackpot?: number }
-     */
+    @Roles("admin")
     @Post("draws")
     scheduleNextDraw(@Body() body: { jackpot?: number }): LottoDraw {
         return this.lottoService.scheduleNextDraw(body.jackpot);
     }
 
-    /**
-     * POST /credit/lotto/draws/:id/perform
-     * Manually triggers the "6 aus 49" draw for the given drawId.
-     * Normally this is triggered automatically by the cron scheduler.
-     */
+    @Roles("admin")
     @Post("draws/:id/perform")
-    performWeeklyDraw(@Param("id") id: string): DrawResult {
+    async performWeeklyDraw(@Param("id") id: string): Promise<DrawResult> {
         return this.lottoService.performWeeklyDraw(id);
     }
 
-    /**
-     * GET /credit/lotto/draws/:id/results
-     * Returns the full result breakdown for a completed draw.
-     */
+    @Public()
     @Get("draws/:id/results")
     getDrawResults(@Param("id") id: string): DrawResult {
         return this.lottoService.getDrawResults(id);
@@ -97,35 +71,39 @@ export class LottoController {
 
     // ─── Tickets ──────────────────────────────────────────────────────────────
 
-    /**
-     * GET /credit/lotto/tickets?userId=<id>
-     * Returns all tickets for a user.
-     */
+    @Get("my-tickets")
+    getMyTickets(@Req() req: Request): LottoTicket[] {
+        const user = req.user as { userId: string } | undefined;
+        if (!user?.userId) return [];
+        return this.lottoService.getTicketsByUser(user.userId);
+    }
+
     @Get("tickets")
+    @Roles("admin")
     getTicketsByUser(@Query("userId") userId: string): LottoTicket[] {
         return this.lottoService.getTicketsByUser(userId);
     }
 
-    /**
-     * POST /credit/lotto/tickets
-     * Purchases a new ticket for the given draw.
-     *
-     * Body: { userId: string; numbers: number[]; superNumber: number; drawId: string }
-     */
     @Post("tickets")
-    purchaseTicket(
-        @Body() body: { userId: string; numbers: number[]; superNumber: number; drawId: string }
-    ): LottoTicket {
-        return this.lottoService.purchaseTicket(body.userId, body.numbers, body.superNumber, body.drawId);
+    async purchaseTicket(
+        @Req() req: Request,
+        @Body() body: { numbers: number[]; superNumber: number; drawId: string; repeatWeeks?: number }
+    ): Promise<LottoTicket[]> {
+        const user = req.user as { userId: string } | undefined;
+        if (!user?.userId) throw new Error("Unauthorized");
+        return this.lottoService.purchaseTicket(user.userId, body.numbers, body.superNumber, body.drawId, body.repeatWeeks ?? 1);
     }
 
     // ─── User results ─────────────────────────────────────────────────────────
 
-    /**
-     * GET /credit/lotto/users/:userId/results?drawId=<optional>
-     * Returns all evaluated lotto results for a specific user,
-     * optionally filtered by drawId.
-     */
+    @Get("my-results")
+    getMyResults(@Req() req: Request, @Query("drawId") drawId?: string): LottoResult[] {
+        const user = req.user as { userId: string } | undefined;
+        if (!user?.userId) return [];
+        return this.lottoService.getUserResults(user.userId, drawId);
+    }
+
+    @Public()
     @Get("users/:userId/results")
     getUserResults(@Param("userId") userId: string, @Query("drawId") drawId?: string): LottoResult[] {
         return this.lottoService.getUserResults(userId, drawId);

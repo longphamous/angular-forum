@@ -61,6 +61,10 @@ export class AppMenu implements OnInit, OnDestroy {
                 items: [{ label: this.t("nav.calendar"), icon: "pi pi-fw pi-calendar", routerLink: ["/calendar"] }]
             },
             {
+                label: this.t("nav.lottoSection"),
+                items: [{ label: this.t("nav.lotto"), icon: "pi pi-fw pi-ticket", routerLink: ["/lotto"] }]
+            },
+            {
                 label: this.t("nav.anime"),
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
@@ -104,6 +108,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.calendarManagement"),
                         icon: "pi pi-fw pi-calendar",
                         routerLink: ["/admin/calendar"]
+                    },
+                    {
+                        label: this.t("nav.lottoManagement"),
+                        icon: "pi pi-fw pi-ticket",
+                        routerLink: ["/admin/lotto"]
                     }
                 ]
             },
