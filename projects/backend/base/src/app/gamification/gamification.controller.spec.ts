@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 
-import { GamificationController } from "./gamification.controller";
-import { GamificationService } from "./gamification.service";
 import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpEventEntity } from "./entities/xp-event.entity";
+import { GamificationController } from "./gamification.controller";
+import { GamificationService } from "./gamification.service";
 
 const mockUserXpRepo = { findOneBy: jest.fn(), find: jest.fn(), findBy: jest.fn(), create: jest.fn(), save: jest.fn() };
 const mockXpEventRepo = { create: jest.fn(), save: jest.fn() };

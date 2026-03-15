@@ -2,12 +2,13 @@ import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { ConfirmationService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { DialogModule } from "primeng/dialog";
-import { InputTextModule } from "primeng/inputtext";
 import { InputNumberModule } from "primeng/inputnumber";
+import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
@@ -15,7 +16,6 @@ import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
-import { ConfirmationService } from "primeng/api";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -190,10 +190,14 @@ export class AdminAchievements implements OnInit {
             next: (saved) => {
                 if (id) {
                     this.achievements.update((list) => list.map((a) => (a.id === id ? saved : a)));
-                    this.successMsg.set(this.translocoService.translate("adminAchievements.updateSuccess", { name: saved.name }));
+                    this.successMsg.set(
+                        this.translocoService.translate("adminAchievements.updateSuccess", { name: saved.name })
+                    );
                 } else {
                     this.achievements.update((list) => [saved, ...list]);
-                    this.successMsg.set(this.translocoService.translate("adminAchievements.createSuccess", { name: saved.name }));
+                    this.successMsg.set(
+                        this.translocoService.translate("adminAchievements.createSuccess", { name: saved.name })
+                    );
                 }
                 this.saving.set(false);
                 this.dialogVisible.set(false);
@@ -207,7 +211,9 @@ export class AdminAchievements implements OnInit {
 
     confirmDelete(achievement: Achievement): void {
         this.confirmationService.confirm({
-            message: this.translocoService.translate("adminAchievements.deleteDialog.confirm", { name: achievement.name }),
+            message: this.translocoService.translate("adminAchievements.deleteDialog.confirm", {
+                name: achievement.name
+            }),
             header: this.translocoService.translate("adminAchievements.deleteDialog.header"),
             icon: "pi pi-trash",
             acceptLabel: this.translocoService.translate("adminAchievements.deleteDialog.submit"),
@@ -221,7 +227,9 @@ export class AdminAchievements implements OnInit {
         this.http.delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.delete(achievement.id)}`).subscribe({
             next: () => {
                 this.achievements.update((list) => list.filter((a) => a.id !== achievement.id));
-                this.successMsg.set(this.translocoService.translate("adminAchievements.deleteSuccess", { name: achievement.name }));
+                this.successMsg.set(
+                    this.translocoService.translate("adminAchievements.deleteSuccess", { name: achievement.name })
+                );
             },
             error: () => this.error.set(this.translocoService.translate("adminAchievements.deleteError"))
         });

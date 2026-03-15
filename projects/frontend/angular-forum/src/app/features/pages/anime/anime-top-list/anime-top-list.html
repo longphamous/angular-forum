@@ -4,7 +4,9 @@
         <div>
             <h2 class="m-0 text-2xl font-bold">{{ t('anime.topList.title') }}</h2>
             @if (facade.total() > 0) {
-            <p class="text-surface-500 mt-1 mb-0">{{ t('anime.topList.entries', { count: facade.total().toLocaleString() }) }}</p>
+            <p class="text-surface-500 mt-1 mb-0">
+                {{ t('anime.topList.entries', { count: facade.total().toLocaleString() }) }}
+            </p>
             }
         </div>
     </div>
@@ -26,10 +28,10 @@
                     (onChange)="applyFilters()"
                     [(ngModel)]="selectedGenre"
                     [filter]="true"
-                    [options]="facade.genres()"
-                    [showClear]="true"
                     [filterPlaceholder]="t('anime.topList.searchGenrePlaceholder')"
+                    [options]="facade.genres()"
                     [placeholder]="t('anime.topList.allGenres')"
+                    [showClear]="true"
                     styleClass="w-full"
                 />
             </div>
@@ -45,8 +47,8 @@
                         class="w-full"
                         (keyup.enter)="applyFilters()"
                         [(ngModel)]="search"
-                        pInputText
                         [placeholder]="t('anime.topList.titlePlaceholder')"
+                        pInputText
                     />
                 </p-iconfield>
             </div>
@@ -57,10 +59,10 @@
                     (onChange)="applyFilters()"
                     [(ngModel)]="selectedType"
                     [options]="typeOptions"
+                    [placeholder]="t('anime.topList.allTypes')"
                     [showClear]="true"
                     optionLabel="label"
                     optionValue="value"
-                    [placeholder]="t('anime.topList.allTypes')"
                     styleClass="w-full"
                 />
             </div>
@@ -71,10 +73,10 @@
                     (onChange)="applyFilters()"
                     [(ngModel)]="selectedStatus"
                     [options]="statusOptions"
+                    [placeholder]="t('anime.topList.allStatuses')"
                     [showClear]="true"
                     optionLabel="label"
                     optionValue="value"
-                    [placeholder]="t('anime.topList.allStatuses')"
                     styleClass="w-full"
                 />
             </div>
@@ -85,10 +87,10 @@
                     (onChange)="applyFilters()"
                     [(ngModel)]="selectedSeason"
                     [options]="seasonOptions"
+                    [placeholder]="t('anime.topList.allSeasons')"
                     [showClear]="true"
                     optionLabel="label"
                     optionValue="value"
-                    [placeholder]="t('anime.topList.allSeasons')"
                     styleClass="w-full"
                 />
             </div>
@@ -214,12 +216,12 @@
 
             <!-- Buttons spanning remaining columns -->
             <div class="flex items-end gap-2 lg:col-span-3">
-                <p-button (onClick)="applyFilters()" icon="pi pi-search" [label]="t('anime.topList.searchBtn')" />
+                <p-button (onClick)="applyFilters()" [label]="t('anime.topList.searchBtn')" icon="pi pi-search" />
                 <p-button
                     (onClick)="resetFilters()"
+                    [label]="t('anime.topList.resetBtn')"
                     [outlined]="true"
                     icon="pi pi-times"
-                    [label]="t('anime.topList.resetBtn')"
                     severity="secondary"
                 />
             </div>
@@ -253,7 +255,9 @@
                 <th class="text-surface-400 text-center" pSortableColumn="rank" style="width: 3.5rem">
                     # <p-sortIcon field="rank" />
                 </th>
-                <th pSortableColumn="title" style="min-width: 22rem">{{ t('anime.topList.table.anime') }} <p-sortIcon field="title" /></th>
+                <th pSortableColumn="title" style="min-width: 22rem">
+                    {{ t('anime.topList.table.anime') }} <p-sortIcon field="title" />
+                </th>
                 <th style="width: 6.5rem">{{ t('anime.topList.table.type') }}</th>
                 <th class="text-center" pSortableColumn="episode" style="width: 5.5rem">
                     {{ t('anime.topList.table.episodes') }} <p-sortIcon field="episode" />
@@ -262,9 +266,13 @@
                     {{ t('anime.topList.table.score') }} <p-sortIcon field="mean" />
                 </th>
                 <th style="min-width: 11rem">{{ t('anime.topList.table.status') }}</th>
-                <th pSortableColumn="startYear" style="width: 8rem">{{ t('anime.topList.table.start') }} <p-sortIcon field="startYear" /></th>
+                <th pSortableColumn="startYear" style="width: 8rem">
+                    {{ t('anime.topList.table.start') }} <p-sortIcon field="startYear" />
+                </th>
                 <th style="width: 8rem">{{ t('anime.topList.table.end') }}</th>
-                <th pSortableColumn="seasonYear" style="min-width: 8rem">{{ t('anime.topList.table.season') }} <p-sortIcon field="seasonYear" /></th>
+                <th pSortableColumn="seasonYear" style="min-width: 8rem">
+                    {{ t('anime.topList.table.season') }} <p-sortIcon field="seasonYear" />
+                </th>
                 <th style="width: 6rem">{{ t('anime.topList.table.rating') }}</th>
             </tr>
         </ng-template>
@@ -308,19 +316,17 @@
                             </div>
                             @if (anime.titleEnglish && anime.title && anime.title !== anime.titleEnglish) {
                             <div class="text-surface-400 mt-0.5 truncate text-xs">{{ anime.title }}</div>
-                            }
-                            @if (anime.genres?.length) {
+                            } @if (anime.genres?.length) {
                             <div class="mt-1 flex flex-wrap gap-1">
                                 @for (genre of anime.genres!.slice(0, 3); track genre) {
                                 <span
                                     class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
-                                >{{ genre }}</span>
-                                }
-                                @if (anime.genres!.length > 3) {
-                                <span
-                                    class="text-surface-400 text-xs"
-                                    [pTooltip]="anime.genres!.slice(3).join(', ')"
-                                >+{{ anime.genres!.length - 3 }}</span>
+                                    >{{ genre }}</span
+                                >
+                                } @if (anime.genres!.length > 3) {
+                                <span class="text-surface-400 text-xs" [pTooltip]="anime.genres!.slice(3).join(', ')"
+                                    >+{{ anime.genres!.length - 3 }}</span
+                                >
                                 }
                             </div>
                             }

@@ -19,10 +19,10 @@
                         class="w-full"
                         id="username"
                         [(ngModel)]="username"
+                        [placeholder]="t('register.usernamePlaceholder')"
                         autocomplete="username"
                         name="username"
                         pInputText
-                        [placeholder]="t('register.usernamePlaceholder')"
                         required
                         type="text"
                     />
@@ -36,10 +36,10 @@
                         class="w-full"
                         id="displayName"
                         [(ngModel)]="displayName"
+                        [placeholder]="t('register.displayNamePlaceholder')"
                         autocomplete="name"
                         name="displayName"
                         pInputText
-                        [placeholder]="t('register.displayNamePlaceholder')"
                         type="text"
                     />
                 </div>
@@ -52,10 +52,10 @@
                         class="w-full"
                         id="email"
                         [(ngModel)]="email"
+                        [placeholder]="t('register.emailPlaceholder')"
                         autocomplete="email"
                         name="email"
                         pInputText
-                        [placeholder]="t('register.emailPlaceholder')"
                         required
                         type="email"
                     />
@@ -67,12 +67,12 @@
                     >
                     <p-password
                         [(ngModel)]="password"
+                        [placeholder]="t('register.passwordPlaceholder')"
                         [toggleMask]="true"
                         autocomplete="new-password"
                         inputId="password"
                         inputStyleClass="w-full"
                         name="password"
-                        [placeholder]="t('register.passwordPlaceholder')"
                         required
                         styleClass="w-full"
                     />
@@ -80,8 +80,8 @@
 
                 <p-button
                     [disabled]="!username || !email || !password"
-                    [loading]="loading()"
                     [label]="t('register.submit')"
+                    [loading]="loading()"
                     styleClass="w-full mt-2"
                     type="submit"
                 />
@@ -89,7 +89,9 @@
 
             <div class="text-surface-500 mt-6 text-center">
                 {{ t('register.hasAccount') }}
-                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/login">{{ t('register.loginLink') }}</a>
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/login"
+                    >{{ t('register.loginLink') }}</a
+                >
             </div>
         </div>
     </div>

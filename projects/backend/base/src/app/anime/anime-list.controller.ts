@@ -28,10 +28,7 @@ export class AnimeListController {
      * Creates or updates a list entry for the authenticated user.
      */
     @Post()
-    saveEntry(
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() dto: SaveAnimeListEntryDto
-    ): Promise<AnimeListEntryDto> {
+    saveEntry(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveAnimeListEntryDto): Promise<AnimeListEntryDto> {
         return this.animeListService.saveEntry(user.userId, dto);
     }
 

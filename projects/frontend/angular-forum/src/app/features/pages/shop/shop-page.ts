@@ -1,6 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
+import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
@@ -12,8 +14,6 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
 import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
-import { FormsModule } from "@angular/forms";
-import { ConfirmationService, MessageService } from "primeng/api";
 
 import { SHOP_ROUTES } from "../../../core/api/shop.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -47,17 +47,21 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
             <!-- Header -->
             <div class="mb-6 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-surface-900 dark:text-surface-0 text-2xl font-bold flex items-center gap-2">
+                    <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
                         <i class="pi pi-shopping-bag text-primary"></i>
-                        {{ t('shop.title') }}
+                        {{ t("shop.title") }}
                     </h1>
-                    <p class="text-surface-500 text-sm mt-1">{{ t('shop.subtitle') }}</p>
+                    <p class="text-surface-500 mt-1 text-sm">{{ t("shop.subtitle") }}</p>
                 </div>
                 @if (walletFacade.wallet()) {
-                    <div class="flex items-center gap-2 rounded-xl border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2">
+                    <div
+                        class="flex items-center gap-2 rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-2 dark:border-yellow-800 dark:bg-yellow-900/20"
+                    >
                         <i class="pi pi-wallet text-yellow-500"></i>
-                        <span class="text-yellow-700 dark:text-yellow-300 font-bold text-lg">{{ walletFacade.wallet()!.balance }}</span>
-                        <span class="text-yellow-600 dark:text-yellow-400 text-sm">{{ t('wallet.currency') }}</span>
+                        <span class="text-lg font-bold text-yellow-700 dark:text-yellow-300">{{
+                            walletFacade.wallet()!.balance
+                        }}</span>
+                        <span class="text-sm text-yellow-600 dark:text-yellow-400">{{ t("wallet.currency") }}</span>
                     </div>
                 }
             </div>
@@ -66,28 +70,32 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
             @if (categories().length > 1) {
                 <div class="mb-5 flex flex-wrap gap-2">
                     <button
-                        class="rounded-full px-3 py-1 text-sm font-medium transition-colors border"
+                        class="rounded-full border px-3 py-1 text-sm font-medium transition-colors"
                         [class.bg-primary]="selectedCategory() === null"
-                        [class.text-white]="selectedCategory() === null"
                         [class.border-primary]="selectedCategory() === null"
                         [class.border-surface-200]="selectedCategory() !== null"
                         [class.dark:border-surface-700]="selectedCategory() !== null"
-                        [class.text-surface-600]="selectedCategory() !== null"
                         [class.dark:text-surface-400]="selectedCategory() !== null"
+                        [class.text-surface-600]="selectedCategory() !== null"
+                        [class.text-white]="selectedCategory() === null"
                         (click)="selectedCategory.set(null)"
-                    >{{ t('shop.allCategories') }}</button>
+                    >
+                        {{ t("shop.allCategories") }}
+                    </button>
                     @for (cat of categories(); track cat) {
                         <button
-                            class="rounded-full px-3 py-1 text-sm font-medium transition-colors border"
+                            class="rounded-full border px-3 py-1 text-sm font-medium transition-colors"
                             [class.bg-primary]="selectedCategory() === cat"
-                            [class.text-white]="selectedCategory() === cat"
                             [class.border-primary]="selectedCategory() === cat"
                             [class.border-surface-200]="selectedCategory() !== cat"
                             [class.dark:border-surface-700]="selectedCategory() !== cat"
-                            [class.text-surface-600]="selectedCategory() !== cat"
                             [class.dark:text-surface-400]="selectedCategory() !== cat"
+                            [class.text-surface-600]="selectedCategory() !== cat"
+                            [class.text-white]="selectedCategory() === cat"
                             (click)="selectedCategory.set(cat)"
-                        >{{ cat }}</button>
+                        >
+                            {{ cat }}
+                        </button>
                     }
                 </div>
             }
@@ -102,28 +110,34 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
             } @else if (filteredItems().length === 0) {
                 <div class="flex flex-col items-center justify-center py-16 text-center">
                     <i class="pi pi-shopping-bag text-surface-300 mb-4 text-5xl"></i>
-                    <p class="text-surface-500 text-sm">{{ t('shop.empty') }}</p>
+                    <p class="text-surface-500 text-sm">{{ t("shop.empty") }}</p>
                 </div>
             } @else {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @for (item of filteredItems(); track item.id) {
-                        <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
+                        <div
+                            class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col overflow-hidden rounded-xl border transition-shadow hover:shadow-lg"
+                        >
                             <!-- Image -->
                             @if (item.imageUrl) {
                                 <div class="h-36 overflow-hidden">
-                                    <img [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover" />
+                                    <img class="h-full w-full object-cover" [alt]="item.name" [src]="item.imageUrl" />
                                 </div>
                             } @else {
-                                <div class="h-36 bg-primary/10 flex items-center justify-center">
-                                    <i [class]="'text-4xl text-primary ' + (item.icon || 'pi pi-star')"></i>
+                                <div class="bg-primary/10 flex h-36 items-center justify-center">
+                                    <i [class]="'text-primary text-4xl ' + (item.icon || 'pi pi-star')"></i>
                                 </div>
                             }
 
                             <!-- Content -->
-                            <div class="flex flex-col flex-1 p-4 gap-3">
+                            <div class="flex flex-1 flex-col gap-3 p-4">
                                 <div class="flex items-start justify-between gap-2">
                                     <div>
-                                        <h3 class="text-surface-900 dark:text-surface-0 font-semibold text-sm leading-snug">{{ item.name }}</h3>
+                                        <h3
+                                            class="text-surface-900 dark:text-surface-0 text-sm leading-snug font-semibold"
+                                        >
+                                            {{ item.name }}
+                                        </h3>
                                         @if (item.category) {
                                             <span class="text-surface-400 text-xs">{{ item.category }}</span>
                                         }
@@ -131,29 +145,39 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
                                     @if (item.stock !== null) {
                                         <p-tag
                                             [severity]="item.stock > 5 ? 'success' : item.stock > 0 ? 'warn' : 'danger'"
-                                            [value]="item.stock === 0 ? t('shop.outOfStock') : t('shop.inStock', { count: item.stock })"
+                                            [value]="
+                                                item.stock === 0
+                                                    ? t('shop.outOfStock')
+                                                    : t('shop.inStock', { count: item.stock })
+                                            "
                                             styleClass="text-xs whitespace-nowrap"
                                         />
                                     }
                                 </div>
 
                                 @if (item.description) {
-                                    <p class="text-surface-500 dark:text-surface-400 text-xs leading-relaxed flex-1">{{ item.description }}</p>
+                                    <p class="text-surface-500 dark:text-surface-400 flex-1 text-xs leading-relaxed">
+                                        {{ item.description }}
+                                    </p>
                                 }
 
-                                <div class="flex items-center justify-between mt-auto pt-2 border-t border-surface-100 dark:border-surface-800">
+                                <div
+                                    class="border-surface-100 dark:border-surface-800 mt-auto flex items-center justify-between border-t pt-2"
+                                >
                                     <div class="flex items-center gap-1.5">
-                                        <i class="pi pi-wallet text-yellow-500 text-sm"></i>
-                                        <span class="text-yellow-600 dark:text-yellow-400 font-bold">{{ item.price }}</span>
-                                        <span class="text-surface-400 text-xs">{{ t('wallet.currency') }}</span>
+                                        <i class="pi pi-wallet text-sm text-yellow-500"></i>
+                                        <span class="font-bold text-yellow-600 dark:text-yellow-400">{{
+                                            item.price
+                                        }}</span>
+                                        <span class="text-surface-400 text-xs">{{ t("wallet.currency") }}</span>
                                     </div>
                                     <p-button
-                                        [label]="t('shop.buyBtn')"
                                         [disabled]="item.stock === 0 || buying() === item.id"
+                                        [label]="t('shop.buyBtn')"
                                         [loading]="buying() === item.id"
+                                        (click)="confirmPurchase(item)"
                                         icon="pi pi-shopping-cart"
                                         size="small"
-                                        (click)="confirmPurchase(item)"
                                     />
                                 </div>
                             </div>
@@ -165,15 +189,15 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
             <!-- Purchase confirm dialog -->
             <p-dialog
                 [(visible)]="confirmVisible"
+                [closable]="true"
                 [header]="t('shop.confirmTitle')"
                 [modal]="true"
                 [style]="{ width: '24rem' }"
-                [closable]="true"
             >
                 @if (selectedItem()) {
                     <div class="flex flex-col gap-4">
                         <p class="text-surface-700 dark:text-surface-300 text-sm">
-                            {{ t('shop.confirmMsg', { name: selectedItem()!.name, price: selectedItem()!.price }) }}
+                            {{ t("shop.confirmMsg", { name: selectedItem()!.name, price: selectedItem()!.price }) }}
                         </p>
                         @if (purchaseError()) {
                             <p-message [text]="purchaseError()!" severity="error" styleClass="w-full" />
@@ -181,14 +205,14 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
                         <div class="flex justify-end gap-2">
                             <p-button
                                 [label]="t('common.cancel')"
-                                severity="secondary"
                                 (click)="confirmVisible = false; purchaseError.set(null)"
+                                severity="secondary"
                             />
                             <p-button
                                 [label]="t('shop.buyBtn')"
-                                icon="pi pi-shopping-cart"
                                 [loading]="buying() === selectedItem()?.id"
                                 (click)="executePurchase()"
+                                icon="pi pi-shopping-cart"
                             />
                         </div>
                     </div>
@@ -213,7 +237,13 @@ export class ShopPage implements OnInit {
     protected readonly skeletons = [1, 2, 3, 4, 5, 6];
 
     protected readonly categories = computed(() => {
-        const cats = [...new Set(this.items().map((i) => i.category).filter((c): c is string => c !== null))];
+        const cats = [
+            ...new Set(
+                this.items()
+                    .map((i) => i.category)
+                    .filter((c): c is string => c !== null)
+            )
+        ];
         return cats.sort();
     });
 
@@ -248,7 +278,12 @@ export class ShopPage implements OnInit {
                 this.confirmVisible = false;
                 this.walletFacade.loadWallet();
                 this.load();
-                this.messageService.add({ severity: "success", summary: "Erfolg", detail: `${item.name} gekauft!`, life: 3000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: "Erfolg",
+                    detail: `${item.name} gekauft!`,
+                    life: 3000
+                });
             },
             error: (err: { error?: { message?: string } }) => {
                 this.buying.set(null);
@@ -260,7 +295,10 @@ export class ShopPage implements OnInit {
     private load(): void {
         this.loading.set(true);
         this.http.get<ShopItem[]>(`${this.apiConfig.baseUrl}${SHOP_ROUTES.active()}`).subscribe({
-            next: (data) => { this.items.set(data); this.loading.set(false); },
+            next: (data) => {
+                this.items.set(data);
+                this.loading.set(false);
+            },
             error: () => this.loading.set(false)
         });
     }

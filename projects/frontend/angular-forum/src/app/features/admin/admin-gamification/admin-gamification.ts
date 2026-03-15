@@ -1,5 +1,5 @@
-import { HttpClient } from "@angular/common/http";
 import { DecimalPipe } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
@@ -84,16 +84,17 @@ export class AdminGamification implements OnInit {
         this.error.set(null);
         this.successMsg.set(null);
         this.http
-            .patch<XpConfigEntry>(
-                `${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.config.update(entry.eventType)}`,
-                { xpAmount: amount }
-            )
+            .patch<XpConfigEntry>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.config.update(entry.eventType)}`, {
+                xpAmount: amount
+            })
             .subscribe({
                 next: (updated) => {
                     this.configs.update((list) =>
                         list.map((e) => (e.eventType === updated.eventType ? { ...e, xpAmount: updated.xpAmount } : e))
                     );
-                    this.successMsg.set(this.t.translate("adminGamification.saveSuccess", { label: entry.label, amount }));
+                    this.successMsg.set(
+                        this.t.translate("adminGamification.saveSuccess", { label: entry.label, amount })
+                    );
                     this.saving.set(null);
                 },
                 error: () => {
@@ -107,16 +108,20 @@ export class AdminGamification implements OnInit {
         this.recalculating.set(true);
         this.error.set(null);
         this.successMsg.set(null);
-        this.http.post<{ updatedUsers: number }>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.recalculate()}`, {}).subscribe({
-            next: (result) => {
-                this.successMsg.set(this.t.translate("adminGamification.recalculateSuccessCount", { count: result.updatedUsers }));
-                this.recalculating.set(false);
-            },
-            error: () => {
-                this.error.set(this.t.translate("adminGamification.recalculateError"));
-                this.recalculating.set(false);
-            }
-        });
+        this.http
+            .post<{ updatedUsers: number }>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.recalculate()}`, {})
+            .subscribe({
+                next: (result) => {
+                    this.successMsg.set(
+                        this.t.translate("adminGamification.recalculateSuccessCount", { count: result.updatedUsers })
+                    );
+                    this.recalculating.set(false);
+                },
+                error: () => {
+                    this.error.set(this.t.translate("adminGamification.recalculateError"));
+                    this.recalculating.set(false);
+                }
+            });
     }
 
     isDirty(entry: XpConfigEntry): boolean {

@@ -158,7 +158,9 @@ export class CalendarService {
               GROUP BY e.id, u.display_name
               ORDER BY e.start_date ASC`
         );
-        return Promise.all(rows.map(async (r) => ({ ...this.toDto(r), attendees: await this.getAttendees(r["id"] as string) })));
+        return Promise.all(
+            rows.map(async (r) => ({ ...this.toDto(r), attendees: await this.getAttendees(r["id"] as string) }))
+        );
     }
 
     // ─── Create ───────────────────────────────────────────────────────────────
@@ -296,7 +298,10 @@ export class CalendarService {
             if (allDay) {
                 return d.toISOString().replace(/[-:]/g, "").substring(0, 8);
             }
-            return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+            return d
+                .toISOString()
+                .replace(/[-:]/g, "")
+                .replace(/\.\d{3}/, "");
         };
 
         const escape = (s: string | null): string =>
@@ -355,7 +360,10 @@ export class CalendarService {
 
         const formatDate = (d: Date, allDay: boolean): string => {
             if (allDay) return d.toISOString().replace(/[-:]/g, "").substring(0, 8);
-            return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+            return d
+                .toISOString()
+                .replace(/[-:]/g, "")
+                .replace(/\.\d{3}/, "");
         };
 
         for (const ev of eventEntities) {

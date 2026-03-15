@@ -168,7 +168,7 @@ export class ThreadDetail implements OnInit {
 
     quotePost(post: Post): void {
         const quote = `<blockquote><strong>${post.authorName} schrieb:</strong><br>${post.content}</blockquote><p><br></p>`;
-        this.replyContent = (this.replyContent ? this.replyContent + quote : quote);
+        this.replyContent = this.replyContent ? this.replyContent + quote : quote;
         const replyEl = document.getElementById("reply-section");
         if (replyEl) replyEl.scrollIntoView({ behavior: "smooth", block: "start" });
         this.cd.markForCheck();

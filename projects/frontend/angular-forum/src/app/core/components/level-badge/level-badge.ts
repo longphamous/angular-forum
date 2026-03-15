@@ -77,9 +77,13 @@ export class LevelBadge {
                 ></div>
             </div>
             @if (xpToNextLevel() > 0) {
-                <span class="text-surface-400 text-xs">{{ t('levelBadge.xpToNextLevel', { xp: xpToNextLevel() }) }}</span>
+                <span class="text-surface-400 text-xs">{{
+                    t("levelBadge.xpToNextLevel", { xp: xpToNextLevel() })
+                }}</span>
             } @else {
-                <span class="text-yellow-600 dark:text-yellow-400 text-xs font-medium">{{ t('levelBadge.maxLevel') }}</span>
+                <span class="text-xs font-medium text-yellow-600 dark:text-yellow-400">{{
+                    t("levelBadge.maxLevel")
+                }}</span>
             }
         </div>
     `

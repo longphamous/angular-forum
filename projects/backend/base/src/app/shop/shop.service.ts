@@ -177,9 +177,7 @@ export class ShopService {
         const items = await this.itemRepo.findByIds(itemIds);
         const itemMap = new Map(items.map((i) => [i.id, i]));
 
-        return entries
-            .filter((e) => itemMap.has(e.itemId))
-            .map((e) => this.toInventoryDto(e, itemMap.get(e.itemId)!));
+        return entries.filter((e) => itemMap.has(e.itemId)).map((e) => this.toInventoryDto(e, itemMap.get(e.itemId)!));
     }
 
     async getAllInventory(): Promise<UserInventoryDto[]> {
@@ -190,9 +188,7 @@ export class ShopService {
         const items = await this.itemRepo.findByIds(itemIds);
         const itemMap = new Map(items.map((i) => [i.id, i]));
 
-        return entries
-            .filter((e) => itemMap.has(e.itemId))
-            .map((e) => this.toInventoryDto(e, itemMap.get(e.itemId)!));
+        return entries.filter((e) => itemMap.has(e.itemId)).map((e) => this.toInventoryDto(e, itemMap.get(e.itemId)!));
     }
 
     private toInventoryDto(e: UserInventoryEntity, item: ShopItemEntity): UserInventoryDto {

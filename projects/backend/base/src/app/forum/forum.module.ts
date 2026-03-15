@@ -3,11 +3,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { CreditModule } from "../credit/credit.module";
 import { GamificationModule } from "../gamification/gamification.module";
+import { UserEntity } from "../user/entities/user.entity";
 import { CategoryController } from "./controllers/category.controller";
 import { ForumController } from "./controllers/forum.controller";
 import { PostController } from "./controllers/post.controller";
 import { ThreadController } from "./controllers/thread.controller";
-import { UserEntity } from "../user/entities/user.entity";
 import { ForumCategoryEntity } from "./entities/category.entity";
 import { ForumEntity } from "./entities/forum.entity";
 import { ForumPostEntity } from "./entities/post.entity";

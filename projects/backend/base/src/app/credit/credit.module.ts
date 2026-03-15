@@ -8,10 +8,7 @@ import { WalletTransactionEntity } from "./entities/wallet-transaction.entity";
 import { LottoModule } from "./lotto/lotto.module";
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([UserWalletEntity, WalletTransactionEntity]),
-        LottoModule
-    ],
+    imports: [TypeOrmModule.forFeature([UserWalletEntity, WalletTransactionEntity]), LottoModule],
     controllers: [CreditController],
     providers: [CreditService],
     exports: [CreditService]

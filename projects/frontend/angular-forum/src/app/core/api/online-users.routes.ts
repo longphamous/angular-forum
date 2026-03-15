@@ -1,12 +1,7 @@
 import { OnlineSort, OnlineSortOrder, OnlineTimeWindow } from "../models/user/online-user";
 
 export const ONLINE_USERS_ROUTES = {
-    online: (opts?: {
-        window?: OnlineTimeWindow;
-        sort?: OnlineSort;
-        order?: OnlineSortOrder;
-        limit?: number;
-    }) => {
+    online: (opts?: { window?: OnlineTimeWindow; sort?: OnlineSort; order?: OnlineSortOrder; limit?: number }) => {
         const p = new URLSearchParams();
         if (opts?.window) p.set("window", opts.window);
         if (opts?.sort) p.set("sort", opts.sort);

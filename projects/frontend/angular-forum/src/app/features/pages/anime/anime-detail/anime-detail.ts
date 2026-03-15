@@ -1,5 +1,14 @@
 import { Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    inject,
+    OnInit,
+    signal
+} from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, RouterModule } from "@angular/router";
@@ -124,7 +133,9 @@ export class AnimeDetail implements OnInit {
 
     ngOnInit(): void {
         this.buildStatusOptions();
-        this.translocoService.langChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.buildStatusOptions());
+        this.translocoService.langChanges$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.buildStatusOptions());
         this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
             const id = Number(params.get("id"));
             this.showFullSynopsis.set(false);

@@ -3,7 +3,13 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
-import { CreditService, PaginatedTransactions, TransactionDto, WalletDto, WalletLeaderboardEntry } from "./credit.service";
+import {
+    CreditService,
+    PaginatedTransactions,
+    TransactionDto,
+    WalletDto,
+    WalletLeaderboardEntry
+} from "./credit.service";
 
 @Controller("credit")
 export class CreditController {

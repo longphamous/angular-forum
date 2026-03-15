@@ -13,7 +13,7 @@ import { ActiveForum, DashboardFacade } from "../../../../facade/dashboard/dashb
     selector: "app-active-forums-widget",
     template: `
         <p-card *transloco="let t">
-            <ng-template #title>{{ t('dashboard.activeForums') }}</ng-template>
+            <ng-template #title>{{ t("dashboard.activeForums") }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -58,7 +58,7 @@ import { ActiveForum, DashboardFacade } from "../../../../facade/dashboard/dashb
                             <p-progressbar [showValue]="false" [value]="progressValue(forum)" styleClass="h-1.5" />
                         </div>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noForums') }}</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t("dashboard.noForums") }}</p>
                     }
                 </div>
             }

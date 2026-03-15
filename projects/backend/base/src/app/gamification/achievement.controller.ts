@@ -1,10 +1,17 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
-import { AchievementService, AchievementDto, CreateAchievementDto, UserAchievementDto } from "./achievement.service";
+import { AchievementDto, AchievementService, CreateAchievementDto, UserAchievementDto } from "./achievement.service";
 
 const VALID_RARITIES = ["bronze", "silver", "gold", "platinum"] as const;
-const VALID_TRIGGER_TYPES = ["post_count", "thread_count", "reaction_received_count", "reaction_given_count", "level_reached", "xp_total"] as const;
+const VALID_TRIGGER_TYPES = [
+    "post_count",
+    "thread_count",
+    "reaction_received_count",
+    "reaction_given_count",
+    "level_reached",
+    "xp_total"
+] as const;
 
 function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): void {
     if (requireAll && (!dto.key || !dto.name || !dto.icon || !dto.triggerType || dto.triggerValue == null)) {
@@ -16,7 +23,10 @@ function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): v
     if (dto.rarity !== undefined && !VALID_RARITIES.includes(dto.rarity as (typeof VALID_RARITIES)[number])) {
         throw new BadRequestException(`rarity must be one of: ${VALID_RARITIES.join(", ")}`);
     }
-    if (dto.triggerType !== undefined && !VALID_TRIGGER_TYPES.includes(dto.triggerType as (typeof VALID_TRIGGER_TYPES)[number])) {
+    if (
+        dto.triggerType !== undefined &&
+        !VALID_TRIGGER_TYPES.includes(dto.triggerType as (typeof VALID_TRIGGER_TYPES)[number])
+    ) {
         throw new BadRequestException(`triggerType must be one of: ${VALID_TRIGGER_TYPES.join(", ")}`);
     }
 }

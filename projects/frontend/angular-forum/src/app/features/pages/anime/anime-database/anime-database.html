@@ -3,7 +3,9 @@
         <div>
             <h2 class="m-0 text-2xl font-bold">{{ t('anime.database.title') }}</h2>
             @if (facade.total() > 0) {
-            <p class="text-surface-500 mt-1 mb-0">{{ t('anime.database.entries', { count: facade.total().toLocaleString() }) }}</p>
+            <p class="text-surface-500 mt-1 mb-0">
+                {{ t('anime.database.entries', { count: facade.total().toLocaleString() }) }}
+            </p>
             }
         </div>
     </div>
@@ -81,19 +83,17 @@
                             </div>
                             @if (anime.titleEnglish && anime.title && anime.title !== anime.titleEnglish) {
                             <div class="text-surface-400 mt-0.5 truncate text-xs">{{ anime.title }}</div>
-                            }
-                            @if (anime.genres?.length) {
+                            } @if (anime.genres?.length) {
                             <div class="mt-1 flex flex-wrap gap-1">
                                 @for (genre of anime.genres!.slice(0, 3); track genre) {
                                 <span
                                     class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
-                                >{{ genre }}</span>
-                                }
-                                @if (anime.genres!.length > 3) {
-                                <span
-                                    class="text-surface-400 text-xs"
-                                    [pTooltip]="anime.genres!.slice(3).join(', ')"
-                                >+{{ anime.genres!.length - 3 }}</span>
+                                    >{{ genre }}</span
+                                >
+                                } @if (anime.genres!.length > 3) {
+                                <span class="text-surface-400 text-xs" [pTooltip]="anime.genres!.slice(3).join(', ')"
+                                    >+{{ anime.genres!.length - 3 }}</span
+                                >
                                 }
                             </div>
                             }

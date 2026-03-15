@@ -1,47 +1,42 @@
-import { HttpClient } from "@angular/common/http";
 import { NgTemplateOutlet } from "@angular/common";
-import {
-    ChangeDetectionStrategy,
-    Component,
-    inject,
-    OnDestroy,
-    OnInit,
-    signal
-} from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Router, RouterModule } from "@angular/router";
 import { TranslocoService } from "@jsverse/transloco";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-import { API_CONFIG, ApiConfig } from "../../config/api.config";
 import { SLIDESHOW_ROUTES } from "../../api/slideshow.routes";
+import { API_CONFIG, ApiConfig } from "../../config/api.config";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 
 @Component({
     selector: "app-teaser-slideshow",
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [NgTemplateOutlet, RouterModule],
-    styles: [`
-        .slide-bg {
-            transition: opacity 0.7s ease-in-out;
-        }
-    `],
+    styles: [
+        `
+            .slide-bg {
+                transition: opacity 0.7s ease-in-out;
+            }
+        `
+    ],
     template: `
         @if (slides().length > 0) {
             <div
                 class="teaser-slideshow relative w-full overflow-hidden rounded-2xl shadow-lg"
-                style="height: clamp(190px, 22vw, 310px);"
-                (mouseenter)="pause()"
-                (mouseleave)="resume()"
                 [class.cursor-pointer]="slides()[currentIndex()]?.linkFullSlide && !!slides()[currentIndex()]?.linkUrl"
                 (click)="onSlideClick(slides()[currentIndex()], $event)"
+                (mouseenter)="pause()"
+                (mouseleave)="resume()"
+                style="height: clamp(190px, 22vw, 310px);"
             >
                 <!-- Background images (all stacked, fade between them) -->
                 @for (slide of slides(); track slide.id; let i = $index) {
                     <div
                         class="slide-bg absolute inset-0 bg-cover bg-center"
+                        [style.background-image]="'url(' + slide.imageUrl + ')'"
                         [style.opacity]="i === currentIndex() ? '1' : '0'"
                         [style.z-index]="i === currentIndex() ? '1' : '0'"
-                        [style.background-image]="'url(' + slide.imageUrl + ')'"
                         aria-hidden="true"
                     ></div>
                 }
@@ -51,28 +46,28 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                     @if (slide.linkFullSlide && slide.linkUrl && i === currentIndex()) {
                         @if (isExternal(normalizeUrl(slide.linkUrl))) {
                             <a
-                                [href]="normalizeUrl(slide.linkUrl)"
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 class="absolute inset-0"
-                                style="z-index: 2;"
                                 [attr.aria-label]="getLang(slide, 'title')"
+                                [href]="normalizeUrl(slide.linkUrl)"
                                 (click)="$event.stopPropagation()"
+                                rel="noopener noreferrer"
+                                style="z-index: 2;"
+                                target="_blank"
                             ></a>
                         } @else {
                             <a
-                                [routerLink]="normalizeUrl(slide.linkUrl)"
                                 class="absolute inset-0"
-                                style="z-index: 2;"
                                 [attr.aria-label]="getLang(slide, 'title')"
+                                [routerLink]="normalizeUrl(slide.linkUrl)"
                                 (click)="$event.stopPropagation()"
+                                style="z-index: 2;"
                             ></a>
                         }
                     }
                 }
 
                 <!-- Dark gradient overlay (only for 'overlay' style) -->
-                @if (slides()[currentIndex()]?.textStyle !== 'glass') {
+                @if (slides()[currentIndex()]?.textStyle !== "glass") {
                     <div
                         class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
                         style="z-index: 3;"
@@ -83,27 +78,27 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                 @for (slide of slides(); track slide.id; let i = $index) {
                     <div
                         class="slide-bg absolute inset-0 flex flex-col p-4 sm:p-6"
-                        [style.opacity]="i === currentIndex() ? '1' : '0'"
-                        [style.z-index]="i === currentIndex() ? '4' : '3'"
                         [class.items-center]="slide.textAlign === 'center'"
+                        [class.items-start]="slide.textAlign !== 'center'"
                         [class.justify-center]="slide.textAlign === 'center'"
                         [class.justify-end]="slide.textAlign !== 'center'"
-                        [class.items-start]="slide.textAlign !== 'center'"
+                        [style.opacity]="i === currentIndex() ? '1' : '0'"
+                        [style.z-index]="i === currentIndex() ? '4' : '3'"
                     >
-                        @if (slide.textStyle === 'glass') {
+                        @if (slide.textStyle === "glass") {
                             <!-- Glassmorphism box -->
                             <div
                                 class="rounded-2xl border border-white/25 bg-white/10 p-4 backdrop-blur-md sm:p-5"
-                                [class.text-center]="slide.textAlign === 'center'"
-                                [class.max-w-md]="slide.textAlign !== 'center'"
                                 [class.max-w-lg]="slide.textAlign === 'center'"
+                                [class.max-w-md]="slide.textAlign !== 'center'"
+                                [class.text-center]="slide.textAlign === 'center'"
                             >
-                                <h2 class="m-0 mb-1 text-lg font-bold leading-tight text-white drop-shadow sm:text-xl">
-                                    {{ getLang(slide, 'title') }}
+                                <h2 class="m-0 mb-1 text-lg leading-tight font-bold text-white drop-shadow sm:text-xl">
+                                    {{ getLang(slide, "title") }}
                                 </h2>
-                                @if (getLang(slide, 'description')) {
+                                @if (getLang(slide, "description")) {
                                     <p class="m-0 mb-3 text-xs leading-relaxed text-white/85 drop-shadow sm:text-sm">
-                                        {{ getLang(slide, 'description') }}
+                                        {{ getLang(slide, "description") }}
                                     </p>
                                 }
                                 @if (slide.linkUrl && !slide.linkFullSlide) {
@@ -112,14 +107,18 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                             </div>
                         } @else {
                             <!-- Default overlay style -->
-                            <h2 class="m-0 mb-1 text-lg font-bold leading-tight text-white drop-shadow-lg sm:text-2xl"
-                                [class.text-center]="slide.textAlign === 'center'">
-                                {{ getLang(slide, 'title') }}
+                            <h2
+                                class="m-0 mb-1 text-lg leading-tight font-bold text-white drop-shadow-lg sm:text-2xl"
+                                [class.text-center]="slide.textAlign === 'center'"
+                            >
+                                {{ getLang(slide, "title") }}
                             </h2>
-                            @if (getLang(slide, 'description')) {
-                                <p class="m-0 mb-2 max-w-lg text-xs leading-relaxed text-white/85 drop-shadow sm:text-sm"
-                                   [class.text-center]="slide.textAlign === 'center'">
-                                    {{ getLang(slide, 'description') }}
+                            @if (getLang(slide, "description")) {
+                                <p
+                                    class="m-0 mb-2 max-w-lg text-xs leading-relaxed text-white/85 drop-shadow sm:text-sm"
+                                    [class.text-center]="slide.textAlign === 'center'"
+                                >
+                                    {{ getLang(slide, "description") }}
                                 </p>
                             }
                             @if (slide.linkUrl && !slide.linkFullSlide) {
@@ -133,22 +132,22 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                 <ng-template #ctaBtn let-slide>
                     @if (isExternal(normalizeUrl(slide.linkUrl!))) {
                         <a
-                            [href]="normalizeUrl(slide.linkUrl!)"
-                            target="_blank"
-                            rel="noopener noreferrer"
                             class="inline-flex items-center gap-1.5 self-start rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-semibold text-white no-underline backdrop-blur-sm transition-colors hover:bg-white/35 sm:px-4 sm:py-2 sm:text-sm"
+                            [href]="normalizeUrl(slide.linkUrl!)"
                             (click)="$event.stopPropagation()"
+                            rel="noopener noreferrer"
+                            target="_blank"
                         >
-                            {{ slide.linkLabel || 'Mehr erfahren' }}
+                            {{ slide.linkLabel || "Mehr erfahren" }}
                             <i class="pi pi-arrow-right text-xs"></i>
                         </a>
                     } @else {
                         <a
-                            [routerLink]="normalizeUrl(slide.linkUrl!)"
                             class="inline-flex items-center gap-1.5 self-start rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-semibold text-white no-underline backdrop-blur-sm transition-colors hover:bg-white/35 sm:px-4 sm:py-2 sm:text-sm"
+                            [routerLink]="normalizeUrl(slide.linkUrl!)"
                             (click)="$event.stopPropagation()"
                         >
-                            {{ slide.linkLabel || 'Mehr erfahren' }}
+                            {{ slide.linkLabel || "Mehr erfahren" }}
                             <i class="pi pi-arrow-right text-xs"></i>
                         </a>
                     }
@@ -157,14 +156,14 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                 <!-- Arrow navigation -->
                 @if (slides().length > 1) {
                     <button
-                        class="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none"
+                        class="absolute top-1/2 left-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none"
                         (click)="prev(); $event.stopPropagation()"
                         aria-label="Previous slide"
                     >
                         <i class="pi pi-chevron-left text-xs sm:text-sm"></i>
                     </button>
                     <button
-                        class="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none"
+                        class="absolute top-1/2 right-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none"
                         (click)="next(); $event.stopPropagation()"
                         aria-label="Next slide"
                     >
@@ -176,12 +175,12 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                         @for (slide of slides(); track slide.id; let i = $index) {
                             <button
                                 class="h-1.5 rounded-full transition-all duration-300 focus:outline-none"
-                                [class.w-5]="i === currentIndex()"
-                                [class.w-1.5]="i !== currentIndex()"
+                                [attr.aria-label]="'Slide ' + (i + 1)"
                                 [class.bg-white]="i === currentIndex()"
                                 [class.bg-white/45]="i !== currentIndex()"
+                                [class.w-1.5]="i !== currentIndex()"
+                                [class.w-5]="i === currentIndex()"
                                 (click)="goTo(i); $event.stopPropagation()"
-                                [attr.aria-label]="'Slide ' + (i + 1)"
                             ></button>
                         }
                     </div>
@@ -210,15 +209,13 @@ export class TeaserSlideshowComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.http
-            .get<TeaserSlide[]>(`${this.apiConfig.baseUrl}${SLIDESHOW_ROUTES.active()}`)
-            .subscribe({
-                next: (data) => {
-                    this.slides.set(data);
-                    if (data.length > 1) this.startTimer();
-                },
-                error: () => {}
-            });
+        this.http.get<TeaserSlide[]>(`${this.apiConfig.baseUrl}${SLIDESHOW_ROUTES.active()}`).subscribe({
+            next: (data) => {
+                this.slides.set(data);
+                if (data.length > 1) this.startTimer();
+            },
+            error: () => {}
+        });
     }
 
     ngOnDestroy(): void {

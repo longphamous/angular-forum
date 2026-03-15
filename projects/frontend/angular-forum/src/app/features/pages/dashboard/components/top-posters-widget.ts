@@ -15,9 +15,21 @@ interface RankStyle {
 }
 
 const RANK_STYLES: RankStyle[] = [
-    { bg: "bg-yellow-100 dark:bg-yellow-400/10", label: "adminAchievements.rarities.gold", text: "text-yellow-600 dark:text-yellow-400" },
-    { bg: "bg-surface-100 dark:bg-surface-700", label: "adminAchievements.rarities.silver", text: "text-surface-500 dark:text-surface-400" },
-    { bg: "bg-orange-100 dark:bg-orange-400/10", label: "adminAchievements.rarities.bronze", text: "text-orange-600 dark:text-orange-400" }
+    {
+        bg: "bg-yellow-100 dark:bg-yellow-400/10",
+        label: "adminAchievements.rarities.gold",
+        text: "text-yellow-600 dark:text-yellow-400"
+    },
+    {
+        bg: "bg-surface-100 dark:bg-surface-700",
+        label: "adminAchievements.rarities.silver",
+        text: "text-surface-500 dark:text-surface-400"
+    },
+    {
+        bg: "bg-orange-100 dark:bg-orange-400/10",
+        label: "adminAchievements.rarities.bronze",
+        text: "text-orange-600 dark:text-orange-400"
+    }
 ];
 
 @Component({
@@ -26,7 +38,7 @@ const RANK_STYLES: RankStyle[] = [
     selector: "app-top-posters-widget",
     template: `
         <p-card *transloco="let t">
-            <ng-template #title>{{ t('dashboard.topPosters') }}</ng-template>
+            <ng-template #title>{{ t("dashboard.topPosters") }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -71,13 +83,13 @@ const RANK_STYLES: RankStyle[] = [
                                 </div>
                                 <div class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-sm">
                                     <i class="pi pi-comment text-xs"></i>
-                                    <span>{{ poster.postCount }} {{ t('dashboard.posts') }}</span>
+                                    <span>{{ poster.postCount }} {{ t("dashboard.posts") }}</span>
                                 </div>
                             </div>
                             <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noPosters') }}</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t("dashboard.noPosters") }}</p>
                     }
                 </div>
             }

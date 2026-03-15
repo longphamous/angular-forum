@@ -30,10 +30,7 @@ export class GamificationController {
 
     @Roles("admin")
     @Patch("config/:eventType")
-    updateXpConfig(
-        @Param("eventType") eventType: string,
-        @Body() dto: UpdateXpConfigDto
-    ): Promise<XpConfigDto> {
+    updateXpConfig(@Param("eventType") eventType: string, @Body() dto: UpdateXpConfigDto): Promise<XpConfigDto> {
         const amount = Number(dto.xpAmount);
         if (!Number.isInteger(amount) || amount < 0) {
             throw new BadRequestException("xpAmount must be a non-negative integer");

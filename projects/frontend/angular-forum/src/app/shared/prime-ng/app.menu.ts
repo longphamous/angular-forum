@@ -64,7 +64,11 @@ export class AppMenu implements OnInit, OnDestroy {
                 label: this.t("nav.anime"),
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
-                    { label: this.t("nav.animeDatabase"), icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] },
+                    {
+                        label: this.t("nav.animeDatabase"),
+                        icon: "pi pi-fw pi-database",
+                        routerLink: ["/anime-database"]
+                    },
                     { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }
                 ]
             },
@@ -75,12 +79,32 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.forumStructure"), icon: "pi pi-fw pi-sitemap", routerLink: ["/admin/forum"] },
                     { label: this.t("nav.userManagement"), icon: "pi pi-fw pi-users", routerLink: ["/admin/users"] },
                     { label: this.t("nav.groupManagement"), icon: "pi pi-fw pi-shield", routerLink: ["/admin/groups"] },
-                    { label: this.t("nav.pagePermissions"), icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] },
-                    { label: this.t("nav.gamification"), icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] },
-                    { label: this.t("nav.achievements"), icon: "pi pi-fw pi-trophy", routerLink: ["/admin/achievements"] },
+                    {
+                        label: this.t("nav.pagePermissions"),
+                        icon: "pi pi-fw pi-lock",
+                        routerLink: ["/admin/permissions"]
+                    },
+                    {
+                        label: this.t("nav.gamification"),
+                        icon: "pi pi-fw pi-star",
+                        routerLink: ["/admin/gamification"]
+                    },
+                    {
+                        label: this.t("nav.achievements"),
+                        icon: "pi pi-fw pi-trophy",
+                        routerLink: ["/admin/achievements"]
+                    },
                     { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] },
-                    { label: this.t("nav.shopManagement"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/admin/shop"] },
-                    { label: this.t("nav.calendarManagement"), icon: "pi pi-fw pi-calendar", routerLink: ["/admin/calendar"] }
+                    {
+                        label: this.t("nav.shopManagement"),
+                        icon: "pi pi-fw pi-shopping-bag",
+                        routerLink: ["/admin/shop"]
+                    },
+                    {
+                        label: this.t("nav.calendarManagement"),
+                        icon: "pi pi-fw pi-calendar",
+                        routerLink: ["/admin/calendar"]
+                    }
                 ]
             },
             {

@@ -2,81 +2,73 @@
     <!-- Header -->
     <div class="mb-5">
         <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('adminPermissions.title') }}</h2>
-        <p class="text-surface-500 mt-1 text-sm">
-            {{ t('adminPermissions.subtitle') }}
-        </p>
+        <p class="text-surface-500 mt-1 text-sm">{{ t('adminPermissions.subtitle') }}</p>
     </div>
 
     <!-- Skeleton -->
     @if (facade.pagePermissionsLoading()) {
-        <div class="flex flex-col gap-2">
-            @for (i of [1, 2, 3, 4, 5]; track i) {
-                <p-skeleton height="3rem" />
-            }
-        </div>
+    <div class="flex flex-col gap-2">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <p-skeleton height="3rem" />
+        }
+    </div>
     } @else {
-        <p-table [value]="facade.pagePermissions()" styleClass="p-datatable-sm">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>{{ t('adminPermissions.table.page') }}</th>
-                    <th>{{ t('adminPermissions.table.route') }}</th>
-                    <th>{{ t('adminPermissions.table.allowedGroups') }}</th>
-                    <th class="text-right">{{ t('common.actions') }}</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-perm>
-                <tr>
-                    <td class="font-semibold">{{ perm.name }}</td>
-                    <td>
-                        <code class="bg-surface-100 dark:bg-surface-800 rounded px-1.5 py-0.5 text-xs">
-                            {{ perm.route }}
-                        </code>
-                    </td>
-                    <td>
-                        <div class="flex flex-wrap gap-1">
-                            @if (!perm.groups?.length) {
-                                <span class="text-surface-400 text-sm">–</span>
-                            } @else {
-                                @for (group of perm.groups; track group.id) {
-                                    <p-tag
-                                        [value]="group.name"
-                                        severity="secondary"
-                                        styleClass="text-xs"
-                                    />
-                                }
-                            }
-                        </div>
-                    </td>
-                    <td class="text-right">
-                        <p-button
-                            icon="pi pi-pencil"
-                            [pTooltip]="t('adminPermissions.editTooltip')"
-                            severity="secondary"
-                            size="small"
-                            [text]="true"
-                            (onClick)="openEditDialog(perm)"
-                        />
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td class="text-surface-400 py-8 text-center" colspan="4">
-                        {{ t('adminPermissions.table.noPermissions') }}
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+    <p-table [value]="facade.pagePermissions()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>{{ t('adminPermissions.table.page') }}</th>
+                <th>{{ t('adminPermissions.table.route') }}</th>
+                <th>{{ t('adminPermissions.table.allowedGroups') }}</th>
+                <th class="text-right">{{ t('common.actions') }}</th>
+            </tr>
+        </ng-template>
+        <ng-template let-perm pTemplate="body">
+            <tr>
+                <td class="font-semibold">{{ perm.name }}</td>
+                <td>
+                    <code class="bg-surface-100 dark:bg-surface-800 rounded px-1.5 py-0.5 text-xs">
+                        {{ perm.route }}
+                    </code>
+                </td>
+                <td>
+                    <div class="flex flex-wrap gap-1">
+                        @if (!perm.groups?.length) {
+                        <span class="text-surface-400 text-sm">–</span>
+                        } @else { @for (group of perm.groups; track group.id) {
+                        <p-tag [value]="group.name" severity="secondary" styleClass="text-xs" />
+                        } }
+                    </div>
+                </td>
+                <td class="text-right">
+                    <p-button
+                        (onClick)="openEditDialog(perm)"
+                        [pTooltip]="t('adminPermissions.editTooltip')"
+                        [text]="true"
+                        icon="pi pi-pencil"
+                        severity="secondary"
+                        size="small"
+                    />
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-surface-400 py-8 text-center" colspan="4">
+                    {{ t('adminPermissions.table.noPermissions') }}
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
     }
 </div>
 
 <!-- Edit groups dialog -->
 <p-dialog
+    (visibleChange)="showEditDialog.set($any($event))"
     [header]="'Gruppen: ' + (editingPermission()?.name ?? '')"
     [modal]="true"
     [style]="{ width: '38rem' }"
     [visible]="showEditDialog()"
-    (visibleChange)="showEditDialog.set($any($event))"
     *transloco="let t"
 >
     <div class="flex flex-col gap-4 pt-2">
@@ -86,52 +78,49 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <span class="text-surface-500 text-sm font-medium">{{ t('adminPermissions.editDialog.allowedGroups') }}</span>
+            <span class="text-surface-500 text-sm font-medium"
+                >{{ t('adminPermissions.editDialog.allowedGroups') }}</span
+            >
             <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-2 rounded-lg border p-3">
                 @for (group of groupOptions(); track group.id) {
-                    <label
-                        class="hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
-                        [class.bg-primary-50]="isGroupSelected(group.id)"
-                        [class.dark:bg-primary-900/20]="isGroupSelected(group.id)"
-                    >
-                        <p-checkbox
-                            [binary]="true"
-                            [ngModel]="isGroupSelected(group.id)"
-                            (ngModelChange)="toggleGroup(group.id)"
-                        />
-                        <div class="min-w-0">
-                            <div class="text-sm font-medium">{{ group.name }}</div>
-                            @if (group.description) {
-                                <div class="text-surface-400 truncate text-xs">{{ group.description }}</div>
-                            }
-                        </div>
-                    </label>
+                <label
+                    class="hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                    [class.bg-primary-50]="isGroupSelected(group.id)"
+                    [class.dark:bg-primary-900/20]="isGroupSelected(group.id)"
+                >
+                    <p-checkbox
+                        (ngModelChange)="toggleGroup(group.id)"
+                        [binary]="true"
+                        [ngModel]="isGroupSelected(group.id)"
+                    />
+                    <div class="min-w-0">
+                        <div class="text-sm font-medium">{{ group.name }}</div>
+                        @if (group.description) {
+                        <div class="text-surface-400 truncate text-xs">{{ group.description }}</div>
+                        }
+                    </div>
+                </label>
                 }
             </div>
             @if (!editingGroupIds().length) {
-                <p class="text-warn-500 m-0 text-xs">
-                    <i class="pi pi-exclamation-triangle mr-1"></i>
-                    {{ t('adminPermissions.editDialog.noGroupWarning') }}
-                </p>
+            <p class="text-warn-500 m-0 text-xs">
+                <i class="pi pi-exclamation-triangle mr-1"></i>
+                {{ t('adminPermissions.editDialog.noGroupWarning') }}
+            </p>
             }
         </div>
 
         @if (saveError()) {
-            <p-message class="w-full" severity="error">{{ saveError() }}</p-message>
+        <p-message class="w-full" severity="error">{{ saveError() }}</p-message>
         }
     </div>
     <ng-template pTemplate="footer">
         <p-button
-            [label]="t('common.cancel')"
-            severity="secondary"
-            [text]="true"
             (onClick)="showEditDialog.set(false)"
+            [label]="t('common.cancel')"
+            [text]="true"
+            severity="secondary"
         />
-        <p-button
-            icon="pi pi-check"
-            [label]="t('common.save')"
-            [loading]="saving()"
-            (onClick)="savePermission()"
-        />
+        <p-button (onClick)="savePermission()" [label]="t('common.save')" [loading]="saving()" icon="pi pi-check" />
     </ng-template>
 </p-dialog>

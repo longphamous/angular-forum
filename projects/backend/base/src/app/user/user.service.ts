@@ -129,7 +129,7 @@ export class UserService {
         const [user, [{ count }], xpData] = await Promise.all([
             this.findById(userId),
             this.dataSource.query<{ count: string }[]>(
-                `SELECT COUNT(*) AS count FROM forum_posts WHERE author_id = $1 AND deleted_at IS NULL`,
+                "SELECT COUNT(*) AS count FROM forum_posts WHERE author_id = $1 AND deleted_at IS NULL",
                 [userId]
             ),
             this.gamificationService.getUserXpData(userId)

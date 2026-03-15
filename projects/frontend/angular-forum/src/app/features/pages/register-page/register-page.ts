@@ -47,9 +47,7 @@ export class RegisterPage {
                     this.router.navigate(["/login"]);
                 },
                 error: (err: { error?: { message?: string } }) => {
-                    this.errorMessage.set(
-                        err.error?.message ?? this.translocoService.translate("register.error")
-                    );
+                    this.errorMessage.set(err.error?.message ?? this.translocoService.translate("register.error"));
                     this.loading.set(false);
                 }
             });

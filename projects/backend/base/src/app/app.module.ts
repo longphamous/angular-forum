@@ -1,18 +1,18 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
-import { AnimeListModule } from "./anime/anime-list.module";
 import { AnimeModule } from "./anime/anime.module";
+import { AnimeListModule } from "./anime/anime-list.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
+import { CalendarModule } from "./calendar/calendar.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { ForumModule } from "./forum/forum.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { GroupModule } from "./group/group.module";
-import { CalendarModule } from "./calendar/calendar.module";
 import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
 import { UserModule } from "./user/user.module";

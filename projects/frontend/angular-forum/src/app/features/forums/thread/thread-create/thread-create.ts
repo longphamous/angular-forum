@@ -3,10 +3,10 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
+import { Chip } from "primeng/chip";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { FluidModule } from "primeng/fluid";
-import { Chip } from "primeng/chip";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 

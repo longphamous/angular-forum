@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { inject, Injectable, signal, Signal } from "@angular/core";
+import { inject, Injectable, Signal, signal } from "@angular/core";
 import { forkJoin, switchMap } from "rxjs";
 import { map } from "rxjs/operators";
 

@@ -1,381 +1,494 @@
 <p-toast />
 
 <div class="flex flex-col gap-4" *transloco="let t">
-
     <!-- ── Header ────────────────────────────────────────────────────────────── -->
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-2 flex-wrap">
-            <p-button icon="pi pi-chevron-left" severity="secondary" size="small" [rounded]="true" (click)="prev()" />
-            <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold min-w-[12rem] text-center">{{ periodLabel() }}</h1>
-            <p-button icon="pi pi-chevron-right" severity="secondary" size="small" [rounded]="true" (click)="next()" />
-            <p-button [label]="t('calendar.today')" severity="secondary" size="small" (click)="goToToday()" />
+        <div class="flex flex-wrap items-center gap-2">
+            <p-button (click)="prev()" [rounded]="true" icon="pi pi-chevron-left" severity="secondary" size="small" />
+            <h1 class="text-surface-900 dark:text-surface-0 min-w-[12rem] text-center text-xl font-bold">
+                {{ periodLabel() }}
+            </h1>
+            <p-button (click)="next()" [rounded]="true" icon="pi pi-chevron-right" severity="secondary" size="small" />
+            <p-button (click)="goToToday()" [label]="t('calendar.today')" severity="secondary" size="small" />
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex flex-wrap items-center gap-2">
             <!-- View toggle -->
-            <div class="flex rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700 text-xs">
+            <div class="border-surface-200 dark:border-surface-700 flex overflow-hidden rounded-lg border text-xs">
                 <button
-                    class="px-3 py-1.5 transition-colors font-medium flex items-center gap-1"
-                    [class.bg-primary]="view() === 'month'" [class.text-white]="view() === 'month'"
-                    [class.text-surface-600]="view() !== 'month'" [class.dark:text-surface-400]="view() !== 'month'"
+                    class="flex items-center gap-1 px-3 py-1.5 font-medium transition-colors"
                     (click)="setView('month')"
-                ><i class="pi pi-calendar text-xs"></i> {{ t('calendar.monthView') }}</button>
+                    [class.bg-primary]="view() === 'month'"
+                    [class.dark:text-surface-400]="view() !== 'month'"
+                    [class.text-surface-600]="view() !== 'month'"
+                    [class.text-white]="view() === 'month'"
+                >
+                    <i class="pi pi-calendar text-xs"></i> {{ t('calendar.monthView') }}
+                </button>
                 <button
-                    class="px-3 py-1.5 transition-colors font-medium flex items-center gap-1 border-l border-surface-200 dark:border-surface-700"
-                    [class.bg-primary]="view() === 'week'" [class.text-white]="view() === 'week'"
-                    [class.text-surface-600]="view() !== 'week'" [class.dark:text-surface-400]="view() !== 'week'"
+                    class="border-surface-200 dark:border-surface-700 flex items-center gap-1 border-l px-3 py-1.5 font-medium transition-colors"
                     (click)="setView('week')"
-                ><i class="pi pi-calendar-times text-xs"></i> {{ t('calendar.weekView') }}</button>
+                    [class.bg-primary]="view() === 'week'"
+                    [class.dark:text-surface-400]="view() !== 'week'"
+                    [class.text-surface-600]="view() !== 'week'"
+                    [class.text-white]="view() === 'week'"
+                >
+                    <i class="pi pi-calendar-times text-xs"></i> {{ t('calendar.weekView') }}
+                </button>
                 <button
-                    class="px-3 py-1.5 transition-colors font-medium flex items-center gap-1 border-l border-surface-200 dark:border-surface-700"
-                    [class.bg-primary]="view() === 'list'" [class.text-white]="view() === 'list'"
-                    [class.text-surface-600]="view() !== 'list'" [class.dark:text-surface-400]="view() !== 'list'"
+                    class="border-surface-200 dark:border-surface-700 flex items-center gap-1 border-l px-3 py-1.5 font-medium transition-colors"
                     (click)="setView('list')"
-                ><i class="pi pi-list text-xs"></i> {{ t('calendar.listView') }}</button>
+                    [class.bg-primary]="view() === 'list'"
+                    [class.dark:text-surface-400]="view() !== 'list'"
+                    [class.text-surface-600]="view() !== 'list'"
+                    [class.text-white]="view() === 'list'"
+                >
+                    <i class="pi pi-list text-xs"></i> {{ t('calendar.listView') }}
+                </button>
             </div>
 
-            <p-button [label]="t('calendar.myIcal')" icon="pi pi-download" severity="secondary" size="small" (click)="downloadMyIcal()" />
-            <p-button [label]="t('calendar.createEvent')" icon="pi pi-plus" size="small" (click)="openCreate()" />
+            <p-button
+                (click)="downloadMyIcal()"
+                [label]="t('calendar.myIcal')"
+                icon="pi pi-download"
+                severity="secondary"
+                size="small"
+            />
+            <p-button (click)="openCreate()" [label]="t('calendar.createEvent')" icon="pi pi-plus" size="small" />
         </div>
     </div>
 
     <!-- ── Month View ────────────────────────────────────────────────────────── -->
     @if (view() === 'month') {
-        <div class="bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
-            <!-- Weekday headers -->
-            <div class="grid grid-cols-7 border-b border-surface-200 dark:border-surface-700">
-                @for (d of ['Mo','Di','Mi','Do','Fr','Sa','So']; track d) {
-                    <div class="py-2 text-center text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wide">{{ d }}</div>
-                }
+    <div
+        class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+    >
+        <!-- Weekday headers -->
+        <div class="border-surface-200 dark:border-surface-700 grid grid-cols-7 border-b">
+            @for (d of ['Mo','Di','Mi','Do','Fr','Sa','So']; track d) {
+            <div
+                class="text-surface-500 dark:text-surface-400 py-2 text-center text-xs font-semibold tracking-wide uppercase"
+            >
+                {{ d }}
             </div>
-
-            @if (loading()) {
-                <div class="p-8 flex justify-center">
-                    <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
-                </div>
-            } @else {
-                <!-- Days grid -->
-                @for (week of monthWeeks(); track $index) {
-                    <div class="grid grid-cols-7 border-b border-surface-200 dark:border-surface-700 last:border-b-0">
-                        @for (day of week; track day.date.getTime()) {
-                            <div
-                                class="min-h-[7rem] p-1.5 border-r border-surface-200 dark:border-surface-700 last:border-r-0 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
-                                [class.bg-surface-50]="!day.isCurrentMonth && !day.isToday"
-                                [class.dark:bg-surface-800]="!day.isCurrentMonth"
-                                (click)="openCreate(day.date)"
-                            >
-                                <!-- Day number -->
-                                <div class="mb-1 flex justify-end">
-                                    <span
-                                        class="h-6 w-6 flex items-center justify-center rounded-full text-xs font-semibold"
-                                        [class.bg-primary]="day.isToday"
-                                        [class.text-white]="day.isToday"
-                                        [class.text-surface-900]="!day.isToday && day.isCurrentMonth"
-                                        [class.dark:text-surface-0]="!day.isToday && day.isCurrentMonth"
-                                        [class.text-surface-400]="!day.isCurrentMonth"
-                                    >{{ day.date.getDate() }}</span>
-                                </div>
-                                <!-- Events -->
-                                @for (ev of day.events.slice(0, 3); track ev.id) {
-                                    <div
-                                        class="mb-0.5 truncate rounded px-1 py-0.5 text-xs text-white cursor-pointer"
-                                        [class]="getEventColorClass(ev.color)"
-                                        (click)="openDetail(ev); $event.stopPropagation()"
-                                        [pTooltip]="ev.title"
-                                    >
-                                        @if (!ev.allDay) { <span class="opacity-80 mr-0.5">{{ formatTime(ev.startDate) }}</span> }
-                                        {{ ev.title }}
-                                    </div>
-                                }
-                                @if (day.events.length > 3) {
-                                    <div class="text-xs text-surface-500 dark:text-surface-400 pl-1">+{{ day.events.length - 3 }} {{ t('calendar.more') }}</div>
-                                }
-                            </div>
-                        }
-                    </div>
-                }
             }
         </div>
+
+        @if (loading()) {
+        <div class="flex justify-center p-8">
+            <i class="pi pi-spin pi-spinner text-primary text-2xl"></i>
+        </div>
+        } @else {
+        <!-- Days grid -->
+        @for (week of monthWeeks(); track $index) {
+        <div class="border-surface-200 dark:border-surface-700 grid grid-cols-7 border-b last:border-b-0">
+            @for (day of week; track day.date.getTime()) {
+            <div
+                class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 min-h-[7rem] cursor-pointer border-r p-1.5 transition-colors last:border-r-0"
+                (click)="openCreate(day.date)"
+                [class.bg-surface-50]="!day.isCurrentMonth && !day.isToday"
+                [class.dark:bg-surface-800]="!day.isCurrentMonth"
+            >
+                <!-- Day number -->
+                <div class="mb-1 flex justify-end">
+                    <span
+                        class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold"
+                        [class.bg-primary]="day.isToday"
+                        [class.dark:text-surface-0]="!day.isToday && day.isCurrentMonth"
+                        [class.text-surface-400]="!day.isCurrentMonth"
+                        [class.text-surface-900]="!day.isToday && day.isCurrentMonth"
+                        [class.text-white]="day.isToday"
+                        >{{ day.date.getDate() }}</span
+                    >
+                </div>
+                <!-- Events -->
+                @for (ev of day.events.slice(0, 3); track ev.id) {
+                <div
+                    class="mb-0.5 cursor-pointer truncate rounded px-1 py-0.5 text-xs text-white"
+                    (click)="openDetail(ev); $event.stopPropagation()"
+                    [class]="getEventColorClass(ev.color)"
+                    [pTooltip]="ev.title"
+                >
+                    @if (!ev.allDay) { <span class="mr-0.5 opacity-80">{{ formatTime(ev.startDate) }}</span> } {{
+                    ev.title }}
+                </div>
+                } @if (day.events.length > 3) {
+                <div class="text-surface-500 dark:text-surface-400 pl-1 text-xs">
+                    +{{ day.events.length - 3 }} {{ t('calendar.more') }}
+                </div>
+                }
+            </div>
+            }
+        </div>
+        } }
+    </div>
     }
 
     <!-- ── Week View ─────────────────────────────────────────────────────────── -->
     @if (view() === 'week') {
-        <div class="bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
-            <div class="grid grid-cols-7">
-                @for (day of weekDays(); track day.date.getTime()) {
-                    <div class="border-r border-b border-surface-200 dark:border-surface-700 last:border-r-0">
-                        <!-- Day header -->
-                        <div
-                            class="p-2 text-center border-b border-surface-200 dark:border-surface-700"
-                            [class.bg-primary]="day.isToday"
-                        >
-                            <div class="text-xs text-surface-500 dark:text-surface-400" [class.text-white]="day.isToday">
-                                {{ ['Mo','Di','Mi','Do','Fr','Sa','So'][$index] }}
-                            </div>
-                            <div class="text-lg font-bold" [class.text-white]="day.isToday" [class.text-surface-900]="!day.isToday" [class.dark:text-surface-0]="!day.isToday">
-                                {{ day.date.getDate() }}
-                            </div>
-                            <div class="text-xs" [class.text-white]="day.isToday" [class.text-surface-400]="!day.isToday">
-                                {{ day.date.toLocaleDateString('de-DE', { month: 'short' }) }}
-                            </div>
-                        </div>
-                        <!-- Events -->
-                        <div class="min-h-[12rem] p-1.5 flex flex-col gap-1 cursor-pointer" (click)="openCreate(day.date)">
-                            @if (loading()) {
-                                <p-skeleton height="2rem" styleClass="rounded" />
-                            } @else {
-                                @for (ev of day.events; track ev.id) {
-                                    <div
-                                        class="rounded px-2 py-1 text-xs text-white cursor-pointer hover:opacity-90 transition-opacity"
-                                        [class]="getEventColorClass(ev.color)"
-                                        (click)="openDetail(ev); $event.stopPropagation()"
-                                    >
-                                        <div class="font-medium truncate">{{ ev.title }}</div>
-                                        @if (!ev.allDay) {
-                                            <div class="opacity-80">{{ formatTime(ev.startDate) }}</div>
-                                        }
-                                        @if (ev.location) {
-                                            <div class="opacity-80 truncate">📍 {{ ev.location }}</div>
-                                        }
-                                    </div>
-                                }
-                                @if (!day.events.length) {
-                                    <div class="flex-1"></div>
-                                }
-                            }
-                        </div>
+    <div
+        class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+    >
+        <div class="grid grid-cols-7">
+            @for (day of weekDays(); track day.date.getTime()) {
+            <div class="border-surface-200 dark:border-surface-700 border-r border-b last:border-r-0">
+                <!-- Day header -->
+                <div
+                    class="border-surface-200 dark:border-surface-700 border-b p-2 text-center"
+                    [class.bg-primary]="day.isToday"
+                >
+                    <div class="text-surface-500 dark:text-surface-400 text-xs" [class.text-white]="day.isToday">
+                        {{ ['Mo','Di','Mi','Do','Fr','Sa','So'][$index] }}
                     </div>
-                }
+                    <div
+                        class="text-lg font-bold"
+                        [class.dark:text-surface-0]="!day.isToday"
+                        [class.text-surface-900]="!day.isToday"
+                        [class.text-white]="day.isToday"
+                    >
+                        {{ day.date.getDate() }}
+                    </div>
+                    <div class="text-xs" [class.text-surface-400]="!day.isToday" [class.text-white]="day.isToday">
+                        {{ day.date.toLocaleDateString('de-DE', { month: 'short' }) }}
+                    </div>
+                </div>
+                <!-- Events -->
+                <div class="flex min-h-[12rem] cursor-pointer flex-col gap-1 p-1.5" (click)="openCreate(day.date)">
+                    @if (loading()) {
+                    <p-skeleton height="2rem" styleClass="rounded" />
+                    } @else { @for (ev of day.events; track ev.id) {
+                    <div
+                        class="cursor-pointer rounded px-2 py-1 text-xs text-white transition-opacity hover:opacity-90"
+                        (click)="openDetail(ev); $event.stopPropagation()"
+                        [class]="getEventColorClass(ev.color)"
+                    >
+                        <div class="truncate font-medium">{{ ev.title }}</div>
+                        @if (!ev.allDay) {
+                        <div class="opacity-80">{{ formatTime(ev.startDate) }}</div>
+                        } @if (ev.location) {
+                        <div class="truncate opacity-80">📍 {{ ev.location }}</div>
+                        }
+                    </div>
+                    } @if (!day.events.length) {
+                    <div class="flex-1"></div>
+                    } }
+                </div>
             </div>
+            }
         </div>
+    </div>
     }
 
     <!-- ── List View ──────────────────────────────────────────────────────────── -->
-    @if (view() === 'list') {
-        @if (loading()) {
-            <div class="flex flex-col gap-3">
-                @for (_ of [1,2,3,4]; track $index) {
-                    <p-skeleton height="5rem" styleClass="rounded-xl" />
-                }
-            </div>
-        } @else if (listGroups().length === 0) {
-            <div class="flex flex-col items-center justify-center py-16 text-center bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700">
-                <i class="pi pi-calendar text-surface-300 mb-4 text-5xl"></i>
-                <p class="text-surface-500">{{ t('calendar.noEvents') }}</p>
-                <p-button [label]="t('calendar.createEvent')" icon="pi pi-plus" class="mt-4" size="small" (click)="openCreate()" />
-            </div>
-        } @else {
-            <div class="flex flex-col gap-4">
-                @for (group of listGroups(); track group.dateLabel) {
-                    <div>
-                        <h3 class="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wide mb-2 px-1">
-                            {{ group.dateLabel }}
-                        </h3>
-                        <div class="flex flex-col gap-2">
-                            @for (ev of group.events; track ev.id) {
-                                <div
-                                    class="bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden flex cursor-pointer hover:shadow-md transition-shadow"
-                                    (click)="openDetail(ev)"
-                                >
-                                    <!-- Color stripe -->
-                                    <div class="w-1 flex-shrink-0" [class]="getEventColorClass(ev.color)"></div>
-                                    <div class="flex flex-1 flex-col sm:flex-row items-start sm:items-center gap-3 p-4">
-                                        <!-- Time -->
-                                        <div class="text-center min-w-[5rem]">
-                                            @if (ev.allDay) {
-                                                <span class="text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">{{ t('calendar.allDay') }}</span>
-                                            } @else {
-                                                <div class="text-surface-900 dark:text-surface-0 font-semibold text-sm">{{ formatTime(ev.startDate) }}</div>
-                                                <div class="text-surface-400 text-xs">{{ formatTime(ev.endDate) }}</div>
-                                            }
-                                        </div>
-                                        <!-- Info -->
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="text-surface-900 dark:text-surface-0 font-semibold">{{ ev.title }}</span>
-                                                @if (ev.recurrenceRule) {
-                                                    <i class="pi pi-refresh text-xs text-surface-400" [pTooltip]="t('calendar.recurring')"></i>
-                                                }
-                                                @if (!ev.isPublic) {
-                                                    <i class="pi pi-lock text-xs text-surface-400" [pTooltip]="t('calendar.private')"></i>
-                                                }
-                                            </div>
-                                            @if (ev.location) {
-                                                <div class="text-surface-500 text-sm flex items-center gap-1 mt-0.5">
-                                                    <i class="pi pi-map-marker text-xs"></i> {{ ev.location }}
-                                                </div>
-                                            }
-                                            <div class="text-surface-400 text-xs mt-1">
-                                                {{ t('calendar.by') }} {{ ev.createdByDisplayName }}
-                                                @if (ev.attendeeCount > 0) {
-                                                    · {{ ev.acceptedCount }}/{{ ev.attendeeCount }} {{ t('calendar.attendees') }}
-                                                }
-                                            </div>
-                                        </div>
-                                        <!-- Status chip -->
-                                        @if (ev.myStatus) {
-                                            <p-tag
-                                                [value]="t('calendar.status.' + ev.myStatus)"
-                                                [severity]="statusSeverity(ev.myStatus)"
-                                                styleClass="text-xs"
-                                            />
-                                        }
-                                    </div>
-                                </div>
+    @if (view() === 'list') { @if (loading()) {
+    <div class="flex flex-col gap-3">
+        @for (_ of [1,2,3,4]; track $index) {
+        <p-skeleton height="5rem" styleClass="rounded-xl" />
+        }
+    </div>
+    } @else if (listGroups().length === 0) {
+    <div
+        class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col items-center justify-center rounded-xl border py-16 text-center"
+    >
+        <i class="pi pi-calendar text-surface-300 mb-4 text-5xl"></i>
+        <p class="text-surface-500">{{ t('calendar.noEvents') }}</p>
+        <p-button
+            class="mt-4"
+            (click)="openCreate()"
+            [label]="t('calendar.createEvent')"
+            icon="pi pi-plus"
+            size="small"
+        />
+    </div>
+    } @else {
+    <div class="flex flex-col gap-4">
+        @for (group of listGroups(); track group.dateLabel) {
+        <div>
+            <h3 class="text-surface-500 dark:text-surface-400 mb-2 px-1 text-sm font-semibold tracking-wide uppercase">
+                {{ group.dateLabel }}
+            </h3>
+            <div class="flex flex-col gap-2">
+                @for (ev of group.events; track ev.id) {
+                <div
+                    class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex cursor-pointer overflow-hidden rounded-xl border transition-shadow hover:shadow-md"
+                    (click)="openDetail(ev)"
+                >
+                    <!-- Color stripe -->
+                    <div class="w-1 flex-shrink-0" [class]="getEventColorClass(ev.color)"></div>
+                    <div class="flex flex-1 flex-col items-start gap-3 p-4 sm:flex-row sm:items-center">
+                        <!-- Time -->
+                        <div class="min-w-[5rem] text-center">
+                            @if (ev.allDay) {
+                            <span class="text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs font-medium"
+                                >{{ t('calendar.allDay') }}</span
+                            >
+                            } @else {
+                            <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                {{ formatTime(ev.startDate) }}
+                            </div>
+                            <div class="text-surface-400 text-xs">{{ formatTime(ev.endDate) }}</div>
                             }
                         </div>
+                        <!-- Info -->
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-surface-900 dark:text-surface-0 font-semibold">{{ ev.title }}</span>
+                                @if (ev.recurrenceRule) {
+                                <i
+                                    class="pi pi-refresh text-surface-400 text-xs"
+                                    [pTooltip]="t('calendar.recurring')"
+                                ></i>
+                                } @if (!ev.isPublic) {
+                                <i class="pi pi-lock text-surface-400 text-xs" [pTooltip]="t('calendar.private')"></i>
+                                }
+                            </div>
+                            @if (ev.location) {
+                            <div class="text-surface-500 mt-0.5 flex items-center gap-1 text-sm">
+                                <i class="pi pi-map-marker text-xs"></i> {{ ev.location }}
+                            </div>
+                            }
+                            <div class="text-surface-400 mt-1 text-xs">
+                                {{ t('calendar.by') }} {{ ev.createdByDisplayName }} @if (ev.attendeeCount > 0) { · {{
+                                ev.acceptedCount }}/{{ ev.attendeeCount }} {{ t('calendar.attendees') }} }
+                            </div>
+                        </div>
+                        <!-- Status chip -->
+                        @if (ev.myStatus) {
+                        <p-tag
+                            [severity]="statusSeverity(ev.myStatus)"
+                            [value]="t('calendar.status.' + ev.myStatus)"
+                            styleClass="text-xs"
+                        />
+                        }
                     </div>
+                </div>
                 }
             </div>
+        </div>
         }
-    }
+    </div>
+    } }
 </div>
 
 <!-- ── Create / Edit Dialog ──────────────────────────────────────────────────── -->
 <p-dialog
-    [visible]="createDialogVisible()" (visibleChange)="createDialogVisible.set($event)"
+    (visibleChange)="createDialogVisible.set($event)"
+    [closable]="true"
+    [draggable]="false"
     [header]="editingId ? t('calendar.editEvent') : t('calendar.createEvent')"
     [modal]="true"
     [style]="{ width: '42rem' }"
-    [closable]="true"
-    [draggable]="false"
+    [visible]="createDialogVisible()"
     *transloco="let t"
 >
     <div class="flex flex-col gap-4">
         <!-- Title -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.title') }} *</label>
-            <input pInputText [(ngModel)]="form.title" [placeholder]="t('calendar.form.titlePlaceholder')" class="w-full" />
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                >{{ t('calendar.form.title') }} *</label
+            >
+            <input
+                class="w-full"
+                [(ngModel)]="form.title"
+                [placeholder]="t('calendar.form.titlePlaceholder')"
+                pInputText
+            />
         </div>
 
         <!-- Description -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.description') }}</label>
-            <textarea pTextarea [(ngModel)]="form.description" rows="3" [autoResize]="true" [placeholder]="t('calendar.form.descriptionPlaceholder')" class="w-full"></textarea>
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                >{{ t('calendar.form.description') }}</label
+            >
+            <textarea
+                class="w-full"
+                [(ngModel)]="form.description"
+                [autoResize]="true"
+                [placeholder]="t('calendar.form.descriptionPlaceholder')"
+                pTextarea
+                rows="3"
+            ></textarea>
         </div>
 
         <!-- Location -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.location') }}</label>
-            <input pInputText [(ngModel)]="form.location" [placeholder]="t('calendar.form.locationPlaceholder')" class="w-full" />
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                >{{ t('calendar.form.location') }}</label
+            >
+            <input
+                class="w-full"
+                [(ngModel)]="form.location"
+                [placeholder]="t('calendar.form.locationPlaceholder')"
+                pInputText
+            />
         </div>
 
         <!-- All Day -->
         <div class="flex items-center gap-2">
             <p-checkbox [(ngModel)]="form.allDay" [binary]="true" inputId="allDayChk" />
-            <label for="allDayChk" class="text-sm cursor-pointer text-surface-700 dark:text-surface-300">{{ t('calendar.form.allDay') }}</label>
+            <label class="text-surface-700 dark:text-surface-300 cursor-pointer text-sm" for="allDayChk"
+                >{{ t('calendar.form.allDay') }}</label
+            >
         </div>
 
         <!-- Start / End Date -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
-                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.startDate') }} *</label>
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    >{{ t('calendar.form.startDate') }} *</label
+                >
                 <p-datepicker
                     [(ngModel)]="form.startDate"
-                    [showTime]="!form.allDay"
-                    [showIcon]="true"
                     [dateFormat]="form.allDay ? 'dd.mm.yy' : 'dd.mm.yy'"
+                    [showIcon]="true"
+                    [showTime]="!form.allDay"
                     styleClass="w-full"
                 />
             </div>
             <div class="flex flex-col gap-1.5">
-                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.endDate') }} *</label>
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    >{{ t('calendar.form.endDate') }} *</label
+                >
                 <p-datepicker
                     [(ngModel)]="form.endDate"
-                    [showTime]="!form.allDay"
-                    [showIcon]="true"
                     [dateFormat]="form.allDay ? 'dd.mm.yy' : 'dd.mm.yy'"
+                    [showIcon]="true"
+                    [showTime]="!form.allDay"
                     styleClass="w-full"
                 />
             </div>
         </div>
 
         <!-- Color & Settings row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <!-- Color -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.color') }}</label>
-                <div class="flex gap-2 flex-wrap">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    >{{ t('calendar.form.color') }}</label
+                >
+                <div class="flex flex-wrap gap-2">
                     @for (c of eventColors; track c.value) {
-                        <button
-                            class="h-7 w-7 rounded-full transition-all border-2"
-                            [class]="c.css"
-                            [class.border-surface-900]="form.color === c.value"
-                            [class.dark:border-surface-0]="form.color === c.value"
-                            [class.border-transparent]="form.color !== c.value"
-                            [pTooltip]="c.label"
-                            (click)="form.color = c.value"
-                        ></button>
+                    <button
+                        class="h-7 w-7 rounded-full border-2 transition-all"
+                        (click)="form.color = c.value"
+                        [class.border-surface-900]="form.color === c.value"
+                        [class.border-transparent]="form.color !== c.value"
+                        [class.dark:border-surface-0]="form.color === c.value"
+                        [class]="c.css"
+                        [pTooltip]="c.label"
+                    ></button>
                     }
                 </div>
             </div>
             <!-- Max attendees -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.form.maxAttendees') }}</label>
-                <p-inputnumber [(ngModel)]="form.maxAttendees" [min]="1" [showButtons]="true" [placeholder]="t('calendar.form.maxAttendeesUnlimited')" styleClass="w-full" />
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                    >{{ t('calendar.form.maxAttendees') }}</label
+                >
+                <p-inputnumber
+                    [(ngModel)]="form.maxAttendees"
+                    [min]="1"
+                    [placeholder]="t('calendar.form.maxAttendeesUnlimited')"
+                    [showButtons]="true"
+                    styleClass="w-full"
+                />
             </div>
         </div>
 
         <!-- Public / Private -->
         <div class="flex items-center gap-2">
             <p-checkbox [(ngModel)]="form.isPublic" [binary]="true" inputId="publicChk" />
-            <label for="publicChk" class="text-sm cursor-pointer text-surface-700 dark:text-surface-300">{{ t('calendar.form.isPublic') }}</label>
+            <label class="text-surface-700 dark:text-surface-300 cursor-pointer text-sm" for="publicChk"
+                >{{ t('calendar.form.isPublic') }}</label
+            >
         </div>
 
         <!-- Recurring -->
         <div class="flex items-center gap-2">
             <p-checkbox [(ngModel)]="form.isRecurring" [binary]="true" inputId="recurringChk" />
-            <label for="recurringChk" class="text-sm cursor-pointer text-surface-700 dark:text-surface-300">{{ t('calendar.form.recurring') }}</label>
+            <label class="text-surface-700 dark:text-surface-300 cursor-pointer text-sm" for="recurringChk"
+                >{{ t('calendar.form.recurring') }}</label
+            >
         </div>
 
         @if (form.isRecurring) {
-            <div class="bg-surface-50 dark:bg-surface-800 rounded-xl p-4 flex flex-col gap-3 border border-surface-200 dark:border-surface-700">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ t('calendar.form.frequency') }}</label>
-                        <p-select [options]="frequencyOptions" [(ngModel)]="form.recurrenceFrequency" optionLabel="label" optionValue="value" styleClass="w-full" />
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ t('calendar.form.interval') }}</label>
-                        <p-inputnumber [(ngModel)]="form.recurrenceInterval" [min]="1" [max]="99" [showButtons]="true" styleClass="w-full" />
-                    </div>
-                </div>
-                @if (form.recurrenceFrequency === 'weekly') {
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ t('calendar.form.byDay') }}</label>
-                        <div class="flex gap-2 flex-wrap">
-                            @for (opt of byDayOptions; track opt.value) {
-                                <button
-                                    class="rounded-lg px-2.5 py-1 text-xs font-medium border transition-colors"
-                                    [class.bg-primary]="form.recurrenceByDay.includes(opt.value)"
-                                    [class.text-white]="form.recurrenceByDay.includes(opt.value)"
-                                    [class.border-primary]="form.recurrenceByDay.includes(opt.value)"
-                                    [class.border-surface-200]="!form.recurrenceByDay.includes(opt.value)"
-                                    [class.dark:border-surface-600]="!form.recurrenceByDay.includes(opt.value)"
-                                    [class.text-surface-600]="!form.recurrenceByDay.includes(opt.value)"
-                                    (click)="form.recurrenceByDay.includes(opt.value) ? form.recurrenceByDay.splice(form.recurrenceByDay.indexOf(opt.value),1) : form.recurrenceByDay.push(opt.value)"
-                                >{{ opt.label }}</button>
-                            }
-                        </div>
-                    </div>
-                }
+        <div
+            class="bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700 flex flex-col gap-3 rounded-xl border p-4"
+        >
+            <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-medium text-surface-600 dark:text-surface-400">{{ t('calendar.form.recurrenceUntil') }}</label>
-                    <p-datepicker [(ngModel)]="form.recurrenceUntil" [showIcon]="true" dateFormat="dd.mm.yy" styleClass="w-full" [placeholder]="t('calendar.form.recurrenceUntilHint')" />
+                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                        >{{ t('calendar.form.frequency') }}</label
+                    >
+                    <p-select
+                        [(ngModel)]="form.recurrenceFrequency"
+                        [options]="frequencyOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                        >{{ t('calendar.form.interval') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="form.recurrenceInterval"
+                        [max]="99"
+                        [min]="1"
+                        [showButtons]="true"
+                        styleClass="w-full"
+                    />
                 </div>
             </div>
+            @if (form.recurrenceFrequency === 'weekly') {
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                    >{{ t('calendar.form.byDay') }}</label
+                >
+                <div class="flex flex-wrap gap-2">
+                    @for (opt of byDayOptions; track opt.value) {
+                    <button
+                        class="rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
+                        (click)="form.recurrenceByDay.includes(opt.value) ? form.recurrenceByDay.splice(form.recurrenceByDay.indexOf(opt.value),1) : form.recurrenceByDay.push(opt.value)"
+                        [class.bg-primary]="form.recurrenceByDay.includes(opt.value)"
+                        [class.border-primary]="form.recurrenceByDay.includes(opt.value)"
+                        [class.border-surface-200]="!form.recurrenceByDay.includes(opt.value)"
+                        [class.dark:border-surface-600]="!form.recurrenceByDay.includes(opt.value)"
+                        [class.text-surface-600]="!form.recurrenceByDay.includes(opt.value)"
+                        [class.text-white]="form.recurrenceByDay.includes(opt.value)"
+                    >
+                        {{ opt.label }}
+                    </button>
+                    }
+                </div>
+            </div>
+            }
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-600 dark:text-surface-400 text-xs font-medium"
+                    >{{ t('calendar.form.recurrenceUntil') }}</label
+                >
+                <p-datepicker
+                    [(ngModel)]="form.recurrenceUntil"
+                    [placeholder]="t('calendar.form.recurrenceUntilHint')"
+                    [showIcon]="true"
+                    dateFormat="dd.mm.yy"
+                    styleClass="w-full"
+                />
+            </div>
+        </div>
         }
     </div>
 
     <ng-template #footer>
         <div class="flex justify-end gap-2">
-            <p-button [label]="t('common.cancel')" severity="secondary" (click)="createDialogVisible.set(false)" />
+            <p-button (click)="createDialogVisible.set(false)" [label]="t('common.cancel')" severity="secondary" />
             <p-button
-                [label]="t('common.save')"
-                icon="pi pi-check"
-                [loading]="saving()"
-                [disabled]="!form.title"
                 (click)="saveEvent()"
+                [disabled]="!form.title"
+                [label]="t('common.save')"
+                [loading]="saving()"
+                icon="pi pi-check"
             />
         </div>
     </ng-template>
@@ -383,214 +496,252 @@
 
 <!-- ── Event Detail Dialog ────────────────────────────────────────────────────── -->
 <p-dialog
-    [visible]="detailDialogVisible()" (visibleChange)="detailDialogVisible.set($event)"
+    (visibleChange)="detailDialogVisible.set($event)"
+    [closable]="true"
+    [draggable]="false"
     [header]="selectedEvent()?.title ?? ''"
     [modal]="true"
     [style]="{ width: '40rem' }"
-    [closable]="true"
-    [draggable]="false"
+    [visible]="detailDialogVisible()"
     *transloco="let t"
 >
     @if (eventLoading()) {
-        <div class="flex justify-center py-8">
-            <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
-        </div>
+    <div class="flex justify-center py-8">
+        <i class="pi pi-spin pi-spinner text-primary text-2xl"></i>
+    </div>
     } @else if (selectedEvent(); as ev) {
-        <div class="flex flex-col gap-4">
-            <!-- Color bar -->
-            <div class="h-1.5 rounded-full w-full" [class]="getEventColorClass(ev.color)"></div>
+    <div class="flex flex-col gap-4">
+        <!-- Color bar -->
+        <div class="h-1.5 w-full rounded-full" [class]="getEventColorClass(ev.color)"></div>
 
-            <!-- Date & Time -->
-            <div class="flex items-center gap-2 text-sm text-surface-700 dark:text-surface-300">
-                <i class="pi pi-calendar text-primary"></i>
-                <span>
-                    @if (ev.allDay) {
-                        {{ formatDate(ev.startDate) }} · <span class="font-medium">{{ t('calendar.allDay') }}</span>
-                    } @else {
-                        {{ formatDate(ev.startDate) }}, {{ formatTime(ev.startDate) }} – {{ formatTime(ev.endDate) }}
-                    }
-                </span>
-                @if (ev.recurrenceRule) {
-                    <i class="pi pi-refresh text-surface-400 text-xs" [pTooltip]="t('calendar.recurring')"></i>
+        <!-- Date & Time -->
+        <div class="text-surface-700 dark:text-surface-300 flex items-center gap-2 text-sm">
+            <i class="pi pi-calendar text-primary"></i>
+            <span>
+                @if (ev.allDay) { {{ formatDate(ev.startDate) }} ·
+                <span class="font-medium">{{ t('calendar.allDay') }}</span>
+                } @else { {{ formatDate(ev.startDate) }}, {{ formatTime(ev.startDate) }} – {{ formatTime(ev.endDate) }}
                 }
-            </div>
-
-            <!-- Location -->
-            @if (ev.location) {
-                <div class="flex items-center gap-2 text-sm text-surface-700 dark:text-surface-300">
-                    <i class="pi pi-map-marker text-primary"></i>
-                    <span>{{ ev.location }}</span>
-                </div>
+            </span>
+            @if (ev.recurrenceRule) {
+            <i class="pi pi-refresh text-surface-400 text-xs" [pTooltip]="t('calendar.recurring')"></i>
             }
+        </div>
 
-            <!-- Organizer -->
-            <div class="flex items-center gap-2 text-sm text-surface-700 dark:text-surface-300">
-                <i class="pi pi-user text-primary"></i>
-                <span>{{ t('calendar.organizer') }}: <span class="font-medium">{{ ev.createdByDisplayName }}</span></span>
+        <!-- Location -->
+        @if (ev.location) {
+        <div class="text-surface-700 dark:text-surface-300 flex items-center gap-2 text-sm">
+            <i class="pi pi-map-marker text-primary"></i>
+            <span>{{ ev.location }}</span>
+        </div>
+        }
+
+        <!-- Organizer -->
+        <div class="text-surface-700 dark:text-surface-300 flex items-center gap-2 text-sm">
+            <i class="pi pi-user text-primary"></i>
+            <span>{{ t('calendar.organizer') }}: <span class="font-medium">{{ ev.createdByDisplayName }}</span></span>
+        </div>
+
+        <!-- Description -->
+        @if (ev.description) {
+        <p
+            class="text-surface-600 dark:text-surface-300 bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-sm leading-relaxed"
+        >
+            {{ ev.description }}
+        </p>
+        }
+
+        <!-- Attendee stats -->
+        <div class="border-surface-100 dark:border-surface-800 flex items-center gap-4 border-t border-b py-2">
+            <div class="flex items-center gap-1.5">
+                <i class="pi pi-users text-sm text-green-500"></i>
+                <span class="text-sm font-semibold text-green-600 dark:text-green-400">{{ ev.acceptedCount }}</span>
+                <span class="text-surface-500 text-xs">{{ t('calendar.accepted') }}</span>
             </div>
-
-            <!-- Description -->
-            @if (ev.description) {
-                <p class="text-surface-600 dark:text-surface-300 text-sm leading-relaxed bg-surface-50 dark:bg-surface-800 rounded-lg p-3">
-                    {{ ev.description }}
-                </p>
+            <div class="flex items-center gap-1.5">
+                <i class="pi pi-users text-surface-400 text-sm"></i>
+                <span class="text-sm font-semibold">{{ ev.attendeeCount }}</span>
+                <span class="text-surface-500 text-xs">{{ t('calendar.attendees') }}</span>
+            </div>
+            @if (ev.maxAttendees) {
+            <div class="flex items-center gap-1.5">
+                <i class="pi pi-chart-bar text-primary text-sm"></i>
+                <span class="text-surface-500 text-xs">{{ t('calendar.maxAttendees') }}: {{ ev.maxAttendees }}</span>
+            </div>
             }
+        </div>
 
-            <!-- Attendee stats -->
-            <div class="flex items-center gap-4 py-2 border-t border-b border-surface-100 dark:border-surface-800">
-                <div class="flex items-center gap-1.5">
-                    <i class="pi pi-users text-green-500 text-sm"></i>
-                    <span class="text-sm font-semibold text-green-600 dark:text-green-400">{{ ev.acceptedCount }}</span>
-                    <span class="text-xs text-surface-500">{{ t('calendar.accepted') }}</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <i class="pi pi-users text-surface-400 text-sm"></i>
-                    <span class="text-sm font-semibold">{{ ev.attendeeCount }}</span>
-                    <span class="text-xs text-surface-500">{{ t('calendar.attendees') }}</span>
-                </div>
-                @if (ev.maxAttendees) {
-                    <div class="flex items-center gap-1.5">
-                        <i class="pi pi-chart-bar text-primary text-sm"></i>
-                        <span class="text-xs text-surface-500">{{ t('calendar.maxAttendees') }}: {{ ev.maxAttendees }}</span>
+        <!-- Attendees list -->
+        @if (ev.attendees.length > 0) {
+        <div>
+            <h4 class="text-surface-500 dark:text-surface-400 mb-2 text-xs font-semibold tracking-wide uppercase">
+                {{ t('calendar.attendeeList') }}
+            </h4>
+            <div class="flex max-h-48 flex-col gap-1.5 overflow-y-auto">
+                @for (att of ev.attendees; track att.id) {
+                <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-3 py-2">
+                    <div
+                        class="bg-primary/15 text-primary flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold"
+                    >
+                        {{ att.displayName.charAt(0).toUpperCase() }}
                     </div>
-                }
-            </div>
-
-            <!-- Attendees list -->
-            @if (ev.attendees.length > 0) {
-                <div>
-                    <h4 class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wide mb-2">{{ t('calendar.attendeeList') }}</h4>
-                    <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                        @for (att of ev.attendees; track att.id) {
-                            <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-surface-50 dark:bg-surface-800">
-                                <div class="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center text-primary font-semibold text-xs">
-                                    {{ att.displayName.charAt(0).toUpperCase() }}
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="text-sm font-medium truncate">{{ att.displayName }}</div>
-                                    @if (att.companions > 0) {
-                                        <div class="text-xs text-surface-400">+{{ att.companions }} {{ t('calendar.companions') }}</div>
-                                    }
-                                    @if (att.declineReason) {
-                                        <div class="text-xs text-surface-400 italic truncate">{{ att.declineReason }}</div>
-                                    }
-                                </div>
-                                <p-tag [value]="t('calendar.status.' + att.status)" [severity]="statusSeverity(att.status)" styleClass="text-xs" />
-                            </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="truncate text-sm font-medium">{{ att.displayName }}</div>
+                        @if (att.companions > 0) {
+                        <div class="text-surface-400 text-xs">+{{ att.companions }} {{ t('calendar.companions') }}</div>
+                        } @if (att.declineReason) {
+                        <div class="text-surface-400 truncate text-xs italic">{{ att.declineReason }}</div>
                         }
                     </div>
+                    <p-tag
+                        [severity]="statusSeverity(att.status)"
+                        [value]="t('calendar.status.' + att.status)"
+                        styleClass="text-xs"
+                    />
                 </div>
-            }
-
-            <!-- Action buttons -->
-            <div class="flex flex-wrap gap-2 pt-2">
-                <!-- RSVP -->
-                <p-button
-                    [label]="ev.myStatus ? t('calendar.changeRsvp') : t('calendar.rsvp')"
-                    icon="pi pi-check-circle"
-                    size="small"
-                    (click)="rsvpDialogVisible.set(true); rsvpStatus.set(ev.myStatus)"
-                />
-                <!-- iCal download -->
-                <p-button
-                    [label]="t('calendar.downloadIcal')"
-                    icon="pi pi-download"
-                    severity="secondary"
-                    size="small"
-                    (click)="downloadIcal(ev.id)"
-                />
-                <!-- Invite (creator only) -->
-                @if (isCreator(ev)) {
-                    <p-button
-                        [label]="t('calendar.invite')"
-                        icon="pi pi-user-plus"
-                        severity="secondary"
-                        size="small"
-                        (click)="inviteDialogVisible.set(true); inviteUserIds = ''"
-                    />
-                    <p-button
-                        [label]="t('common.edit')"
-                        icon="pi pi-pencil"
-                        severity="secondary"
-                        size="small"
-                        (click)="detailDialogVisible.set(false); openEdit(ev)"
-                    />
-                    <p-button
-                        [label]="t('common.delete')"
-                        icon="pi pi-trash"
-                        severity="danger"
-                        size="small"
-                        (click)="deleteEvent(ev.id)"
-                    />
                 }
             </div>
         </div>
+        }
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap gap-2 pt-2">
+            <!-- RSVP -->
+            <p-button
+                (click)="rsvpDialogVisible.set(true); rsvpStatus.set(ev.myStatus)"
+                [label]="ev.myStatus ? t('calendar.changeRsvp') : t('calendar.rsvp')"
+                icon="pi pi-check-circle"
+                size="small"
+            />
+            <!-- iCal download -->
+            <p-button
+                (click)="downloadIcal(ev.id)"
+                [label]="t('calendar.downloadIcal')"
+                icon="pi pi-download"
+                severity="secondary"
+                size="small"
+            />
+            <!-- Invite (creator only) -->
+            @if (isCreator(ev)) {
+            <p-button
+                (click)="inviteDialogVisible.set(true); inviteUserIds = ''"
+                [label]="t('calendar.invite')"
+                icon="pi pi-user-plus"
+                severity="secondary"
+                size="small"
+            />
+            <p-button
+                (click)="detailDialogVisible.set(false); openEdit(ev)"
+                [label]="t('common.edit')"
+                icon="pi pi-pencil"
+                severity="secondary"
+                size="small"
+            />
+            <p-button
+                (click)="deleteEvent(ev.id)"
+                [label]="t('common.delete')"
+                icon="pi pi-trash"
+                severity="danger"
+                size="small"
+            />
+            }
+        </div>
+    </div>
     }
 </p-dialog>
 
 <!-- ── RSVP Dialog ────────────────────────────────────────────────────────────── -->
 <p-dialog
-    [visible]="rsvpDialogVisible()" (visibleChange)="rsvpDialogVisible.set($event)"
+    (visibleChange)="rsvpDialogVisible.set($event)"
+    [closable]="true"
     [header]="t('calendar.rsvpTitle')"
     [modal]="true"
     [style]="{ width: '26rem' }"
-    [closable]="true"
+    [visible]="rsvpDialogVisible()"
     *transloco="let t"
 >
     <div class="flex flex-col gap-4">
         <!-- Status buttons -->
-        <div class="flex gap-2 flex-wrap">
+        <div class="flex flex-wrap gap-2">
             @for (opt of rsvpOptions; track opt.status) {
-                <button
-                    class="flex-1 rounded-xl py-2 px-3 text-sm font-medium border-2 transition-all flex flex-col items-center gap-1"
-                    [class]="rsvpStatus() === opt.status ? opt.borderClass + ' ' + opt.bgClass : 'border-surface-200 dark:border-surface-600'"
-                    (click)="rsvpStatus.set(opt.status)"
-                >
-                    <i [class]="'pi ' + opt.icon + ' text-lg'"></i>
-                    {{ t('calendar.status.' + opt.status) }}
-                </button>
+            <button
+                class="flex flex-1 flex-col items-center gap-1 rounded-xl border-2 px-3 py-2 text-sm font-medium transition-all"
+                (click)="rsvpStatus.set(opt.status)"
+                [class]="rsvpStatus() === opt.status ? opt.borderClass + ' ' + opt.bgClass : 'border-surface-200 dark:border-surface-600'"
+            >
+                <i [class]="'pi ' + opt.icon + ' text-lg'"></i>
+                {{ t('calendar.status.' + opt.status) }}
+            </button>
             }
         </div>
 
         <!-- Companions -->
         <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.companions') }}</label>
-            <p-inputnumber [(ngModel)]="rsvpCompanions" [min]="0" [max]="20" [showButtons]="true" styleClass="w-full" />
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                >{{ t('calendar.companions') }}</label
+            >
+            <p-inputnumber [(ngModel)]="rsvpCompanions" [max]="20" [min]="0" [showButtons]="true" styleClass="w-full" />
         </div>
 
         <!-- Decline reason -->
         @if (rsvpStatus() === 'declined') {
-            <div class="flex flex-col gap-1.5">
-                <label class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ t('calendar.declineReason') }}</label>
-                <textarea pTextarea [(ngModel)]="rsvpDeclineReason" rows="2" [placeholder]="t('calendar.declineReasonPlaceholder')" class="w-full"></textarea>
-            </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium"
+                >{{ t('calendar.declineReason') }}</label
+            >
+            <textarea
+                class="w-full"
+                [(ngModel)]="rsvpDeclineReason"
+                [placeholder]="t('calendar.declineReasonPlaceholder')"
+                pTextarea
+                rows="2"
+            ></textarea>
+        </div>
         }
     </div>
     <ng-template #footer>
         <div class="flex justify-end gap-2">
-            <p-button [label]="t('common.cancel')" severity="secondary" (click)="rsvpDialogVisible.set(false)" />
-            <p-button [label]="t('common.save')" icon="pi pi-check" [loading]="rsvpSaving()" [disabled]="!rsvpStatus()" (click)="submitRsvp()" />
+            <p-button (click)="rsvpDialogVisible.set(false)" [label]="t('common.cancel')" severity="secondary" />
+            <p-button
+                (click)="submitRsvp()"
+                [disabled]="!rsvpStatus()"
+                [label]="t('common.save')"
+                [loading]="rsvpSaving()"
+                icon="pi pi-check"
+            />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- ── Invite Dialog ──────────────────────────────────────────────────────────── -->
 <p-dialog
-    [visible]="inviteDialogVisible()" (visibleChange)="inviteDialogVisible.set($event)"
+    (visibleChange)="inviteDialogVisible.set($event)"
+    [closable]="true"
     [header]="t('calendar.inviteTitle')"
     [modal]="true"
     [style]="{ width: '26rem' }"
-    [closable]="true"
+    [visible]="inviteDialogVisible()"
     *transloco="let t"
 >
     <div class="flex flex-col gap-3">
-        <p class="text-sm text-surface-500">{{ t('calendar.inviteHint') }}</p>
-        <textarea pTextarea [(ngModel)]="inviteUserIds" rows="4" [placeholder]="t('calendar.invitePlaceholder')" class="w-full"></textarea>
+        <p class="text-surface-500 text-sm">{{ t('calendar.inviteHint') }}</p>
+        <textarea
+            class="w-full"
+            [(ngModel)]="inviteUserIds"
+            [placeholder]="t('calendar.invitePlaceholder')"
+            pTextarea
+            rows="4"
+        ></textarea>
     </div>
     <ng-template #footer>
         <div class="flex justify-end gap-2">
-            <p-button [label]="t('common.cancel')" severity="secondary" (click)="inviteDialogVisible.set(false)" />
-            <p-button [label]="t('calendar.sendInvitations')" icon="pi pi-send" [loading]="inviteSaving()" (click)="submitInvite()" />
+            <p-button (click)="inviteDialogVisible.set(false)" [label]="t('common.cancel')" severity="secondary" />
+            <p-button
+                (click)="submitInvite()"
+                [label]="t('calendar.sendInvitations')"
+                [loading]="inviteSaving()"
+                icon="pi pi-send"
+            />
         </div>
     </ng-template>
 </p-dialog>

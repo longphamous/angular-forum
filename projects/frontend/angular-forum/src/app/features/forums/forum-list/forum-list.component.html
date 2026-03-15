@@ -1,113 +1,111 @@
 <div class="flex flex-col gap-6" *transloco="let t">
+    <app-teaser-slideshow />
 
-<app-teaser-slideshow />
+    <div class="card">
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold">{{ t("forum.title") }}</h1>
+            <p-button [label]="t('forum.newForum')" icon="pi pi-plus" severity="secondary" />
+        </div>
 
-<div class="card">
-    <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-2xl font-bold">{{ t('forum.title') }}</h1>
-        <p-button icon="pi pi-plus" [label]="t('forum.newForum')" severity="secondary" />
-    </div>
+        @if (facade.error()) {
+            <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
+        }
 
-    @if (facade.error()) {
-        <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
-    }
+        @if (facade.loading()) {
+            <div class="flex flex-col gap-4">
+                @for (_ of [1, 2, 3]; track $index) {
+                    <div class="card border-surface-200 dark:border-surface-700 rounded border">
+                        <p-skeleton height="2rem" styleClass="mb-3 w-1/3" />
+                        <p-skeleton height="1rem" styleClass="mb-4 w-1/2" />
+                        @for (__ of [1, 2]; track $index) {
+                            <p-skeleton height="3.5rem" styleClass="mb-2" />
+                        }
+                    </div>
+                }
+            </div>
+        } @else {
+            @for (category of facade.categories(); track category.id) {
+                <div class="mb-6">
+                    <div class="bg-primary-500 dark:bg-primary-700 mb-1 rounded-t px-4 py-3">
+                        <span class="text-lg font-semibold text-white">{{ category.name }}</span>
+                        @if (category.description) {
+                            <p class="text-primary-100 mt-0.5 text-sm">{{ category.description }}</p>
+                        }
+                    </div>
 
-    @if (facade.loading()) {
-        <div class="flex flex-col gap-4">
-            @for (_ of [1, 2, 3]; track $index) {
-                <div class="card border-surface-200 dark:border-surface-700 rounded border">
-                    <p-skeleton height="2rem" styleClass="mb-3 w-1/3" />
-                    <p-skeleton height="1rem" styleClass="mb-4 w-1/2" />
-                    @for (__ of [1, 2]; track $index) {
-                        <p-skeleton height="3.5rem" styleClass="mb-2" />
-                    }
+                    <div class="border-surface-200 dark:border-surface-700 rounded-b border border-t-0">
+                        @if (!category.forums || category.forums.length === 0) {
+                            <div class="text-surface-500 px-4 py-6 text-center text-sm">{{ t("forum.noForums") }}</div>
+                        } @else {
+                            @for (forum of category.forums; track forum.id; let last = $last) {
+                                <a
+                                    class="hover:bg-surface-50 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-4 px-4 py-4 no-underline transition-colors"
+                                    [class.border-b]="!last"
+                                    [class.border-surface-200]="!last"
+                                    [class.dark:border-surface-700]="!last"
+                                    [routerLink]="['/forum/forums', forum.id]"
+                                >
+                                    <div class="flex-shrink-0">
+                                        <i
+                                            class="pi text-primary-500 text-2xl"
+                                            [class.pi-comments]="!forum.isLocked"
+                                            [class.pi-lock]="forum.isLocked"
+                                        ></i>
+                                    </div>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-surface-900 dark:text-surface-0 font-semibold">{{
+                                                forum.name
+                                            }}</span>
+                                            @if (forum.isLocked) {
+                                                <p-tag [value]="t('forum.locked')" severity="danger" />
+                                            }
+                                            @if (forum.isPrivate) {
+                                                <p-tag [value]="t('forum.private')" severity="warn" />
+                                            }
+                                        </div>
+                                        @if (forum.description) {
+                                            <p class="text-surface-500 dark:text-surface-400 mt-0.5 truncate text-sm">
+                                                {{ forum.description }}
+                                            </p>
+                                        }
+                                    </div>
+
+                                    <div class="flex shrink-0 items-center gap-8 text-right">
+                                        <div class="hidden sm:block">
+                                            <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                                {{ forum.threadCount }}
+                                            </div>
+                                            <div class="text-surface-500 text-xs">{{ t("forum.threads") }}</div>
+                                        </div>
+                                        <div class="hidden sm:block">
+                                            <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                                {{ forum.postCount }}
+                                            </div>
+                                            <div class="text-surface-500 text-xs">{{ t("forum.posts") }}</div>
+                                        </div>
+                                        <div class="hidden md:block">
+                                            @if (forum.lastPostAt) {
+                                                <div class="text-surface-500 text-xs">
+                                                    {{ forum.lastPostAt | date: "dd.MM.yy HH:mm" }}
+                                                </div>
+                                            } @else {
+                                                <div class="text-surface-400 text-xs">—</div>
+                                            }
+                                            <div class="text-surface-400 text-xs">{{ t("forum.lastPost") }}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        }
+                    </div>
                 </div>
             }
-        </div>
-    } @else {
-        @for (category of facade.categories(); track category.id) {
-            <div class="mb-6">
-                <div class="bg-primary-500 dark:bg-primary-700 mb-1 rounded-t px-4 py-3">
-                    <span class="text-lg font-semibold text-white">{{ category.name }}</span>
-                    @if (category.description) {
-                        <p class="text-primary-100 mt-0.5 text-sm">{{ category.description }}</p>
-                    }
-                </div>
 
-                <div class="border-surface-200 dark:border-surface-700 rounded-b border border-t-0">
-                    @if (!category.forums || category.forums.length === 0) {
-                        <div class="text-surface-500 px-4 py-6 text-center text-sm">{{ t('forum.noForums') }}</div>
-                    } @else {
-                        @for (forum of category.forums; track forum.id; let last = $last) {
-                            <a
-                                class="hover:bg-surface-50 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-4 px-4 py-4 no-underline transition-colors"
-                                [class.border-b]="!last"
-                                [class.border-surface-200]="!last"
-                                [class.dark:border-surface-700]="!last"
-                                [routerLink]="['/forum/forums', forum.id]"
-                            >
-                                <div class="flex-shrink-0">
-                                    <i
-                                        class="pi text-primary-500 text-2xl"
-                                        [class.pi-comments]="!forum.isLocked"
-                                        [class.pi-lock]="forum.isLocked"
-                                    ></i>
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-surface-900 dark:text-surface-0 font-semibold">{{
-                                            forum.name
-                                        }}</span>
-                                        @if (forum.isLocked) {
-                                            <p-tag severity="danger" [value]="t('forum.locked')" />
-                                        }
-                                        @if (forum.isPrivate) {
-                                            <p-tag severity="warn" [value]="t('forum.private')" />
-                                        }
-                                    </div>
-                                    @if (forum.description) {
-                                        <p class="text-surface-500 dark:text-surface-400 mt-0.5 truncate text-sm">
-                                            {{ forum.description }}
-                                        </p>
-                                    }
-                                </div>
-
-                                <div class="flex shrink-0 items-center gap-8 text-right">
-                                    <div class="hidden sm:block">
-                                        <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
-                                            {{ forum.threadCount }}
-                                        </div>
-                                        <div class="text-surface-500 text-xs">{{ t('forum.threads') }}</div>
-                                    </div>
-                                    <div class="hidden sm:block">
-                                        <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
-                                            {{ forum.postCount }}
-                                        </div>
-                                        <div class="text-surface-500 text-xs">{{ t('forum.posts') }}</div>
-                                    </div>
-                                    <div class="hidden md:block">
-                                        @if (forum.lastPostAt) {
-                                            <div class="text-surface-500 text-xs">
-                                                {{ forum.lastPostAt | date: "dd.MM.yy HH:mm" }}
-                                            </div>
-                                        } @else {
-                                            <div class="text-surface-400 text-xs">—</div>
-                                        }
-                                        <div class="text-surface-400 text-xs">{{ t('forum.lastPost') }}</div>
-                                    </div>
-                                </div>
-                            </a>
-                        }
-                    }
-                </div>
-            </div>
+            @if (facade.categories().length === 0) {
+                <div class="card text-surface-500 py-12 text-center">{{ t("forum.noCategories") }}</div>
+            }
         }
-
-        @if (facade.categories().length === 0) {
-            <div class="card text-surface-500 py-12 text-center">{{ t('forum.noCategories') }}</div>
-        }
-    }
-</div>
-
+    </div>
 </div>

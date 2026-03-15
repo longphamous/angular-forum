@@ -1,281 +1,293 @@
 <ng-container *transloco="let t">
-<div class="mx-auto max-w-5xl">
-
-    <!-- ── Public profile header ─────────────────────────────────────── -->
-    @if (!isOwnList()) {
-    <div class="mb-6">
-        @if (profileLoading()) {
-        <!-- Skeleton -->
-        <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <p-skeleton shape="circle" size="5rem" />
-                <div class="flex flex-1 flex-col gap-3">
-                    <p-skeleton height="1.75rem" width="40%" />
-                    <p-skeleton height="1rem" width="25%" />
-                    <p-skeleton height="0.875rem" width="70%" />
+    <div class="mx-auto max-w-5xl">
+        <!-- ── Public profile header ─────────────────────────────────────── -->
+        @if (!isOwnList()) {
+        <div class="mb-6">
+            @if (profileLoading()) {
+            <!-- Skeleton -->
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6"
+            >
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <p-skeleton shape="circle" size="5rem" />
+                    <div class="flex flex-1 flex-col gap-3">
+                        <p-skeleton height="1.75rem" width="40%" />
+                        <p-skeleton height="1rem" width="25%" />
+                        <p-skeleton height="0.875rem" width="70%" />
+                    </div>
                 </div>
             </div>
+            } @else if (viewedProfile()) {
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6"
+            >
+                <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
+                    <!-- Avatar -->
+                    @if (viewedProfile()!.avatarUrl) {
+                    <img
+                        class="ring-primary/20 h-20 w-20 shrink-0 rounded-full object-cover ring-2"
+                        [alt]="viewedProfile()!.displayName"
+                        [src]="viewedProfile()!.avatarUrl"
+                    />
+                    } @else {
+                    <p-avatar
+                        [label]="viewedProfile()!.displayName.charAt(0).toUpperCase()"
+                        shape="circle"
+                        size="xlarge"
+                        styleClass="shrink-0 bg-primary/10 text-primary font-bold text-2xl"
+                    />
+                    }
+
+                    <!-- Info -->
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
+                                {{ viewedProfile()!.displayName }}
+                            </h1>
+                            <p-tag
+                                [severity]="roleSeverity(viewedProfile()!.role)"
+                                [value]="roleLabel(viewedProfile()!.role)"
+                                styleClass="text-xs"
+                            />
+                        </div>
+                        <p class="text-surface-500 mt-0.5 mb-0 text-sm">&#64;{{ viewedProfile()!.username }}</p>
+
+                        @if (viewedProfile()!.bio) {
+                        <p class="text-surface-700 dark:text-surface-300 mt-3 mb-0 text-sm leading-relaxed">
+                            {{ viewedProfile()!.bio }}
+                        </p>
+                        }
+
+                        <div class="mt-4 flex flex-wrap gap-4 text-xs">
+                            <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
+                                <i class="pi pi-calendar"></i>
+                                {{ t('anime.myList.memberSince') }} {{ formatDate(viewedProfile()!.createdAt) }}
+                            </span>
+                            <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
+                                <i class="pi pi-list"></i>
+                                {{ list().length }} {{ t('anime.myList.animeInList') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
         </div>
-        } @else if (viewedProfile()) {
-        <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
-            <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
-                <!-- Avatar -->
-                @if (viewedProfile()!.avatarUrl) {
-                <img
-                    class="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-primary/20"
-                    [alt]="viewedProfile()!.displayName"
-                    [src]="viewedProfile()!.avatarUrl"
-                />
-                } @else {
-                <p-avatar
-                    [label]="viewedProfile()!.displayName.charAt(0).toUpperCase()"
-                    shape="circle"
-                    size="xlarge"
-                    styleClass="shrink-0 bg-primary/10 text-primary font-bold text-2xl"
-                />
+        }
+
+        <!-- ── Own-list header ────────────────────────────────────────────── -->
+        @if (isOwnList()) {
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
+                    {{ t('anime.myList.title') }}
+                </h2>
+                @if (list().length > 0) {
+                <p class="text-surface-500 mt-1 mb-0 text-sm">
+                    {{ t('anime.myList.entriesTotal', { count: list().length }) }}
+                </p>
                 }
+            </div>
+            <p-button
+                [label]="t('anime.myList.discover')"
+                [outlined]="true"
+                icon="pi pi-search"
+                routerLink="/anime-top-list"
+                severity="secondary"
+            />
+        </div>
+        } @else {
+        <!-- Anime list section title -->
+        <h2 class="text-surface-900 dark:text-surface-0 mt-0 mb-4 text-lg font-semibold">
+            {{ t('anime.myList.listTitle') }}
+        </h2>
+        } @if (facade.listLoading()) {
+        <div class="flex flex-col gap-3">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="border-surface-200 dark:border-surface-700 flex items-center gap-4 rounded-lg border p-4">
+                <p-skeleton borderRadius="6px" height="5rem" width="3.5rem" />
+                <div class="flex-1">
+                    <p-skeleton height="1rem" styleClass="mb-2" width="50%" />
+                    <p-skeleton height="0.75rem" width="30%" />
+                </div>
+                <p-skeleton height="1.5rem" width="5rem" />
+            </div>
+            }
+        </div>
+        } @else if (list().length === 0) {
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <i class="pi pi-inbox text-surface-300 mb-4 text-6xl"></i>
+            <p class="text-surface-500 text-lg">{{ t('anime.myList.noEntries') }}</p>
+            @if (isOwnList()) {
+            <p class="text-surface-400 text-sm">{{ t('anime.myList.addHint') }}</p>
+            <p-button
+                class="mt-4"
+                [label]="t('anime.myList.discover')"
+                icon="pi pi-search"
+                routerLink="/anime-top-list"
+            />
+            }
+        </div>
+        } @else {
+        <!-- Stats row -->
+        <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            @for (stat of statCards(); track stat.status) {
+            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
+                <div class="text-xl font-bold">{{ stat.count }}</div>
+                <div class="text-surface-500 mt-0.5 text-xs">{{ stat.label }}</div>
+            </div>
+            }
+        </div>
+
+        <!-- Tabs -->
+        <p-tabs (valueChange)="activeTab = $any($event)" [value]="activeTab">
+            <p-tablist>
+                <p-tab value="all">
+                    {{ t('anime.myList.allTab') }}
+                    <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
+                        {{ list().length }}
+                    </span>
+                </p-tab>
+                @for (status of allStatuses; track status) {
+                <p-tab [value]="status">
+                    {{ statusLabel(status) }} @if (countByStatus(status) > 0) {
+                    <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
+                        {{ countByStatus(status) }}
+                    </span>
+                    }
+                </p-tab>
+                }
+            </p-tablist>
+
+            <p-tabpanels>
+                <p-tabpanel value="all">
+                    <ng-container *ngTemplateOutlet="entryList; context: { $implicit: list() }" />
+                </p-tabpanel>
+                @for (status of allStatuses; track status) {
+                <p-tabpanel [value]="status">
+                    <ng-container *ngTemplateOutlet="entryList; context: { $implicit: entriesByStatus(status) }" />
+                </p-tabpanel>
+                }
+            </p-tabpanels>
+        </p-tabs>
+        }
+    </div>
+
+    <ng-template #entryList let-entries>
+        @if (entries.length === 0) {
+        <div class="text-surface-400 py-10 text-center text-sm">{{ t('anime.myList.noCategoryEntries') }}</div>
+        } @else {
+        <div class="flex flex-col gap-3 pt-3">
+            @for (entry of entries; track entry.animeId) {
+            <div
+                class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800/50 flex items-center gap-4 rounded-lg border p-3 transition-colors"
+            >
+                <!-- Cover -->
+                <div
+                    class="group relative flex-shrink-0 cursor-pointer"
+                    (click)="goToDetail(entry.animeId)"
+                    (keydown.enter)="goToDetail(entry.animeId)"
+                    role="button"
+                    tabindex="0"
+                >
+                    @if (entry.anime?.picture) {
+                    <img
+                        class="rounded object-cover"
+                        [alt]="entry.anime?.title"
+                        [src]="entry.anime!.picture"
+                        style="width: 3.5rem; height: 5rem"
+                    />
+                    <div class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-36 group-hover:block">
+                        <img
+                            class="w-full rounded-lg object-cover shadow-xl"
+                            [alt]="entry.anime?.title"
+                            [src]="entry.anime!.picture"
+                            style="aspect-ratio: 2/3"
+                        />
+                    </div>
+                    } @else {
+                    <div
+                        class="bg-surface-200 dark:bg-surface-700 flex items-center justify-center rounded"
+                        style="width: 3.5rem; height: 5rem"
+                    >
+                        <i class="pi pi-image text-surface-400 text-xl"></i>
+                    </div>
+                    }
+                </div>
 
                 <!-- Info -->
                 <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
-                            {{ viewedProfile()!.displayName }}
-                        </h1>
+                    <button
+                        class="text-surface-900 dark:text-surface-0 m-0 w-full cursor-pointer truncate border-none bg-transparent p-0 text-left text-sm font-semibold hover:underline"
+                        (click)="goToDetail(entry.animeId)"
+                    >
+                        {{ entry.anime?.titleEnglish || entry.anime?.title || "Anime #" + entry.animeId }}
+                    </button>
+                    @if ( entry.anime?.titleEnglish && entry.anime?.title && entry.anime!.title !==
+                    entry.anime!.titleEnglish ) {
+                    <p class="text-surface-400 mt-0.5 truncate text-xs">{{ entry.anime!.title }}</p>
+                    }
+                    <div class="mt-1.5 flex flex-wrap items-center gap-2">
                         <p-tag
-                            [severity]="roleSeverity(viewedProfile()!.role)"
-                            [value]="roleLabel(viewedProfile()!.role)"
+                            [severity]="statusSeverity(entry.status)"
+                            [value]="statusLabel(entry.status)"
                             styleClass="text-xs"
                         />
+                        @if (entry.score) {
+                        <span class="flex items-center gap-1 text-xs text-yellow-500">
+                            <i class="pi pi-star-fill text-xs"></i>
+                            {{ entry.score }}/10
+                        </span>
+                        } @if (entry.episodesWatched !== null && entry.anime?.episode) {
+                        <span class="text-surface-400 text-xs">
+                            {{ entry.episodesWatched }}/{{ entry.anime!.episode }} {{ t('anime.myList.episodesSuffix')
+                            }}
+                        </span>
+                        } @if (entry.anime?.type) {
+                        <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
+                        }
                     </div>
-                    <p class="text-surface-500 mt-0.5 mb-0 text-sm">&#64;{{ viewedProfile()!.username }}</p>
-
-                    @if (viewedProfile()!.bio) {
-                    <p class="text-surface-700 dark:text-surface-300 mt-3 mb-0 text-sm leading-relaxed">
-                        {{ viewedProfile()!.bio }}
-                    </p>
+                    @if (entry.anime?.genres?.length) {
+                    <div class="mt-1 flex flex-wrap gap-1">
+                        @for (genre of entry.anime!.genres!.slice(0, 3); track genre) {
+                        <span
+                            class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
+                            >{{ genre }}</span
+                        >
+                        } @if (entry.anime!.genres!.length > 3) {
+                        <span class="text-surface-400 text-xs">+{{ entry.anime!.genres!.length - 3 }}</span>
+                        }
+                    </div>
+                    } @if (entry.review) {
+                    <p class="text-surface-500 mt-1.5 line-clamp-2 text-xs italic">"{{ entry.review }}"</p>
                     }
-
-                    <div class="mt-4 flex flex-wrap gap-4 text-xs">
-                        <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
-                            <i class="pi pi-calendar"></i>
-                            {{ t('anime.myList.memberSince') }} {{ formatDate(viewedProfile()!.createdAt) }}
-                        </span>
-                        <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
-                            <i class="pi pi-list"></i>
-                            {{ list().length }} {{ t('anime.myList.animeInList') }}
-                        </span>
-                    </div>
                 </div>
-            </div>
-        </div>
-        }
-    </div>
-    }
 
-    <!-- ── Own-list header ────────────────────────────────────────────── -->
-    @if (isOwnList()) {
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('anime.myList.title') }}</h2>
-            @if (list().length > 0) {
-            <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('anime.myList.entriesTotal', { count: list().length }) }}</p>
-            }
-        </div>
-        <p-button
-            [outlined]="true"
-            icon="pi pi-search"
-            [label]="t('anime.myList.discover')"
-            routerLink="/anime-top-list"
-            severity="secondary"
-        />
-    </div>
-    } @else {
-    <!-- Anime list section title -->
-    <h2 class="text-surface-900 dark:text-surface-0 mb-4 mt-0 text-lg font-semibold">{{ t('anime.myList.listTitle') }}</h2>
-    }
-
-    @if (facade.listLoading()) {
-    <div class="flex flex-col gap-3">
-        @for (i of [1, 2, 3, 4, 5]; track i) {
-        <div class="border-surface-200 dark:border-surface-700 flex items-center gap-4 rounded-lg border p-4">
-            <p-skeleton borderRadius="6px" height="5rem" width="3.5rem" />
-            <div class="flex-1">
-                <p-skeleton height="1rem" styleClass="mb-2" width="50%" />
-                <p-skeleton height="0.75rem" width="30%" />
-            </div>
-            <p-skeleton height="1.5rem" width="5rem" />
-        </div>
-        }
-    </div>
-    } @else if (list().length === 0) {
-    <div class="flex flex-col items-center justify-center py-20 text-center">
-        <i class="pi pi-inbox text-surface-300 mb-4 text-6xl"></i>
-        <p class="text-surface-500 text-lg">{{ t('anime.myList.noEntries') }}</p>
-        @if (isOwnList()) {
-        <p class="text-surface-400 text-sm">{{ t('anime.myList.addHint') }}</p>
-        <p-button class="mt-4" icon="pi pi-search" [label]="t('anime.myList.discover')" routerLink="/anime-top-list" />
-        }
-    </div>
-    } @else {
-    <!-- Stats row -->
-    <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        @for (stat of statCards(); track stat.status) {
-        <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
-            <div class="text-xl font-bold">{{ stat.count }}</div>
-            <div class="text-surface-500 mt-0.5 text-xs">{{ stat.label }}</div>
-        </div>
-        }
-    </div>
-
-    <!-- Tabs -->
-    <p-tabs (valueChange)="activeTab = $any($event)" [value]="activeTab">
-        <p-tablist>
-            <p-tab value="all">
-                {{ t('anime.myList.allTab') }}
-                <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
-                    {{ list().length }}
-                </span>
-            </p-tab>
-            @for (status of allStatuses; track status) {
-            <p-tab [value]="status">
-                {{ statusLabel(status) }} @if (countByStatus(status) > 0) {
-                <span class="bg-surface-200 dark:bg-surface-700 ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
-                    {{ countByStatus(status) }}
-                </span>
-                }
-            </p-tab>
-            }
-        </p-tablist>
-
-        <p-tabpanels>
-            <p-tabpanel value="all">
-                <ng-container *ngTemplateOutlet="entryList; context: { $implicit: list() }" />
-            </p-tabpanel>
-            @for (status of allStatuses; track status) {
-            <p-tabpanel [value]="status">
-                <ng-container *ngTemplateOutlet="entryList; context: { $implicit: entriesByStatus(status) }" />
-            </p-tabpanel>
-            }
-        </p-tabpanels>
-    </p-tabs>
-    }
-</div>
-
-<ng-template #entryList let-entries>
-    @if (entries.length === 0) {
-    <div class="text-surface-400 py-10 text-center text-sm">{{ t('anime.myList.noCategoryEntries') }}</div>
-    } @else {
-    <div class="flex flex-col gap-3 pt-3">
-        @for (entry of entries; track entry.animeId) {
-        <div
-            class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800/50 flex items-center gap-4 rounded-lg border p-3 transition-colors"
-        >
-            <!-- Cover -->
-            <div
-                class="group relative flex-shrink-0 cursor-pointer"
-                (click)="goToDetail(entry.animeId)"
-                (keydown.enter)="goToDetail(entry.animeId)"
-                role="button"
-                tabindex="0"
-            >
-                @if (entry.anime?.picture) {
-                <img
-                    class="rounded object-cover"
-                    [alt]="entry.anime?.title"
-                    [src]="entry.anime!.picture"
-                    style="width: 3.5rem; height: 5rem"
-                />
-                <div class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-36 group-hover:block">
-                    <img
-                        class="w-full rounded-lg object-cover shadow-xl"
-                        [alt]="entry.anime?.title"
-                        [src]="entry.anime!.picture"
-                        style="aspect-ratio: 2/3"
+                <!-- Actions (own list only) -->
+                @if (isOwnList()) {
+                <div class="flex flex-shrink-0 flex-col gap-1">
+                    <p-button
+                        (onClick)="goToDetail(entry.animeId)"
+                        [pTooltip]="t('anime.myList.editTooltip')"
+                        [text]="true"
+                        icon="pi pi-pencil"
+                        severity="secondary"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="removeEntry(entry.animeId)"
+                        [loading]="removingId() === entry.animeId"
+                        [pTooltip]="t('anime.myList.removeTooltip')"
+                        [text]="true"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        size="small"
                     />
                 </div>
-                } @else {
-                <div
-                    class="bg-surface-200 dark:bg-surface-700 flex items-center justify-center rounded"
-                    style="width: 3.5rem; height: 5rem"
-                >
-                    <i class="pi pi-image text-surface-400 text-xl"></i>
-                </div>
                 }
-            </div>
-
-            <!-- Info -->
-            <div class="min-w-0 flex-1">
-                <button
-                    class="text-surface-900 dark:text-surface-0 m-0 w-full cursor-pointer truncate border-none bg-transparent p-0 text-left text-sm font-semibold hover:underline"
-                    (click)="goToDetail(entry.animeId)"
-                >
-                    {{ entry.anime?.titleEnglish || entry.anime?.title || "Anime #" + entry.animeId }}
-                </button>
-                @if ( entry.anime?.titleEnglish && entry.anime?.title && entry.anime!.title !==
-                entry.anime!.titleEnglish ) {
-                <p class="text-surface-400 mt-0.5 truncate text-xs">{{ entry.anime!.title }}</p>
-                }
-                <div class="mt-1.5 flex flex-wrap items-center gap-2">
-                    <p-tag
-                        [severity]="statusSeverity(entry.status)"
-                        [value]="statusLabel(entry.status)"
-                        styleClass="text-xs"
-                    />
-                    @if (entry.score) {
-                    <span class="flex items-center gap-1 text-xs text-yellow-500">
-                        <i class="pi pi-star-fill text-xs"></i>
-                        {{ entry.score }}/10
-                    </span>
-                    } @if (entry.episodesWatched !== null && entry.anime?.episode) {
-                    <span class="text-surface-400 text-xs">
-                        {{ entry.episodesWatched }}/{{ entry.anime!.episode }} {{ t('anime.myList.episodesSuffix') }}
-                    </span>
-                    } @if (entry.anime?.type) {
-                    <span class="text-surface-400 text-xs">{{ entry.anime!.type }}</span>
-                    }
-                </div>
-                @if (entry.anime?.genres?.length) {
-                <div class="mt-1 flex flex-wrap gap-1">
-                    @for (genre of entry.anime!.genres!.slice(0, 3); track genre) {
-                    <span
-                        class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
-                    >{{ genre }}</span>
-                    }
-                    @if (entry.anime!.genres!.length > 3) {
-                    <span class="text-surface-400 text-xs">+{{ entry.anime!.genres!.length - 3 }}</span>
-                    }
-                </div>
-                }
-                @if (entry.review) {
-                <p class="text-surface-500 mt-1.5 line-clamp-2 text-xs italic">"{{ entry.review }}"</p>
-                }
-            </div>
-
-            <!-- Actions (own list only) -->
-            @if (isOwnList()) {
-            <div class="flex flex-shrink-0 flex-col gap-1">
-                <p-button
-                    (onClick)="goToDetail(entry.animeId)"
-                    [text]="true"
-                    icon="pi pi-pencil"
-                    [pTooltip]="t('anime.myList.editTooltip')"
-                    severity="secondary"
-                    size="small"
-                />
-                <p-button
-                    (onClick)="removeEntry(entry.animeId)"
-                    [loading]="removingId() === entry.animeId"
-                    [text]="true"
-                    icon="pi pi-trash"
-                    [pTooltip]="t('anime.myList.removeTooltip')"
-                    severity="danger"
-                    size="small"
-                />
             </div>
             }
         </div>
         }
-    </div>
-    }
-</ng-template>
+    </ng-template>
 </ng-container>

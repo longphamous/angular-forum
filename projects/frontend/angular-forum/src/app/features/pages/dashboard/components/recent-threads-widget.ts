@@ -8,14 +8,13 @@ import { TagModule } from "primeng/tag";
 
 import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
 
-
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [AvatarModule, CardModule, RouterModule, SkeletonModule, TagModule, TranslocoModule],
     selector: "app-recent-threads-widget",
     template: `
         <p-card *transloco="let t">
-            <ng-template #title>{{ t('dashboard.recentThreads') }}</ng-template>
+            <ng-template #title>{{ t("dashboard.recentThreads") }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -66,7 +65,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             <i class="pi pi-chevron-right text-surface-300 shrink-0 self-center text-xs"></i>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noThreads') }}</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t("dashboard.noThreads") }}</p>
                     }
                 </div>
             }

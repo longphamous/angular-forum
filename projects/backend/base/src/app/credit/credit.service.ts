@@ -141,9 +141,7 @@ export class CreditService implements OnModuleInit {
         sender.balance -= amount;
         receiver.balance += amount;
         await this.walletRepo.save([sender, receiver]);
-        return toTransactionDto(
-            await this.record({ fromUserId, toUserId, amount, type: "transfer", description })
-        );
+        return toTransactionDto(await this.record({ fromUserId, toUserId, amount, type: "transfer", description }));
     }
 
     async reward(userId: string, amount: number, description = "Belohnung"): Promise<TransactionDto> {
@@ -163,7 +161,9 @@ export class CreditService implements OnModuleInit {
 
     /** Returns the top N users by balance (joined with users table). */
     async getLeaderboard(limit = 5): Promise<WalletLeaderboardEntry[]> {
-        const rows = await this.dataSource.query<{ user_id: string; display_name: string; username: string; balance: number }[]>(
+        const rows = await this.dataSource.query<
+            { user_id: string; display_name: string; username: string; balance: number }[]
+        >(
             `SELECT w.user_id, u.display_name, u.username, w.balance
                FROM user_wallets w
                JOIN users u ON u.id = w.user_id
@@ -181,7 +181,12 @@ export class CreditService implements OnModuleInit {
 
     // ─── Internal helpers (used by sub-modules like Lotto and PostService) ────
 
-    async deductCredits(userId: string, amount: number, type: TransactionType, description: string): Promise<TransactionDto> {
+    async deductCredits(
+        userId: string,
+        amount: number,
+        type: TransactionType,
+        description: string
+    ): Promise<TransactionDto> {
         this.validateAmount(amount);
         const wallet = await this.findOrCreateWallet(userId);
         this.ensureBalance(wallet, amount);
@@ -190,7 +195,12 @@ export class CreditService implements OnModuleInit {
         return toTransactionDto(await this.record({ toUserId: userId, amount, type, description }));
     }
 
-    async addCredits(userId: string, amount: number, type: TransactionType, description: string): Promise<TransactionDto> {
+    async addCredits(
+        userId: string,
+        amount: number,
+        type: TransactionType,
+        description: string
+    ): Promise<TransactionDto> {
         this.validateAmount(amount);
         const wallet = await this.findOrCreateWallet(userId);
         wallet.balance += amount;
@@ -216,7 +226,13 @@ export class CreditService implements OnModuleInit {
         type: string;
         description: string;
     }): Promise<WalletTransactionEntity> {
-        const tx = this.txRepo.create({ fromUserId: data.fromUserId ?? null, toUserId: data.toUserId, amount: data.amount, type: data.type, description: data.description });
+        const tx = this.txRepo.create({
+            fromUserId: data.fromUserId ?? null,
+            toUserId: data.toUserId,
+            amount: data.amount,
+            type: data.type,
+            description: data.description
+        });
         return this.txRepo.save(tx);
     }
 
@@ -228,9 +244,7 @@ export class CreditService implements OnModuleInit {
 
     private ensureBalance(wallet: UserWalletEntity, amount: number): void {
         if (wallet.balance < amount) {
-            throw new BadRequestException(
-                `Insufficient balance. Available: ${wallet.balance}, required: ${amount}`
-            );
+            throw new BadRequestException(`Insufficient balance. Available: ${wallet.balance}, required: ${amount}`);
         }
     }
 }

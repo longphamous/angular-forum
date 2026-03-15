@@ -169,10 +169,9 @@ export class ForumFacade {
     }
 
     reactToPost(postId: string): Observable<void> {
-        return this.http.post<void>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`,
-            { reactionType: "heart" }
-        );
+        return this.http.post<void>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`, {
+            reactionType: "heart"
+        });
     }
 
     unreactToPost(postId: string): Observable<void> {

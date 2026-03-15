@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, s
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { MessageService } from "primeng/api";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
@@ -18,7 +19,6 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
-import { MessageService } from "primeng/api";
 
 import { CALENDAR_ROUTES } from "../../../core/api/calendar.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -30,13 +30,21 @@ import {
     CalendarView,
     CreateEventPayload,
     EVENT_COLORS,
+    getEventColorClass,
     RecurrenceRule,
-    RespondPayload,
-    getEventColorClass
+    RespondPayload
 } from "../../../core/models/calendar/calendar";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
-const WEEKDAY_KEYS = ["calendar.week.mo", "calendar.week.tu", "calendar.week.we", "calendar.week.th", "calendar.week.fr", "calendar.week.sa", "calendar.week.su"];
+const WEEKDAY_KEYS = [
+    "calendar.week.mo",
+    "calendar.week.tu",
+    "calendar.week.we",
+    "calendar.week.th",
+    "calendar.week.fr",
+    "calendar.week.sa",
+    "calendar.week.su"
+];
 
 interface EventFormData {
     title: string;
@@ -142,18 +150,34 @@ export class CalendarPage implements OnInit {
     protected readonly getEventColorClass = getEventColorClass;
     protected readonly weekDayLabels = WEEKDAY_KEYS;
     protected readonly byDayOptions = [
-        { label: "Mo", value: "MO" }, { label: "Di", value: "TU" }, { label: "Mi", value: "WE" },
-        { label: "Do", value: "TH" }, { label: "Fr", value: "FR" }, { label: "Sa", value: "SA" },
+        { label: "Mo", value: "MO" },
+        { label: "Di", value: "TU" },
+        { label: "Mi", value: "WE" },
+        { label: "Do", value: "TH" },
+        { label: "Fr", value: "FR" },
+        { label: "Sa", value: "SA" },
         { label: "So", value: "SU" }
     ];
     protected readonly frequencyOptions = [
-        { label: "Täglich", value: "daily" }, { label: "Wöchentlich", value: "weekly" },
-        { label: "Monatlich", value: "monthly" }, { label: "Jährlich", value: "yearly" }
+        { label: "Täglich", value: "daily" },
+        { label: "Wöchentlich", value: "weekly" },
+        { label: "Monatlich", value: "monthly" },
+        { label: "Jährlich", value: "yearly" }
     ];
 
     protected readonly rsvpOptions: { status: AttendeeStatus; icon: string; borderClass: string; bgClass: string }[] = [
-        { status: "accepted", icon: "pi-check", borderClass: "border-green-400", bgClass: "bg-green-50 dark:bg-green-900/20" },
-        { status: "maybe", icon: "pi-question", borderClass: "border-yellow-400", bgClass: "bg-yellow-50 dark:bg-yellow-900/20" },
+        {
+            status: "accepted",
+            icon: "pi-check",
+            borderClass: "border-green-400",
+            bgClass: "bg-green-50 dark:bg-green-900/20"
+        },
+        {
+            status: "maybe",
+            icon: "pi-question",
+            borderClass: "border-yellow-400",
+            bgClass: "bg-yellow-50 dark:bg-yellow-900/20"
+        },
         { status: "declined", icon: "pi-times", borderClass: "border-red-400", bgClass: "bg-red-50 dark:bg-red-900/20" }
     ];
 
@@ -219,7 +243,9 @@ export class CalendarPage implements OnInit {
 
     // ─── Computed: List (next 90 days grouped) ────────────────────────────────
     protected readonly listGroups = computed((): { dateLabel: string; events: CalendarEvent[] }[] => {
-        const evs = [...this.events()].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        const evs = [...this.events()].sort(
+            (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        );
         const map = new Map<string, CalendarEvent[]>();
         for (const ev of evs) {
             const key = new Date(ev.startDate).toDateString();
@@ -227,7 +253,12 @@ export class CalendarPage implements OnInit {
             map.get(key)!.push(ev);
         }
         return [...map.entries()].map(([key, events]) => ({
-            dateLabel: new Date(key).toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
+            dateLabel: new Date(key).toLocaleDateString("de-DE", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            }),
             events
         }));
     });
@@ -321,7 +352,10 @@ export class CalendarPage implements OnInit {
         this.loading.set(true);
         const url = `${this.apiConfig.baseUrl}${CALENDAR_ROUTES.list(from.toISOString(), to.toISOString())}`;
         this.http.get<CalendarEvent[]>(url).subscribe({
-            next: (data) => { this.events.set(data); this.loading.set(false); },
+            next: (data) => {
+                this.events.set(data);
+                this.loading.set(false);
+            },
             error: () => this.loading.set(false)
         });
     }
@@ -368,11 +402,11 @@ export class CalendarPage implements OnInit {
 
         const rule: RecurrenceRule | null = this.form.isRecurring
             ? {
-                frequency: this.form.recurrenceFrequency,
-                interval: this.form.recurrenceInterval,
-                until: this.form.recurrenceUntil?.toISOString().split("T")[0] ?? null,
-                byDay: this.form.recurrenceByDay.length ? this.form.recurrenceByDay : undefined
-            }
+                  frequency: this.form.recurrenceFrequency,
+                  interval: this.form.recurrenceInterval,
+                  until: this.form.recurrenceUntil?.toISOString().split("T")[0] ?? null,
+                  byDay: this.form.recurrenceByDay.length ? this.form.recurrenceByDay : undefined
+              }
             : null;
 
         const payload: CreateEventPayload = {
@@ -389,7 +423,10 @@ export class CalendarPage implements OnInit {
         };
 
         const req$ = this.editingId
-            ? this.http.patch<CalendarEvent>(`${this.apiConfig.baseUrl}${CALENDAR_ROUTES.update(this.editingId)}`, payload)
+            ? this.http.patch<CalendarEvent>(
+                  `${this.apiConfig.baseUrl}${CALENDAR_ROUTES.update(this.editingId)}`,
+                  payload
+              )
             : this.http.post<CalendarEvent>(`${this.apiConfig.baseUrl}${CALENDAR_ROUTES.create()}`, payload);
 
         req$.subscribe({
@@ -450,7 +487,10 @@ export class CalendarPage implements OnInit {
                 this.loadEvents(this.currentDate(), this.view());
                 this.messageService.add({ severity: "success", summary: "Rückmeldung gespeichert", life: 2000 });
             },
-            error: () => { this.rsvpSaving.set(false); this.messageService.add({ severity: "error", summary: "Fehler", life: 3000 }); }
+            error: () => {
+                this.rsvpSaving.set(false);
+                this.messageService.add({ severity: "error", summary: "Fehler", life: 3000 });
+            }
         });
     }
 
@@ -458,7 +498,10 @@ export class CalendarPage implements OnInit {
     protected submitInvite(): void {
         const ev = this.selectedEvent();
         if (!ev) return;
-        const ids = this.inviteUserIds.split(",").map((s) => s.trim()).filter(Boolean);
+        const ids = this.inviteUserIds
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
         if (!ids.length) return;
         this.inviteSaving.set(true);
         this.http.post(`${this.apiConfig.baseUrl}${CALENDAR_ROUTES.invite(ev.id)}`, { userIds: ids }).subscribe({
@@ -469,7 +512,10 @@ export class CalendarPage implements OnInit {
                 this.openDetail(ev);
                 this.messageService.add({ severity: "success", summary: "Einladungen versendet", life: 2000 });
             },
-            error: () => { this.inviteSaving.set(false); this.messageService.add({ severity: "error", summary: "Fehler", life: 3000 }); }
+            error: () => {
+                this.inviteSaving.set(false);
+                this.messageService.add({ severity: "error", summary: "Fehler", life: 3000 });
+            }
         });
     }
 
@@ -488,7 +534,12 @@ export class CalendarPage implements OnInit {
     }
 
     protected formatDate(dateStr: string): string {
-        return new Date(dateStr).toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        return new Date(dateStr).toLocaleDateString("de-DE", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
     }
 
     protected formatDateShort(dateStr: string): string {
@@ -497,11 +548,16 @@ export class CalendarPage implements OnInit {
 
     protected statusSeverity(status: AttendeeStatus | null): "success" | "warn" | "danger" | "info" | "secondary" {
         switch (status) {
-            case "accepted": return "success";
-            case "declined": return "danger";
-            case "maybe": return "warn";
-            case "pending": return "info";
-            default: return "secondary";
+            case "accepted":
+                return "success";
+            case "declined":
+                return "danger";
+            case "maybe":
+                return "warn";
+            case "pending":
+                return "info";
+            default:
+                return "secondary";
         }
     }
 

@@ -70,11 +70,11 @@ import { LayoutService } from "./service/layout.service";
                 <div class="layout-config-menu">
                     <button
                         class="layout-topbar-action"
+                        [title]="currentLang() === 'de' ? 'Switch to English' : 'Zu Deutsch wechseln'"
                         (click)="toggleLanguage()"
                         type="button"
-                        [title]="currentLang() === 'de' ? 'Switch to English' : 'Zu Deutsch wechseln'"
                     >
-                        <span class="text-xs font-semibold">{{ currentLang() === 'de' ? 'EN' : 'DE' }}</span>
+                        <span class="text-xs font-semibold">{{ currentLang() === "de" ? "EN" : "DE" }}</span>
                     </button>
                     <button class="layout-topbar-action" (click)="toggleDarkMode()" type="button">
                         <i
@@ -127,7 +127,7 @@ import { LayoutService } from "./service/layout.service";
                                 <i class="pi pi-user"></i>
                             }
                             <span>{{
-                                authFacade.isAuthenticated() ? authFacade.currentUser()?.displayName : t('nav.profile')
+                                authFacade.isAuthenticated() ? authFacade.currentUser()?.displayName : t("nav.profile")
                             }}</span>
                         </button>
                     </div>
@@ -152,7 +152,7 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/profile"
                     >
                         <i class="pi pi-user text-surface-500"></i>
-                        <span>{{ t('nav.profile') }}</span>
+                        <span>{{ t("nav.profile") }}</span>
                     </a>
                     @if (authFacade.isAdmin()) {
                         <a
@@ -161,7 +161,7 @@ import { LayoutService } from "./service/layout.service";
                             routerLink="/admin"
                         >
                             <i class="pi pi-shield text-surface-500"></i>
-                            <span>{{ t('nav.admin') }}</span>
+                            <span>{{ t("nav.admin") }}</span>
                         </a>
                     }
                     <p-divider styleClass="my-0" />
@@ -171,7 +171,7 @@ import { LayoutService } from "./service/layout.service";
                         type="button"
                     >
                         <i class="pi pi-sign-out"></i>
-                        <span>{{ t('nav.logout') }}</span>
+                        <span>{{ t("nav.logout") }}</span>
                     </button>
                 </div>
             } @else {
@@ -182,7 +182,7 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/login"
                     >
                         <i class="pi pi-sign-in text-surface-500"></i>
-                        <span>{{ t('nav.login') }}</span>
+                        <span>{{ t("nav.login") }}</span>
                     </a>
                     <a
                         class="hover:bg-surface-100 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-inherit no-underline"
@@ -190,7 +190,7 @@ import { LayoutService } from "./service/layout.service";
                         routerLink="/register"
                     >
                         <i class="pi pi-user-plus text-surface-500"></i>
-                        <span>{{ t('nav.register') }}</span>
+                        <span>{{ t("nav.register") }}</span>
                     </a>
                 </div>
             }

@@ -41,8 +41,8 @@ const RARITY_STYLES: Record<AchievementRarity, { badge: string; glow: string; la
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/60 dark:bg-black/20">
                 <i class="text-xl" [class]="achievement().icon"></i>
             </div>
-            <div class="min-w-0 w-full">
-                <div class="truncate text-xs font-semibold leading-tight">{{ achievement().name }}</div>
+            <div class="w-full min-w-0">
+                <div class="truncate text-xs leading-tight font-semibold">{{ achievement().name }}</div>
                 <div class="mt-0.5 text-[10px] font-medium opacity-70">{{ rarityLabel() }}</div>
             </div>
         </div>
@@ -76,21 +76,16 @@ export class AchievementBadge {
     imports: [TooltipModule, TranslocoModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <div
-            class="flex items-center gap-3 rounded-xl border p-3 shadow-sm"
-            [class]="rarityStyles().badge"
-        >
+        <div class="flex items-center gap-3 rounded-xl border p-3 shadow-sm" [class]="rarityStyles().badge">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 dark:bg-black/20">
                 <i class="text-xl" [class]="achievement().icon"></i>
             </div>
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-semibold leading-tight">{{ achievement().name }}</div>
+                <div class="text-sm leading-tight font-semibold">{{ achievement().name }}</div>
                 @if (achievement().description) {
-                    <div class="mt-0.5 text-xs opacity-75 leading-snug">{{ achievement().description }}</div>
+                    <div class="mt-0.5 text-xs leading-snug opacity-75">{{ achievement().description }}</div>
                 }
-                <div class="mt-1 text-[10px] opacity-60">
-                    {{ rarityLabel() }} · {{ earnedDate() }}
-                </div>
+                <div class="mt-1 text-[10px] opacity-60">{{ rarityLabel() }} · {{ earnedDate() }}</div>
             </div>
         </div>
     `

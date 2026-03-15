@@ -1,8 +1,9 @@
-import { HttpClient } from "@angular/common/http";
 import { SlicePipe } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { ConfirmationService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
@@ -13,14 +14,13 @@ import { MessageModule } from "primeng/message";
 import { RadioButtonModule } from "primeng/radiobutton";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
-import { TagModule } from "primeng/tag";
 import { TabsModule } from "primeng/tabs";
+import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
-import { ConfirmationService } from "primeng/api";
 
-import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { SLIDESHOW_ROUTES } from "../../../core/api/slideshow.routes";
+import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { TeaserSlide } from "../../../core/models/slideshow/teaser-slide";
 
 export interface SlideFormData {
@@ -198,10 +198,14 @@ export class AdminSlideshow implements OnInit {
             next: (saved) => {
                 if (id) {
                     this.slides.update((list) => list.map((s) => (s.id === id ? saved : s)));
-                    this.successMsg.set(this.translocoService.translate("adminSlideshow.updateSuccess", { title: saved.title }));
+                    this.successMsg.set(
+                        this.translocoService.translate("adminSlideshow.updateSuccess", { title: saved.title })
+                    );
                 } else {
                     this.slides.update((list) => [...list, saved]);
-                    this.successMsg.set(this.translocoService.translate("adminSlideshow.createSuccess", { title: saved.title }));
+                    this.successMsg.set(
+                        this.translocoService.translate("adminSlideshow.createSuccess", { title: saved.title })
+                    );
                 }
                 this.saving.set(false);
                 this.dialogVisible.set(false);
@@ -229,7 +233,9 @@ export class AdminSlideshow implements OnInit {
         this.http.delete(`${this.apiConfig.baseUrl}${SLIDESHOW_ROUTES.admin.delete(slide.id)}`).subscribe({
             next: () => {
                 this.slides.update((list) => list.filter((s) => s.id !== slide.id));
-                this.successMsg.set(this.translocoService.translate("adminSlideshow.deleteSuccess", { title: slide.title }));
+                this.successMsg.set(
+                    this.translocoService.translate("adminSlideshow.deleteSuccess", { title: slide.title })
+                );
             },
             error: () => this.error.set(this.translocoService.translate("adminSlideshow.deleteError"))
         });

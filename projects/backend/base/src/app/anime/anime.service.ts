@@ -238,15 +238,15 @@ export class AnimeService {
     }
 
     async getAllGenres(): Promise<string[]> {
-        const rows: Array<{ name: string }> = await this.animeRepo.query(
-            `SELECT DISTINCT name FROM genre WHERE deleted_at IS NULL AND name IS NOT NULL ORDER BY name`
+        const rows: { name: string }[] = await this.animeRepo.query(
+            "SELECT DISTINCT name FROM genre WHERE deleted_at IS NULL AND name IS NOT NULL ORDER BY name"
         );
         return rows.map((r) => r.name);
     }
 
     private async loadStudioMap(animeIds: number[]): Promise<Map<number, AnimeStudioDto[]>> {
         if (!animeIds.length) return new Map();
-        const rows: Array<{ anime_id: string; id: string; name: string }> = await this.animeRepo.query(
+        const rows: { anime_id: string; id: string; name: string }[] = await this.animeRepo.query(
             `SELECT as2.anime_id::bigint, s.id::bigint, s.name
              FROM anime_studio as2
              INNER JOIN studio s ON as2.studio_id = s.id
@@ -265,14 +265,14 @@ export class AnimeService {
 
     private async loadRelatedMap(animeIds: number[]): Promise<Map<number, RelatedAnimeDto[]>> {
         if (!animeIds.length) return new Map();
-        const rows: Array<{
+        const rows: {
             anime_id1: string;
             anime_id2: string;
             relation: string;
             title: string;
             title_english: string;
             picture: string;
-        }> = await this.animeRepo.query(
+        }[] = await this.animeRepo.query(
             `SELECT ar.anime_id1::bigint, ar.anime_id2::bigint, ar.relation,
                     a.title, a.title_english, a.picture
              FROM anime_related ar
@@ -298,7 +298,7 @@ export class AnimeService {
 
     private async loadGenreMap(animeIds: number[]): Promise<Map<number, string[]>> {
         if (!animeIds.length) return new Map();
-        const rows: Array<{ anime_id: string; name: string }> = await this.animeRepo.query(
+        const rows: { anime_id: string; name: string }[] = await this.animeRepo.query(
             `SELECT ag.anime_id::bigint, g.name
              FROM anime_genre ag
              INNER JOIN genre g ON ag.genre_id = g.id

@@ -13,13 +13,13 @@ import { delay } from "rxjs/operators";
 import { AdminCreateUserPayload, AdminUpdateUserPayload } from "../../../facade/admin/admin-facade";
 import { DashboardStats, RecentThread, TopPoster } from "../../../facade/dashboard/dashboard-facade";
 import { Anime, AnimeListEntry, AnimeListEntryPayload, AnimeListStatus } from "../../models/anime/anime";
+import { AttendeeStatus, RecurrenceRule } from "../../models/calendar/calendar";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { Group } from "../../models/group/group";
 import { UserProfile } from "../../models/user/user";
-import { AttendeeStatus, RecurrenceRule } from "../../models/calendar/calendar";
 import {
     mockAchievements,
     mockAnimeDetails,
@@ -35,13 +35,13 @@ import {
     mockShopItems,
     mockSlides,
     mockThreads,
-    mockUserInventory,
-    mockWalletTransactions,
-    mockWallets,
     mockUserAchievements,
     mockUserGroupMap,
+    mockUserInventory,
     mockUserProfiles,
     mockUsers,
+    mockWallets,
+    mockWalletTransactions,
     User
 } from "../mock-data/mock-data";
 
@@ -311,7 +311,13 @@ export class MockInterceptor implements HttpInterceptor {
                 mockReactedPostIds.add(postId);
                 post.reactionCount = (post.reactionCount ?? 0) + 1;
             }
-            return this.ok({ id: "mock-reaction", postId, userId: "00000000-0000-0000-0000-000000000003", reactionType: "heart", createdAt: new Date().toISOString() });
+            return this.ok({
+                id: "mock-reaction",
+                postId,
+                userId: "00000000-0000-0000-0000-000000000003",
+                reactionType: "heart",
+                createdAt: new Date().toISOString()
+            });
         }
 
         // DELETE /api/forum/posts/:id/react
@@ -756,10 +762,30 @@ export class MockInterceptor implements HttpInterceptor {
         // GET /api/gamification/config
         if (method === "GET" && lowerUrl.match(/\/api\/gamification\/config$/)) {
             return this.ok([
-                { eventType: "create_thread", xpAmount: 10, label: "Thread erstellen", description: "XP für das Erstellen eines neuen Threads" },
-                { eventType: "create_post", xpAmount: 5, label: "Beitrag schreiben", description: "XP für das Verfassen einer Antwort" },
-                { eventType: "receive_reaction", xpAmount: 3, label: "Reaktion erhalten", description: "XP wenn ein eigener Beitrag eine Reaktion bekommt" },
-                { eventType: "give_reaction", xpAmount: 1, label: "Reaktion geben", description: "XP für das Reagieren auf einen fremden Beitrag" }
+                {
+                    eventType: "create_thread",
+                    xpAmount: 10,
+                    label: "Thread erstellen",
+                    description: "XP für das Erstellen eines neuen Threads"
+                },
+                {
+                    eventType: "create_post",
+                    xpAmount: 5,
+                    label: "Beitrag schreiben",
+                    description: "XP für das Verfassen einer Antwort"
+                },
+                {
+                    eventType: "receive_reaction",
+                    xpAmount: 3,
+                    label: "Reaktion erhalten",
+                    description: "XP wenn ein eigener Beitrag eine Reaktion bekommt"
+                },
+                {
+                    eventType: "give_reaction",
+                    xpAmount: 1,
+                    label: "Reaktion geben",
+                    description: "XP für das Reagieren auf einen fremden Beitrag"
+                }
             ]);
         }
 
@@ -795,11 +821,17 @@ export class MockInterceptor implements HttpInterceptor {
 
         // POST /api/gamification/achievements/admin
         if (method === "POST" && lowerUrl.match(/\/api\/gamification\/achievements\/admin$/)) {
-            const payload = body as Partial<typeof mockAchievements[string]> | null;
+            const payload = body as Partial<(typeof mockAchievements)[string]> | null;
             if (!payload?.key || !payload.name) return this.error("Pflichtfelder fehlen", 400);
             const id = "ach-" + Math.random().toString(36).substring(2, 8);
             const ts = new Date().toISOString();
-            const created = { ...payload, id, isActive: payload.isActive ?? true, createdAt: ts, updatedAt: ts } as typeof mockAchievements[string];
+            const created = {
+                ...payload,
+                id,
+                isActive: payload.isActive ?? true,
+                createdAt: ts,
+                updatedAt: ts
+            } as (typeof mockAchievements)[string];
             mockAchievements[id] = created;
             return this.ok(created);
         }
@@ -810,7 +842,7 @@ export class MockInterceptor implements HttpInterceptor {
             const id = achievementPatchMatch[1];
             const achievement = mockAchievements[id];
             if (!achievement) return this.error("Achievement nicht gefunden", 404);
-            const patch = body as Partial<typeof mockAchievements[string]>;
+            const patch = body as Partial<(typeof mockAchievements)[string]>;
             Object.assign(achievement, patch, { updatedAt: new Date().toISOString() });
             return this.ok({ ...achievement });
         }
@@ -928,7 +960,15 @@ export class MockInterceptor implements HttpInterceptor {
                 senderWallet.balance -= payload.amount;
                 receiverWallet.balance += payload.amount;
                 const ts = new Date().toISOString();
-                const tx = { id: "tx-" + Math.random().toString(36).substring(2), fromUserId: decoded.sub, toUserId: payload.toUserId, amount: payload.amount, type: "transfer" as const, description: payload.description ?? "Transfer", createdAt: ts };
+                const tx = {
+                    id: "tx-" + Math.random().toString(36).substring(2),
+                    fromUserId: decoded.sub,
+                    toUserId: payload.toUserId,
+                    amount: payload.amount,
+                    type: "transfer" as const,
+                    description: payload.description ?? "Transfer",
+                    createdAt: ts
+                };
                 (mockWalletTransactions[decoded.sub] ??= []).unshift(tx);
                 (mockWalletTransactions[payload.toUserId] ??= []).unshift({ ...tx, fromUserId: decoded.sub });
                 return this.ok(tx);
@@ -945,7 +985,7 @@ export class MockInterceptor implements HttpInterceptor {
             const order = params.get("order") ?? "desc";
             const limit = Math.min(parseInt(params.get("limit") ?? "20") || 20, 100);
 
-            let result = [...mockOnlineUsers];
+            const result = [...mockOnlineUsers];
             if (sort === "username") {
                 result.sort((a, b) => a.username.localeCompare(b.username));
             } else {
@@ -966,11 +1006,27 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && url.includes("/api/slideshow/admin/upload")) {
-            return this.ok({ url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=400&fit=crop" });
+            return this.ok({
+                url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=400&fit=crop"
+            });
         }
 
         if (method === "POST" && url.includes("/api/slideshow/admin")) {
-            const body = req.body as { title: string; description?: string; translations?: Record<string, { title?: string; description?: string }>; imageUrl: string; linkUrl?: string; linkLabel?: string; linkFullSlide?: boolean; textStyle?: string; textAlign?: string; isActive?: boolean; sortOrder?: number; validFrom?: string | null; validUntil?: string | null };
+            const body = req.body as {
+                title: string;
+                description?: string;
+                translations?: Record<string, { title?: string; description?: string }>;
+                imageUrl: string;
+                linkUrl?: string;
+                linkLabel?: string;
+                linkFullSlide?: boolean;
+                textStyle?: string;
+                textAlign?: string;
+                isActive?: boolean;
+                sortOrder?: number;
+                validFrom?: string | null;
+                validUntil?: string | null;
+            };
             const newSlide = {
                 id: `slide-${Date.now()}`,
                 title: body.title,
@@ -997,7 +1053,7 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/slideshow/admin/")[1].split("?")[0];
             const idx = mockSlides.findIndex((s) => s.id === id);
             if (idx === -1) return this.error("Not found", 404);
-            const body = req.body as Partial<typeof mockSlides[0]>;
+            const body = req.body as Partial<(typeof mockSlides)[0]>;
             mockSlides[idx] = { ...mockSlides[idx], ...body, id, updatedAt: new Date().toISOString() };
             return this.ok(mockSlides[idx]);
         }
@@ -1006,7 +1062,9 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/slideshow/admin/")[1].split("?")[0];
             const idx = mockSlides.findIndex((s) => s.id === id);
             if (idx !== -1) mockSlides.splice(idx, 1);
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         // ── Virtual Shop ───────────────────────────────────────────────────────
@@ -1051,7 +1109,18 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && url.includes("/api/shop/admin")) {
-            const body = req.body as { name: string; description?: string | null; price: number; imageUrl?: string | null; icon?: string | null; category?: string | null; isActive?: boolean; stock?: number | null; maxPerUser?: number | null; sortOrder?: number };
+            const body = req.body as {
+                name: string;
+                description?: string | null;
+                price: number;
+                imageUrl?: string | null;
+                icon?: string | null;
+                category?: string | null;
+                isActive?: boolean;
+                stock?: number | null;
+                maxPerUser?: number | null;
+                sortOrder?: number;
+            };
             const newItem = {
                 id: `shop-${Date.now()}`,
                 name: body.name,
@@ -1075,7 +1144,7 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/shop/admin/")[1].split("?")[0];
             const idx = mockShopItems.findIndex((i) => i.id === id);
             if (idx === -1) return this.error("Not found", 404);
-            const body = req.body as Partial<typeof mockShopItems[0]>;
+            const body = req.body as Partial<(typeof mockShopItems)[0]>;
             mockShopItems[idx] = { ...mockShopItems[idx]!, ...body, id, updatedAt: new Date().toISOString() };
             return this.ok(mockShopItems[idx]);
         }
@@ -1084,7 +1153,9 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/shop/admin/")[1].split("?")[0];
             const idx = mockShopItems.findIndex((i) => i.id === id);
             if (idx !== -1) mockShopItems.splice(idx, 1);
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         // ── Calendar ───────────────────────────────────────────────────────────
@@ -1115,11 +1186,15 @@ export class MockInterceptor implements HttpInterceptor {
         if (method === "GET" && /\/api\/calendar(\?|$)/.test(url)) {
             const params = new URL(url, "http://localhost").searchParams;
             const from = params.get("from") ? new Date(params.get("from")!) : new Date(0);
-            const to = params.get("to") ? new Date(params.get("to")!) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-            return this.ok(mockCalendarEvents.filter((e) => {
-                const d = new Date(e.startDate);
-                return d >= from && d <= to;
-            }));
+            const to = params.get("to")
+                ? new Date(params.get("to")!)
+                : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+            return this.ok(
+                mockCalendarEvents.filter((e) => {
+                    const d = new Date(e.startDate);
+                    return d >= from && d <= to;
+                })
+            );
         }
 
         if (method === "POST" && /\/api\/calendar\/[^/]+\/respond/.test(url)) {
@@ -1137,15 +1212,30 @@ export class MockInterceptor implements HttpInterceptor {
                 const ev = mockCalendarEvents.find((e) => e.id === eventId);
                 if (ev) ev.myStatus = body.status as "pending" | "accepted" | "declined" | "maybe";
             }
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         if (method === "POST" && /\/api\/calendar\/[^/]+\/invite/.test(url)) {
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         if (method === "POST" && /\/api\/calendar(\?|$)/.test(url)) {
-            const body = req.body as { title: string; description?: string | null; location?: string | null; startDate: string; endDate: string; allDay?: boolean; isPublic?: boolean; maxAttendees?: number | null; color?: string | null; recurrenceRule?: unknown };
+            const body = req.body as {
+                title: string;
+                description?: string | null;
+                location?: string | null;
+                startDate: string;
+                endDate: string;
+                allDay?: boolean;
+                isPublic?: boolean;
+                maxAttendees?: number | null;
+                color?: string | null;
+                recurrenceRule?: unknown;
+            };
             const newEvent = {
                 id: `cal-${Date.now()}`,
                 title: body.title,
@@ -1196,7 +1286,9 @@ export class MockInterceptor implements HttpInterceptor {
             const idx = mockCalendarEvents.findIndex((e) => e.id === id);
             if (idx !== -1) mockCalendarEvents.splice(idx, 1);
             mockCalendarEventDetails.delete(id);
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         if (method === "DELETE" && /\/api\/calendar\/[^/]+$/.test(url)) {
@@ -1204,7 +1296,9 @@ export class MockInterceptor implements HttpInterceptor {
             const idx = mockCalendarEvents.findIndex((e) => e.id === id);
             if (idx !== -1) mockCalendarEvents.splice(idx, 1);
             mockCalendarEventDetails.delete(id);
-            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<
+                HttpEvent<never>
+            >;
         }
 
         // Fallback: durchreichen

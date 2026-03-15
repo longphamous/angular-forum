@@ -18,17 +18,18 @@ const MAX_FOOTER_AVATARS = 10;
     imports: [AvatarModule, RouterModule, TooltipModule, TranslocoModule],
     template: `
         <div class="layout-footer" *transloco="let t">
-            <div class="flex flex-col gap-3 w-full">
-
+            <div class="flex w-full flex-col gap-3">
                 <!-- Online users row -->
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="flex items-center gap-1.5">
                         <span class="relative flex h-2.5 w-2.5">
-                            <span class="bg-green-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
-                            <span class="bg-green-500 relative inline-flex h-2.5 w-2.5 rounded-full"></span>
+                            <span
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"
+                            ></span>
+                            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
                         </span>
                         <span class="text-surface-500 dark:text-surface-400 text-xs font-medium">
-                            {{ t('onlineUsers.footerLabel', { count: total() }) }}
+                            {{ t("onlineUsers.footerLabel", { count: total() }) }}
                         </span>
                     </div>
 
@@ -37,23 +38,25 @@ const MAX_FOOTER_AVATARS = 10;
                         <div class="flex items-center">
                             @for (user of visible(); track user.userId; let i = $index) {
                                 <a
-                                    [routerLink]="['/users', user.userId]"
-                                    class="-ml-2 first:ml-0 block no-underline"
-                                    [style.z-index]="visible().length - i"
+                                    class="-ml-2 block no-underline first:ml-0"
                                     [pTooltip]="user.displayName + ' (@' + user.username + ')'"
+                                    [routerLink]="['/users', user.userId]"
+                                    [style.z-index]="visible().length - i"
                                     tooltipPosition="top"
                                 >
                                     <p-avatar
                                         [label]="user.displayName.charAt(0).toUpperCase()"
                                         shape="circle"
-                                        styleClass="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold border-2 border-white dark:border-surface-800 cursor-pointer"
                                         size="normal"
+                                        styleClass="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold border-2 border-white dark:border-surface-800 cursor-pointer"
                                     />
                                 </a>
                             }
                             @if (overflow() > 0) {
-                                <div class="-ml-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-surface-800 bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300 text-xs font-semibold"
-                                     [style.z-index]="0">
+                                <div
+                                    class="dark:border-surface-800 bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300 -ml-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold"
+                                    [style.z-index]="0"
+                                >
                                     +{{ overflow() }}
                                 </div>
                             }
@@ -62,14 +65,17 @@ const MAX_FOOTER_AVATARS = 10;
                 </div>
 
                 <!-- Bottom row: branding -->
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <span class="text-surface-400 text-xs">
-                        © {{ year }} Aniverse — {{ t('footer.rights') }}
-                    </span>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-surface-400 text-xs"> © {{ year }} Aniverse — {{ t("footer.rights") }} </span>
                     <span class="text-surface-300 dark:text-surface-600 text-xs">
                         Powered by
-                        <a href="https://primeng.org" target="_blank" rel="noopener noreferrer"
-                           class="text-primary font-medium hover:underline">PrimeNG</a>
+                        <a
+                            class="text-primary font-medium hover:underline"
+                            href="https://primeng.org"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            >PrimeNG</a
+                        >
                     </span>
                 </div>
             </div>
@@ -87,7 +93,9 @@ export class AppFooter implements OnInit {
 
     ngOnInit(): void {
         this.http
-            .get<OnlineUser[]>(`${this.apiConfig.baseUrl}${ONLINE_USERS_ROUTES.online({ window: "today", sort: "lastSeen", order: "desc", limit: 50 })}`)
+            .get<
+                OnlineUser[]
+            >(`${this.apiConfig.baseUrl}${ONLINE_USERS_ROUTES.online({ window: "today", sort: "lastSeen", order: "desc", limit: 50 })}`)
             .subscribe({
                 next: (users) => {
                     this.total.set(users.length);

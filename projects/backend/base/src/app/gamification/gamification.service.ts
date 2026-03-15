@@ -3,9 +3,9 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
 import { AchievementService } from "./achievement.service";
-import { XpConfigEntity } from "./entities/xp-config.entity";
-import { XpEventType, XpEventEntity } from "./entities/xp-event.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
+import { XpConfigEntity } from "./entities/xp-config.entity";
+import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
 import { getLevelForXp, getXpProgressPercent, getXpToNextLevel, UserXpData } from "./level.config";
 
 export interface XpConfigDto {
@@ -40,7 +40,12 @@ export class GamificationService {
 
     async getXpConfig(): Promise<XpConfigDto[]> {
         const rows = await this.xpConfigRepo.find({ order: { eventType: "ASC" } });
-        return rows.map((r) => ({ eventType: r.eventType, xpAmount: r.xpAmount, label: r.label, description: r.description }));
+        return rows.map((r) => ({
+            eventType: r.eventType,
+            xpAmount: r.xpAmount,
+            label: r.label,
+            description: r.description
+        }));
     }
 
     async updateXpConfig(eventType: string, xpAmount: number): Promise<XpConfigDto> {
@@ -103,7 +108,8 @@ export class GamificationService {
         const receiveXp = config.get("receive_reaction") ?? 3;
         const giveXp = config.get("give_reaction") ?? 1;
 
-        const result = await this.dataSource.query<{ user_id: string; total_xp: number }[]>(`
+        const result = await this.dataSource.query<{ user_id: string; total_xp: number }[]>(
+            `
             WITH
             thread_counts AS (
                 SELECT author_id AS user_id, COUNT(*) AS cnt
@@ -136,15 +142,14 @@ export class GamificationService {
                  COALESCE((SELECT cnt FROM reactions_given     WHERE user_id = u.id), 0) * $4
                 ) AS total_xp
             FROM users u
-        `, [threadXp, postXp, receiveXp, giveXp]);
+        `,
+            [threadXp, postXp, receiveXp, giveXp]
+        );
 
         for (const row of result) {
             const xp = Number(row.total_xp);
             const level = getLevelForXp(xp).level;
-            await this.userXpRepo.upsert(
-                { userId: row.user_id, xp, level },
-                { conflictPaths: ["userId"] }
-            );
+            await this.userXpRepo.upsert({ userId: row.user_id, xp, level }, { conflictPaths: ["userId"] });
         }
 
         // Clear xp_events and re-insert summary events so history is consistent

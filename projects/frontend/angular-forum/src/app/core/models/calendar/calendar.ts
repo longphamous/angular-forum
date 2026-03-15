@@ -85,22 +85,34 @@ export const EVENT_COLORS: { label: string; value: string; css: string }[] = [
 
 export function getEventColorClass(color: string | null): string {
     switch (color) {
-        case "green": return "bg-green-500";
-        case "red": return "bg-red-500";
-        case "purple": return "bg-purple-500";
-        case "orange": return "bg-orange-500";
-        case "pink": return "bg-pink-500";
-        default: return "bg-blue-500";
+        case "green":
+            return "bg-green-500";
+        case "red":
+            return "bg-red-500";
+        case "purple":
+            return "bg-purple-500";
+        case "orange":
+            return "bg-orange-500";
+        case "pink":
+            return "bg-pink-500";
+        default:
+            return "bg-blue-500";
     }
 }
 
 export function getEventBorderClass(color: string | null): string {
     switch (color) {
-        case "green": return "border-green-400";
-        case "red": return "border-red-400";
-        case "purple": return "border-purple-400";
-        case "orange": return "border-orange-400";
-        case "pink": return "border-pink-400";
-        default: return "border-blue-400";
+        case "green":
+            return "border-green-400";
+        case "red":
+            return "border-red-400";
+        case "purple":
+            return "border-purple-400";
+        case "orange":
+            return "border-orange-400";
+        case "pink":
+            return "border-pink-400";
+        default:
+            return "border-blue-400";
     }
 }

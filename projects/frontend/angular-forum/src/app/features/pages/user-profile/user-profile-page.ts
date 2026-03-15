@@ -11,9 +11,9 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
+import { USER_ROUTES } from "../../../core/api/user.routes";
 import { AchievementBadge } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
-import { USER_ROUTES } from "../../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { UserAchievement } from "../../../core/models/gamification/achievement";
 import { UserProfile, UserRole } from "../../../core/models/user/user";
@@ -21,7 +21,19 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AchievementBadge, AvatarModule, ButtonModule, CardModule, DividerModule, LevelProgress, RouterModule, SkeletonModule, TagModule, TooltipModule, TranslocoModule],
+    imports: [
+        AchievementBadge,
+        AvatarModule,
+        ButtonModule,
+        CardModule,
+        DividerModule,
+        LevelProgress,
+        RouterModule,
+        SkeletonModule,
+        TagModule,
+        TooltipModule,
+        TranslocoModule
+    ],
     selector: "app-user-profile-page",
     templateUrl: "./user-profile-page.html"
 })

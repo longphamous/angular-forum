@@ -22,17 +22,23 @@
                         {{ facade.currentThread()!.title }}
                     </h1>
                     @if (facade.currentThread()!.isPinned) {
-                    <p-tag severity="warn" [value]="t('threadDetail.pinned')" />
+                    <p-tag [value]="t('threadDetail.pinned')" severity="warn" />
                     } @if (facade.currentThread()!.isSticky) {
-                    <p-tag severity="info" [value]="t('threadDetail.sticky')" />
+                    <p-tag [value]="t('threadDetail.sticky')" severity="info" />
                     } @if (facade.currentThread()!.isLocked) {
-                    <p-tag severity="danger" [value]="t('threadDetail.locked')" />
+                    <p-tag [value]="t('threadDetail.locked')" severity="danger" />
                     }
                 </div>
                 <div class="text-surface-500 mt-2 flex flex-wrap gap-4 text-sm">
                     <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(facade.currentThread()!.createdAt) }}</span>
-                    <span><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} {{ t('threadDetail.views') }}</span>
-                    <span><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} {{ t('threadDetail.replies') }}</span>
+                    <span
+                        ><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} {{
+                        t('threadDetail.views') }}</span
+                    >
+                    <span
+                        ><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} {{
+                        t('threadDetail.replies') }}</span
+                    >
                 </div>
                 }
             </div>
@@ -60,132 +66,135 @@
         </div>
         }
     </div>
-    } @else {
-        @for (post of facade.posts(); track post.id) {
-        <div
-            class="card flex gap-4"
-            [class.border-l-4]="post.isFirstPost"
-            [class.border-primary-300]="post.isFirstPost"
-            [class.dark:border-primary-600]="post.isFirstPost"
-        >
-            <!-- Author sidebar -->
-            <div class="hidden w-28 shrink-0 flex-col items-center gap-2 text-center sm:flex">
-                <a [routerLink]="['/users', post.authorId]" class="no-underline">
-                    @if (post.authorAvatarUrl) {
-                    <img
-                        class="h-14 w-14 rounded-full object-cover ring-2 ring-primary/20 hover:ring-primary/60 transition-all"
-                        [alt]="post.authorName"
-                        [src]="post.authorAvatarUrl"
-                    />
-                    } @else {
+    } @else { @for (post of facade.posts(); track post.id) {
+    <div
+        class="card flex gap-4"
+        [class.border-l-4]="post.isFirstPost"
+        [class.border-primary-300]="post.isFirstPost"
+        [class.dark:border-primary-600]="post.isFirstPost"
+    >
+        <!-- Author sidebar -->
+        <div class="hidden w-28 shrink-0 flex-col items-center gap-2 text-center sm:flex">
+            <a class="no-underline" [routerLink]="['/users', post.authorId]">
+                @if (post.authorAvatarUrl) {
+                <img
+                    class="ring-primary/20 hover:ring-primary/60 h-14 w-14 rounded-full object-cover ring-2 transition-all"
+                    [alt]="post.authorName"
+                    [src]="post.authorAvatarUrl"
+                />
+                } @else {
+                <div
+                    class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800 flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold transition-colors"
+                >
+                    {{ post.authorName.charAt(0).toUpperCase() }}
+                </div>
+                }
+            </a>
+            <a
+                class="text-surface-900 dark:text-surface-0 text-xs font-semibold no-underline hover:underline"
+                [routerLink]="['/users', post.authorId]"
+                >{{ post.authorName }}</a
+            >
+            <p-tag [severity]="authorRoleSeverity(post.authorRole)" [value]="post.authorRole" styleClass="text-xs" />
+            <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
+            <span class="text-surface-400 text-xs">{{ post.authorPostCount }} {{ t('threadDetail.posts') }}</span>
+            @if (post.authorBalance !== undefined) {
+            <span class="flex items-center gap-0.5 text-xs text-yellow-600 dark:text-yellow-400">
+                <i class="pi pi-wallet text-xs"></i>{{ post.authorBalance }}
+            </span>
+            }
+        </div>
+
+        <!-- Post content -->
+        <div class="min-w-0 flex-1">
+            <!-- Mobile author row -->
+            <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
+                <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
                     <div
-                        class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800 flex h-14 w-14 items-center justify-center rounded-full font-bold text-lg transition-colors"
+                        class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
                     >
                         {{ post.authorName.charAt(0).toUpperCase() }}
                     </div>
-                    }
+                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                        >{{ post.authorName }}</span
+                    >
                 </a>
-                <a
-                    class="text-surface-900 dark:text-surface-0 text-xs font-semibold no-underline hover:underline"
-                    [routerLink]="['/users', post.authorId]"
-                >{{ post.authorName }}</a>
-                <p-tag [value]="post.authorRole" styleClass="text-xs" [severity]="authorRoleSeverity(post.authorRole)" />
-                <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
-                <span class="text-surface-400 text-xs">{{ post.authorPostCount }} {{ t('threadDetail.posts') }}</span>
-                @if (post.authorBalance !== undefined) {
-                <span class="text-yellow-600 dark:text-yellow-400 flex items-center gap-0.5 text-xs">
-                    <i class="pi pi-wallet text-xs"></i>{{ post.authorBalance }}
-                </span>
-                }
+                <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
             </div>
 
-            <!-- Post content -->
-            <div class="min-w-0 flex-1">
-                <!-- Mobile author row -->
-                <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
-                    <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
-                        <div
-                            class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-semibold text-sm"
-                        >
-                            {{ post.authorName.charAt(0).toUpperCase() }}
-                        </div>
-                        <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold">{{ post.authorName }}</span>
-                    </a>
-                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
+            <!-- Desktop date + meta -->
+            <div class="mb-3 hidden items-center justify-between sm:flex">
+                <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
+                <div class="flex items-center gap-2">
+                    @if (post.isFirstPost) {
+                    <p-tag [value]="t('threadDetail.firstPost')" severity="info" styleClass="text-xs" />
+                    } @if (post.isEdited) {
+                    <span class="text-surface-400 text-xs italic">
+                        {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                    </span>
+                    } @if (post.reactionCount > 0) {
+                    <span class="text-surface-500 text-sm">
+                        <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
+                    </span>
+                    }
                 </div>
-
-                <!-- Desktop date + meta -->
-                <div class="mb-3 hidden items-center justify-between sm:flex">
-                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
-                    <div class="flex items-center gap-2">
-                        @if (post.isFirstPost) {
-                        <p-tag severity="info" [value]="t('threadDetail.firstPost')" styleClass="text-xs" />
-                        }
-                        @if (post.isEdited) {
-                        <span class="text-surface-400 text-xs italic">
-                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
-                        </span>
-                        }
-                        @if (post.reactionCount > 0) {
-                        <span class="text-surface-500 text-sm">
-                            <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
-                        </span>
-                        }
-                    </div>
-                </div>
-
-                <p-divider styleClass="my-3" />
-
-                <div class="post-content" [innerHTML]="post.content"></div>
-
-                <!-- Post actions -->
-                <div class="mt-4 flex items-center gap-1">
-                    <button
-                        class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-                        [class.text-red-500]="hasReacted(post.id)"
-                        [class.text-surface-400]="!hasReacted(post.id)"
-                        [class.dark:text-surface-500]="!hasReacted(post.id)"
-                        [class.hover:text-red-400]="!hasReacted(post.id)"
-                        [class.hover:bg-red-50]="true"
-                        [class.dark:hover:bg-red-900\/10]="true"
-                        (click)="toggleReact(post); $event.stopPropagation()"
-                    >
-                        <i class="pi text-sm" [class.pi-heart-fill]="hasReacted(post.id)" [class.pi-heart]="!hasReacted(post.id)"></i>
-                        <span>{{ adjustedReactionCount(post) }}</span>
-                    </button>
-
-                    <button
-                        class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-                        (click)="quotePost(post); $event.stopPropagation()"
-                        [pTooltip]="t('threadDetail.quoteTooltip')"
-                    >
-                        <i class="pi pi-reply text-sm"></i>
-                        <span>{{ t('threadDetail.quote') }}</span>
-                    </button>
-
-                    <button
-                        class="text-surface-400 dark:text-surface-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-                        (click)="openReport(post); $event.stopPropagation()"
-                        [pTooltip]="t('threadDetail.reportTooltip')"
-                    >
-                        <i class="pi pi-flag text-sm"></i>
-                        <span>{{ t('threadDetail.report') }}</span>
-                    </button>
-                </div>
-
-                @if (post.authorSignature) {
-                <div class="mt-4 border-t border-surface-200 dark:border-surface-700 pt-3">
-                    <p class="text-surface-400 dark:text-surface-500 whitespace-pre-line text-xs italic">{{ post.authorSignature }}</p>
-                </div>
-                }
             </div>
+
+            <p-divider styleClass="my-3" />
+
+            <div class="post-content" [innerHTML]="post.content"></div>
+
+            <!-- Post actions -->
+            <div class="mt-4 flex items-center gap-1">
+                <button
+                    class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                    (click)="toggleReact(post); $event.stopPropagation()"
+                    [class.dark:hover:bg-red-900\/10]="true"
+                    [class.dark:text-surface-500]="!hasReacted(post.id)"
+                    [class.hover:bg-red-50]="true"
+                    [class.hover:text-red-400]="!hasReacted(post.id)"
+                    [class.text-red-500]="hasReacted(post.id)"
+                    [class.text-surface-400]="!hasReacted(post.id)"
+                >
+                    <i
+                        class="pi text-sm"
+                        [class.pi-heart-fill]="hasReacted(post.id)"
+                        [class.pi-heart]="!hasReacted(post.id)"
+                    ></i>
+                    <span>{{ adjustedReactionCount(post) }}</span>
+                </button>
+
+                <button
+                    class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                    (click)="quotePost(post); $event.stopPropagation()"
+                    [pTooltip]="t('threadDetail.quoteTooltip')"
+                >
+                    <i class="pi pi-reply text-sm"></i>
+                    <span>{{ t('threadDetail.quote') }}</span>
+                </button>
+
+                <button
+                    class="text-surface-400 dark:text-surface-500 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-orange-900/10"
+                    (click)="openReport(post); $event.stopPropagation()"
+                    [pTooltip]="t('threadDetail.reportTooltip')"
+                >
+                    <i class="pi pi-flag text-sm"></i>
+                    <span>{{ t('threadDetail.report') }}</span>
+                </button>
+            </div>
+
+            @if (post.authorSignature) {
+            <div class="border-surface-200 dark:border-surface-700 mt-4 border-t pt-3">
+                <p class="text-surface-400 dark:text-surface-500 text-xs whitespace-pre-line italic">
+                    {{ post.authorSignature }}
+                </p>
+            </div>
+            }
         </div>
-        }
-
-        @if (facade.postTotal() > pageSize) {
-        <p-paginator (onPageChange)="onPostsPageChange($event)" [rows]="pageSize" [totalRecords]="facade.postTotal()" />
-        }
-    }
+    </div>
+    } @if (facade.postTotal() > pageSize) {
+    <p-paginator (onPageChange)="onPostsPageChange($event)" [rows]="pageSize" [totalRecords]="facade.postTotal()" />
+    } }
 
     <!-- Reply form -->
     @if (!facade.currentThread()?.isLocked) {
@@ -198,18 +207,18 @@
 
         <p-editor
             [(ngModel)]="replyContent"
+            [placeholder]="t('threadDetail.replyPlaceholder')"
             [readonly]="submittingReply"
             [style]="{ height: '200px' }"
-            [placeholder]="t('threadDetail.replyPlaceholder')"
         />
 
         <div class="mt-3 flex justify-end">
             <p-button
                 (onClick)="submitReply()"
                 [disabled]="!replyContent.trim()"
+                [label]="t('threadDetail.replySend')"
                 [loading]="submittingReply"
                 icon="pi pi-send"
-                [label]="t('threadDetail.replySend')"
             />
         </div>
     </div>
@@ -222,42 +231,47 @@
 
 <!-- Report dialog -->
 <ng-container *transloco="let t">
-<p-dialog
-    [visible]="reportVisible()"
-    (visibleChange)="reportVisible.set($event)"
-    [header]="t('threadDetail.reportDialog.header')"
-    [modal]="true"
-    [style]="{ width: '28rem' }"
-    [draggable]="false"
->
-    @if (reportSuccess()) {
-    <p-message severity="success" [text]="t('threadDetail.reportDialog.success')" styleClass="w-full mb-3" />
-    } @else {
-    <p class="text-surface-600 dark:text-surface-400 mb-4 text-sm">
-        {{ t('threadDetail.reportDialog.description') }}
-    </p>
-    <textarea
-        pTextarea
-        [(ngModel)]="reportReason"
-        class="w-full"
-        rows="4"
-        [placeholder]="t('threadDetail.reportDialog.placeholder')"
-        [autoResize]="false"
-    ></textarea>
-    }
-    <ng-template #footer>
+    <p-dialog
+        (visibleChange)="reportVisible.set($event)"
+        [draggable]="false"
+        [header]="t('threadDetail.reportDialog.header')"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+        [visible]="reportVisible()"
+    >
         @if (reportSuccess()) {
-        <p-button [label]="t('common.close')" (onClick)="reportVisible.set(false); reportSuccess.set(false)" />
+        <p-message [text]="t('threadDetail.reportDialog.success')" severity="success" styleClass="w-full mb-3" />
         } @else {
-        <p-button [label]="t('common.cancel')" severity="secondary" [outlined]="true" (onClick)="reportVisible.set(false)" />
-        <p-button
-            [label]="t('threadDetail.reportDialog.submit')"
-            icon="pi pi-flag"
-            severity="warn"
-            [disabled]="!reportReason.trim()"
-            (onClick)="submitReport()"
-        />
+        <p class="text-surface-600 dark:text-surface-400 mb-4 text-sm">
+            {{ t('threadDetail.reportDialog.description') }}
+        </p>
+        <textarea
+            class="w-full"
+            [(ngModel)]="reportReason"
+            [autoResize]="false"
+            [placeholder]="t('threadDetail.reportDialog.placeholder')"
+            pTextarea
+            rows="4"
+        ></textarea>
         }
-    </ng-template>
-</p-dialog>
+        <ng-template #footer>
+            @if (reportSuccess()) {
+            <p-button (onClick)="reportVisible.set(false); reportSuccess.set(false)" [label]="t('common.close')" />
+            } @else {
+            <p-button
+                (onClick)="reportVisible.set(false)"
+                [label]="t('common.cancel')"
+                [outlined]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="submitReport()"
+                [disabled]="!reportReason.trim()"
+                [label]="t('threadDetail.reportDialog.submit')"
+                icon="pi pi-flag"
+                severity="warn"
+            />
+            }
+        </ng-template>
+    </p-dialog>
 </ng-container>

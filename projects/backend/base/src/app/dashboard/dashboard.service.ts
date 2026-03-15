@@ -45,7 +45,7 @@ export class DashboardService {
                 )
                 .then((rows) => rows[0]),
             this.animeDb.query<{ anime_count: string }[]>(
-                `SELECT COUNT(*) AS anime_count FROM anime WHERE deleted_at IS NULL`
+                "SELECT COUNT(*) AS anime_count FROM anime WHERE deleted_at IS NULL"
             )
         ]);
 

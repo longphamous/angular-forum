@@ -2,14 +2,15 @@
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-center gap-3">
-            <p-button [text]="true" icon="pi pi-arrow-left" [pTooltip]="t('thread.backToForum')" routerLink="/forum" />
+            <p-button [pTooltip]="t('thread.backToForum')" [text]="true" icon="pi pi-arrow-left" routerLink="/forum" />
             <div class="flex-1">
                 @if (facade.currentForum()) {
-                <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ facade.currentForum()!.name }}</h1>
+                <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                    {{ facade.currentForum()!.name }}
+                </h1>
                 @if (facade.currentForum()!.description) {
                 <p class="text-surface-500 mt-0.5 text-sm">{{ facade.currentForum()!.description }}</p>
-                }
-                } @else if (facade.loading()) {
+                } } @else if (facade.loading()) {
                 <p-skeleton height="1.5rem" styleClass="w-1/3 mb-1" />
                 <p-skeleton height="1rem" styleClass="w-1/2" />
                 }
@@ -17,16 +18,20 @@
             @if (facade.currentForum()) {
             <div class="hidden shrink-0 gap-6 text-right sm:flex">
                 <div>
-                    <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.threadCount }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 font-semibold">
+                        {{ facade.currentForum()!.threadCount }}
+                    </div>
                     <div class="text-surface-500 text-xs">{{ t('forum.threads') }}</div>
                 </div>
                 <div>
-                    <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ facade.currentForum()!.postCount }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 font-semibold">
+                        {{ facade.currentForum()!.postCount }}
+                    </div>
                     <div class="text-surface-500 text-xs">{{ t('forum.posts') }}</div>
                 </div>
             </div>
             }
-            <p-button (onClick)="createThread()" icon="pi pi-plus" [label]="t('thread.newThread')" />
+            <p-button (onClick)="createThread()" [label]="t('thread.newThread')" icon="pi pi-plus" />
         </div>
     </div>
 
@@ -37,7 +42,7 @@
     <!-- Thread list -->
     <div class="card">
         @if (facade.loading()) {
-        <div class="flex flex-col divide-y divide-surface-100 dark:divide-surface-700">
+        <div class="divide-surface-100 dark:divide-surface-700 flex flex-col divide-y">
             @for (_ of [1, 2, 3, 4, 5]; track $index) {
             <div class="flex items-start gap-4 py-5">
                 <p-skeleton shape="circle" size="2.75rem" styleClass="hidden sm:block shrink-0" />
@@ -61,18 +66,18 @@
         <div class="divide-surface-100 dark:divide-surface-700 -mx-2 divide-y">
             @for (thread of facade.threads(); track thread.id) {
             <a
-                class="group flex items-start gap-4 rounded-lg px-2 py-4 no-underline transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
+                class="group hover:bg-surface-50 dark:hover:bg-surface-800 flex items-start gap-4 rounded-lg px-2 py-4 no-underline transition-colors"
                 [class.border-l-4]="thread.isPinned || thread.isSticky"
+                [class.border-primary-300]="thread.isPinned && thread.isSticky"
                 [class.border-primary-400]="thread.isPinned && !thread.isSticky"
                 [class.border-yellow-400]="thread.isSticky && !thread.isPinned"
-                [class.border-primary-300]="thread.isPinned && thread.isSticky"
                 [routerLink]="['/forum/threads', thread.id]"
             >
                 <!-- Author avatar -->
                 <div class="hidden shrink-0 sm:block">
                     @if (thread.authorAvatarUrl) {
                     <img
-                        class="h-11 w-11 rounded-full object-cover ring-2 ring-surface-200 dark:ring-surface-700"
+                        class="ring-surface-200 dark:ring-surface-700 h-11 w-11 rounded-full object-cover ring-2"
                         [alt]="thread.authorName"
                         [src]="thread.authorAvatarUrl"
                     />
@@ -90,23 +95,22 @@
                     <!-- Title + badges row -->
                     <div class="flex flex-wrap items-center gap-2">
                         @if (thread.isLocked) {
-                        <i class="pi pi-lock text-red-500 text-xs" [pTooltip]="t('thread.locked')"></i>
+                        <i class="pi pi-lock text-xs text-red-500" [pTooltip]="t('thread.locked')"></i>
                         } @if (thread.isPinned) {
                         <i class="pi pi-bookmark text-primary text-xs" [pTooltip]="t('thread.pinned')"></i>
                         } @if (thread.isSticky) {
-                        <i class="pi pi-star text-yellow-500 text-xs" [pTooltip]="t('thread.sticky')"></i>
+                        <i class="pi pi-star text-xs text-yellow-500" [pTooltip]="t('thread.sticky')"></i>
                         }
                         <span
-                            class="text-surface-900 dark:text-surface-0 font-semibold transition-colors group-hover:text-primary"
+                            class="text-surface-900 dark:text-surface-0 group-hover:text-primary font-semibold transition-colors"
                         >
                             {{ thread.title }}
                         </span>
                         @if (thread.isPinned) {
-                        <p-tag severity="warn" [value]="t('thread.pinned')" styleClass="text-xs" />
+                        <p-tag [value]="t('thread.pinned')" severity="warn" styleClass="text-xs" />
                         } @if (thread.isLocked) {
-                        <p-tag severity="danger" [value]="t('thread.locked')" styleClass="text-xs" />
-                        }
-                        @for (tag of thread.tags; track tag) {
+                        <p-tag [value]="t('thread.locked')" severity="danger" styleClass="text-xs" />
+                        } @for (tag of thread.tags; track tag) {
                         <span
                             class="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full px-2 py-0.5 text-xs font-medium"
                         >
@@ -116,7 +120,9 @@
                     </div>
 
                     <!-- Meta row -->
-                    <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-500 dark:text-surface-400">
+                    <div
+                        class="text-surface-500 dark:text-surface-400 mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs"
+                    >
                         <span class="flex items-center gap-1">
                             <i class="pi pi-user text-xs"></i>{{ thread.authorName }}
                         </span>
@@ -126,7 +132,8 @@
                         </span>
                         @if (thread.lastPostAt) {
                         <span class="flex items-center gap-1">
-                            <i class="pi pi-clock text-xs"></i>{{ t('thread.lastReply') }} {{ formatRelative(thread.lastPostAt) }}
+                            <i class="pi pi-clock text-xs"></i>{{ t('thread.lastReply') }} {{
+                            formatRelative(thread.lastPostAt) }}
                         </span>
                         }
                         <!-- Mobile stats -->
@@ -140,7 +147,9 @@
                 </div>
 
                 <!-- Desktop stats -->
-                <div class="hidden shrink-0 flex-col items-end gap-1.5 text-xs text-surface-500 dark:text-surface-400 sm:flex">
+                <div
+                    class="text-surface-500 dark:text-surface-400 hidden shrink-0 flex-col items-end gap-1.5 text-xs sm:flex"
+                >
                     <span class="flex items-center gap-1.5">
                         <i class="pi pi-comments text-xs"></i>
                         <span>{{ thread.replyCount }} {{ t('thread.replies') }}</span>
@@ -151,7 +160,9 @@
                     </span>
                 </div>
 
-                <i class="pi pi-chevron-right text-surface-300 dark:text-surface-600 hidden self-center text-xs sm:block"></i>
+                <i
+                    class="pi pi-chevron-right text-surface-300 dark:text-surface-600 hidden self-center text-xs sm:block"
+                ></i>
             </a>
             }
         </div>
@@ -163,7 +174,6 @@
             [totalRecords]="facade.threadTotal()"
             styleClass="mt-4"
         />
-        }
-        }
+        } }
     </div>
 </div>

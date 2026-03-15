@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
-import { Subscription } from "rxjs";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
@@ -14,9 +13,10 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
+import { Subscription } from "rxjs";
 
-import { AdminCreateUserPayload, AdminFacade, AdminUpdateUserPayload } from "../../../facade/admin/admin-facade";
 import { UserProfile, UserRole, UserStatus } from "../../../core/models/user/user";
+import { AdminCreateUserPayload, AdminFacade, AdminUpdateUserPayload } from "../../../facade/admin/admin-facade";
 
 interface SelectOption<T> {
     label: string;
@@ -47,16 +47,14 @@ interface SelectOption<T> {
             <!-- Header -->
             <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 class="m-0 text-2xl font-bold">{{ t('adminUsers.title') }}</h2>
+                    <h2 class="m-0 text-2xl font-bold">{{ t("adminUsers.title") }}</h2>
                     @if (facade.users().length > 0) {
-                        <p class="text-surface-500 mb-0 mt-1 text-sm">{{ t('adminUsers.users_count', { count: facade.users().length }) }}</p>
+                        <p class="text-surface-500 mt-1 mb-0 text-sm">
+                            {{ t("adminUsers.users_count", { count: facade.users().length }) }}
+                        </p>
                     }
                 </div>
-                <p-button
-                    icon="pi pi-plus"
-                    [label]="t('adminUsers.createUser')"
-                    (onClick)="openCreateDialog()"
-                />
+                <p-button [label]="t('adminUsers.createUser')" (onClick)="openCreateDialog()" icon="pi pi-plus" />
             </div>
 
             @if (facade.usersError()) {
@@ -64,22 +62,22 @@ interface SelectOption<T> {
             }
 
             <p-table
-                [value]="facade.users()"
                 [loading]="facade.usersLoading()"
                 [rowHover]="true"
                 [scrollable]="true"
+                [value]="facade.users()"
                 dataKey="id"
                 styleClass="p-datatable-sm"
             >
                 <ng-template #header>
                     <tr>
-                        <th style="min-width:14rem">{{ t('adminUsers.table.user') }}</th>
-                        <th style="min-width:14rem">{{ t('adminUsers.table.email') }}</th>
-                        <th style="width:8rem">{{ t('adminUsers.table.role') }}</th>
-                        <th style="width:8rem">{{ t('adminUsers.table.status') }}</th>
-                        <th style="width:11rem">{{ t('adminUsers.table.registered') }}</th>
-                        <th style="width:11rem">{{ t('adminUsers.table.lastLogin') }}</th>
-                        <th style="width:7rem" class="text-center">{{ t('common.actions') }}</th>
+                        <th style="min-width:14rem">{{ t("adminUsers.table.user") }}</th>
+                        <th style="min-width:14rem">{{ t("adminUsers.table.email") }}</th>
+                        <th style="width:8rem">{{ t("adminUsers.table.role") }}</th>
+                        <th style="width:8rem">{{ t("adminUsers.table.status") }}</th>
+                        <th style="width:11rem">{{ t("adminUsers.table.registered") }}</th>
+                        <th style="width:11rem">{{ t("adminUsers.table.lastLogin") }}</th>
+                        <th class="text-center" style="width:7rem">{{ t("common.actions") }}</th>
                     </tr>
                 </ng-template>
 
@@ -89,8 +87,8 @@ interface SelectOption<T> {
                         <td>
                             <div class="flex items-center gap-3">
                                 <p-avatar
-                                    [label]="user.displayName?.charAt(0)?.toUpperCase()"
                                     [image]="user.avatarUrl || undefined"
+                                    [label]="user.displayName?.charAt(0)?.toUpperCase()"
                                     shape="circle"
                                     size="normal"
                                     styleClass="flex-shrink-0"
@@ -107,39 +105,45 @@ interface SelectOption<T> {
 
                         <!-- Role -->
                         <td>
-                            <p-tag [value]="user.role" [severity]="roleSeverity(user.role)" styleClass="text-xs" />
+                            <p-tag [severity]="roleSeverity(user.role)" [value]="user.role" styleClass="text-xs" />
                         </td>
 
                         <!-- Status -->
                         <td>
-                            <p-tag [value]="statusLabel(user.status)" [severity]="statusSeverity(user.status)" styleClass="text-xs" />
+                            <p-tag
+                                [severity]="statusSeverity(user.status)"
+                                [value]="statusLabel(user.status)"
+                                styleClass="text-xs"
+                            />
                         </td>
 
                         <!-- Created -->
                         <td class="text-surface-500 text-xs">{{ formatDate(user.createdAt) }}</td>
 
                         <!-- Last Login -->
-                        <td class="text-surface-500 text-xs">{{ user.lastLoginAt ? formatDate(user.lastLoginAt) : '—' }}</td>
+                        <td class="text-surface-500 text-xs">
+                            {{ user.lastLoginAt ? formatDate(user.lastLoginAt) : "—" }}
+                        </td>
 
                         <!-- Actions -->
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-1">
                                 <p-button
+                                    [pTooltip]="t('common.edit')"
+                                    [text]="true"
+                                    (onClick)="openEditDialog(user)"
                                     icon="pi pi-pencil"
                                     severity="secondary"
                                     size="small"
-                                    [text]="true"
-                                    [pTooltip]="t('common.edit')"
-                                    (onClick)="openEditDialog(user)"
                                 />
                                 <p-button
+                                    [loading]="deletingId() === user.id"
+                                    [pTooltip]="t('common.delete')"
+                                    [text]="true"
+                                    (onClick)="confirmDelete(user)"
                                     icon="pi pi-trash"
                                     severity="danger"
                                     size="small"
-                                    [text]="true"
-                                    [pTooltip]="t('common.delete')"
-                                    [loading]="deletingId() === user.id"
-                                    (onClick)="confirmDelete(user)"
                                 />
                             </div>
                         </td>
@@ -162,7 +166,7 @@ interface SelectOption<T> {
                         <td><p-skeleton height="1.5rem" width="4rem" /></td>
                         <td><p-skeleton height="1rem" width="6rem" /></td>
                         <td><p-skeleton height="1rem" width="6rem" /></td>
-                        <td><p-skeleton height="2rem" width="4rem" styleClass="mx-auto" /></td>
+                        <td><p-skeleton height="2rem" styleClass="mx-auto" width="4rem" /></td>
                     </tr>
                 </ng-template>
 
@@ -171,7 +175,7 @@ interface SelectOption<T> {
                         <td colspan="7">
                             <div class="text-surface-400 flex flex-col items-center justify-center py-12">
                                 <i class="pi pi-users mb-3 text-5xl"></i>
-                                <span>{{ t('adminUsers.table.noUsers') }}</span>
+                                <span>{{ t("adminUsers.table.noUsers") }}</span>
                             </div>
                         </td>
                     </tr>
@@ -182,78 +186,87 @@ interface SelectOption<T> {
         <!-- Create Dialog -->
         <p-dialog
             [(visible)]="createDialogVisible"
+            [header]="translocoService.translate('adminUsers.createDialog.header')"
             [modal]="true"
             [style]="{ width: '32rem' }"
-            [header]="translocoService.translate('adminUsers.createDialog.header')"
             (onHide)="resetCreateForm()"
         >
-            <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="flex flex-col gap-4 pt-2">
+            <form class="flex flex-col gap-4 pt-2" [formGroup]="createForm" (ngSubmit)="submitCreate()">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium">
-                            {{ translocoService.translate('adminUsers.createDialog.username') }} <span class="text-red-400">*</span>
+                            {{ translocoService.translate("adminUsers.createDialog.username") }}
+                            <span class="text-red-400">*</span>
                         </label>
                         <input
-                            pInputText
-                            formControlName="username"
-                            [placeholder]="translocoService.translate('adminUsers.createDialog.usernamePlaceholder')"
                             class="w-full"
+                            [placeholder]="translocoService.translate('adminUsers.createDialog.usernamePlaceholder')"
+                            formControlName="username"
+                            pInputText
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.createDialog.displayName') }}</label>
+                        <label class="text-surface-500 text-xs font-medium">{{
+                            translocoService.translate("adminUsers.createDialog.displayName")
+                        }}</label>
                         <input
-                            pInputText
-                            formControlName="displayName"
-                            [placeholder]="translocoService.translate('adminUsers.createDialog.displayNamePlaceholder')"
                             class="w-full"
+                            [placeholder]="translocoService.translate('adminUsers.createDialog.displayNamePlaceholder')"
+                            formControlName="displayName"
+                            pInputText
                         />
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-500 text-xs font-medium">
-                        {{ translocoService.translate('adminUsers.createDialog.email') }} <span class="text-red-400">*</span>
+                        {{ translocoService.translate("adminUsers.createDialog.email") }}
+                        <span class="text-red-400">*</span>
                     </label>
                     <input
-                        pInputText
-                        formControlName="email"
-                        type="email"
-                        [placeholder]="translocoService.translate('adminUsers.createDialog.emailPlaceholder')"
                         class="w-full"
+                        [placeholder]="translocoService.translate('adminUsers.createDialog.emailPlaceholder')"
+                        formControlName="email"
+                        pInputText
+                        type="email"
                     />
                 </div>
 
                 <div class="flex flex-col gap-1">
                     <label class="text-surface-500 text-xs font-medium">
-                        {{ translocoService.translate('adminUsers.createDialog.password') }} <span class="text-red-400">*</span>
+                        {{ translocoService.translate("adminUsers.createDialog.password") }}
+                        <span class="text-red-400">*</span>
                     </label>
                     <p-password
-                        formControlName="password"
-                        [placeholder]="translocoService.translate('adminUsers.createDialog.passwordPlaceholder')"
                         [feedback]="true"
+                        [placeholder]="translocoService.translate('adminUsers.createDialog.passwordPlaceholder')"
                         [toggleMask]="true"
-                        styleClass="w-full"
+                        formControlName="password"
                         inputStyleClass="w-full"
+                        styleClass="w-full"
                     />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.createDialog.role') }}</label>
+                        <label class="text-surface-500 text-xs font-medium">{{
+                            translocoService.translate("adminUsers.createDialog.role")
+                        }}</label>
                         <p-select
-                            formControlName="role"
                             [options]="roleOptions"
+                            formControlName="role"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.createDialog.status') }}</label>
+                        <label class="text-surface-500 text-xs font-medium">{{
+                            translocoService.translate("adminUsers.createDialog.status")
+                        }}</label>
                         <p-select
-                            formControlName="status"
                             [options]="statusOptions"
+                            formControlName="status"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
@@ -262,23 +275,23 @@ interface SelectOption<T> {
                 </div>
 
                 @if (createError()) {
-                    <p-message severity="error" [text]="createError()!" styleClass="w-full" />
+                    <p-message [text]="createError()!" severity="error" styleClass="w-full" />
                 }
             </form>
 
             <ng-template #footer>
                 <p-button
                     [label]="translocoService.translate('common.cancel')"
-                    severity="secondary"
                     [outlined]="true"
                     (onClick)="createDialogVisible = false"
+                    severity="secondary"
                 />
                 <p-button
-                    [label]="translocoService.translate('adminUsers.createDialog.submit')"
-                    icon="pi pi-check"
-                    [loading]="creating()"
                     [disabled]="createForm.invalid"
+                    [label]="translocoService.translate('adminUsers.createDialog.submit')"
+                    [loading]="creating()"
                     (onClick)="submitCreate()"
+                    icon="pi pi-check"
                 />
             </ng-template>
         </p-dialog>
@@ -286,33 +299,41 @@ interface SelectOption<T> {
         <!-- Edit Dialog -->
         <p-dialog
             [(visible)]="editDialogVisible"
+            [header]="
+                translocoService.translate('adminUsers.editDialog.header') + ' ' + (editingUser()?.username ?? '')
+            "
             [modal]="true"
             [style]="{ width: '28rem' }"
-            [header]="translocoService.translate('adminUsers.editDialog.header') + ' ' + (editingUser()?.username ?? '')"
             (onHide)="resetEditForm()"
         >
-            <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="flex flex-col gap-4 pt-2">
+            <form class="flex flex-col gap-4 pt-2" [formGroup]="editForm" (ngSubmit)="submitEdit()">
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.editDialog.displayName') }}</label>
-                    <input pInputText formControlName="displayName" class="w-full" />
+                    <label class="text-surface-500 text-xs font-medium">{{
+                        translocoService.translate("adminUsers.editDialog.displayName")
+                    }}</label>
+                    <input class="w-full" formControlName="displayName" pInputText />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.editDialog.role') }}</label>
+                        <label class="text-surface-500 text-xs font-medium">{{
+                            translocoService.translate("adminUsers.editDialog.role")
+                        }}</label>
                         <p-select
-                            formControlName="role"
                             [options]="roleOptions"
+                            formControlName="role"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium">{{ translocoService.translate('adminUsers.editDialog.status') }}</label>
+                        <label class="text-surface-500 text-xs font-medium">{{
+                            translocoService.translate("adminUsers.editDialog.status")
+                        }}</label>
                         <p-select
-                            formControlName="status"
                             [options]="statusOptions"
+                            formControlName="status"
                             optionLabel="label"
                             optionValue="value"
                             styleClass="w-full"
@@ -321,22 +342,22 @@ interface SelectOption<T> {
                 </div>
 
                 @if (editError()) {
-                    <p-message severity="error" [text]="editError()!" styleClass="w-full" />
+                    <p-message [text]="editError()!" severity="error" styleClass="w-full" />
                 }
             </form>
 
             <ng-template #footer>
                 <p-button
                     [label]="translocoService.translate('common.cancel')"
-                    severity="secondary"
                     [outlined]="true"
                     (onClick)="editDialogVisible = false"
+                    severity="secondary"
                 />
                 <p-button
                     [label]="translocoService.translate('common.save')"
-                    icon="pi pi-check"
                     [loading]="editing()"
                     (onClick)="submitEdit()"
+                    icon="pi pi-check"
                 />
             </ng-template>
         </p-dialog>
@@ -344,28 +365,28 @@ interface SelectOption<T> {
         <!-- Delete Confirm Dialog -->
         <p-dialog
             [(visible)]="deleteDialogVisible"
+            [header]="translocoService.translate('adminUsers.deleteDialog.header')"
             [modal]="true"
             [style]="{ width: '24rem' }"
-            [header]="translocoService.translate('adminUsers.deleteDialog.header')"
         >
             <p class="text-surface-600 dark:text-surface-300 m-0 text-sm">
-                Benutzer <strong>{{ deletingUser()?.username }}</strong> wirklich löschen?
-                Diese Aktion kann nicht rückgängig gemacht werden.
+                Benutzer <strong>{{ deletingUser()?.username }}</strong> wirklich löschen? Diese Aktion kann nicht
+                rückgängig gemacht werden.
             </p>
 
             <ng-template #footer>
                 <p-button
                     [label]="translocoService.translate('common.cancel')"
-                    severity="secondary"
                     [outlined]="true"
                     (onClick)="deleteDialogVisible = false"
+                    severity="secondary"
                 />
                 <p-button
                     [label]="translocoService.translate('common.delete')"
-                    icon="pi pi-trash"
-                    severity="danger"
                     [loading]="deletingId() !== null"
                     (onClick)="executeDelete()"
+                    icon="pi pi-trash"
+                    severity="danger"
                 />
             </ng-template>
         </p-dialog>
@@ -478,7 +499,9 @@ export class AdminUsers implements OnInit, OnDestroy {
                 this.resetCreateForm();
             },
             error: (err: { error?: { message?: string } }) => {
-                this.createError.set(err?.error?.message ?? this.translocoService.translate("adminUsers.createDialog.errorCreating"));
+                this.createError.set(
+                    err?.error?.message ?? this.translocoService.translate("adminUsers.createDialog.errorCreating")
+                );
                 this.creating.set(false);
             }
         });
@@ -516,7 +539,9 @@ export class AdminUsers implements OnInit, OnDestroy {
                 this.editDialogVisible = false;
             },
             error: (err: { error?: { message?: string } }) => {
-                this.editError.set(err?.error?.message ?? this.translocoService.translate("adminUsers.editDialog.errorSaving"));
+                this.editError.set(
+                    err?.error?.message ?? this.translocoService.translate("adminUsers.editDialog.errorSaving")
+                );
                 this.editing.set(false);
             }
         });

@@ -15,12 +15,7 @@ import {
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { RolesGuard } from "../auth/guards/roles.guard";
-import {
-    CalendarService,
-    CreateCalendarEventDto,
-    RespondDto,
-    UpdateCalendarEventDto
-} from "./calendar.service";
+import { CalendarService, CreateCalendarEventDto, RespondDto, UpdateCalendarEventDto } from "./calendar.service";
 
 @Controller("calendar")
 export class CalendarController {
@@ -30,11 +25,7 @@ export class CalendarController {
 
     @Public()
     @Get()
-    findEvents(
-        @Query("from") from: string,
-        @Query("to") to: string,
-        @Request() req: { user?: { userId: string } }
-    ) {
+    findEvents(@Query("from") from: string, @Query("to") to: string, @Request() req: { user?: { userId: string } }) {
         const fromDate = from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         const toDate = to ?? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
         return this.calendarService.findEvents({ from: fromDate, to: toDate, userId: req.user?.userId });
@@ -47,24 +38,21 @@ export class CalendarController {
 
     @Get("ical/feed")
     @Header("Content-Type", "text/calendar; charset=utf-8")
-    @Header("Content-Disposition", "attachment; filename=\"aniverse-calendar.ics\"")
+    @Header("Content-Disposition", 'attachment; filename="aniverse-calendar.ics"')
     async myIcalFeed(@Request() req: { user: { userId: string } }) {
         return this.calendarService.generateMyIcal(req.user.userId);
     }
 
     @Public()
     @Get(":id")
-    findById(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Request() req: { user?: { userId: string } }
-    ) {
+    findById(@Param("id", ParseUUIDPipe) id: string, @Request() req: { user?: { userId: string } }) {
         return this.calendarService.findById(id, req.user?.userId);
     }
 
     @Public()
     @Get(":id/ical")
     @Header("Content-Type", "text/calendar; charset=utf-8")
-    @Header("Content-Disposition", "attachment; filename=\"event.ics\"")
+    @Header("Content-Disposition", 'attachment; filename="event.ics"')
     async getIcal(@Param("id", ParseUUIDPipe) id: string) {
         return this.calendarService.generateIcal(id);
     }
@@ -72,10 +60,7 @@ export class CalendarController {
     // ─── Authenticated CRUD ───────────────────────────────────────────────────
 
     @Post()
-    create(
-        @Request() req: { user: { userId: string } },
-        @Body() body: CreateCalendarEventDto
-    ) {
+    create(@Request() req: { user: { userId: string } }, @Body() body: CreateCalendarEventDto) {
         return this.calendarService.create(req.user.userId, body);
     }
 
@@ -89,10 +74,7 @@ export class CalendarController {
     }
 
     @Delete(":id")
-    remove(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Request() req: { user: { userId: string } }
-    ) {
+    remove(@Param("id", ParseUUIDPipe) id: string, @Request() req: { user: { userId: string } }) {
         return this.calendarService.delete(id, req.user.userId);
     }
 
@@ -126,10 +108,7 @@ export class CalendarController {
     @UseGuards(RolesGuard)
     @Roles("admin")
     @Patch("admin/:id")
-    adminUpdate(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Body() body: UpdateCalendarEventDto
-    ) {
+    adminUpdate(@Param("id", ParseUUIDPipe) id: string, @Body() body: UpdateCalendarEventDto) {
         return this.calendarService.adminUpdate(id, body);
     }
 

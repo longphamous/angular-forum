@@ -20,29 +20,28 @@
                         id="thread-title"
                         [(ngModel)]="title"
                         [disabled]="submitting"
-                        pInputText
                         [placeholder]="t('threadCreate.titlePlaceholder')"
+                        pInputText
                         type="text"
                     />
                 </div>
                 <div class="flex w-full flex-col gap-2">
                     <label class="font-medium" for="thread-tags">
-                        {{ t('threadCreate.tagsLabel') }} <span class="text-surface-400 font-normal text-sm">{{ t('threadCreate.tagsHint') }}</span>
+                        {{ t('threadCreate.tagsLabel') }}
+                        <span class="text-surface-400 text-sm font-normal">{{ t('threadCreate.tagsHint') }}</span>
                     </label>
-                    <div class="border-surface-300 dark:border-surface-600 focus-within:border-primary flex flex-wrap items-center gap-2 rounded-md border bg-white px-3 py-2 dark:bg-surface-900">
+                    <div
+                        class="border-surface-300 dark:border-surface-600 focus-within:border-primary dark:bg-surface-900 flex flex-wrap items-center gap-2 rounded-md border bg-white px-3 py-2"
+                    >
                         @for (tag of tags; track tag) {
-                        <p-chip
-                            [label]="tag"
-                            [removable]="true"
-                            (onRemove)="removeTag(tag)"
-                        />
+                        <p-chip (onRemove)="removeTag(tag)" [label]="tag" [removable]="true" />
                         }
                         <input
                             class="min-w-24 flex-1 border-none bg-transparent text-sm outline-none"
                             id="thread-tags"
+                            (keydown)="addTag($event)"
                             [(ngModel)]="tagInput"
                             [disabled]="submitting"
-                            (keydown)="addTag($event)"
                             [placeholder]="t('threadCreate.tagsPlaceholder')"
                             type="text"
                         />
@@ -68,11 +67,16 @@
                     <p-button
                         (onClick)="cancel()"
                         [disabled]="submitting"
-                        [outlined]="true"
                         [label]="t('common.cancel')"
+                        [outlined]="true"
                         severity="secondary"
                     />
-                    <p-button (onClick)="submit()" [loading]="submitting" icon="pi pi-check" [label]="t('threadCreate.submit')" />
+                    <p-button
+                        (onClick)="submit()"
+                        [label]="t('threadCreate.submit')"
+                        [loading]="submitting"
+                        icon="pi pi-check"
+                    />
                 </div>
             </div>
         </div>

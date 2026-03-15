@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { AnimeListController } from "./anime-list.controller";
-import { AnimeListService } from "./anime-list.service";
 import { AnimeController } from "./anime.controller";
 import { AnimeService } from "./anime.service";
+import { AnimeListController } from "./anime-list.controller";
+import { AnimeListService } from "./anime-list.service";
 import { AnimeEntity } from "./entities/anime.entity";
 import { UserAnimeListEntity } from "./entities/user-anime-list.entity";
 

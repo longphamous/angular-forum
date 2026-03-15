@@ -3,9 +3,9 @@
     <div class="mb-4">
         <p-button
             (onClick)="back()"
+            [label]="t('anime.detail.backToList')"
             [text]="true"
             icon="pi pi-arrow-left"
-            [label]="t('anime.detail.backToList')"
             severity="secondary"
         />
     </div>
@@ -76,19 +76,23 @@
             >
                 <form class="flex flex-col gap-3" (ngSubmit)="saveEntry()" [formGroup]="listForm">
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listStatus"> {{ t('anime.detail.statusLabel') }} </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listStatus">
+                            {{ t('anime.detail.statusLabel') }}
+                        </label>
                         <p-select
                             [options]="statusOptions"
+                            [placeholder]="t('anime.detail.statusPlaceholder')"
                             formControlName="status"
                             inputId="listStatus"
                             optionLabel="label"
                             optionValue="value"
-                            [placeholder]="t('anime.detail.statusPlaceholder')"
                             styleClass="w-full"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listScore"> {{ t('anime.detail.scoreLabel') }} </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listScore">
+                            {{ t('anime.detail.scoreLabel') }}
+                        </label>
                         <p-rating
                             [stars]="10"
                             formControlName="score"
@@ -101,7 +105,9 @@
                     </div>
                     @if (anime()!.episode && anime()!.episode! > 1) {
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes"> {{ t('anime.detail.episodesLabel') }} </label>
+                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes">
+                            {{ t('anime.detail.episodesLabel') }}
+                        </label>
                         <p-inputnumber
                             [max]="anime()!.episode ?? 9999"
                             [min]="0"
@@ -114,14 +120,15 @@
                     }
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium" for="listReview">
-                            {{ t('anime.detail.reviewLabel') }} <span class="font-normal">{{ t('anime.detail.reviewOptional') }}</span>
+                            {{ t('anime.detail.reviewLabel') }}
+                            <span class="font-normal">{{ t('anime.detail.reviewOptional') }}</span>
                         </label>
                         <textarea
                             class="w-full text-sm"
                             id="listReview"
                             [autoResize]="true"
-                            formControlName="review"
                             [placeholder]="t('anime.detail.reviewPlaceholder')"
+                            formControlName="review"
                             pTextarea
                             rows="3"
                         ></textarea>
@@ -147,8 +154,8 @@
                             (onClick)="removeEntry()"
                             [loading]="removing()"
                             [outlined]="true"
-                            icon="pi pi-trash"
                             [pTooltip]="t('anime.detail.removeFromList')"
+                            icon="pi pi-trash"
                             severity="danger"
                         />
                         }
@@ -191,16 +198,17 @@
                     @for (genre of anime()!.genres!; track genre) {
                     <span
                         class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    >{{ genre }}</span>
+                        >{{ genre }}</span
+                    >
                     }
                 </div>
-                }
-                @if (anime()!.studios?.length) {
+                } @if (anime()!.studios?.length) {
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
                     @for (studio of anime()!.studios!; track studio.id) {
                     <span
                         class="border-surface-300 dark:border-surface-600 text-surface-600 dark:text-surface-300 rounded-full border px-2.5 py-0.5 text-xs font-medium"
-                    >{{ studio.name }}</span>
+                        >{{ studio.name }}</span
+                    >
                     }
                 </div>
                 }
@@ -232,36 +240,48 @@
             <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                 @if (anime()!.episode) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.episodes') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.episodes') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.episode }}</div>
                 </div>
                 } @if (anime()!.episodeDuration) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.duration') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.duration') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ anime()!.episodeDuration }} Min.
                     </div>
                 </div>
                 } @if (anime()!.source) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.source') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.source') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.source }}</div>
                 </div>
                 } @if (anime()!.rating) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.rating') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.rating') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.rating }}</div>
                 </div>
                 } @if (anime()!.season || anime()!.seasonYear) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.season') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.season') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium capitalize">
                         {{ anime()!.season }} {{ anime()!.seasonYear }}
                     </div>
                 </div>
                 } @if (anime()!.startYear) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.start') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.start') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ formatDate( anime()!.startYear, anime()!.startMonth, anime()!.startDay ) }}
                     </div>
@@ -275,7 +295,9 @@
                 </div>
                 } @if (anime()!.broadcastDay) {
                 <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.broadcast') }}</div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.broadcast') }}
+                    </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
                         {{ anime()!.broadcastDay }} {{ anime()!.broadcastTime }}
                     </div>
@@ -339,7 +361,13 @@
     <div class="flex flex-col items-center justify-center py-20 text-center">
         <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
         <p class="text-surface-500">{{ t('anime.detail.notFound') }}</p>
-        <p-button (onClick)="back()" icon="pi pi-arrow-left" [label]="t('anime.detail.back')" severity="secondary" styleClass="mt-4" />
+        <p-button
+            (onClick)="back()"
+            [label]="t('anime.detail.back')"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            styleClass="mt-4"
+        />
     </div>
     }
 </div>

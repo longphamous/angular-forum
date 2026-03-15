@@ -13,7 +13,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
     selector: "app-newest-anime-widget",
     template: `
         <p-card *transloco="let t">
-            <ng-template #title>{{ t('dashboard.newestAnime') }}</ng-template>
+            <ng-template #title>{{ t("dashboard.newestAnime") }}</ng-template>
 
             @if (facade.loading()) {
                 <div class="flex flex-col gap-4">
@@ -61,7 +61,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             </div>
                             <div class="min-w-0 flex-1">
                                 <div class="text-surface-900 dark:text-surface-0 truncate font-medium">
-                                    {{ anime.titleEnglish || anime.title || t('common.unknown') }}
+                                    {{ anime.titleEnglish || anime.title || t("common.unknown") }}
                                 </div>
                                 <div class="mt-1 flex flex-wrap items-center gap-2">
                                     @if (anime.type) {
@@ -81,7 +81,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noAnime') }}</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t("dashboard.noAnime") }}</p>
                     }
                 </div>
             }

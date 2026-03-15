@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
@@ -14,7 +15,6 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
-import { ConfirmationService, MessageService } from "primeng/api";
 
 import { SHOP_ROUTES } from "../../../core/api/shop.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -154,7 +154,10 @@ export class AdminShop implements OnInit {
 
     private deleteItem(id: string): void {
         this.http.delete(`${this.apiConfig.baseUrl}${SHOP_ROUTES.admin.delete(id)}`).subscribe({
-            next: () => { this.load(); this.messageService.add({ severity: "success", summary: "Gelöscht", life: 2000 }); },
+            next: () => {
+                this.load();
+                this.messageService.add({ severity: "success", summary: "Gelöscht", life: 2000 });
+            },
             error: () => this.messageService.add({ severity: "error", summary: "Fehler beim Löschen", life: 3000 })
         });
     }
@@ -162,7 +165,10 @@ export class AdminShop implements OnInit {
     private load(): void {
         this.loading.set(true);
         this.http.get<ShopItem[]>(`${this.apiConfig.baseUrl}${SHOP_ROUTES.admin.list()}`).subscribe({
-            next: (data) => { this.items.set(data); this.loading.set(false); },
+            next: (data) => {
+                this.items.set(data);
+                this.loading.set(false);
+            },
             error: () => this.loading.set(false)
         });
     }

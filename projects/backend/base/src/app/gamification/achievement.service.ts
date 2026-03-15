@@ -4,8 +4,8 @@ import { In, Repository } from "typeorm";
 
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
-import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
+import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
 
 export interface AchievementDto {
     id: string;
@@ -136,7 +136,10 @@ export class AchievementService {
         } else if (triggerType === "thread_count") {
             countMap["thread_count"] = await this.xpEventRepo.countBy({ userId, eventType: "create_thread" });
         } else if (triggerType === "reaction_received_count") {
-            countMap["reaction_received_count"] = await this.xpEventRepo.countBy({ userId, eventType: "receive_reaction" });
+            countMap["reaction_received_count"] = await this.xpEventRepo.countBy({
+                userId,
+                eventType: "receive_reaction"
+            });
         } else if (triggerType === "reaction_given_count") {
             countMap["reaction_given_count"] = await this.xpEventRepo.countBy({ userId, eventType: "give_reaction" });
         }

@@ -1,5 +1,4 @@
 <div class="flex flex-col gap-6" *transloco="let t">
-
     <p-confirmdialog />
 
     <!-- Header -->
@@ -9,18 +8,13 @@
                 <h2 class="m-0 text-2xl font-bold">{{ t('adminSlideshow.title') }}</h2>
                 <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminSlideshow.subtitle') }}</p>
             </div>
-            <p-button
-                (onClick)="openCreate()"
-                icon="pi pi-plus"
-                [label]="t('adminSlideshow.addSlide')"
-            />
+            <p-button (onClick)="openCreate()" [label]="t('adminSlideshow.addSlide')" icon="pi pi-plus" />
         </div>
     </div>
 
     @if (error()) {
     <p-message [text]="error()!" severity="error" styleClass="w-full" />
-    }
-    @if (successMsg()) {
+    } @if (successMsg()) {
     <p-message [text]="successMsg()!" severity="success" styleClass="w-full" />
     }
 
@@ -38,8 +32,8 @@
                 <tr>
                     <th class="w-24">{{ t('adminSlideshow.table.preview') }}</th>
                     <th>{{ t('adminSlideshow.table.title') }}</th>
-                    <th class="hidden lg:table-cell w-40">{{ t('adminSlideshow.table.validity') }}</th>
-                    <th class="hidden md:table-cell w-28">{{ t('adminSlideshow.table.style') }}</th>
+                    <th class="hidden w-40 lg:table-cell">{{ t('adminSlideshow.table.validity') }}</th>
+                    <th class="hidden w-28 md:table-cell">{{ t('adminSlideshow.table.style') }}</th>
                     <th class="w-20 text-center">{{ t('adminSlideshow.table.order') }}</th>
                     <th class="w-24 text-center">{{ t('common.status') }}</th>
                     <th class="w-28 text-right">{{ t('common.actions') }}</th>
@@ -50,72 +44,80 @@
                     <td>
                         @if (slide.imageUrl) {
                         <img
-                            [src]="slide.imageUrl"
-                            [alt]="slide.title"
                             class="h-12 w-20 rounded object-cover"
+                            [alt]="slide.title"
+                            [src]="slide.imageUrl"
                             loading="lazy"
                         />
                         } @else {
-                        <div class="bg-surface-100 dark:bg-surface-700 flex h-12 w-20 items-center justify-center rounded">
+                        <div
+                            class="bg-surface-100 dark:bg-surface-700 flex h-12 w-20 items-center justify-center rounded"
+                        >
                             <i class="pi pi-image text-surface-400 text-xl"></i>
                         </div>
                         }
                     </td>
                     <td>
                         <div class="flex items-center gap-1.5 font-medium">
-                            {{ slide.title }}
-                            @if (slide.linkFullSlide) {
-                            <i class="pi pi-link text-surface-400 text-xs" [title]="t('adminSlideshow.fullSlideLink')"></i>
-                            }
-                            @if (slide.translations && (slide.translations['en'] || slide.translations['de'])) {
+                            {{ slide.title }} @if (slide.linkFullSlide) {
+                            <i
+                                class="pi pi-link text-surface-400 text-xs"
+                                [title]="t('adminSlideshow.fullSlideLink')"
+                            ></i>
+                            } @if (slide.translations && (slide.translations['en'] || slide.translations['de'])) {
                             <i class="pi pi-language text-primary text-xs" [title]="t('adminSlideshow.translated')"></i>
                             }
                         </div>
                         @if (slide.description) {
-                        <div class="text-surface-400 mt-0.5 truncate text-xs max-w-xs">{{ slide.description }}</div>
+                        <div class="text-surface-400 mt-0.5 max-w-xs truncate text-xs">{{ slide.description }}</div>
                         }
                     </td>
-                    <td class="hidden lg:table-cell text-xs text-surface-500">
+                    <td class="text-surface-500 hidden text-xs lg:table-cell">
                         @if (slide.validFrom || slide.validUntil) {
                         <div>
-                            @if (slide.validFrom) { <span>{{ slide.validFrom | slice:0:10 }}</span> }
-                            @if (slide.validFrom && slide.validUntil) { <span> – </span> }
-                            @if (slide.validUntil) { <span>{{ slide.validUntil | slice:0:10 }}</span> }
+                            @if (slide.validFrom) { <span>{{ slide.validFrom | slice:0:10 }}</span> } @if
+                            (slide.validFrom && slide.validUntil) { <span> – </span> } @if (slide.validUntil) {
+                            <span>{{ slide.validUntil | slice:0:10 }}</span> }
                         </div>
                         } @else {
                         <span class="text-surface-300">—</span>
                         }
                     </td>
                     <td class="hidden md:table-cell">
-                        <div class="flex items-center gap-1 text-xs text-surface-500">
-                            <i class="pi" [class.pi-image]="slide.textStyle === 'overlay'" [class.pi-stop]="slide.textStyle === 'glass'"></i>
-                            {{ slide.textStyle === 'glass' ? t('adminSlideshow.styleGlass') : t('adminSlideshow.styleOverlay') }}
+                        <div class="text-surface-500 flex items-center gap-1 text-xs">
+                            <i
+                                class="pi"
+                                [class.pi-image]="slide.textStyle === 'overlay'"
+                                [class.pi-stop]="slide.textStyle === 'glass'"
+                            ></i>
+                            {{ slide.textStyle === 'glass' ? t('adminSlideshow.styleGlass') :
+                            t('adminSlideshow.styleOverlay') }}
                         </div>
                     </td>
                     <td class="text-center text-sm font-medium">{{ slide.sortOrder }}</td>
                     <td class="text-center">
                         @if (slide.isActive) {
-                        <p-tag severity="success" [value]="t('common.active')" />
+                        <p-tag [value]="t('common.active')" severity="success" />
                         } @else {
-                        <p-tag severity="secondary" [value]="t('common.inactive')" />
+                        <p-tag [value]="t('common.inactive')" severity="secondary" />
                         }
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <p-button
                                 (onClick)="openEdit(slide)"
-                                icon="pi pi-pencil"
-                                size="small"
-                                severity="secondary"
                                 [pTooltip]="t('common.edit')"
+                                icon="pi pi-pencil"
+                                severity="secondary"
+                                size="small"
                                 tooltipPosition="top"
                             />
                             <p-button
                                 (onClick)="confirmDelete(slide)"
-                                icon="pi pi-trash"
-                                size="small"
-                                severity="danger"
                                 [pTooltip]="t('common.delete')"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
                                 tooltipPosition="top"
                             />
                         </div>
@@ -124,7 +126,7 @@
             </ng-template>
             <ng-template #emptymessage>
                 <tr>
-                    <td colspan="7" class="text-surface-500 py-8 text-center">{{ t('adminSlideshow.noSlides') }}</td>
+                    <td class="text-surface-500 py-8 text-center" colspan="7">{{ t('adminSlideshow.noSlides') }}</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -133,12 +135,12 @@
 
     <!-- Create / Edit Dialog -->
     <p-dialog
-        [visible]="dialogVisible()"
         (visibleChange)="dialogVisible.set($event)"
+        [closable]="true"
         [header]="editingId() ? t('adminSlideshow.dialog.editHeader') : t('adminSlideshow.dialog.createHeader')"
         [modal]="true"
         [style]="{ width: '640px', maxWidth: '95vw' }"
-        [closable]="true"
+        [visible]="dialogVisible()"
     >
         <p-tabs value="content">
             <!-- ── Tab: Content ────────────────────────────────────────────── -->
@@ -158,7 +160,6 @@
                 <!-- Content tab -->
                 <p-tabpanel value="content">
                     <div class="flex flex-col gap-4 pt-3">
-
                         @if (error() && dialogVisible()) {
                         <p-message [text]="error()!" severity="error" styleClass="w-full" />
                         }
@@ -167,14 +168,16 @@
                         <div class="flex flex-col gap-1">
                             <label class="text-sm font-medium">
                                 {{ t('adminSlideshow.dialog.title') }} *
-                                <span class="text-surface-400 font-normal text-xs ml-1">({{ t('adminSlideshow.dialog.defaultLang') }})</span>
+                                <span class="text-surface-400 ml-1 text-xs font-normal"
+                                    >({{ t('adminSlideshow.dialog.defaultLang') }})</span
+                                >
                             </label>
                             <input
-                                pInputText
-                                [ngModel]="form().title"
-                                (ngModelChange)="updateForm({ title: $event })"
-                                [placeholder]="t('adminSlideshow.dialog.titlePlaceholder')"
                                 class="w-full"
+                                (ngModelChange)="updateForm({ title: $event })"
+                                [ngModel]="form().title"
+                                [placeholder]="t('adminSlideshow.dialog.titlePlaceholder')"
+                                pInputText
                             />
                         </div>
 
@@ -182,15 +185,17 @@
                         <div class="flex flex-col gap-1">
                             <label class="text-sm font-medium">
                                 {{ t('adminSlideshow.dialog.description') }}
-                                <span class="text-surface-400 font-normal text-xs ml-1">({{ t('adminSlideshow.dialog.defaultLang') }})</span>
+                                <span class="text-surface-400 ml-1 text-xs font-normal"
+                                    >({{ t('adminSlideshow.dialog.defaultLang') }})</span
+                                >
                             </label>
                             <textarea
-                                pTextarea
-                                [ngModel]="form().description"
-                                (ngModelChange)="updateForm({ description: $event })"
-                                [placeholder]="t('adminSlideshow.dialog.descriptionPlaceholder')"
-                                rows="2"
                                 class="w-full"
+                                (ngModelChange)="updateForm({ description: $event })"
+                                [ngModel]="form().description"
+                                [placeholder]="t('adminSlideshow.dialog.descriptionPlaceholder')"
+                                pTextarea
+                                rows="2"
                             ></textarea>
                         </div>
 
@@ -199,25 +204,34 @@
                             <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.imageUrl') }} *</label>
                             <div class="flex gap-2">
                                 <input
-                                    pInputText
-                                    [ngModel]="form().imageUrl"
-                                    (ngModelChange)="updateForm({ imageUrl: $event })"
-                                    [placeholder]="t('adminSlideshow.dialog.imageUrlPlaceholder')"
                                     class="flex-1"
+                                    (ngModelChange)="updateForm({ imageUrl: $event })"
+                                    [ngModel]="form().imageUrl"
+                                    [placeholder]="t('adminSlideshow.dialog.imageUrlPlaceholder')"
+                                    pInputText
                                 />
                                 <p-button
-                                    icon="pi pi-upload"
-                                    [loading]="uploading()"
-                                    severity="secondary"
-                                    [pTooltip]="t('adminSlideshow.dialog.uploadTooltip')"
-                                    tooltipPosition="top"
                                     (onClick)="fileInput.click()"
+                                    [loading]="uploading()"
+                                    [pTooltip]="t('adminSlideshow.dialog.uploadTooltip')"
+                                    icon="pi pi-upload"
+                                    severity="secondary"
+                                    tooltipPosition="top"
                                 />
-                                <input #fileInput type="file" accept="image/*" class="hidden" (change)="uploadImage($event)" />
+                                <input
+                                    class="hidden"
+                                    (change)="uploadImage($event)"
+                                    #fileInput
+                                    accept="image/*"
+                                    type="file"
+                                />
                             </div>
                             @if (form().imageUrl) {
-                            <img [src]="form().imageUrl" alt="Preview"
-                                 class="mt-2 h-28 w-full rounded-xl object-cover shadow" />
+                            <img
+                                class="mt-2 h-28 w-full rounded-xl object-cover shadow"
+                                [src]="form().imageUrl"
+                                alt="Preview"
+                            />
                             }
                         </div>
 
@@ -225,11 +239,11 @@
                         <div class="flex flex-col gap-1">
                             <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkUrl') }}</label>
                             <input
-                                pInputText
-                                [ngModel]="form().linkUrl"
-                                (ngModelChange)="updateForm({ linkUrl: $event })"
-                                [placeholder]="t('adminSlideshow.dialog.linkUrlPlaceholder')"
                                 class="w-full"
+                                (ngModelChange)="updateForm({ linkUrl: $event })"
+                                [ngModel]="form().linkUrl"
+                                [placeholder]="t('adminSlideshow.dialog.linkUrlPlaceholder')"
+                                pInputText
                             />
                             <span class="text-surface-400 text-xs">{{ t('adminSlideshow.dialog.linkUrlHint') }}</span>
                         </div>
@@ -239,12 +253,12 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkLabel') }}</label>
                                 <input
-                                    pInputText
-                                    [ngModel]="form().linkLabel"
-                                    (ngModelChange)="updateForm({ linkLabel: $event })"
-                                    [placeholder]="t('adminSlideshow.dialog.linkLabelPlaceholder')"
                                     class="w-full"
+                                    (ngModelChange)="updateForm({ linkLabel: $event })"
                                     [disabled]="form().linkFullSlide"
+                                    [ngModel]="form().linkLabel"
+                                    [placeholder]="t('adminSlideshow.dialog.linkLabelPlaceholder')"
+                                    pInputText
                                 />
                             </div>
 
@@ -253,12 +267,12 @@
                                 <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.linkMode') }}</label>
                                 <div class="flex items-center gap-2 pt-2">
                                     <p-checkbox
-                                        [ngModel]="form().linkFullSlide"
                                         (ngModelChange)="updateForm({ linkFullSlide: $event })"
                                         [binary]="true"
+                                        [ngModel]="form().linkFullSlide"
                                         inputId="linkFullSlide"
                                     />
-                                    <label for="linkFullSlide" class="cursor-pointer text-sm">
+                                    <label class="cursor-pointer text-sm" for="linkFullSlide">
                                         {{ t('adminSlideshow.dialog.linkFullSlideLabel') }}
                                     </label>
                                 </div>
@@ -273,62 +287,70 @@
                         <p class="text-surface-500 m-0 text-sm">{{ t('adminSlideshow.dialog.translationsHint') }}</p>
 
                         <!-- English -->
-                        <div class="rounded-xl border border-surface-200 dark:border-surface-700 p-4">
+                        <div class="border-surface-200 dark:border-surface-700 rounded-xl border p-4">
                             <div class="mb-3 flex items-center gap-2">
                                 <span class="text-lg">🇬🇧</span>
                                 <span class="font-semibold">English</span>
                             </div>
                             <div class="flex flex-col gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs font-medium text-surface-500">{{ t('adminSlideshow.dialog.title') }}</label>
+                                    <label class="text-surface-500 text-xs font-medium"
+                                        >{{ t('adminSlideshow.dialog.title') }}</label
+                                    >
                                     <input
-                                        pInputText
-                                        [ngModel]="form().translationEnTitle"
-                                        (ngModelChange)="updateForm({ translationEnTitle: $event })"
-                                        placeholder="English title..."
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ translationEnTitle: $event })"
+                                        [ngModel]="form().translationEnTitle"
+                                        pInputText
+                                        placeholder="English title..."
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs font-medium text-surface-500">{{ t('adminSlideshow.dialog.description') }}</label>
+                                    <label class="text-surface-500 text-xs font-medium"
+                                        >{{ t('adminSlideshow.dialog.description') }}</label
+                                    >
                                     <textarea
-                                        pTextarea
-                                        [ngModel]="form().translationEnDescription"
-                                        (ngModelChange)="updateForm({ translationEnDescription: $event })"
-                                        placeholder="English description..."
-                                        rows="2"
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ translationEnDescription: $event })"
+                                        [ngModel]="form().translationEnDescription"
+                                        placeholder="English description..."
+                                        pTextarea
+                                        rows="2"
                                     ></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- German -->
-                        <div class="rounded-xl border border-surface-200 dark:border-surface-700 p-4">
+                        <div class="border-surface-200 dark:border-surface-700 rounded-xl border p-4">
                             <div class="mb-3 flex items-center gap-2">
                                 <span class="text-lg">🇩🇪</span>
                                 <span class="font-semibold">Deutsch</span>
                             </div>
                             <div class="flex flex-col gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs font-medium text-surface-500">{{ t('adminSlideshow.dialog.title') }}</label>
+                                    <label class="text-surface-500 text-xs font-medium"
+                                        >{{ t('adminSlideshow.dialog.title') }}</label
+                                    >
                                     <input
-                                        pInputText
-                                        [ngModel]="form().translationDeTitle"
-                                        (ngModelChange)="updateForm({ translationDeTitle: $event })"
-                                        placeholder="Titel auf Deutsch..."
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ translationDeTitle: $event })"
+                                        [ngModel]="form().translationDeTitle"
+                                        pInputText
+                                        placeholder="Titel auf Deutsch..."
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs font-medium text-surface-500">{{ t('adminSlideshow.dialog.description') }}</label>
+                                    <label class="text-surface-500 text-xs font-medium"
+                                        >{{ t('adminSlideshow.dialog.description') }}</label
+                                    >
                                     <textarea
-                                        pTextarea
-                                        [ngModel]="form().translationDeDescription"
-                                        (ngModelChange)="updateForm({ translationDeDescription: $event })"
-                                        placeholder="Beschreibung auf Deutsch..."
-                                        rows="2"
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ translationDeDescription: $event })"
+                                        [ngModel]="form().translationDeDescription"
+                                        placeholder="Beschreibung auf Deutsch..."
+                                        pTextarea
+                                        rows="2"
                                     ></textarea>
                                 </div>
                             </div>
@@ -339,47 +361,50 @@
                 <!-- Settings tab -->
                 <p-tabpanel value="settings">
                     <div class="flex flex-col gap-5 pt-3">
-
                         <!-- Text style -->
                         <div class="flex flex-col gap-2">
                             <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.textStyle') }}</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <label
                                     class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.border-primary]="form().textStyle === 'overlay'"
                                     [class.bg-primary-50]="form().textStyle === 'overlay'"
-                                    [class.dark:bg-primary-950]="form().textStyle === 'overlay'"
+                                    [class.border-primary]="form().textStyle === 'overlay'"
                                     [class.border-surface-200]="form().textStyle !== 'overlay'"
+                                    [class.dark:bg-primary-950]="form().textStyle === 'overlay'"
                                     [class.dark:border-surface-700]="form().textStyle !== 'overlay'"
                                 >
                                     <p-radiobutton
-                                        [ngModel]="form().textStyle"
                                         (ngModelChange)="updateForm({ textStyle: $event })"
+                                        [ngModel]="form().textStyle"
                                         name="textStyle"
                                         value="overlay"
                                     />
                                     <div>
-                                        <div class="font-medium text-sm">{{ t('adminSlideshow.styleOverlay') }}</div>
-                                        <div class="text-surface-400 text-xs mt-0.5">{{ t('adminSlideshow.styleOverlayDesc') }}</div>
+                                        <div class="text-sm font-medium">{{ t('adminSlideshow.styleOverlay') }}</div>
+                                        <div class="text-surface-400 mt-0.5 text-xs">
+                                            {{ t('adminSlideshow.styleOverlayDesc') }}
+                                        </div>
                                     </div>
                                 </label>
                                 <label
                                     class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.border-primary]="form().textStyle === 'glass'"
                                     [class.bg-primary-50]="form().textStyle === 'glass'"
-                                    [class.dark:bg-primary-950]="form().textStyle === 'glass'"
+                                    [class.border-primary]="form().textStyle === 'glass'"
                                     [class.border-surface-200]="form().textStyle !== 'glass'"
+                                    [class.dark:bg-primary-950]="form().textStyle === 'glass'"
                                     [class.dark:border-surface-700]="form().textStyle !== 'glass'"
                                 >
                                     <p-radiobutton
-                                        [ngModel]="form().textStyle"
                                         (ngModelChange)="updateForm({ textStyle: $event })"
+                                        [ngModel]="form().textStyle"
                                         name="textStyle"
                                         value="glass"
                                     />
                                     <div>
-                                        <div class="font-medium text-sm">{{ t('adminSlideshow.styleGlass') }}</div>
-                                        <div class="text-surface-400 text-xs mt-0.5">{{ t('adminSlideshow.styleGlassDesc') }}</div>
+                                        <div class="text-sm font-medium">{{ t('adminSlideshow.styleGlass') }}</div>
+                                        <div class="text-surface-400 mt-0.5 text-xs">
+                                            {{ t('adminSlideshow.styleGlassDesc') }}
+                                        </div>
                                     </div>
                                 </label>
                             </div>
@@ -391,15 +416,15 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <label
                                     class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.border-primary]="form().textAlign === 'left'"
                                     [class.bg-primary-50]="form().textAlign === 'left'"
-                                    [class.dark:bg-primary-950]="form().textAlign === 'left'"
+                                    [class.border-primary]="form().textAlign === 'left'"
                                     [class.border-surface-200]="form().textAlign !== 'left'"
+                                    [class.dark:bg-primary-950]="form().textAlign === 'left'"
                                     [class.dark:border-surface-700]="form().textAlign !== 'left'"
                                 >
                                     <p-radiobutton
-                                        [ngModel]="form().textAlign"
                                         (ngModelChange)="updateForm({ textAlign: $event })"
+                                        [ngModel]="form().textAlign"
                                         name="textAlign"
                                         value="left"
                                     />
@@ -410,15 +435,15 @@
                                 </label>
                                 <label
                                     class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-                                    [class.border-primary]="form().textAlign === 'center'"
                                     [class.bg-primary-50]="form().textAlign === 'center'"
-                                    [class.dark:bg-primary-950]="form().textAlign === 'center'"
+                                    [class.border-primary]="form().textAlign === 'center'"
                                     [class.border-surface-200]="form().textAlign !== 'center'"
+                                    [class.dark:bg-primary-950]="form().textAlign === 'center'"
                                     [class.dark:border-surface-700]="form().textAlign !== 'center'"
                                 >
                                     <p-radiobutton
-                                        [ngModel]="form().textAlign"
                                         (ngModelChange)="updateForm({ textAlign: $event })"
+                                        [ngModel]="form().textAlign"
                                         name="textAlign"
                                         value="center"
                                     />
@@ -436,12 +461,12 @@
                                 <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.isActive') }}</label>
                                 <div class="flex items-center gap-2 pt-2">
                                     <p-checkbox
-                                        [ngModel]="form().isActive"
                                         (ngModelChange)="updateForm({ isActive: $event })"
                                         [binary]="true"
+                                        [ngModel]="form().isActive"
                                         inputId="slideActive"
                                     />
-                                    <label for="slideActive" class="cursor-pointer text-sm">
+                                    <label class="cursor-pointer text-sm" for="slideActive">
                                         {{ t('adminSlideshow.dialog.isActiveLabel') }}
                                     </label>
                                 </div>
@@ -451,10 +476,10 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-sm font-medium">{{ t('adminSlideshow.dialog.sortOrder') }}</label>
                                 <p-inputnumber
-                                    [ngModel]="form().sortOrder"
                                     (ngModelChange)="updateForm({ sortOrder: $event ?? 0 })"
-                                    [min]="0"
                                     [max]="999"
+                                    [min]="0"
+                                    [ngModel]="form().sortOrder"
                                     [showButtons]="true"
                                     buttonLayout="horizontal"
                                     decrementButtonIcon="pi pi-minus"
@@ -471,23 +496,27 @@
                             <p class="text-surface-400 m-0 text-xs">{{ t('adminSlideshow.dialog.validityHint') }}</p>
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500">{{ t('adminSlideshow.dialog.validFrom') }}</label>
+                                    <label class="text-surface-500 text-xs"
+                                        >{{ t('adminSlideshow.dialog.validFrom') }}</label
+                                    >
                                     <input
-                                        type="date"
-                                        pInputText
-                                        [ngModel]="form().validFrom"
-                                        (ngModelChange)="updateForm({ validFrom: $event })"
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ validFrom: $event })"
+                                        [ngModel]="form().validFrom"
+                                        pInputText
+                                        type="date"
                                     />
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500">{{ t('adminSlideshow.dialog.validUntil') }}</label>
+                                    <label class="text-surface-500 text-xs"
+                                        >{{ t('adminSlideshow.dialog.validUntil') }}</label
+                                    >
                                     <input
-                                        type="date"
-                                        pInputText
-                                        [ngModel]="form().validUntil"
-                                        (ngModelChange)="updateForm({ validUntil: $event })"
                                         class="w-full"
+                                        (ngModelChange)="updateForm({ validUntil: $event })"
+                                        [ngModel]="form().validUntil"
+                                        pInputText
+                                        type="date"
                                     />
                                 </div>
                             </div>
@@ -499,19 +528,14 @@
 
         <ng-template #footer>
             <div class="flex justify-end gap-2 pt-2">
+                <p-button (onClick)="dialogVisible.set(false)" [label]="t('common.cancel')" severity="secondary" />
                 <p-button
-                    [label]="t('common.cancel')"
-                    severity="secondary"
-                    (onClick)="dialogVisible.set(false)"
-                />
-                <p-button
+                    (onClick)="saveSlide()"
+                    [disabled]="!form().title.trim() || !form().imageUrl.trim()"
                     [label]="t('adminSlideshow.dialog.submit')"
                     [loading]="saving()"
-                    [disabled]="!form().title.trim() || !form().imageUrl.trim()"
-                    (onClick)="saveSlide()"
                 />
             </div>
         </ng-template>
     </p-dialog>
-
 </div>

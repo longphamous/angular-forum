@@ -100,11 +100,14 @@ export class PostService {
         const authorIds = [...new Set(posts.map((p) => p.authorId))];
         const [users, postCountRows, xpMap, balanceMap] = await Promise.all([
             authorIds.length
-                ? this.userRepo.find({ where: { id: In(authorIds) }, select: ["id", "displayName", "role", "avatarUrl", "signature"] })
+                ? this.userRepo.find({
+                      where: { id: In(authorIds) },
+                      select: ["id", "displayName", "role", "avatarUrl", "signature"]
+                  })
                 : Promise.resolve([]),
             authorIds.length
                 ? this.postRepo.query<{ author_id: string; count: string }[]>(
-                      `SELECT author_id, COUNT(*) AS count FROM forum_posts WHERE author_id = ANY($1) AND deleted_at IS NULL GROUP BY author_id`,
+                      "SELECT author_id, COUNT(*) AS count FROM forum_posts WHERE author_id = ANY($1) AND deleted_at IS NULL GROUP BY author_id",
                       [authorIds]
                   )
                 : Promise.resolve([]),
@@ -230,7 +233,9 @@ export class PostService {
             if (post.authorId !== userId) {
                 void this.gamificationService.awardXp(post.authorId, "receive_reaction", postId);
                 // Award 2 coins to post author for receiving a reaction
-                void this.creditService.addCredits(post.authorId, 2, "reward", "Coins für erhaltene Reaktion").catch(() => undefined);
+                void this.creditService
+                    .addCredits(post.authorId, 2, "reward", "Coins für erhaltene Reaktion")
+                    .catch(() => undefined);
             }
         }
 

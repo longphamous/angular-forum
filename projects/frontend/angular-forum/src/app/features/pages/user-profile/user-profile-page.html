@@ -1,5 +1,4 @@
 <div class="mx-auto max-w-4xl" *transloco="let t">
-
     @if (loading()) {
     <!-- Skeleton -->
     <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-8">
@@ -22,11 +21,10 @@
     <!-- ── Profile hero ──────────────────────────────────────────────── -->
     <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-8">
         <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
-
             <!-- Avatar -->
             @if (profile()!.avatarUrl) {
             <img
-                class="h-24 w-24 shrink-0 rounded-full object-cover ring-4 ring-primary/20"
+                class="ring-primary/20 h-24 w-24 shrink-0 rounded-full object-cover ring-4"
                 [alt]="profile()!.displayName"
                 [src]="profile()!.avatarUrl"
             />
@@ -45,10 +43,7 @@
                     <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl font-bold">
                         {{ profile()!.displayName }}
                     </h1>
-                    <p-tag
-                        [severity]="roleSeverity(profile()!.role)"
-                        [value]="roleLabel(profile()!.role)"
-                    />
+                    <p-tag [severity]="roleSeverity(profile()!.role)" [value]="roleLabel(profile()!.role)" />
                 </div>
                 <p class="text-surface-500 mt-1 mb-0 text-sm">&#64;{{ profile()!.username }}</p>
 
@@ -69,13 +64,12 @@
                         <i class="pi pi-map-marker text-xs"></i>
                         {{ profile()!.location }}
                     </span>
-                    }
-                    @if (profile()!.website) {
+                    } @if (profile()!.website) {
                     <a
                         class="text-primary flex items-center gap-1.5 text-sm no-underline hover:underline"
                         [href]="profile()!.website"
-                        target="_blank"
                         rel="noopener noreferrer"
+                        target="_blank"
                     >
                         <i class="pi pi-globe text-xs"></i>
                         {{ profile()!.website }}
@@ -86,7 +80,9 @@
                 <!-- Stats pills -->
                 <div class="mt-5 flex flex-wrap gap-3">
                     <div class="bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-2 text-center">
-                        <div class="text-surface-900 dark:text-surface-0 text-xl font-bold">{{ profile()!.postCount }}</div>
+                        <div class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                            {{ profile()!.postCount }}
+                        </div>
                         <div class="text-surface-500 text-xs">{{ t('userProfile.posts') }}</div>
                     </div>
                 </div>
@@ -97,8 +93,8 @@
                         [level]="profile()!.level"
                         [levelName]="profile()!.levelName"
                         [xp]="profile()!.xp"
-                        [xpToNextLevel]="profile()!.xpToNextLevel"
                         [xpProgressPercent]="profile()!.xpProgressPercent"
+                        [xpToNextLevel]="profile()!.xpToNextLevel"
                     />
                 </div>
                 }
@@ -106,7 +102,14 @@
                 <!-- Actions -->
                 @if (isOwnProfile()) {
                 <div class="mt-5">
-                    <p-button icon="pi pi-pencil" [label]="t('userProfile.editProfile')" routerLink="/profile" severity="secondary" [outlined]="true" size="small" />
+                    <p-button
+                        [label]="t('userProfile.editProfile')"
+                        [outlined]="true"
+                        icon="pi pi-pencil"
+                        routerLink="/profile"
+                        severity="secondary"
+                        size="small"
+                    />
                 </div>
                 }
             </div>
@@ -115,45 +118,49 @@
 
     <!-- ── Details grid ──────────────────────────────────────────────── -->
     <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-
         <!-- About card -->
-        <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6 md:col-span-1">
-            <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">{{ t('userProfile.about') }}</h2>
+        <div
+            class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6 md:col-span-1"
+        >
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">
+                {{ t('userProfile.about') }}
+            </h2>
             <div class="flex flex-col gap-3 text-sm">
                 @if (profile()!.gender) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-user text-surface-400 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.gender') }}</span>
-                    <span class="text-surface-800 dark:text-surface-200 font-medium">{{ genderLabel(profile()!.gender) }}</span>
+                    <span class="text-surface-800 dark:text-surface-200 font-medium"
+                        >{{ genderLabel(profile()!.gender) }}</span
+                    >
                 </div>
-                }
-                @if (profile()!.birthday) {
+                } @if (profile()!.birthday) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-gift text-surface-400 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.birthday') }}</span>
-                    <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.birthday, 'full') }}</span>
+                    <span class="text-surface-800 dark:text-surface-200 font-medium"
+                        >{{ formatDate(profile()!.birthday, 'full') }}</span
+                    >
                 </div>
-                }
-                @if (profile()!.location) {
+                } @if (profile()!.location) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-map-marker text-surface-400 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.location') }}</span>
                     <span class="text-surface-800 dark:text-surface-200 font-medium">{{ profile()!.location }}</span>
                 </div>
-                }
-                @if (profile()!.website) {
+                } @if (profile()!.website) {
                 <div class="flex items-start gap-2">
-                    <i class="pi pi-globe text-surface-400 w-4 text-xs mt-0.5"></i>
+                    <i class="pi pi-globe text-surface-400 mt-0.5 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.website') }}</span>
                     <a
                         class="text-primary min-w-0 truncate font-medium no-underline hover:underline"
                         [href]="profile()!.website"
-                        target="_blank"
                         rel="noopener noreferrer"
-                    >{{ profile()!.website }}</a>
+                        target="_blank"
+                        >{{ profile()!.website }}</a
+                    >
                 </div>
-                }
-                @if (!profile()!.gender && !profile()!.birthday && !profile()!.location && !profile()!.website) {
+                } @if (!profile()!.gender && !profile()!.birthday && !profile()!.location && !profile()!.website) {
                 <p class="text-surface-400 text-xs">{{ t('userProfile.noInfo') }}</p>
                 }
             </div>
@@ -164,13 +171,17 @@
                 <div class="flex items-center gap-2">
                     <i class="pi pi-calendar text-surface-400 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.member') }}</span>
-                    <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.createdAt) }}</span>
+                    <span class="text-surface-800 dark:text-surface-200 font-medium"
+                        >{{ formatDate(profile()!.createdAt) }}</span
+                    >
                 </div>
                 @if (profile()!.lastLoginAt) {
                 <div class="flex items-center gap-2">
                     <i class="pi pi-clock text-surface-400 w-4 text-xs"></i>
                     <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.lastActive') }}</span>
-                    <span class="text-surface-800 dark:text-surface-200 font-medium">{{ formatDate(profile()!.lastLoginAt) }}</span>
+                    <span class="text-surface-800 dark:text-surface-200 font-medium"
+                        >{{ formatDate(profile()!.lastLoginAt) }}</span
+                    >
                 </div>
                 }
                 <div class="flex items-center gap-2">
@@ -182,36 +193,45 @@
         </div>
 
         <!-- Right column -->
-        <div class="md:col-span-2 flex flex-col gap-4">
-
+        <div class="flex flex-col gap-4 md:col-span-2">
             <!-- Achievements card -->
             @if (achievements().length > 0) {
-            <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
-                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 flex items-center gap-2 text-base font-semibold">
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6"
+            >
+                <h2
+                    class="text-surface-900 dark:text-surface-0 m-0 mb-4 flex items-center gap-2 text-base font-semibold"
+                >
                     <i class="pi pi-trophy text-yellow-500"></i>
                     {{ t('userProfile.achievements') }}
-                    <span class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">{{ achievements().length }}</span>
+                    <span class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium"
+                        >{{ achievements().length }}</span
+                    >
                 </h2>
                 <div class="grid grid-cols-4 gap-2 sm:grid-cols-5">
                     @for (a of achievements(); track a.id) {
-                        <achievement-badge [achievement]="a" />
+                    <achievement-badge [achievement]="a" />
                     }
                 </div>
             </div>
             }
 
             <!-- Anime list shortcut -->
-            <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6">
-                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">{{ t('userProfile.animeListTitle') }}</h2>
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-6"
+            >
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-base font-semibold">
+                    {{ t('userProfile.animeListTitle') }}
+                </h2>
                 <p class="text-surface-500 mb-4 text-sm">
                     {{ t('userProfile.animeListDesc', { name: profile()!.displayName }) }}
                 </p>
                 <p-button
-                    icon="pi pi-list"
                     [label]="t('userProfile.animeListBtn', { name: profile()!.displayName })"
-                    [routerLink]="['/users', profile()!.id, 'anime-list']"
-                    severity="secondary"
                     [outlined]="true"
+                    [routerLink]="['/users', profile()!.id, 'anime-list']"
+                    icon="pi pi-list"
+                    severity="secondary"
                 />
             </div>
         </div>

@@ -19,26 +19,28 @@
                         class="w-full"
                         id="username"
                         [(ngModel)]="username"
+                        [placeholder]="t('login.usernamePlaceholder')"
                         autocomplete="username"
                         name="username"
                         pInputText
-                        [placeholder]="t('login.usernamePlaceholder')"
                         required
                         type="text"
                     />
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="password">{{ t('login.password') }}</label>
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="password"
+                        >{{ t('login.password') }}</label
+                    >
                     <p-password
                         [(ngModel)]="password"
                         [feedback]="false"
+                        [placeholder]="t('login.passwordPlaceholder')"
                         [toggleMask]="true"
                         autocomplete="current-password"
                         inputId="password"
                         inputStyleClass="w-full"
                         name="password"
-                        [placeholder]="t('login.passwordPlaceholder')"
                         required
                         styleClass="w-full"
                     />
@@ -46,8 +48,8 @@
 
                 <p-button
                     [disabled]="!username || !password"
-                    [loading]="loading()"
                     [label]="t('login.submit')"
+                    [loading]="loading()"
                     styleClass="w-full mt-2"
                     type="submit"
                 />
@@ -55,7 +57,9 @@
 
             <div class="text-surface-500 mt-6 text-center">
                 {{ t('login.noAccount') }}
-                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/register">{{ t('login.registerLink') }}</a>
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/register"
+                    >{{ t('login.registerLink') }}</a
+                >
             </div>
         </div>
     </div>

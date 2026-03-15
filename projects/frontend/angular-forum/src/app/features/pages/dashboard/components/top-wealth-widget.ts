@@ -19,7 +19,7 @@ import { WalletLeaderboardEntry } from "../../../../core/models/wallet/wallet";
             <ng-template #title>
                 <span class="flex items-center gap-2">
                     <i class="pi pi-wallet text-yellow-500"></i>
-                    {{ t('dashboard.topWealth') }}
+                    {{ t("dashboard.topWealth") }}
                 </span>
             </ng-template>
 
@@ -60,13 +60,15 @@ import { WalletLeaderboardEntry } from "../../../../core/models/wallet/wallet";
                                 </div>
                                 <div class="text-surface-400 text-xs">&#64;{{ entry.username }}</div>
                             </div>
-                            <div class="flex shrink-0 items-center gap-1 text-sm font-semibold text-yellow-600 dark:text-yellow-400">
+                            <div
+                                class="flex shrink-0 items-center gap-1 text-sm font-semibold text-yellow-600 dark:text-yellow-400"
+                            >
                                 <i class="pi pi-wallet text-xs"></i>
                                 <span>{{ entry.balance }}</span>
                             </div>
                         </a>
                     } @empty {
-                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t('dashboard.noWealth') }}</p>
+                        <p class="text-surface-500 dark:text-surface-400 text-sm">{{ t("dashboard.noWealth") }}</p>
                     }
                 </div>
             }
@@ -82,15 +84,13 @@ export class TopWealthWidget implements OnInit {
     protected readonly skeletonItems = [1, 2, 3, 4, 5];
 
     ngOnInit(): void {
-        this.http
-            .get<WalletLeaderboardEntry[]>(`${this.apiConfig.baseUrl}${WALLET_ROUTES.leaderboard(5)}`)
-            .subscribe({
-                next: (data) => {
-                    this.leaders.set(data);
-                    this.loading.set(false);
-                },
-                error: () => this.loading.set(false)
-            });
+        this.http.get<WalletLeaderboardEntry[]>(`${this.apiConfig.baseUrl}${WALLET_ROUTES.leaderboard(5)}`).subscribe({
+            next: (data) => {
+                this.leaders.set(data);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
     }
 
     protected rankBg(index: number): string {

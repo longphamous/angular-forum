@@ -176,7 +176,8 @@ export const routes: Routes = [
                 path: "admin/calendar",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () => import("./features/admin/admin-calendar/admin-calendar").then((c) => c.AdminCalendar)
+                loadComponent: () =>
+                    import("./features/admin/admin-calendar/admin-calendar").then((c) => c.AdminCalendar)
             }
         ]
     }
