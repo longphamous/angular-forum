@@ -29,8 +29,10 @@ import {
     mockOnlineUsers,
     mockPagePermissions,
     mockPosts,
+    mockShopItems,
     mockSlides,
     mockThreads,
+    mockUserInventory,
     mockWalletTransactions,
     mockWallets,
     mockUserAchievements,
@@ -1001,6 +1003,84 @@ export class MockInterceptor implements HttpInterceptor {
             const id = url.split("/api/slideshow/admin/")[1].split("?")[0];
             const idx = mockSlides.findIndex((s) => s.id === id);
             if (idx !== -1) mockSlides.splice(idx, 1);
+            return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
+        }
+
+        // ── Virtual Shop ───────────────────────────────────────────────────────
+
+        if (method === "GET" && url.includes("/api/shop/admin/inventory/all")) {
+            return this.ok([...mockUserInventory]);
+        }
+
+        if (method === "GET" && url.includes("/api/shop/admin")) {
+            return this.ok([...mockShopItems]);
+        }
+
+        if (method === "GET" && url.includes("/api/shop/inventory")) {
+            return this.ok([...mockUserInventory]);
+        }
+
+        if (method === "GET" && /\/api\/shop(\?|$)/.test(url)) {
+            return this.ok(mockShopItems.filter((i) => i.isActive));
+        }
+
+        if (method === "POST" && url.includes("/api/shop/purchase/")) {
+            const itemId = url.split("/api/shop/purchase/")[1].split("?")[0];
+            const item = mockShopItems.find((i) => i.id === itemId);
+            if (!item || !item.isActive) return this.error("Item nicht gefunden", 404);
+            if (item.stock !== null && item.stock <= 0) return this.error("Ausverkauft", 400);
+            if (item.stock !== null) item.stock -= 1;
+            const existing = mockUserInventory.find((e) => e.itemId === itemId);
+            if (existing) {
+                existing.quantity += 1;
+                return this.ok(existing);
+            }
+            const entry = {
+                id: `inv-${Date.now()}`,
+                userId: "00000000-0000-0000-0000-000000000001",
+                itemId,
+                item,
+                quantity: 1,
+                purchasedAt: new Date().toISOString()
+            };
+            mockUserInventory.push(entry);
+            return this.ok(entry);
+        }
+
+        if (method === "POST" && url.includes("/api/shop/admin")) {
+            const body = req.body as { name: string; description?: string | null; price: number; imageUrl?: string | null; icon?: string | null; category?: string | null; isActive?: boolean; stock?: number | null; maxPerUser?: number | null; sortOrder?: number };
+            const newItem = {
+                id: `shop-${Date.now()}`,
+                name: body.name,
+                description: body.description ?? null,
+                price: body.price,
+                imageUrl: body.imageUrl ?? null,
+                icon: body.icon ?? null,
+                category: body.category ?? null,
+                isActive: body.isActive ?? true,
+                stock: body.stock ?? null,
+                maxPerUser: body.maxPerUser ?? null,
+                sortOrder: body.sortOrder ?? 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockShopItems.push(newItem);
+            return this.ok(newItem);
+        }
+
+        if (method === "PATCH" && url.includes("/api/shop/admin/")) {
+            const id = url.split("/api/shop/admin/")[1].split("?")[0];
+            const idx = mockShopItems.findIndex((i) => i.id === id);
+            if (idx === -1) return this.error("Not found", 404);
+            const body = req.body as Partial<typeof mockShopItems[0]>;
+            mockShopItems[idx] = { ...mockShopItems[idx]!, ...body, id, updatedAt: new Date().toISOString() };
+            return this.ok(mockShopItems[idx]);
+        }
+
+        if (method === "DELETE" && url.includes("/api/shop/admin/")) {
+            const id = url.split("/api/shop/admin/")[1].split("?")[0];
+            const idx = mockShopItems.findIndex((i) => i.id === id);
+            if (idx !== -1) mockShopItems.splice(idx, 1);
             return of(new HttpResponse({ status: 204 })).pipe(delay(SIMULATED_LATENCY_MS)) as Observable<HttpEvent<never>>;
         }
 

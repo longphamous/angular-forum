@@ -61,6 +61,9 @@
     "gamification": "Gamification",
     "achievements": "Achievements",
     "slideshow": "Teaser Slideshow",
+    "shopSection": "Shop",
+    "shop": "Virtueller Shop",
+    "shopManagement": "Shop Verwaltung",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -534,7 +537,8 @@
       "security": "Sicherheit",
       "achievements": "Achievements",
       "wallet": "Guthaben",
-      "preferences": "Einstellungen"
+      "preferences": "Einstellungen",
+      "inventory": "Inventar"
     },
     "header": {
       "editTitle": "Profil bearbeiten",
@@ -745,6 +749,56 @@
       "description": "Notiz",
       "descriptionPlaceholder": "Optionale Notiz...",
       "submit": "Senden"
+    }
+  },
+  "shop": {
+    "title": "Virtueller Shop",
+    "subtitle": "Kaufe virtuelle Items mit deinen Coins",
+    "allCategories": "Alle",
+    "empty": "Zurzeit keine Items verfügbar.",
+    "buyBtn": "Kaufen",
+    "outOfStock": "Ausverkauft",
+    "inStock": "{{count}} verfügbar",
+    "confirmTitle": "Kauf bestätigen",
+    "confirmMsg": "\"{{name}}\" für {{price}} Coins kaufen?",
+    "successMsg": "Kauf erfolgreich!",
+    "inventory": "Mein Inventar",
+    "inventoryEmpty": "Dein Inventar ist leer."
+  },
+  "adminShop": {
+    "title": "Shop Verwaltung",
+    "subtitle": "Virtuelle Items für den Shop erstellen und verwalten",
+    "createBtn": "Neues Item",
+    "createTitle": "Item erstellen",
+    "editTitle": "Item bearbeiten",
+    "empty": "Noch keine Items vorhanden.",
+    "table": {
+      "preview": "Vorschau",
+      "name": "Name",
+      "category": "Kategorie",
+      "price": "Preis",
+      "stock": "Bestand",
+      "active": "Aktiv",
+      "order": "Reihenfolge"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Item-Name...",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung...",
+      "price": "Preis (Coins)",
+      "sortOrder": "Sortierreihenfolge",
+      "stock": "Bestand",
+      "stockUnlimited": "Unbegrenzt",
+      "maxPerUser": "Max. pro Benutzer",
+      "maxPerUserUnlimited": "Unbegrenzt",
+      "category": "Kategorie",
+      "categoryPlaceholder": "z.B. Kosmetik, Titel...",
+      "imageUrl": "Bild-URL",
+      "imageUrlPlaceholder": "https://...",
+      "icon": "PrimeNG Icon",
+      "iconHint": "Wird als Fallback verwendet, wenn kein Bild gesetzt ist. Beispiel: pi pi-star",
+      "isActive": "Item ist aktiv (im Shop sichtbar)"
     }
   }
 }

@@ -53,6 +53,10 @@ export class AppMenu implements OnInit, OnDestroy {
                 items: [{ label: this.t("nav.forumOverview"), icon: "pi pi-fw pi-comments", routerLink: ["/forum"] }]
             },
             {
+                label: this.t("nav.shopSection"),
+                items: [{ label: this.t("nav.shop"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/shop"] }]
+            },
+            {
                 label: this.t("nav.anime"),
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
@@ -70,7 +74,8 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.pagePermissions"), icon: "pi pi-fw pi-lock", routerLink: ["/admin/permissions"] },
                     { label: this.t("nav.gamification"), icon: "pi pi-fw pi-star", routerLink: ["/admin/gamification"] },
                     { label: this.t("nav.achievements"), icon: "pi pi-fw pi-trophy", routerLink: ["/admin/achievements"] },
-                    { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] }
+                    { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] },
+                    { label: this.t("nav.shopManagement"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/admin/shop"] }
                 ]
             },
             {

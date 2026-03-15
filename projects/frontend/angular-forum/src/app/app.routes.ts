@@ -153,6 +153,18 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-slideshow/admin-slideshow").then((c) => c.AdminSlideshow)
+            },
+            {
+                path: "admin/shop",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-shop/admin-shop").then((c) => c.AdminShop)
+            },
+            {
+                path: "shop",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/shop/shop-page").then((c) => c.ShopPage)
             }
         ]
     }

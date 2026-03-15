@@ -9,6 +9,7 @@ import { Achievement, UserAchievement } from "../../models/gamification/achievem
 import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
 import { OnlineUser } from "../../models/user/online-user";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
+import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 
 export interface User {
     id: string;
@@ -837,5 +838,81 @@ export const mockOnlineUsers: OnlineUser[] = [
     { userId: "00000000-0000-0000-0000-000000000001", username: "admin", displayName: "Aniverse Admin", avatarUrl: null, lastSeenAt: now },
     { userId: "00000000-0000-0000-0000-000000000002", username: "sakura_mod", displayName: "Sakura", avatarUrl: null, lastSeenAt: thirtySecondsAgo },
     { userId: "00000000-0000-0000-0000-000000000003", username: "naruto_fan", displayName: "Naruto Fan", avatarUrl: null, lastSeenAt: oneHourAgo }
+];
+
+// ── Virtual Shop ──────────────────────────────────────────────────────────────
+
+export const mockShopItems: ShopItem[] = [
+    {
+        id: "a0000000-0000-0000-0000-000000000001",
+        name: "VIP Badge",
+        description: "Zeige deinen Status mit einem exklusiven VIP-Abzeichen in deinem Profil.",
+        price: 500,
+        imageUrl: null,
+        icon: "pi pi-verified",
+        category: "Titel",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 0,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "a0000000-0000-0000-0000-000000000002",
+        name: "Animu-Meister Titel",
+        description: "Der ultimative Titel für wahre Anime-Kenner.",
+        price: 1000,
+        imageUrl: null,
+        icon: "pi pi-star-fill",
+        category: "Titel",
+        isActive: true,
+        stock: 50,
+        maxPerUser: 1,
+        sortOrder: 1,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "a0000000-0000-0000-0000-000000000003",
+        name: "Profilrahmen – Gold",
+        description: "Ein goldener Rahmen für deinen Avatar.",
+        price: 250,
+        imageUrl: null,
+        icon: "pi pi-circle-fill",
+        category: "Kosmetik",
+        isActive: true,
+        stock: null,
+        maxPerUser: null,
+        sortOrder: 2,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "a0000000-0000-0000-0000-000000000004",
+        name: "Geheimpaket",
+        description: "Ein mysteriöses Paket – was wird darin sein?",
+        price: 100,
+        imageUrl: null,
+        icon: "pi pi-gift",
+        category: "Sonstiges",
+        isActive: true,
+        stock: 10,
+        maxPerUser: 3,
+        sortOrder: 3,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    }
+];
+
+export const mockUserInventory: UserInventoryItem[] = [
+    {
+        id: "b0000000-0000-0000-0000-000000000001",
+        userId: "00000000-0000-0000-0000-000000000001",
+        itemId: "a0000000-0000-0000-0000-000000000003",
+        item: mockShopItems[2]!,
+        quantity: 1,
+        purchasedAt: twoDaysAgo
+    }
 ];
 

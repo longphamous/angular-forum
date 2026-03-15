@@ -61,6 +61,9 @@
     "gamification": "Gamification",
     "achievements": "Achievements",
     "slideshow": "Teaser Slideshow",
+    "shopSection": "Shop",
+    "shop": "Virtual Shop",
+    "shopManagement": "Shop Management",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
     "viewSource": "View Source"
@@ -534,7 +537,8 @@
       "security": "Security",
       "achievements": "Achievements",
       "wallet": "Wallet",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "inventory": "Inventory"
     },
     "header": {
       "editTitle": "Edit profile",
@@ -745,6 +749,56 @@
       "description": "Note",
       "descriptionPlaceholder": "Optional note...",
       "submit": "Send"
+    }
+  },
+  "shop": {
+    "title": "Virtual Shop",
+    "subtitle": "Buy virtual items with your Coins",
+    "allCategories": "All",
+    "empty": "No items available at the moment.",
+    "buyBtn": "Buy",
+    "outOfStock": "Out of stock",
+    "inStock": "{{count}} in stock",
+    "confirmTitle": "Confirm Purchase",
+    "confirmMsg": "Buy \"{{name}}\" for {{price}} Coins?",
+    "successMsg": "Purchase successful!",
+    "inventory": "My Inventory",
+    "inventoryEmpty": "Your inventory is empty."
+  },
+  "adminShop": {
+    "title": "Shop Management",
+    "subtitle": "Create and manage virtual items for the shop",
+    "createBtn": "New Item",
+    "createTitle": "Create Item",
+    "editTitle": "Edit Item",
+    "empty": "No items yet.",
+    "table": {
+      "preview": "Preview",
+      "name": "Name",
+      "category": "Category",
+      "price": "Price",
+      "stock": "Stock",
+      "active": "Active",
+      "order": "Order"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Item name...",
+      "description": "Description",
+      "descriptionPlaceholder": "Short description...",
+      "price": "Price (Coins)",
+      "sortOrder": "Sort order",
+      "stock": "Stock",
+      "stockUnlimited": "Unlimited",
+      "maxPerUser": "Max per user",
+      "maxPerUserUnlimited": "Unlimited",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. Cosmetics, Titles...",
+      "imageUrl": "Image URL",
+      "imageUrlPlaceholder": "https://...",
+      "icon": "PrimeNG Icon",
+      "iconHint": "Used as fallback if no image is set. Example: pi pi-star",
+      "isActive": "Item is active (visible in shop)"
     }
   }
 }

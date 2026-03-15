@@ -12,6 +12,7 @@ import { DatabaseModule } from "./database/database.module";
 import { ForumModule } from "./forum/forum.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { GroupModule } from "./group/group.module";
+import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
 import { UserModule } from "./user/user.module";
 
@@ -32,6 +33,7 @@ import { UserModule } from "./user/user.module";
         ForumModule,
         GroupModule,
         SlideshowModule,
+        ShopModule,
         DashboardModule
     ],
     controllers: [AppController],

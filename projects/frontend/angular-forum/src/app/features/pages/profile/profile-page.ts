@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, effect, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { Subscription } from "rxjs";
 import { AvatarModule } from "primeng/avatar";
@@ -21,10 +22,12 @@ import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
+import { SHOP_ROUTES } from "../../../core/api/shop.routes";
 import { AchievementCard } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { UserAchievement } from "../../../core/models/gamification/achievement";
+import { UserInventoryItem } from "../../../core/models/shop/shop";
 import { WalletTransaction } from "../../../core/models/wallet/wallet";
 import { UserRole } from "../../../core/models/user/user";
 import { AuthFacade, ChangePasswordPayload, UpdateProfilePayload } from "../../../facade/auth/auth-facade";
@@ -60,6 +63,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
         MessageModule,
         PasswordModule,
         ReactiveFormsModule,
+        RouterModule,
         SelectModule,
         SkeletonModule,
         TabsModule,
@@ -144,6 +148,12 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                     <p-tab value="edit"> <i class="pi pi-pencil mr-2"></i>{{ t('profile.header.editTitle') }} </p-tab>
                     <p-tab value="wallet"> <i class="pi pi-wallet mr-2"></i>{{ t('profile.tabs.wallet') }} </p-tab>
                     <p-tab value="preferences"> <i class="pi pi-cog mr-2"></i>{{ t('profile.tabs.preferences') }} </p-tab>
+                    <p-tab value="inventory">
+                        <i class="pi pi-shopping-bag mr-2"></i>{{ t('profile.tabs.inventory') }}
+                        @if (inventory().length > 0) {
+                            <span class="bg-primary/15 text-primary ml-1 rounded-full px-1.5 py-0.5 text-xs font-semibold">{{ inventory().length }}</span>
+                        }
+                    </p-tab>
                     <p-tab value="security"> <i class="pi pi-lock mr-2"></i>{{ t('profile.tabs.security') }} </p-tab>
                 </p-tablist>
 
@@ -523,6 +533,45 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
                         </div>
                     </p-tabpanel>
 
+                    <!-- Inventar -->
+                    <p-tabpanel value="inventory">
+                        <div class="pt-2">
+                            @if (inventoryLoading()) {
+                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                                    @for (_ of [1,2,3,4]; track $index) {
+                                        <p-skeleton height="8rem" styleClass="rounded-xl" />
+                                    }
+                                </div>
+                            } @else if (inventory().length === 0) {
+                                <div class="flex flex-col items-center justify-center py-12 text-center">
+                                    <i class="pi pi-shopping-bag text-surface-300 mb-3 text-4xl"></i>
+                                    <p class="text-surface-500 text-sm">{{ t('shop.inventoryEmpty') }}</p>
+                                    <a routerLink="/shop" class="mt-3 text-primary text-sm hover:underline">
+                                        {{ t('shop.title') }}
+                                    </a>
+                                </div>
+                            } @else {
+                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                                    @for (entry of inventory(); track entry.id) {
+                                        <div class="bg-surface-50 dark:bg-surface-800 rounded-xl p-4 flex flex-col items-center gap-2 text-center border border-surface-200 dark:border-surface-700">
+                                            @if (entry.item.imageUrl) {
+                                                <img [src]="entry.item.imageUrl" [alt]="entry.item.name" class="h-12 w-12 rounded-lg object-cover" />
+                                            } @else {
+                                                <div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                                    <i [class]="'text-2xl text-primary ' + (entry.item.icon || 'pi pi-star')"></i>
+                                                </div>
+                                            }
+                                            <div class="text-surface-900 dark:text-surface-0 text-xs font-medium leading-snug">{{ entry.item.name }}</div>
+                                            @if (entry.quantity > 1) {
+                                                <span class="bg-primary/15 text-primary text-xs font-semibold rounded-full px-2 py-0.5">×{{ entry.quantity }}</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </p-tabpanel>
+
                     <!-- Sicherheit -->
                     <p-tabpanel value="security">
                         <form class="flex flex-col gap-5 pt-2" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
@@ -658,6 +707,8 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     protected readonly achievements = signal<UserAchievement[]>([]);
     protected readonly achievementsLoading = signal(false);
+    protected readonly inventory = signal<UserInventoryItem[]>([]);
+    protected readonly inventoryLoading = signal(false);
 
     protected readonly saving = signal(false);
     protected readonly savingPassword = signal(false);
@@ -720,6 +771,11 @@ export class ProfilePage implements OnInit, OnDestroy {
             this.http.get<UserAchievement[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.user(userId)}`).subscribe({
                 next: (data) => { this.achievements.set(data); this.achievementsLoading.set(false); },
                 error: () => this.achievementsLoading.set(false)
+            });
+            this.inventoryLoading.set(true);
+            this.http.get<UserInventoryItem[]>(`${this.apiConfig.baseUrl}${SHOP_ROUTES.inventory()}`).subscribe({
+                next: (data) => { this.inventory.set(data); this.inventoryLoading.set(false); },
+                error: () => this.inventoryLoading.set(false)
             });
             this.walletFacade.loadWallet();
             this.walletFacade.loadTransactions();
