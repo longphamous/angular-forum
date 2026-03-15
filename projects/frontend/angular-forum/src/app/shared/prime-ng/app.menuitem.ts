@@ -14,9 +14,22 @@ import { LayoutService } from "./service/layout.service";
     imports: [CommonModule, RouterModule, RippleModule],
     template: `
         <ng-container>
-            <div class="layout-menuitem-root-text" *ngIf="root && item.visible !== false">{{ item.label }}</div>
+            <!-- Root section header (clickable toggle, no routerLink) -->
+            <div
+                class="layout-menuitem-root-text"
+                *ngIf="root && item.visible !== false"
+                role="button"
+                tabindex="0"
+                (click)="rootToggle($event)"
+                (keydown.enter)="rootToggle($event)"
+            >
+                <span>{{ item.label }}</span>
+                <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
+            </div>
+
+            <!-- Non-root item with submenu (no routerLink, has children) -->
             <a
-                *ngIf="(!item.routerLink || item.items) && item.visible !== false"
+                *ngIf="!root && !item.routerLink && item.items && item.visible !== false"
                 [attr.href]="item.url"
                 [attr.target]="item.target"
                 [ngClass]="item.styleClass"
@@ -26,10 +39,26 @@ import { LayoutService } from "./service/layout.service";
             >
                 <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
-                <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
+                <i class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
             </a>
+
+            <!-- Non-root item with no children and no routerLink (plain link) -->
             <a
-                *ngIf="item.routerLink && !item.items && item.visible !== false"
+                *ngIf="!root && !item.routerLink && !item.items && item.visible !== false"
+                [attr.href]="item.url"
+                [attr.target]="item.target"
+                [ngClass]="item.styleClass"
+                (click)="itemClick($event)"
+                pRipple
+                tabindex="0"
+            >
+                <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+                <span class="layout-menuitem-text">{{ item.label }}</span>
+            </a>
+
+            <!-- Non-root item with routerLink (leaf navigation) -->
+            <a
+                *ngIf="!root && item.routerLink && !item.items && item.visible !== false"
                 [attr.target]="item.target"
                 [fragment]="item.fragment"
                 [ngClass]="item.styleClass"
@@ -55,16 +84,38 @@ import { LayoutService } from "./service/layout.service";
             >
                 <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
-                <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
 
-            <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation">
+            <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation" style="overflow: hidden;">
                 <ng-template [ngForOf]="item.items" let-child let-i="index" ngFor>
                     <li [class]="child['badgeClass']" [index]="i" [item]="child" [parentKey]="key" app-menuitem></li>
                 </ng-template>
             </ul>
         </ng-container>
     `,
+    styles: [
+        `
+            .layout-menuitem-root-text {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+                user-select: none;
+                padding: 0.25rem 0;
+            }
+            .layout-menuitem-root-text:hover {
+                opacity: 0.8;
+            }
+            .layout-section-toggler {
+                transition: transform 0.3s cubic-bezier(0.86, 0, 0.07, 1);
+                font-size: 0.75rem;
+                opacity: 0.6;
+            }
+            .layout-section-toggler.rotated {
+                transform: rotate(-90deg);
+            }
+        `
+    ],
     animations: [
         trigger("children", [
             state(
@@ -106,8 +157,11 @@ export class AppMenuitem implements OnInit, OnDestroy {
     constructor() {
         this.menuSourceSubscription = this.layoutService.menuSource$.subscribe((value) => {
             Promise.resolve(null).then(() => {
+                // Root sections manage their own expand/collapse independently
+                if (this.root) return;
+
                 if (value.routeEvent) {
-                    this.active = value.key === this.key || value.key.startsWith(this.key + "-") ? true : false;
+                    this.active = value.key === this.key || value.key.startsWith(this.key + "-");
                 } else {
                     if (value.key !== this.key && !value.key.startsWith(this.key + "-")) {
                         this.active = false;
@@ -117,7 +171,10 @@ export class AppMenuitem implements OnInit, OnDestroy {
         });
 
         this.menuResetSubscription = this.layoutService.resetSource$.subscribe(() => {
-            this.active = false;
+            // Do not collapse root sections on reset — they manage their own state
+            if (!this.root) {
+                this.active = false;
+            }
         });
 
         this.router.events
@@ -135,11 +192,17 @@ export class AppMenuitem implements OnInit, OnDestroy {
     }
 
     get submenuAnimation() {
-        return this.root ? "expanded" : this.active ? "expanded" : "collapsed";
+        return this.active ? "expanded" : "collapsed";
     }
 
     ngOnInit() {
         this.key = this.parentKey ? this.parentKey + "-" + this.index : String(this.index);
+
+        // Root sections: expand by default unless item['data']?.collapsed is true
+        if (this.root && this.item.items) {
+            const data = this.item["data"] as { collapsed?: boolean } | undefined;
+            this.active = !(data?.collapsed === true);
+        }
 
         if (this.item.routerLink) {
             this.updateActiveStateFromRoute();
@@ -147,7 +210,7 @@ export class AppMenuitem implements OnInit, OnDestroy {
     }
 
     updateActiveStateFromRoute() {
-        const activeRoute = this.router.isActive(this.item.routerLink[0], {
+        const activeRoute = this.router.isActive(this.item.routerLink![0], {
             paths: "exact",
             queryParams: "ignored",
             matrixParams: "ignored",
@@ -157,6 +220,12 @@ export class AppMenuitem implements OnInit, OnDestroy {
         if (activeRoute) {
             this.layoutService.onMenuStateChange({ key: this.key, routeEvent: true });
         }
+    }
+
+    /** Toggle root section independently (no sibling collapse). */
+    rootToggle(event: Event): void {
+        event.preventDefault();
+        this.active = !this.active;
     }
 
     itemClick(event: Event) {
@@ -171,12 +240,11 @@ export class AppMenuitem implements OnInit, OnDestroy {
             this.item.command({ originalEvent: event, item: this.item });
         }
 
-        // toggle active state
+        // toggle active state for items with children
         if (this.item.items) {
             this.active = !this.active;
+            this.layoutService.onMenuStateChange({ key: this.key });
         }
-
-        this.layoutService.onMenuStateChange({ key: this.key });
     }
 
     ngOnDestroy() {
