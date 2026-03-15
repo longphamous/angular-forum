@@ -21,7 +21,7 @@ import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { GalleryAlbum, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
 import { Group } from "../../models/group/group";
-import { DrawResult, LottoDraw, LottoResult, LottoTicket } from "../../models/lotto/lotto";
+import { LottoDraw, LottoPrizeClass, LottoResult, LottoTicket } from "../../models/lotto/lotto";
 import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
 import { UserProfile } from "../../models/user/user";
 import {
@@ -35,6 +35,7 @@ import {
     mockCalendarEventDetails,
     mockCalendarEvents,
     mockCategories,
+    mockCoinConfig,
     mockConversationDetails,
     mockConversations,
     mockDrafts,
@@ -1334,12 +1335,16 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "GET" && /\/api\/credit\/lotto\/stats$/.test(url)) {
-            const pending = mockLottoDraws.find((d) => d.status === "pending") ?? null;
+            const pending =
+                [...mockLottoDraws]
+                    .filter((d) => d.status === "pending")
+                    .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime())[0] ?? null;
             const lastDrawn =
                 [...mockLottoDraws]
                     .filter((d) => d.status === "drawn")
                     .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime())[0] ?? null;
-            return this.ok({ ...mockLottoStats, nextDraw: pending, lastDraw: lastDrawn });
+            const biggestJackpot = Math.max(...mockLottoDraws.map((d) => d.jackpot), mockLottoStats.biggestJackpot);
+            return this.ok({ ...mockLottoStats, nextDraw: pending, lastDraw: lastDrawn, biggestJackpot });
         }
 
         if (method === "GET" && /\/api\/credit\/lotto\/draws$/.test(url)) {
@@ -1351,6 +1356,8 @@ export class MockInterceptor implements HttpInterceptor {
             const draw = mockLottoDraws.find((d) => d.id === id);
             if (!draw) return this.error("Not found", 404);
             if (draw.status === "drawn") return this.error("Already drawn", 400);
+
+            // Draw winning numbers (6 aus 49) and super number (0–9)
             const pool = Array.from({ length: 49 }, (_, i) => i + 1);
             for (let i = pool.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1359,10 +1366,76 @@ export class MockInterceptor implements HttpInterceptor {
             draw.winningNumbers = pool.slice(0, 6).sort((a, b) => a - b);
             draw.superNumber = Math.floor(Math.random() * 10);
             draw.status = "drawn";
+
+            // Evaluate all tickets for this draw
             const ticketsForDraw = mockLottoTickets.filter((t) => t.drawId === id);
             const winners: LottoResult[] = [];
-            const result: DrawResult = { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid: 0 };
-            return this.ok(result);
+            const FIXED_PRIZES: Record<string, number> = {
+                class2: 1_000_000,
+                class3: 100_000,
+                class4: 5_000,
+                class5: 500,
+                class6: 50,
+                class7: 20,
+                class8: 10,
+                class9: 5
+            };
+            for (const ticket of ticketsForDraw) {
+                const matched = ticket.numbers.filter((n) => draw.winningNumbers.includes(n));
+                const mc = matched.length;
+                const sz = ticket.superNumber === draw.superNumber;
+                let prizeClass = "no_win";
+                if (mc === 6 && sz) prizeClass = "class1";
+                else if (mc === 6) prizeClass = "class2";
+                else if (mc === 5 && sz) prizeClass = "class3";
+                else if (mc === 5) prizeClass = "class4";
+                else if (mc === 4 && sz) prizeClass = "class5";
+                else if (mc === 4) prizeClass = "class6";
+                else if (mc === 3 && sz) prizeClass = "class7";
+                else if (mc === 3) prizeClass = "class8";
+                else if (mc === 2 && sz) prizeClass = "class9";
+                const prizeAmount = prizeClass === "class1" ? draw.jackpot : (FIXED_PRIZES[prizeClass] ?? 0);
+                if (prizeAmount > 0) {
+                    winners.push({
+                        ticketId: ticket.id,
+                        userId: ticket.userId,
+                        drawId: id,
+                        matchedNumbers: matched,
+                        matchedCount: mc,
+                        superNumberMatched: sz,
+                        prizeClass: prizeClass as LottoPrizeClass,
+                        prizeAmount
+                    });
+                }
+            }
+
+            // Jackpot rollover: if no class-1 winner, next draw gets current jackpot + % of revenue
+            const totalRevenue = ticketsForDraw.reduce((s, t) => s + t.cost, 0);
+            const rolloverContrib = Math.floor(totalRevenue * (mockLottoConfig.rolloverPercentage / 100));
+            const hasJackpotWinner = winners.some((w) => w.prizeClass === "class1");
+            const nextJackpot = hasJackpotWinner ? mockLottoConfig.baseJackpot : draw.jackpot + rolloverContrib;
+
+            // Schedule next draw (next Saturday)
+            const nextDate = new Date(draw.drawDate);
+            nextDate.setUTCDate(nextDate.getUTCDate() + 7);
+            const nextId = `draw-${nextDate.toISOString().slice(0, 10)}`;
+            if (!mockLottoDraws.some((d) => d.id === nextId)) {
+                mockLottoDraws.push({
+                    id: nextId,
+                    drawDate: nextDate.toISOString(),
+                    winningNumbers: [],
+                    superNumber: -1,
+                    jackpot: nextJackpot,
+                    status: "pending",
+                    totalTickets: 0
+                });
+            }
+
+            const totalPrizesPaid = winners.reduce((s, w) => s + w.prizeAmount, 0);
+            mockLottoStats.totalDraws++;
+            mockLottoStats.totalPrizePaid += totalPrizesPaid;
+            if (draw.jackpot > mockLottoStats.biggestJackpot) mockLottoStats.biggestJackpot = draw.jackpot;
+            return this.ok({ draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid });
         }
 
         if (method === "POST" && /\/api\/credit\/lotto\/draws$/.test(url)) {
@@ -1428,6 +1501,10 @@ export class MockInterceptor implements HttpInterceptor {
                 };
                 mockLottoTickets.push(ticket);
                 createdTickets.push(ticket);
+                // Each ticket contributes rolloverPercentage% of its cost to the draw's jackpot
+                const contrib = Math.floor(mockLottoConfig.ticketCost * (mockLottoConfig.rolloverPercentage / 100));
+                if (contrib > 0) draw.jackpot += contrib;
+                if (draw.totalTickets !== undefined) draw.totalTickets++;
                 // advance to next draw for next iteration
                 const nextDraw = mockLottoDraws.find((d) => d.status === "pending" && d.id !== currentDrawId);
                 if (nextDraw) currentDrawId = nextDraw.id;
@@ -1437,6 +1514,83 @@ export class MockInterceptor implements HttpInterceptor {
             const wallet = mockWallets["00000000-0000-0000-0000-000000000001"];
             if (wallet) wallet.balance -= mockLottoConfig.ticketCost * repeatWeeks;
             return this.ok(createdTickets);
+        }
+
+        // ── Admin Credit ──────────────────────────────────────────────────────────
+
+        // GET /api/credit/admin/config
+        if (method === "GET" && /\/api\/credit\/admin\/config$/.test(url)) {
+            return this.ok({ ...mockCoinConfig });
+        }
+
+        // PUT /api/credit/admin/config
+        if (method === "PUT" && /\/api\/credit\/admin\/config$/.test(url)) {
+            Object.assign(mockCoinConfig, body as Partial<typeof mockCoinConfig>);
+            return this.ok({ ...mockCoinConfig });
+        }
+
+        // GET /api/credit/admin/wallets
+        if (method === "GET" && /\/api\/credit\/admin\/wallets/.test(url)) {
+            const entries = Object.values(mockUsers).map((u) => ({
+                userId: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                balance: mockWallets[u.id]?.balance ?? 0,
+                transactionCount: (mockWalletTransactions[u.id] ?? []).length
+            }));
+            entries.sort((a, b) => b.balance - a.balance);
+            return this.ok(entries);
+        }
+
+        // GET /api/credit/admin/transactions
+        if (method === "GET" && /\/api\/credit\/admin\/transactions/.test(url)) {
+            const allTx = Object.values(mockWalletTransactions).flat();
+            allTx.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            const params = new URL(url, "http://localhost").searchParams;
+            const page = Math.max(1, parseInt(params.get("page") ?? "1") || 1);
+            const limit = Math.min(100, parseInt(params.get("limit") ?? "20") || 20);
+            const start = (page - 1) * limit;
+            return this.ok({ data: allTx.slice(start, start + limit), total: allTx.length, page, limit });
+        }
+
+        // POST /api/credit/admin/transfer
+        if (method === "POST" && /\/api\/credit\/admin\/transfer$/.test(url)) {
+            const payload = body as {
+                toUserId: string;
+                amount: number;
+                type: "reward" | "penalty";
+                description: string;
+            } | null;
+            if (!payload?.toUserId || !payload.amount) return this.error("Pflichtfelder fehlen", 400);
+            const wallet = mockWallets[payload.toUserId];
+            if (!wallet) return this.error("Wallet nicht gefunden", 404);
+            if (payload.type === "reward") {
+                wallet.balance += payload.amount;
+            } else {
+                wallet.balance = Math.max(0, wallet.balance - payload.amount);
+            }
+            const ts = new Date().toISOString();
+            const tx = {
+                id: "tx-admin-" + Math.random().toString(36).substring(2),
+                fromUserId: MOCK_ADMIN_ID,
+                toUserId: payload.toUserId,
+                amount: payload.amount,
+                type: "admin_transfer" as const,
+                description: payload.type === "penalty" ? `[Abzug] ${payload.description}` : payload.description,
+                createdAt: ts
+            };
+            (mockWalletTransactions[payload.toUserId] ??= []).unshift(tx);
+            return this.ok(tx);
+        }
+
+        // POST /api/credit/admin/recalculate
+        if (method === "POST" && /\/api\/credit\/admin\/recalculate$/.test(url)) {
+            return this.ok({
+                usersProcessed: Object.keys(mockUsers).length,
+                totalCoinsAwarded: 1250,
+                durationMs: 342,
+                message: `Successfully recalculated ${Object.keys(mockUsers).length} user wallets.`
+            });
         }
 
         // ── Notifications ────────────────────────────────────────────────────────

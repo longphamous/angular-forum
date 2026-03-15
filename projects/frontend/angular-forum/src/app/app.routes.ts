@@ -245,6 +245,12 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-blog/admin-blog").then((c) => c.AdminBlog)
+            },
+            {
+                path: "admin/coins",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-coins/admin-coins").then((c) => c.AdminCoins)
             }
         ]
     }

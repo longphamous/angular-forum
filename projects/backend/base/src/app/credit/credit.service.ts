@@ -6,6 +6,58 @@ import { UserWalletEntity } from "./entities/user-wallet.entity";
 import { WalletTransactionEntity } from "./entities/wallet-transaction.entity";
 import { TransactionType } from "./models/transaction.model";
 
+export interface CoinEarnAction {
+    enabled: boolean;
+    amount: number;
+}
+
+export interface CoinEarnConfig {
+    enabled: boolean; // global on/off switch
+    threadCreate: CoinEarnAction;
+    postReply: CoinEarnAction;
+    reactionGiven: CoinEarnAction;
+    reactionReceived: CoinEarnAction;
+    blogPost: CoinEarnAction;
+    blogComment: CoinEarnAction;
+    galleryUpload: CoinEarnAction;
+    dailyLogin: CoinEarnAction;
+    // Forum categories excluded from earning coins (by category id)
+    excludedCategoryIds: string[];
+}
+
+export interface RecalculateReport {
+    usersProcessed: number;
+    totalCoinsAwarded: number;
+    durationMs: number;
+    message: string;
+}
+
+export interface AdminTransferDto {
+    toUserId: string;
+    amount: number;
+    type: "reward" | "penalty";
+    description: string;
+}
+
+export interface AdminWalletEntry {
+    userId: string;
+    username: string;
+    displayName: string;
+    balance: number;
+    transactionCount: number;
+}
+
+export interface AdminTransactionDto {
+    id: string;
+    fromUserId: string | null;
+    toUserId: string;
+    toUserName: string;
+    amount: number;
+    type: string;
+    description: string;
+    createdAt: string;
+}
+
 export interface WalletLeaderboardEntry {
     userId: string;
     displayName: string;
@@ -60,6 +112,19 @@ function toTransactionDto(e: WalletTransactionEntity): TransactionDto {
     };
 }
 
+const DEFAULT_COIN_CONFIG: CoinEarnConfig = {
+    enabled: true,
+    threadCreate: { enabled: true, amount: 5 },
+    postReply: { enabled: true, amount: 2 },
+    reactionGiven: { enabled: false, amount: 1 },
+    reactionReceived: { enabled: true, amount: 1 },
+    blogPost: { enabled: true, amount: 10 },
+    blogComment: { enabled: true, amount: 2 },
+    galleryUpload: { enabled: true, amount: 3 },
+    dailyLogin: { enabled: true, amount: 1 },
+    excludedCategoryIds: []
+};
+
 @Injectable()
 export class CreditService implements OnModuleInit {
     private readonly logger = new Logger(CreditService.name);
@@ -72,6 +137,170 @@ export class CreditService implements OnModuleInit {
         @InjectDataSource()
         private readonly dataSource: DataSource
     ) {}
+
+    private coinConfig: CoinEarnConfig = {
+        ...DEFAULT_COIN_CONFIG,
+        threadCreate: { ...DEFAULT_COIN_CONFIG.threadCreate },
+        postReply: { ...DEFAULT_COIN_CONFIG.postReply },
+        reactionGiven: { ...DEFAULT_COIN_CONFIG.reactionGiven },
+        reactionReceived: { ...DEFAULT_COIN_CONFIG.reactionReceived },
+        blogPost: { ...DEFAULT_COIN_CONFIG.blogPost },
+        blogComment: { ...DEFAULT_COIN_CONFIG.blogComment },
+        galleryUpload: { ...DEFAULT_COIN_CONFIG.galleryUpload },
+        dailyLogin: { ...DEFAULT_COIN_CONFIG.dailyLogin }
+    };
+
+    getCoinConfig(): CoinEarnConfig {
+        return JSON.parse(JSON.stringify(this.coinConfig)) as CoinEarnConfig;
+    }
+
+    updateCoinConfig(partial: Partial<CoinEarnConfig>): CoinEarnConfig {
+        this.coinConfig = { ...this.coinConfig, ...partial };
+        return this.getCoinConfig();
+    }
+
+    async adminTransfer(adminId: string, dto: AdminTransferDto): Promise<TransactionDto> {
+        const wallet = await this.findOrCreateWallet(dto.toUserId);
+        if (dto.type === "reward") {
+            wallet.balance += dto.amount;
+            await this.walletRepo.save(wallet);
+            return toTransactionDto(
+                await this.record({
+                    fromUserId: adminId,
+                    toUserId: dto.toUserId,
+                    amount: dto.amount,
+                    type: "admin_transfer",
+                    description: dto.description
+                })
+            );
+        } else {
+            if (wallet.balance < dto.amount) {
+                wallet.balance = 0;
+            } else {
+                wallet.balance -= dto.amount;
+            }
+            await this.walletRepo.save(wallet);
+            return toTransactionDto(
+                await this.record({
+                    fromUserId: adminId,
+                    toUserId: dto.toUserId,
+                    amount: dto.amount,
+                    type: "admin_transfer",
+                    description: `[Abzug] ${dto.description}`
+                })
+            );
+        }
+    }
+
+    async getAllWallets(limit = 50): Promise<AdminWalletEntry[]> {
+        const rows = await this.dataSource.query<
+            { user_id: string; display_name: string; username: string; balance: number; tx_count: string }[]
+        >(
+            `SELECT w.user_id, u.display_name, u.username, w.balance,
+                    COUNT(t.id) AS tx_count
+               FROM user_wallets w
+               JOIN users u ON u.id = w.user_id
+               LEFT JOIN wallet_transactions t ON t.to_user_id = w.user_id OR t.from_user_id = w.user_id
+              GROUP BY w.user_id, u.display_name, u.username, w.balance
+              ORDER BY w.balance DESC
+              LIMIT $1`,
+            [limit]
+        );
+        return rows.map((r) => ({
+            userId: r.user_id,
+            displayName: r.display_name,
+            username: r.username,
+            balance: r.balance,
+            transactionCount: parseInt(r.tx_count, 10)
+        }));
+    }
+
+    async getAllTransactions(page = 1, limit = 20): Promise<PaginatedTransactions> {
+        const [entities, total] = await this.txRepo.findAndCount({
+            order: { createdAt: "DESC" },
+            skip: (page - 1) * limit,
+            take: limit
+        });
+        return { data: entities.map(toTransactionDto), total, page, limit };
+    }
+
+    async recalculateAll(): Promise<RecalculateReport> {
+        const start = Date.now();
+        const config = this.coinConfig;
+        if (!config.enabled) {
+            return {
+                usersProcessed: 0,
+                totalCoinsAwarded: 0,
+                durationMs: Date.now() - start,
+                message: "Coin rewards are globally disabled."
+            };
+        }
+        try {
+            interface UserRow {
+                user_id: string;
+                post_count: string;
+                thread_count: string;
+                reactions_received: string;
+                reactions_given: string;
+                blog_post_count: string;
+                gallery_count: string;
+            }
+            const rows = await this.dataSource.query<UserRow[]>(`
+                SELECT u.id AS user_id,
+                       COUNT(DISTINCT fp.id)  AS post_count,
+                       COUNT(DISTINCT ft.id)  AS thread_count,
+                       COUNT(DISTINCT rr.id)  AS reactions_received,
+                       COUNT(DISTINCT rg.id)  AS reactions_given,
+                       COUNT(DISTINCT bp.id)  AS blog_post_count,
+                       COUNT(DISTINCT gm.id)  AS gallery_count
+                FROM users u
+                LEFT JOIN forum_posts     fp ON fp.author_id = u.id AND fp.deleted_at IS NULL
+                LEFT JOIN forum_threads   ft ON ft.author_id = u.id AND ft.deleted_at IS NULL
+                LEFT JOIN forum_post_reactions rr ON rr.post_id IN (
+                    SELECT id FROM forum_posts WHERE author_id = u.id AND deleted_at IS NULL
+                )
+                LEFT JOIN forum_post_reactions rg ON rg.user_id = u.id
+                LEFT JOIN blog_posts      bp ON bp.author_id = u.id
+                LEFT JOIN gallery_media   gm ON gm.owner_id  = u.id
+                GROUP BY u.id
+            `);
+            let totalAwarded = 0;
+            for (const row of rows) {
+                const postCount = parseInt(row.post_count, 10);
+                const threadCount = parseInt(row.thread_count, 10);
+                const reactionsReceived = parseInt(row.reactions_received, 10);
+                const reactionsGiven = parseInt(row.reactions_given, 10);
+                const blogPostCount = parseInt(row.blog_post_count, 10);
+                const galleryCount = parseInt(row.gallery_count, 10);
+
+                const expected =
+                    (config.postReply.enabled ? postCount * config.postReply.amount : 0) +
+                    (config.threadCreate.enabled ? threadCount * config.threadCreate.amount : 0) +
+                    (config.reactionReceived.enabled ? reactionsReceived * config.reactionReceived.amount : 0) +
+                    (config.reactionGiven.enabled ? reactionsGiven * config.reactionGiven.amount : 0) +
+                    (config.blogPost.enabled ? blogPostCount * config.blogPost.amount : 0) +
+                    (config.galleryUpload.enabled ? galleryCount * config.galleryUpload.amount : 0);
+
+                const wallet = await this.findOrCreateWallet(row.user_id);
+                wallet.balance = Math.max(0, expected);
+                await this.walletRepo.save(wallet);
+                totalAwarded += wallet.balance;
+            }
+            return {
+                usersProcessed: rows.length,
+                totalCoinsAwarded: totalAwarded,
+                durationMs: Date.now() - start,
+                message: `Successfully recalculated ${rows.length} user wallets.`
+            };
+        } catch (err) {
+            return {
+                usersProcessed: 0,
+                totalCoinsAwarded: 0,
+                durationMs: Date.now() - start,
+                message: `Recalculation failed: ${String(err)}`
+            };
+        }
+    }
 
     /** Seed wallets for all existing users that don't have one yet. */
     async onModuleInit(): Promise<void> {

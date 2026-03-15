@@ -5,7 +5,9 @@ export type TransactionType =
     | "reward"
     | "purchase"
     | "lotto_ticket"
-    | "lotto_win";
+    | "lotto_win"
+    | "admin_transfer"
+    | "recalculate";
 
 export interface Transaction {
     id: string;

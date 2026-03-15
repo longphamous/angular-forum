@@ -140,7 +140,10 @@
                                 <td class="text-surface-500 px-4 py-3">{{ t(prizeClassInfo[pc].description) }}</td>
                                 <td class="px-4 py-3 text-right">
                                     @if (pc === 'class1') {
-                                    <span class="text-primary font-bold">{{ t('lotto.jackpot') }}</span>
+                                    <span class="text-primary font-bold">
+                                        {{ formatCredits(nextDraw()?.jackpot ?? prizeClassInfo[pc].amount) }}
+                                        <span class="ml-1 text-xs font-normal opacity-75">(Jackpot)</span>
+                                    </span>
                                     } @else {
                                     <span class="text-surface-900 dark:text-surface-0 font-semibold"
                                         >{{ formatCredits(prizeClassInfo[pc].amount) }}</span

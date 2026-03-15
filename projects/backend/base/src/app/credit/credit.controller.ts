@@ -1,11 +1,15 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Post, Put, Query } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import {
+    AdminTransferDto,
+    AdminWalletEntry,
+    CoinEarnConfig,
     CreditService,
     PaginatedTransactions,
+    RecalculateReport,
     TransactionDto,
     WalletDto,
     WalletLeaderboardEntry
@@ -93,5 +97,41 @@ export class CreditController {
     @Roles("admin")
     reward(@Body() body: { userId: string; amount: number; description?: string }): Promise<TransactionDto> {
         return this.creditService.reward(body.userId, body.amount, body.description);
+    }
+
+    @Get("admin/config")
+    @Roles("admin")
+    getCoinConfig(): CoinEarnConfig {
+        return this.creditService.getCoinConfig();
+    }
+
+    @Put("admin/config")
+    @Roles("admin")
+    updateCoinConfig(@Body() body: Partial<CoinEarnConfig>): CoinEarnConfig {
+        return this.creditService.updateCoinConfig(body);
+    }
+
+    @Post("admin/transfer")
+    @Roles("admin")
+    adminTransfer(@CurrentUser() user: AuthenticatedUser, @Body() body: AdminTransferDto): Promise<TransactionDto> {
+        return this.creditService.adminTransfer(user.userId, body);
+    }
+
+    @Get("admin/wallets")
+    @Roles("admin")
+    getAllWallets(@Query("limit") limit?: string): Promise<AdminWalletEntry[]> {
+        return this.creditService.getAllWallets(limit ? parseInt(limit, 10) : 50);
+    }
+
+    @Get("admin/transactions")
+    @Roles("admin")
+    getAllTransactions(@Query("page") page?: string, @Query("limit") limit?: string): Promise<PaginatedTransactions> {
+        return this.creditService.getAllTransactions(page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20);
+    }
+
+    @Post("admin/recalculate")
+    @Roles("admin")
+    recalculateAll(): Promise<RecalculateReport> {
+        return this.creditService.recalculateAll();
     }
 }

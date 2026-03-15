@@ -5,7 +5,9 @@ export type WalletTransactionType =
     | "reward"
     | "purchase"
     | "lotto_ticket"
-    | "lotto_win";
+    | "lotto_win"
+    | "admin_transfer"
+    | "recalculate";
 
 export interface Wallet {
     id: string;
@@ -37,4 +39,37 @@ export interface WalletLeaderboardEntry {
     displayName: string;
     username: string;
     balance: number;
+}
+
+export interface CoinEarnAction {
+    enabled: boolean;
+    amount: number;
+}
+
+export interface CoinEarnConfig {
+    enabled: boolean;
+    threadCreate: CoinEarnAction;
+    postReply: CoinEarnAction;
+    reactionGiven: CoinEarnAction;
+    reactionReceived: CoinEarnAction;
+    blogPost: CoinEarnAction;
+    blogComment: CoinEarnAction;
+    galleryUpload: CoinEarnAction;
+    dailyLogin: CoinEarnAction;
+    excludedCategoryIds: string[];
+}
+
+export interface AdminWalletEntry {
+    userId: string;
+    username: string;
+    displayName: string;
+    balance: number;
+    transactionCount: number;
+}
+
+export interface RecalculateReport {
+    usersProcessed: number;
+    totalCoinsAwarded: number;
+    durationMs: number;
+    message: string;
 }

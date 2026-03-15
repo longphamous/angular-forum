@@ -138,7 +138,8 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.blogManagement"),
                         icon: "pi pi-fw pi-file-edit",
                         routerLink: ["/admin/blog"]
-                    }
+                    },
+                    { label: this.t("nav.coinManagement"), icon: "pi pi-fw pi-bitcoin", routerLink: ["/admin/coins"] }
                 ]
             },
             {

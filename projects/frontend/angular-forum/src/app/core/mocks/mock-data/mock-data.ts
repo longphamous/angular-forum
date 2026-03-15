@@ -15,7 +15,7 @@ import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
-import { Wallet, WalletTransaction } from "../../models/wallet/wallet";
+import { CoinEarnConfig, Wallet, WalletTransaction } from "../../models/wallet/wallet";
 
 export interface User {
     id: string;
@@ -2053,3 +2053,18 @@ export const mockBlogCommentsByPost = new Map<string, BlogComment[]>([
 export const mockBlogPostDetails = new Map<string, BlogPostDetail>(
     mockBlogPosts.map((p) => [p.slug, { ...p, comments: mockBlogCommentsByPost.get(p.id) ?? [] }])
 );
+
+// ── Coin Admin ──────────────────────────────────────────────────────────────
+
+export const mockCoinConfig: CoinEarnConfig = {
+    enabled: true,
+    threadCreate: { enabled: true, amount: 5 },
+    postReply: { enabled: true, amount: 2 },
+    reactionGiven: { enabled: false, amount: 1 },
+    reactionReceived: { enabled: true, amount: 1 },
+    blogPost: { enabled: true, amount: 10 },
+    blogComment: { enabled: true, amount: 2 },
+    galleryUpload: { enabled: true, amount: 3 },
+    dailyLogin: { enabled: true, amount: 1 },
+    excludedCategoryIds: []
+};
