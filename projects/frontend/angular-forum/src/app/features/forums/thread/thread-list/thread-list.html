@@ -2,7 +2,12 @@
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-center gap-3">
-            <p-button [pTooltip]="t('thread.backToForum')" [text]="true" icon="pi pi-arrow-left" routerLink="/forum" />
+            <p-button
+                (onClick)="navHistory.back('/forum')"
+                [label]="navHistory.backLabel()"
+                [text]="true"
+                icon="pi pi-arrow-left"
+            />
             <div class="flex-1">
                 @if (facade.currentForum()) {
                 <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">

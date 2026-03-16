@@ -1,0 +1,583 @@
+<p-toast />
+
+<div class="flex flex-col gap-4">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-surface-900 dark:text-surface-0 mb-1 text-xl font-bold">
+                    <i class="pi pi-robot text-primary mr-2"></i>Community Bot
+                </h2>
+                <p class="text-surface-500 text-sm">Automatisierung und Community-Betreuung</p>
+            </div>
+            <p-button (onClick)="openCreate()" icon="pi pi-plus" label="Neuer Bot" />
+        </div>
+
+        <!-- Stats -->
+        @if (facade.stats()) {
+        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="bg-surface-50 dark:bg-surface-800 rounded-xl p-3 text-center">
+                <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ facade.stats()!.total }}</div>
+                <div class="text-surface-500 text-xs">Bots gesamt</div>
+            </div>
+            <div class="rounded-xl bg-green-50 p-3 text-center dark:bg-green-900/20">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ facade.stats()!.enabled }}</div>
+                <div class="text-xs text-green-500">Aktiv</div>
+            </div>
+            <div class="rounded-xl bg-amber-50 p-3 text-center dark:bg-amber-900/20">
+                <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                    {{ facade.stats()!.pendingQueue }}
+                </div>
+                <div class="text-xs text-amber-500">In Warteschlange</div>
+            </div>
+            <div class="rounded-xl bg-blue-50 p-3 text-center dark:bg-blue-900/20">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ facade.stats()!.logsToday }}</div>
+                <div class="text-xs text-blue-500">Protokolle heute</div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Tabs: Bots | Protokoll -->
+    <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0"><i class="pi pi-robot mr-2"></i>Bots ({{ facade.bots().length }})</p-tab>
+            <p-tab value="1"><i class="pi pi-list mr-2"></i>Protokoll</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <!-- ── Bots Tab ── -->
+            <p-tabpanel value="0">
+                <div class="card">
+                    @if (facade.loading()) {
+                    <div class="flex flex-col gap-3">
+                        @for (_ of [1,2,3]; track $index) {
+                        <div class="flex items-center gap-3">
+                            <p-skeleton height="2rem" styleClass="w-1/3" />
+                            <p-skeleton height="1.5rem" styleClass="w-20" />
+                            <p-skeleton height="1.5rem" styleClass="w-20" />
+                            <p-skeleton height="1.5rem" styleClass="ml-auto w-24" />
+                        </div>
+                        }
+                    </div>
+                    } @else if (facade.bots().length === 0) {
+                    <div class="text-surface-500 py-12 text-center">
+                        <i class="pi pi-robot text-surface-300 mb-3 block text-5xl"></i>
+                        <p class="mb-4">Noch keine Bots erstellt.</p>
+                        <p-button
+                            (onClick)="openCreate()"
+                            icon="pi pi-plus"
+                            label="Ersten Bot erstellen"
+                            severity="secondary"
+                        />
+                    </div>
+                    } @else {
+                    <div class="divide-surface-100 dark:divide-surface-700 divide-y">
+                        @for (bot of facade.bots(); track bot.id) {
+                        <div class="flex flex-wrap items-start gap-3 py-4 sm:items-center">
+                            <!-- Status indicator -->
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="inline-block h-2 w-2 rounded-full"
+                                    [class.bg-green-400]="bot.enabled"
+                                    [class.bg-surface-300]="!bot.enabled"
+                                    [pTooltip]="bot.enabled ? 'Aktiv' : 'Inaktiv'"
+                                ></span>
+                            </div>
+
+                            <!-- Name & meta -->
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-surface-900 dark:text-surface-0 font-semibold"
+                                        >{{ bot.name }}</span
+                                    >
+                                    @if (bot.testMode) {
+                                    <p-tag severity="warn" styleClass="text-xs" value="Test" />
+                                    }
+                                    <p-tag
+                                        [severity]="triggerSeverity(bot.trigger)"
+                                        [value]="triggerLabel(bot.trigger)"
+                                        styleClass="text-xs"
+                                    />
+                                    <p-tag
+                                        [value]="actionLabel(bot.action)"
+                                        severity="secondary"
+                                        styleClass="text-xs"
+                                    />
+                                </div>
+                                @if (bot.description) {
+                                <p class="text-surface-500 mt-0.5 text-xs">{{ bot.description }}</p>
+                                }
+                                <div class="text-surface-400 mt-1 flex flex-wrap gap-3 text-xs">
+                                    <span><i class="pi pi-play mr-1"></i>{{ bot.runCount }}x ausgeführt</span>
+                                    @if (bot.lastRunAt) {
+                                    <span
+                                        ><i class="pi pi-clock mr-1"></i>Zuletzt: {{ formatDate(bot.lastRunAt) }}</span
+                                    >
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex shrink-0 items-center gap-2">
+                                <p-toggleswitch
+                                    (onChange)="toggleBot(bot)"
+                                    [(ngModel)]="bot.enabled"
+                                    [pTooltip]="bot.enabled ? 'Deaktivieren' : 'Aktivieren'"
+                                />
+                                <p-button
+                                    (onClick)="testBot(bot)"
+                                    [loading]="testing()"
+                                    [text]="true"
+                                    icon="pi pi-play-circle"
+                                    pTooltip="Bot testen"
+                                    severity="info"
+                                    size="small"
+                                />
+                                <p-button
+                                    (onClick)="openLogs(bot)"
+                                    [text]="true"
+                                    icon="pi pi-list"
+                                    pTooltip="Protokoll"
+                                    severity="secondary"
+                                    size="small"
+                                />
+                                <p-button
+                                    (onClick)="openEdit(bot)"
+                                    [text]="true"
+                                    icon="pi pi-pencil"
+                                    pTooltip="Bearbeiten"
+                                    severity="secondary"
+                                    size="small"
+                                />
+                                <p-button
+                                    (onClick)="deleteBot(bot)"
+                                    [text]="true"
+                                    icon="pi pi-trash"
+                                    pTooltip="Löschen"
+                                    severity="danger"
+                                    size="small"
+                                />
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </p-tabpanel>
+
+            <!-- ── Protokoll Tab ── -->
+            <p-tabpanel value="1">
+                <div class="card">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-surface-900 dark:text-surface-0 font-semibold">Protokoll</h3>
+                        <p-button
+                            (onClick)="openLogs()"
+                            icon="pi pi-refresh"
+                            label="Aktualisieren"
+                            severity="secondary"
+                            size="small"
+                        />
+                    </div>
+                    @if (facade.logsLoading()) {
+                    <div class="flex flex-col gap-2">
+                        @for (_ of [1,2,3,4,5]; track $index) {
+                        <p-skeleton height="2.5rem" />
+                        }
+                    </div>
+                    } @else if (facade.logs().length === 0) {
+                    <div class="text-surface-500 py-8 text-center">Keine Protokolleinträge vorhanden.</div>
+                    } @else {
+                    <div class="divide-surface-100 dark:divide-surface-700 divide-y">
+                        @for (log of facade.logs(); track log.id) {
+                        <div class="flex flex-wrap items-start gap-3 py-3 text-sm">
+                            <p-tag
+                                [severity]="statusSeverity(log.status)"
+                                [value]="log.status.toUpperCase()"
+                                styleClass="text-xs shrink-0"
+                            />
+                            <div class="flex-1">
+                                <span class="text-surface-900 dark:text-surface-0 font-medium">{{ log.botName }}</span>
+                                <span class="text-surface-400 mx-2">·</span>
+                                <span class="text-surface-500">{{ log.trigger }} → {{ log.action }}</span>
+                                @if (log.targetUserName) {
+                                <span class="text-surface-400 ml-2 text-xs">Benutzer: {{ log.targetUserName }}</span>
+                                } @if (log.message) {
+                                <p class="text-surface-400 mt-0.5 text-xs">{{ log.message }}</p>
+                                }
+                            </div>
+                            <span class="text-surface-400 shrink-0 text-xs">{{ formatDate(log.createdAt) }}</span>
+                        </div>
+                        }
+                    </div>
+                    @if (facade.logTotal() > logsPageSize) {
+                    <p-paginator
+                        (onPageChange)="onLogsPageChange($event)"
+                        [rows]="logsPageSize"
+                        [totalRecords]="facade.logTotal()"
+                        styleClass="mt-3"
+                    />
+                    } }
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>
+
+<!-- ── Bot Editor Dialog ── -->
+<p-dialog
+    (visibleChange)="editorVisible.set($event)"
+    [draggable]="false"
+    [header]="editingBot ? 'Bot bearbeiten' : 'Neuer Bot'"
+    [modal]="true"
+    [style]="{ width: '52rem', maxWidth: '95vw' }"
+    [visible]="editorVisible()"
+>
+    <div class="flex flex-col gap-5 py-1">
+        <!-- Basic info -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="bot-name">Name <span class="text-red-500">*</span></label>
+                <input class="w-full" id="bot-name" [(ngModel)]="formName" pInputText placeholder="Bot-Name" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="bot-desc">Beschreibung</label>
+                <input
+                    class="w-full"
+                    id="bot-desc"
+                    [(ngModel)]="formDescription"
+                    pInputText
+                    placeholder="Optionale Beschreibung"
+                />
+            </div>
+        </div>
+
+        <!-- Switches -->
+        <div class="flex flex-wrap gap-6">
+            <div class="flex items-center gap-3">
+                <p-toggleswitch [(ngModel)]="formEnabled" inputId="sw-enabled" />
+                <label class="cursor-pointer text-sm font-medium" for="sw-enabled">Bot aktiviert</label>
+            </div>
+            <div class="flex items-center gap-3">
+                <p-toggleswitch [(ngModel)]="formTestMode" inputId="sw-test" />
+                <label class="cursor-pointer text-sm font-medium" for="sw-test">Test-Modus</label>
+                <i
+                    class="pi pi-question-circle text-surface-400 text-sm"
+                    pTooltip="Im Test-Modus werden keine echten Aktionen ausgeführt, nur protokolliert."
+                ></i>
+            </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Trigger -->
+        <div class="flex flex-col gap-3">
+            <h4 class="text-surface-700 dark:text-surface-200 font-semibold">Auslöser (Trigger)</h4>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="form-trigger">Auslöser</label>
+                <p-select
+                    [(ngModel)]="formTrigger"
+                    [options]="triggerOptions"
+                    inputId="form-trigger"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Trigger wählen"
+                    styleClass="w-full"
+                />
+            </div>
+
+            <!-- Trigger-specific config -->
+            @if (formTrigger === 'user_inactivity') {
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="inactive-days">Inaktivität in Tagen</label>
+                <input
+                    class="w-full"
+                    id="inactive-days"
+                    [(ngModel)]="formInactiveDays"
+                    pInputText
+                    placeholder="30"
+                    type="number"
+                />
+                <small class="text-surface-400">Benutzer die seit X Tagen nicht aktiv waren.</small>
+            </div>
+            } @if (formTrigger === 'scheduled') {
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="cron-expr">Cron-Ausdruck</label>
+                <input
+                    class="w-full"
+                    id="cron-expr"
+                    [(ngModel)]="formCronExpression"
+                    pInputText
+                    placeholder="0 8 * * *"
+                />
+                <small class="text-surface-400"
+                    >Format: Minute Stunde Tag Monat Wochentag (UTC). Beispiel: <code>0 8 * * *</code> = täglich um
+                    08:00 Uhr.</small
+                >
+            </div>
+            } @if (formTrigger === 'new_thread') {
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="forum-id">Forum-ID (optional)</label>
+                <input
+                    class="w-full"
+                    id="forum-id"
+                    [(ngModel)]="formForumId"
+                    pInputText
+                    placeholder="Leer = alle Foren"
+                />
+            </div>
+            }
+        </div>
+
+        <p-divider />
+
+        <!-- Action -->
+        <div class="flex flex-col gap-3">
+            <h4 class="text-surface-700 dark:text-surface-200 font-semibold">Aktion</h4>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium" for="form-action">Aktion</label>
+                <p-select
+                    [(ngModel)]="formAction"
+                    [options]="actionOptions"
+                    inputId="form-action"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Aktion wählen"
+                    styleClass="w-full"
+                />
+            </div>
+
+            @if (formAction === 'send_notification') {
+            <!-- Notification template -->
+            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3">
+                <p class="text-surface-500 mb-2 text-xs font-medium">
+                    Verfügbare Platzhalter:
+                    <code class="bg-surface-200 dark:bg-surface-700 rounded px-1">{{ ph.username }}</code>
+                    <code class="bg-surface-200 dark:bg-surface-700 ml-1 rounded px-1">{{ ph.displayName }}</code>
+                    <code class="bg-surface-200 dark:bg-surface-700 ml-1 rounded px-1">{{ ph.threadTitle }}</code>
+                    <code class="bg-surface-200 dark:bg-surface-700 ml-1 rounded px-1">{{ ph.forumName }}</code>
+                    <code class="bg-surface-200 dark:bg-surface-700 ml-1 rounded px-1">{{ ph.inactiveDays }}</code>
+                    <code class="bg-surface-200 dark:bg-surface-700 ml-1 rounded px-1">{{ ph.date }}</code>
+                </p>
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="notif-title">Titel</label>
+                        <input
+                            class="w-full"
+                            id="notif-title"
+                            [(ngModel)]="formNotificationTitle"
+                            [placeholder]="'z. B. Willkommen, {{displayName}}!'"
+                            pInputText
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="notif-body">Nachrichtentext</label>
+                        <textarea
+                            class="w-full"
+                            id="notif-body"
+                            [(ngModel)]="formNotificationBody"
+                            [placeholder]="'z. B. Herzlich willkommen in unserer Community, {{username}}!'"
+                            pTextarea
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="notif-link">Link (optional)</label>
+                        <input
+                            class="w-full"
+                            id="notif-link"
+                            [(ngModel)]="formNotificationLink"
+                            pInputText
+                            placeholder="/forum"
+                        />
+                    </div>
+                </div>
+            </div>
+            } @if (formAction === 'send_private_message') {
+            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3">
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="msg-subject">Betreff</label>
+                        <input
+                            class="w-full"
+                            id="msg-subject"
+                            [(ngModel)]="formMessageSubject"
+                            pInputText
+                            placeholder="Betreff"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="msg-body">Nachricht</label>
+                        <textarea
+                            class="w-full"
+                            id="msg-body"
+                            [(ngModel)]="formMessageBody"
+                            placeholder="Nachrichtentext..."
+                            pTextarea
+                            rows="4"
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+
+        <p-divider />
+
+        <!-- Conditions -->
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <h4 class="text-surface-700 dark:text-surface-200 font-semibold">Bedingungen (optional)</h4>
+                <p-button
+                    (onClick)="addCondition()"
+                    icon="pi pi-plus"
+                    label="Bedingung hinzufügen"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+            @if (formConditions.length === 0) {
+            <p class="text-surface-400 text-sm">Keine Bedingungen – Bot wird auf alle Benutzer angewendet.</p>
+            } @for (cond of formConditions; track $index) {
+            <div class="bg-surface-50 dark:bg-surface-800 flex flex-wrap items-center gap-2 rounded-lg p-3">
+                <p-select
+                    (ngModelChange)="updateCondition($index, { field: $event })"
+                    [ngModel]="cond.field"
+                    [options]="conditionFieldOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="text-sm"
+                />
+                <p-select
+                    (ngModelChange)="updateCondition($index, { operator: $event })"
+                    [ngModel]="cond.operator"
+                    [options]="conditionOperatorOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="text-sm"
+                />
+                <input
+                    class="w-28 text-sm"
+                    (ngModelChange)="updateCondition($index, { value: $event })"
+                    [ngModel]="cond.value"
+                    pInputText
+                    placeholder="Wert"
+                />
+                <p-button
+                    (onClick)="removeCondition($index)"
+                    [text]="true"
+                    icon="pi pi-times"
+                    severity="danger"
+                    size="small"
+                />
+            </div>
+            }
+        </div>
+
+        <p-divider />
+
+        <!-- Language -->
+        <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium" for="bot-language">Benachrichtigungssprache</label>
+            <p-select
+                [(ngModel)]="formLanguage"
+                [options]="languageOptions"
+                inputId="bot-language"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-48"
+            />
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <p-button (onClick)="editorVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+        <p-button
+            (onClick)="saveBot()"
+            [disabled]="!formName.trim()"
+            [label]="editingBot ? 'Speichern' : 'Erstellen'"
+            [loading]="saving()"
+            icon="pi pi-check"
+        />
+    </ng-template>
+</p-dialog>
+
+<!-- ── Logs Dialog ── -->
+<p-dialog
+    (visibleChange)="logsDialogVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '60rem', maxWidth: '95vw' }"
+    [visible]="logsDialogVisible()"
+    header="Bot-Protokoll"
+>
+    @if (facade.logsLoading()) {
+    <div class="flex flex-col gap-2 py-2">@for (_ of [1,2,3]; track $index) { <p-skeleton height="2.5rem" /> }</div>
+    } @else if (facade.logs().length === 0) {
+    <div class="text-surface-500 py-8 text-center">Keine Protokolleinträge vorhanden.</div>
+    } @else {
+    <div class="divide-surface-100 dark:divide-surface-700 divide-y">
+        @for (log of facade.logs(); track log.id) {
+        <div class="flex flex-wrap items-start gap-3 py-3 text-sm">
+            <p-tag
+                [severity]="statusSeverity(log.status)"
+                [value]="log.status.toUpperCase()"
+                styleClass="text-xs shrink-0 mt-0.5"
+            />
+            <div class="flex-1">
+                <span class="text-surface-900 dark:text-surface-0 font-medium">{{ log.botName }}</span>
+                <span class="text-surface-400 mx-2">·</span>
+                <span class="text-surface-500">{{ log.trigger }} → {{ log.action }}</span>
+                @if (log.targetUserName) {
+                <span class="text-surface-400 ml-2 text-xs">Benutzer: {{ log.targetUserName }}</span>
+                } @if (log.message) {
+                <p class="text-surface-400 mt-0.5 text-xs">{{ log.message }}</p>
+                }
+            </div>
+            <span class="text-surface-400 shrink-0 text-xs">{{ formatDate(log.createdAt) }}</span>
+        </div>
+        }
+    </div>
+    @if (facade.logTotal() > logsPageSize) {
+    <p-paginator
+        (onPageChange)="onLogsPageChange($event)"
+        [rows]="logsPageSize"
+        [totalRecords]="facade.logTotal()"
+        styleClass="mt-3"
+    />
+    } }
+    <ng-template #footer>
+        <p-button (onClick)="logsDialogVisible.set(false)" label="Schließen" severity="secondary" />
+    </ng-template>
+</p-dialog>
+
+<!-- ── Test Results Dialog ── -->
+<p-dialog
+    (visibleChange)="testResultsVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '40rem' }"
+    [visible]="testResultsVisible()"
+    header="Test-Ergebnisse"
+>
+    @if (testLogs().length === 0) {
+    <p class="text-surface-500 py-4 text-center text-sm">Keine Ergebnisse.</p>
+    } @else { @for (log of testLogs(); track log.id) {
+    <div class="bg-surface-50 dark:bg-surface-800 mb-3 rounded-lg p-3">
+        <div class="mb-1 flex items-center gap-2">
+            <p-tag [severity]="statusSeverity(log.status)" [value]="log.status.toUpperCase()" styleClass="text-xs" />
+            <span class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ log.botName }}</span>
+        </div>
+        @if (log.message) {
+        <p class="text-surface-600 dark:text-surface-400 text-sm">{{ log.message }}</p>
+        } @if (log.details) {
+        <pre class="text-surface-500 mt-2 overflow-auto rounded bg-black/5 p-2 text-xs dark:bg-white/5">
+{{ log.details | json }}</pre
+        >
+        }
+    </div>
+    } }
+    <ng-template #footer>
+        <p-button (onClick)="testResultsVisible.set(false)" label="Schließen" severity="secondary" />
+    </ng-template>
+</p-dialog>

@@ -8,10 +8,11 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
-import { FeedModule } from "./feed/feed.module";
+import { CommunityBotModule } from "./community-bot/community-bot.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
+import { FeedModule } from "./feed/feed.module";
 import { ForumModule } from "./forum/forum.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
@@ -48,7 +49,8 @@ import { UserModule } from "./user/user.module";
         MessagesModule,
         BlogModule,
         MarketplaceModule,
-        FeedModule
+        FeedModule,
+        CommunityBotModule
     ],
     controllers: [AppController],
     providers: [AppService]

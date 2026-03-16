@@ -16,6 +16,7 @@ import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
 import { MarketOffer } from "../../../core/models/marketplace/marketplace";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
@@ -44,6 +45,7 @@ import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facad
 })
 export class ListingDetailPage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
+    readonly navHistory = inject(NavigationHistoryService);
     private readonly authFacade = inject(AuthFacade);
     private readonly route = inject(ActivatedRoute);
     private readonly cd = inject(ChangeDetectorRef);

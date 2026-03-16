@@ -298,6 +298,13 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-feed/admin-feed").then((c) => c.AdminFeed)
+            },
+            {
+                path: "admin/community-bot",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-community-bot/admin-community-bot").then((c) => c.AdminCommunityBot)
             }
         ]
     }

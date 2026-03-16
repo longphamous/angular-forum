@@ -27,6 +27,7 @@ import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
 import { AnimeListEntry, AnimeListEntryPayload, AnimeListStatus } from "../../../../core/models/anime/anime";
+import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
 
 interface StatusOption {
@@ -104,6 +105,7 @@ export class AnimeDetail implements OnInit {
     // ⑤ Private
     private readonly destroyRef = inject(DestroyRef);
     private readonly location = inject(Location);
+    protected readonly navHistory = inject(NavigationHistoryService);
     private readonly route = inject(ActivatedRoute);
     private readonly translocoService = inject(TranslocoService);
 
@@ -241,6 +243,6 @@ export class AnimeDetail implements OnInit {
     }
 
     protected back(): void {
-        this.location.back();
+        this.navHistory.back("/anime-database");
     }
 }

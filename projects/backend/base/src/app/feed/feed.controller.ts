@@ -57,10 +57,7 @@ export class FeedController {
      * Searches threads by title for admin to select for featuring.
      */
     @Get("admin/search-threads")
-    searchThreads(
-        @Query("q") q: string,
-        @CurrentUser() _user: AuthenticatedUser
-    ): Promise<ThreadSearchResultDto[]> {
+    searchThreads(@Query("q") q: string, @CurrentUser() _user: AuthenticatedUser): Promise<ThreadSearchResultDto[]> {
         return this.feedService.searchThreads(q ?? "");
     }
 
@@ -69,10 +66,7 @@ export class FeedController {
      * Adds a thread to the featured carousel.
      */
     @Post("admin/featured")
-    addFeatured(
-        @Body() dto: AddFeaturedDto,
-        @CurrentUser() _user: AuthenticatedUser
-    ): Promise<FeaturedThreadDto> {
+    addFeatured(@Body() dto: AddFeaturedDto, @CurrentUser() _user: AuthenticatedUser): Promise<FeaturedThreadDto> {
         return this.feedService.addFeatured(dto);
     }
 

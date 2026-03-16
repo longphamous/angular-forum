@@ -10,6 +10,7 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
+import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
@@ -32,6 +33,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
 })
 export class ThreadList implements OnInit {
     readonly facade = inject(ForumFacade);
+    readonly navHistory = inject(NavigationHistoryService);
     readonly route = inject(ActivatedRoute);
     readonly router = inject(Router);
     readonly pageSize = 20;

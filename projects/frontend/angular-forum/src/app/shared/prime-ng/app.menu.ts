@@ -126,6 +126,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.feedManagement"),
                         icon: "pi pi-fw pi-th-large",
                         routerLink: ["/admin/feed"]
+                    },
+                    {
+                        label: this.t("nav.communityBot"),
+                        icon: "pi pi-fw pi-robot",
+                        routerLink: ["/admin/community-bot"]
                     }
                 ]
             }

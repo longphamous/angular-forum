@@ -24,6 +24,7 @@ import {
     GalleryComment,
     GalleryMedia
 } from "../../../core/models/gallery/gallery";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 @Component({
@@ -51,6 +52,7 @@ export class GalleryAlbumPage implements OnInit {
     private readonly config = inject<ApiConfig>(API_CONFIG);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    protected readonly navHistory = inject(NavigationHistoryService);
     private readonly sanitizer = inject(DomSanitizer);
     private readonly messageService = inject(MessageService);
     protected readonly authFacade = inject(AuthFacade);
@@ -247,7 +249,7 @@ export class GalleryAlbumPage implements OnInit {
     }
 
     protected goBack(): void {
-        void this.router.navigate(["/gallery"]);
+        this.navHistory.back("/gallery");
     }
 
     protected mediaTypeOptions = [

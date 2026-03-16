@@ -16,6 +16,7 @@ import { ToastModule } from "primeng/toast";
 import { BLOG_ROUTES } from "../../../core/api/blog.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { BlogComment, BlogPostDetail, BlogType } from "../../../core/models/blog/blog";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 @Component({
@@ -41,6 +42,7 @@ export class BlogDetailPage implements OnInit {
     private readonly config = inject<ApiConfig>(API_CONFIG);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    protected readonly navHistory = inject(NavigationHistoryService);
     private readonly sanitizer = inject(DomSanitizer);
     private readonly messageService = inject(MessageService);
     protected readonly authFacade = inject(AuthFacade);
@@ -189,7 +191,7 @@ export class BlogDetailPage implements OnInit {
     }
 
     protected goBack(): void {
-        void this.router.navigate(["/blog"]);
+        this.navHistory.back("/blog");
     }
 
     protected setCommentContent(value: string): void {

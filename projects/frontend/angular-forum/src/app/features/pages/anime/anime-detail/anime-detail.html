@@ -3,7 +3,7 @@
     <div class="mb-4">
         <p-button
             (onClick)="back()"
-            [label]="t('anime.detail.backToList')"
+            [label]="navHistory.backLabel()"
             [text]="true"
             icon="pi pi-arrow-left"
             severity="secondary"
@@ -363,7 +363,7 @@
         <p class="text-surface-500">{{ t('anime.detail.notFound') }}</p>
         <p-button
             (onClick)="back()"
-            [label]="t('anime.detail.back')"
+            [label]="navHistory.backLabel()"
             icon="pi pi-arrow-left"
             severity="secondary"
             styleClass="mt-4"

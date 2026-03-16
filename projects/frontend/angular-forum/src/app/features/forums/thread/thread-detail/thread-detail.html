@@ -2,15 +2,12 @@
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-start gap-3">
-            @if (facade.currentThread()) {
             <p-button
-                [routerLink]="['/forum/forums', facade.currentThread()!.forumId]"
+                (onClick)="navHistory.back('/forum')"
+                [label]="navHistory.backLabel()"
                 [text]="true"
                 icon="pi pi-arrow-left"
             />
-            } @else {
-            <p-button [text]="true" icon="pi pi-arrow-left" routerLink="/forum" />
-            }
 
             <div class="flex-1">
                 @if (facade.loading() && !facade.currentThread()) {

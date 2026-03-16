@@ -15,6 +15,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { Post } from "../../../../core/models/forum/post";
+import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../../facade/auth/auth-facade";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
@@ -42,6 +43,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
 })
 export class ThreadDetail implements OnInit {
     readonly facade = inject(ForumFacade);
+    readonly navHistory = inject(NavigationHistoryService);
     readonly route = inject(ActivatedRoute);
     readonly router = inject(Router);
     readonly cd = inject(ChangeDetectorRef);

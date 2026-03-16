@@ -2,12 +2,12 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
-import { GamificationService } from "../gamification/gamification.service";
-import { UserXpData } from "../gamification/level.config";
-import { UserEntity } from "../user/entities/user.entity";
 import { ForumEntity } from "../forum/entities/forum.entity";
 import { ForumPostEntity } from "../forum/entities/post.entity";
 import { ForumThreadEntity } from "../forum/entities/thread.entity";
+import { GamificationService } from "../gamification/gamification.service";
+import { UserXpData } from "../gamification/level.config";
+import { UserEntity } from "../user/entities/user.entity";
 import { FeaturedThreadEntity } from "./entities/featured-thread.entity";
 import {
     AddFeaturedDto,
@@ -203,11 +203,7 @@ export class FeedService {
         );
     }
 
-    private toFeaturedDto(
-        f: FeaturedThreadEntity,
-        t: ForumThreadEntity,
-        author?: AuthorInfo
-    ): FeaturedThreadDto {
+    private toFeaturedDto(f: FeaturedThreadEntity, t: ForumThreadEntity, author?: AuthorInfo): FeaturedThreadDto {
         return {
             id: f.id,
             threadId: t.id,
