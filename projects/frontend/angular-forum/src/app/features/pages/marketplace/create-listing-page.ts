@@ -1,7 +1,7 @@
 import { CurrencyPipe } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
-import { Router, RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { ChipModule } from "primeng/chip";
@@ -12,8 +12,8 @@ import { MessageModule } from "primeng/message";
 import { SelectModule } from "primeng/select";
 import { TextareaModule } from "primeng/textarea";
 
-import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 import { ListingType, MarketCategory } from "../../../core/models/marketplace/marketplace";
+import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
     selector: "create-listing-page",

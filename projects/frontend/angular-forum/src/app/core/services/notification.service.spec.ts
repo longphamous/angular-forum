@@ -1,6 +1,6 @@
 import { provideHttpClient } from "@angular/common/http";
 import { HttpTestingController, provideHttpClientTesting } from "@angular/common/http/testing";
-import { TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { fakeAsync, TestBed, tick } from "@angular/core/testing";
 
 import { API_CONFIG } from "../config/api.config";
 import { AppNotification } from "../models/notifications/notification";
@@ -121,11 +121,13 @@ describe("NotificationService", () => {
             // Attempt to mark again — no new request expected
             service.markAsRead("n1");
             httpMock.expectNone(`${BASE}/notifications/n1/read`);
+            expect(service.unreadCount()).toBe(1);
         });
 
         it("should not send a request for a non-existent notification id", () => {
             service.markAsRead("does-not-exist");
             httpMock.expectNone(`${BASE}/notifications/does-not-exist/read`);
+            expect(service.unreadCount()).toBe(2);
         });
 
         it("should not allow unreadCount to go below 0", () => {
@@ -180,9 +182,7 @@ describe("NotificationService", () => {
 
         it("should decrement unreadCount when deleting an unread notification", () => {
             service.loadNotifications();
-            httpMock
-                .expectOne(`${BASE}/notifications`)
-                .flush([makeNotification("n1", false)]);
+            httpMock.expectOne(`${BASE}/notifications`).flush([makeNotification("n1", false)]);
 
             service.deleteNotification("n1");
             httpMock.expectOne(`${BASE}/notifications/n1`).flush({});
@@ -244,6 +244,7 @@ describe("NotificationService", () => {
             // After 30s there should be exactly one poll (from the single interval)
             tick(30_000);
             httpMock.expectOne(`${BASE}/notifications/unread-count`).flush({ count: 3 });
+            expect(service.unreadCount()).toBe(3);
 
             service.stopPolling();
         }));
@@ -256,6 +257,7 @@ describe("NotificationService", () => {
 
             tick(60_000);
             httpMock.expectNone(`${BASE}/notifications/unread-count`);
+            expect(service.unreadCount()).toBe(1);
         }));
     });
 });

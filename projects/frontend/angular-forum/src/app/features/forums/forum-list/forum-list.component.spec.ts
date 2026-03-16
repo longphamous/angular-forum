@@ -15,7 +15,10 @@ describe("ForumListComponent", () => {
         await TestBed.configureTestingModule({
             imports: [
                 ForumListComponent,
-                TranslocoTestingModule.forRoot({ langs: { en: {} }, translocoConfig: { availableLangs: ["en"], defaultLang: "en" } })
+                TranslocoTestingModule.forRoot({
+                    langs: { en: {} },
+                    translocoConfig: { availableLangs: ["en"], defaultLang: "en" }
+                })
             ],
             providers: [
                 provideHttpClient(),

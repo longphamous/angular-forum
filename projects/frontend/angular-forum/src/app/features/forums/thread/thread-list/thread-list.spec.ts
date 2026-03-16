@@ -15,7 +15,10 @@ describe("ThreadList", () => {
         await TestBed.configureTestingModule({
             imports: [
                 ThreadList,
-                TranslocoTestingModule.forRoot({ langs: { en: {} }, translocoConfig: { availableLangs: ["en"], defaultLang: "en" } })
+                TranslocoTestingModule.forRoot({
+                    langs: { en: {} },
+                    translocoConfig: { availableLangs: ["en"], defaultLang: "en" }
+                })
             ],
             providers: [
                 provideHttpClient(),

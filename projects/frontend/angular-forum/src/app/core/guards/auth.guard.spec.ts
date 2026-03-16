@@ -14,17 +14,14 @@ describe("authGuard", () => {
     };
 
     function runGuard(guard: typeof authGuard): boolean | UrlTree {
-        return TestBed.runInInjectionContext(() =>
-            guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
-        ) as boolean | UrlTree;
+        return TestBed.runInInjectionContext(() => guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)) as
+            | boolean
+            | UrlTree;
     }
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [
-                provideRouter([]),
-                { provide: AuthFacade, useValue: mockAuthFacade }
-            ]
+            providers: [provideRouter([]), { provide: AuthFacade, useValue: mockAuthFacade }]
         });
 
         router = TestBed.inject(Router);

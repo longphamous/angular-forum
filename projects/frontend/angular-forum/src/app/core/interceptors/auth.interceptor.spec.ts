@@ -1,7 +1,7 @@
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { HttpTestingController, provideHttpClientTesting } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
-import { HttpClient } from "@angular/common/http";
 
 import { AuthFacade } from "../../facade/auth/auth-facade";
 import { authInterceptor } from "./auth.interceptor";

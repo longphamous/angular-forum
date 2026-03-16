@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { By } from "@angular/platform-browser";
 
 import { LayoutService } from "../../prime-ng/service/layout.service";
 import { NavigationBarComponent } from "./navigation-bar.component";

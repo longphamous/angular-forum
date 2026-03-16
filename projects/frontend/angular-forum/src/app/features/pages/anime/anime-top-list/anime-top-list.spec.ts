@@ -15,7 +15,10 @@ describe("AnimeTopList", () => {
         await TestBed.configureTestingModule({
             imports: [
                 AnimeTopList,
-                TranslocoTestingModule.forRoot({ langs: { en: {} }, translocoConfig: { availableLangs: ["en"], defaultLang: "en" } })
+                TranslocoTestingModule.forRoot({
+                    langs: { en: {} },
+                    translocoConfig: { availableLangs: ["en"], defaultLang: "en" }
+                })
             ],
             providers: [
                 provideHttpClient(),

@@ -15,7 +15,10 @@ describe("AnimeDatabase", () => {
         await TestBed.configureTestingModule({
             imports: [
                 AnimeDatabase,
-                TranslocoTestingModule.forRoot({ langs: { en: {} }, translocoConfig: { availableLangs: ["en"], defaultLang: "en" } })
+                TranslocoTestingModule.forRoot({
+                    langs: { en: {} },
+                    translocoConfig: { availableLangs: ["en"], defaultLang: "en" }
+                })
             ],
             providers: [
                 provideHttpClient(),

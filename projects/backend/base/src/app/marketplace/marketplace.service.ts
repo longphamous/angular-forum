@@ -250,7 +250,8 @@ export class MarketplaceService {
         const listing = await this.listingRepo.findOne({ where: { id: listingId, deletedAt: IsNull() } });
         if (!listing) throw new NotFoundException("Inserat nicht gefunden");
         if (listing.status !== "active") throw new BadRequestException("Das Inserat ist nicht aktiv");
-        if (listing.authorId === userId) throw new ForbiddenException("Du kannst kein Angebot auf dein eigenes Inserat machen");
+        if (listing.authorId === userId)
+            throw new ForbiddenException("Du kannst kein Angebot auf dein eigenes Inserat machen");
 
         const existing = await this.offerRepo.findOne({ where: { listingId, senderId: userId, status: "pending" } });
 
@@ -346,7 +347,12 @@ export class MarketplaceService {
         return this.toOfferDto(saved);
     }
 
-    async counterOffer(listingId: string, offerId: string, dto: CounterOfferDto, userId: string): Promise<MarketOfferDto> {
+    async counterOffer(
+        listingId: string,
+        offerId: string,
+        dto: CounterOfferDto,
+        userId: string
+    ): Promise<MarketOfferDto> {
         const listing = await this.listingRepo.findOne({ where: { id: listingId, deletedAt: IsNull() } });
         if (!listing) throw new NotFoundException("Inserat nicht gefunden");
         if (listing.authorId !== userId) throw new ForbiddenException("Kein Zugriff");
@@ -469,7 +475,8 @@ export class MarketplaceService {
     async submitRating(listingId: string, dto: CreateRatingDto, userId: string): Promise<MarketRatingDto> {
         const listing = await this.listingRepo.findOne({ where: { id: listingId } });
         if (!listing) throw new NotFoundException("Inserat nicht gefunden");
-        if (listing.status !== "sold") throw new BadRequestException("Nur abgeschlossene Inserate können bewertet werden");
+        if (listing.status !== "sold")
+            throw new BadRequestException("Nur abgeschlossene Inserate können bewertet werden");
 
         const offer = await this.offerRepo.findOne({ where: { id: dto.offerId, listingId } });
         if (!offer) throw new NotFoundException("Angebot nicht gefunden");

@@ -20,14 +20,9 @@ import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { GalleryAlbum, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
-import {
-    MarketComment,
-    MarketListing,
-    MarketOffer,
-    MarketReport
-} from "../../models/marketplace/marketplace";
 import { Group } from "../../models/group/group";
 import { LottoDraw, LottoPrizeClass, LottoResult, LottoTicket } from "../../models/lotto/lotto";
+import { MarketComment, MarketListing, MarketOffer, MarketReport } from "../../models/marketplace/marketplace";
 import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
 import { UserProfile } from "../../models/user/user";
 import {
@@ -55,6 +50,12 @@ import {
     mockLottoResults,
     mockLottoStats,
     mockLottoTickets,
+    mockMarketCategories,
+    mockMarketComments,
+    mockMarketListings,
+    mockMarketOffers,
+    mockMarketRatings,
+    mockMarketReports,
     mockNotifications,
     mockOnlineUsers,
     mockPagePermissions,
@@ -69,12 +70,6 @@ import {
     mockUsers,
     mockWallets,
     mockWalletTransactions,
-    mockMarketCategories,
-    mockMarketListings,
-    mockMarketOffers,
-    mockMarketComments,
-    mockMarketRatings,
-    mockMarketReports,
     User
 } from "../mock-data/mock-data";
 
@@ -2184,9 +2179,7 @@ export class MockInterceptor implements HttpInterceptor {
 
         // GET /api/marketplace/admin/pending
         if (method === "GET" && /\/api\/marketplace\/admin\/pending$/.test(url)) {
-            return this.ok(
-                Object.values(mockMarketListings).filter((l) => l.status === "pending")
-            );
+            return this.ok(Object.values(mockMarketListings).filter((l) => l.status === "pending"));
         }
 
         // GET /api/marketplace/admin/reports
@@ -2229,16 +2222,12 @@ export class MockInterceptor implements HttpInterceptor {
 
         // GET /api/marketplace/listings/my-offers
         if (method === "GET" && /\/api\/marketplace\/listings\/my-offers$/.test(url)) {
-            return this.ok(
-                Object.values(mockMarketOffers).filter((o) => o.senderId === MOCK_MEMBER_ID)
-            );
+            return this.ok(Object.values(mockMarketOffers).filter((o) => o.senderId === MOCK_MEMBER_ID));
         }
 
         // GET /api/marketplace/listings/my
         if (method === "GET" && /\/api\/marketplace\/listings\/my$/.test(url)) {
-            return this.ok(
-                Object.values(mockMarketListings).filter((l) => l.authorId === MOCK_MEMBER_ID)
-            );
+            return this.ok(Object.values(mockMarketListings).filter((l) => l.authorId === MOCK_MEMBER_ID));
         }
 
         // POST /api/marketplace/listings/:id/close
@@ -2276,9 +2265,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         // POST /api/marketplace/listings/:id/offers/:offerId/accept
-        const marketOfferAcceptMatch = url.match(
-            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/accept$/
-        );
+        const marketOfferAcceptMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/accept$/);
         if (method === "POST" && marketOfferAcceptMatch) {
             const offerId = marketOfferAcceptMatch[2]!;
             const listingId = marketOfferAcceptMatch[1]!;
@@ -2295,9 +2282,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         // POST /api/marketplace/listings/:id/offers/:offerId/reject
-        const marketOfferRejectMatch = url.match(
-            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/reject$/
-        );
+        const marketOfferRejectMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/reject$/);
         if (method === "POST" && marketOfferRejectMatch) {
             const offerId = marketOfferRejectMatch[2]!;
             const offer = mockMarketOffers[offerId];
@@ -2308,9 +2293,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         // POST /api/marketplace/listings/:id/offers/:offerId/counter
-        const marketOfferCounterMatch = url.match(
-            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/counter$/
-        );
+        const marketOfferCounterMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/counter$/);
         if (method === "POST" && marketOfferCounterMatch) {
             const offerId = marketOfferCounterMatch[2]!;
             const offer = mockMarketOffers[offerId];
@@ -2324,9 +2307,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         // DELETE /api/marketplace/listings/:id/offers/:offerId (withdraw)
-        const marketOfferDeleteMatch = url.match(
-            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)$/
-        );
+        const marketOfferDeleteMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)$/);
         if (method === "DELETE" && marketOfferDeleteMatch) {
             const offerId = marketOfferDeleteMatch[2]!;
             const offer = mockMarketOffers[offerId];
@@ -2351,9 +2332,7 @@ export class MockInterceptor implements HttpInterceptor {
         const marketOffersMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers$/);
         if (method === "GET" && marketOffersMatch) {
             const listingId = marketOffersMatch[1]!;
-            return this.ok(
-                Object.values(mockMarketOffers).filter((o) => o.listingId === listingId)
-            );
+            return this.ok(Object.values(mockMarketOffers).filter((o) => o.listingId === listingId));
         }
 
         // POST /api/marketplace/listings/:id/offers
@@ -2386,9 +2365,7 @@ export class MockInterceptor implements HttpInterceptor {
         const marketRatingsMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/ratings$/);
         if (method === "GET" && marketRatingsMatch) {
             const listingId = marketRatingsMatch[1]!;
-            return this.ok(
-                Object.values(mockMarketRatings).filter((r) => r.listingId === listingId)
-            );
+            return this.ok(Object.values(mockMarketRatings).filter((r) => r.listingId === listingId));
         }
 
         // POST /api/marketplace/listings/:id/ratings
@@ -2414,9 +2391,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         // DELETE /api/marketplace/listings/:id/comments/:commentId
-        const marketCommentDeleteMatch = url.match(
-            /\/api\/marketplace\/listings\/([^/]+)\/comments\/([^/]+)$/
-        );
+        const marketCommentDeleteMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/comments\/([^/]+)$/);
         if (method === "DELETE" && marketCommentDeleteMatch) {
             const commentId = marketCommentDeleteMatch[2]!;
             delete mockMarketComments[commentId];
@@ -2427,9 +2402,7 @@ export class MockInterceptor implements HttpInterceptor {
         const marketCommentsMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/comments$/);
         if (method === "GET" && marketCommentsMatch) {
             const listingId = marketCommentsMatch[1]!;
-            const topLevel = Object.values(mockMarketComments).filter(
-                (c) => c.listingId === listingId && !c.parentId
-            );
+            const topLevel = Object.values(mockMarketComments).filter((c) => c.listingId === listingId && !c.parentId);
             // Build tree
             const tree = topLevel.map((c) => ({
                 ...c,

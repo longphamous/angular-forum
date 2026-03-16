@@ -2,18 +2,18 @@
     <!-- Back button -->
     <div>
         <p-button
-            icon="pi pi-arrow-left"
             [label]="t('marketplace.backToListings')"
             [text]="true"
-            severity="secondary"
+            icon="pi pi-arrow-left"
             routerLink="/marketplace"
+            severity="secondary"
         />
     </div>
 
     @if (facade.loading() && !facade.currentListing()) {
     <!-- Skeleton -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-2 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 lg:col-span-2">
             <div class="card">
                 <p-skeleton height="280px" styleClass="w-full rounded-lg mb-4" />
                 <p-skeleton height="2rem" styleClass="w-3/4 mb-2" />
@@ -28,20 +28,16 @@
             <p-skeleton height="2.5rem" styleClass="w-full mt-4" />
         </div>
     </div>
-    } @else if (facade.currentListing(); as listing) {
+    } @else { @if (facade.currentListing(); as listing) {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Main column -->
-        <div class="lg:col-span-2 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 lg:col-span-2">
             <!-- Listing header card -->
             <div class="card">
                 <!-- Image gallery -->
                 @if (listing.images?.length) {
                 <div class="mb-4 overflow-hidden rounded-xl">
-                    <img
-                        [src]="listing.images[0]"
-                        [alt]="listing.title"
-                        class="h-72 w-full object-cover"
-                    />
+                    <img class="h-72 w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
                 </div>
                 } @else {
                 <div
@@ -55,11 +51,8 @@
                 <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
                     <div class="flex-1">
                         <div class="mb-2 flex flex-wrap gap-2">
-                            <p-tag [value]="typeLabel(listing.type)" [severity]="typeSeverity(listing.type)" />
-                            <p-tag
-                                [value]="statusLabel(listing.status)"
-                                [severity]="statusSeverity(listing.status)"
-                            />
+                            <p-tag [severity]="typeSeverity(listing.type)" [value]="typeLabel(listing.type)" />
+                            <p-tag [severity]="statusSeverity(listing.status)" [value]="statusLabel(listing.status)" />
                             <span
                                 class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-3 py-1 text-xs font-medium"
                             >
@@ -80,14 +73,12 @@
 
                 <!-- Stats row -->
                 <div
-                    class="border-surface-100 dark:border-surface-700 mb-4 flex flex-wrap gap-4 border-t pt-3 text-sm text-surface-500"
+                    class="border-surface-100 dark:border-surface-700 text-surface-500 mb-4 flex flex-wrap gap-4 border-t pt-3 text-sm"
                 >
                     <span><i class="pi pi-comment mr-1"></i>{{ listing.commentCount }} Kommentare</span>
                     <span><i class="pi pi-send mr-1"></i>{{ listing.offerCount }} Angebote</span>
                     @if (listing.expiresAt) {
-                    <span
-                        ><i class="pi pi-clock mr-1"></i>Läuft ab: {{ formatDate(listing.expiresAt) }}</span
-                    >
+                    <span><i class="pi pi-clock mr-1"></i>Läuft ab: {{ formatDate(listing.expiresAt) }}</span>
                     }
                     <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(listing.createdAt) }}</span>
                 </div>
@@ -106,8 +97,7 @@
                 <div class="mt-4">
                     <div class="flex flex-wrap gap-2">
                         @for (tag of listing.tags; track tag) {
-                        <span
-                            class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-3 py-1 text-sm"
+                        <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-3 py-1 text-sm"
                             >#{{ tag }}</span
                         >
                         }
@@ -124,9 +114,7 @@
                 </h2>
                 <div class="flex flex-col gap-3">
                     @for (offer of facade.offers(); track offer.id) {
-                    <div
-                        class="border-surface-200 dark:border-surface-700 rounded-xl border p-4"
-                    >
+                    <div class="border-surface-200 dark:border-surface-700 rounded-xl border p-4">
                         <div class="mb-3 flex items-start justify-between gap-3">
                             <div class="flex items-center gap-3">
                                 <p-avatar
@@ -144,55 +132,52 @@
                             <div class="flex items-center gap-2">
                                 @if (offer.amount !== null) {
                                 <span class="text-primary text-xl font-bold">
-                                    {{
-                                        offer.amount | currency: (facade.currentListing()?.currency ?? 'EUR') : 'symbol' : '1.2-2' : 'de-DE'
-                                    }}
+                                    {{ offer.amount | currency: (facade.currentListing()?.currency ?? 'EUR') : 'symbol'
+                                    : '1.2-2' : 'de-DE' }}
                                 </span>
                                 }
                                 <p-tag
-                                    [value]="offerStatusLabel(offer.status)"
                                     [severity]="offerStatusSeverity(offer.status)"
+                                    [value]="offerStatusLabel(offer.status)"
                                 />
                             </div>
                         </div>
                         <p class="text-surface-600 dark:text-surface-300 mb-3 text-sm">{{ offer.message }}</p>
                         @if (offer.counterAmount !== null || offer.counterMessage) {
-                        <div
-                            class="bg-surface-50 dark:bg-surface-800 mb-3 rounded-lg p-3 text-sm"
-                        >
+                        <div class="bg-surface-50 dark:bg-surface-800 mb-3 rounded-lg p-3 text-sm">
                             <span class="text-surface-500 font-medium">Gegenangebot: </span>
                             @if (offer.counterAmount !== null) {
-                            <span class="text-primary font-bold">{{ offer.counterAmount | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE' }}</span>
-                            }
-                            @if (offer.counterMessage) {
+                            <span class="text-primary font-bold"
+                                >{{ offer.counterAmount | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE' }}</span
+                            >
+                            } @if (offer.counterMessage) {
                             <p class="text-surface-600 dark:text-surface-300 mt-1">{{ offer.counterMessage }}</p>
                             }
                         </div>
-                        }
-                        @if (offer.status === 'pending') {
+                        } @if (offer.status === 'pending') {
                         <div class="flex flex-wrap gap-2">
                             <p-button
+                                (onClick)="acceptOffer(offer)"
                                 icon="pi pi-check"
                                 label="Akzeptieren"
                                 severity="success"
                                 size="small"
-                                (onClick)="acceptOffer(offer)"
                             />
                             <p-button
+                                (onClick)="rejectOffer(offer)"
+                                [outlined]="true"
                                 icon="pi pi-times"
                                 label="Ablehnen"
                                 severity="danger"
-                                [outlined]="true"
                                 size="small"
-                                (onClick)="rejectOffer(offer)"
                             />
                             <p-button
+                                (onClick)="openCounter(offer)"
+                                [outlined]="true"
                                 icon="pi pi-reply"
                                 label="Gegenangebot"
                                 severity="info"
-                                [outlined]="true"
                                 size="small"
-                                (onClick)="openCounter(offer)"
                             />
                         </div>
                         }
@@ -226,26 +211,26 @@
                         <div class="min-w-0 flex-1">
                             <div class="bg-surface-50 dark:bg-surface-800 rounded-xl px-4 py-3">
                                 <div class="mb-1 flex items-center justify-between gap-2">
-                                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold">{{
-                                        comment.authorName
-                                    }}</span>
+                                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                                        >{{ comment.authorName }}</span
+                                    >
                                     <span class="text-surface-400 text-xs">{{ formatDate(comment.createdAt) }}</span>
                                 </div>
                                 <p class="text-surface-700 dark:text-surface-300 text-sm">{{ comment.content }}</p>
                             </div>
                             <div class="mt-1 flex gap-3 px-2 text-xs">
                                 <button
-                                    type="button"
                                     class="text-surface-400 hover:text-primary cursor-pointer transition-colors"
                                     (click)="setReplyTo(comment.id)"
+                                    type="button"
                                 >
                                     Antworten
                                 </button>
                                 @if (comment.authorId === currentUserId) {
                                 <button
-                                    type="button"
                                     class="cursor-pointer text-red-400 transition-colors hover:text-red-600"
                                     (click)="deleteComment(comment.id)"
+                                    type="button"
                                 >
                                     Löschen
                                 </button>
@@ -264,13 +249,12 @@
                                     <div class="min-w-0 flex-1">
                                         <div class="bg-surface-50 dark:bg-surface-800 rounded-xl px-3 py-2">
                                             <div class="mb-1 flex items-center justify-between">
-                                                <span
-                                                    class="text-surface-900 dark:text-surface-0 text-xs font-semibold"
+                                                <span class="text-surface-900 dark:text-surface-0 text-xs font-semibold"
                                                     >{{ reply.authorName }}</span
                                                 >
-                                                <span class="text-surface-400 text-xs">{{
-                                                    formatDate(reply.createdAt)
-                                                }}</span>
+                                                <span class="text-surface-400 text-xs"
+                                                    >{{ formatDate(reply.createdAt) }}</span
+                                                >
                                             </div>
                                             <p class="text-surface-700 dark:text-surface-300 text-xs">
                                                 {{ reply.content }}
@@ -292,31 +276,27 @@
                     class="bg-primary-50 dark:bg-primary-900/20 mb-2 flex items-center justify-between rounded-lg px-3 py-2 text-sm"
                 >
                     <span class="text-primary">Antwort auf Kommentar</span>
-                    <button type="button" class="text-surface-400 hover:text-primary" (click)="setReplyTo(null)">
+                    <button class="text-surface-400 hover:text-primary" (click)="setReplyTo(null)" type="button">
                         <i class="pi pi-times text-xs"></i>
                     </button>
                 </div>
                 }
                 <div class="flex gap-3">
-                    <p-avatar
-                        label="M"
-                        shape="circle"
-                        styleClass="bg-primary text-white shrink-0"
-                    />
+                    <p-avatar label="M" shape="circle" styleClass="bg-primary text-white shrink-0" />
                     <div class="flex flex-1 gap-2">
                         <textarea
-                            pTextarea
-                            [(ngModel)]="newComment"
-                            placeholder="Kommentar schreiben..."
-                            rows="2"
                             class="flex-1"
+                            [(ngModel)]="newComment"
                             [autoResize]="true"
+                            placeholder="Kommentar schreiben..."
+                            pTextarea
+                            rows="2"
                         ></textarea>
                         <p-button
-                            icon="pi pi-send"
                             (onClick)="submitComment()"
-                            [loading]="submittingComment"
                             [disabled]="!newComment.trim()"
+                            [loading]="submittingComment"
+                            icon="pi pi-send"
                         />
                     </div>
                 </div>
@@ -338,9 +318,9 @@
                                     shape="circle"
                                     styleClass="bg-primary text-white"
                                 />
-                                <span class="text-surface-900 dark:text-surface-0 font-medium">{{
-                                    rating.raterName
-                                }}</span>
+                                <span class="text-surface-900 dark:text-surface-0 font-medium"
+                                    >{{ rating.raterName }}</span
+                                >
                             </div>
                             <p-rating [ngModel]="rating.score" [readonly]="true" />
                         </div>
@@ -374,11 +354,11 @@
                 </div>
                 <div class="mt-4">
                     <p-button
+                        [fluid]="true"
+                        [outlined]="true"
+                        [routerLink]="['/users', listing.authorId]"
                         icon="pi pi-user"
                         label="Profil ansehen"
-                        [outlined]="true"
-                        [fluid]="true"
-                        [routerLink]="['/users', listing.authorId]"
                     />
                 </div>
             </div>
@@ -388,99 +368,96 @@
                 @if (!isOwner && listing.status === 'active') {
                 <div class="flex flex-col gap-2">
                     <p-button
+                        (onClick)="offerVisible.set(true)"
+                        [fluid]="true"
                         icon="pi pi-send"
                         label="Angebot senden"
-                        [fluid]="true"
-                        (onClick)="offerVisible.set(true)"
                     />
                     <p-button
+                        (onClick)="reportVisible.set(true)"
+                        [fluid]="true"
+                        [text]="true"
                         icon="pi pi-flag"
                         label="Melden"
                         severity="secondary"
-                        [text]="true"
-                        [fluid]="true"
-                        (onClick)="reportVisible.set(true)"
                     />
                 </div>
-                }
-                @if (isOwner) {
+                } @if (isOwner) {
                 <div class="flex flex-col gap-2">
                     @if (listing.status === 'active') {
                     <p-button
+                        (onClick)="closeListing()"
+                        [fluid]="true"
+                        [outlined]="true"
                         icon="pi pi-lock"
                         label="Inserat schließen"
                         severity="warn"
-                        [outlined]="true"
-                        [fluid]="true"
-                        (onClick)="closeListing()"
                     />
                     }
                     <p-button
+                        [fluid]="true"
+                        [outlined]="true"
                         icon="pi pi-pencil"
                         label="Inserat bearbeiten"
                         severity="secondary"
-                        [outlined]="true"
-                        [fluid]="true"
                     />
                 </div>
                 }
 
                 <!-- My sent offer -->
-                @if (!isOwner) {
-                @for (offer of facade.offers(); track offer.id) {
-                @if (offer.senderId === currentUserId) {
+                @if (!isOwner) { @for (offer of facade.offers(); track offer.id) { @if (offer.senderId ===
+                currentUserId) {
                 <div class="border-surface-100 dark:border-surface-700 mt-3 rounded-lg border p-3 text-sm">
                     <div class="mb-1 flex items-center justify-between">
                         <span class="font-medium">Mein Angebot</span>
                         <p-tag
-                            [value]="offerStatusLabel(offer.status)"
                             [severity]="offerStatusSeverity(offer.status)"
+                            [value]="offerStatusLabel(offer.status)"
                             styleClass="text-xs"
                         />
                     </div>
                     @if (offer.amount !== null) {
-                    <div class="text-primary font-bold">{{ offer.amount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}</div>
-                    }
-                    @if (offer.status === 'pending') {
+                    <div class="text-primary font-bold">
+                        {{ offer.amount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}
+                    </div>
+                    } @if (offer.status === 'pending') {
                     <p-button
+                        (onClick)="withdrawOffer(offer)"
+                        [text]="true"
                         icon="pi pi-times"
                         label="Zurückziehen"
                         severity="secondary"
-                        [text]="true"
                         size="small"
-                        (onClick)="withdrawOffer(offer)"
                     />
-                    }
-                    @if (offer.status === 'countered' && offer.counterMessage) {
+                    } @if (offer.status === 'countered' && offer.counterMessage) {
                     <div class="bg-info-50 mt-2 rounded p-2">
                         <span class="text-xs font-medium">Gegenangebot: </span>
                         @if (offer.counterAmount !== null) {
-                        <span class="font-bold">{{ offer.counterAmount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}</span>
+                        <span class="font-bold"
+                            >{{ offer.counterAmount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}</span
+                        >
                         }
                         <p class="mt-1 text-xs">{{ offer.counterMessage }}</p>
                     </div>
                     }
                 </div>
-                }
-                }
-                }
+                } } }
             </div>
 
             <!-- Rate button (if accepted offer) -->
-            @for (offer of facade.offers(); track offer.id) {
-            @if (offer.status === 'accepted' && !isOwner && offer.senderId === currentUserId) {
+            @for (offer of facade.offers(); track offer.id) { @if (offer.status === 'accepted' && !isOwner &&
+            offer.senderId === currentUserId) {
             <div class="card">
                 <h3 class="text-surface-700 dark:text-surface-300 mb-2 font-semibold">Transaktion abgeschlossen</h3>
                 <p class="text-surface-500 mb-3 text-sm">Bewerte deine Erfahrung mit dem Anbieter.</p>
                 <p-button
+                    (onClick)="openRatingDialog(offer.id, listing.authorId)"
+                    [fluid]="true"
                     icon="pi pi-star"
                     label="Bewertung abgeben"
-                    [fluid]="true"
-                    (onClick)="openRatingDialog(offer.id, listing.authorId)"
                 />
             </div>
-            }
-            }
+            } }
         </div>
     </div>
     } @else if (!facade.loading()) {
@@ -488,61 +465,63 @@
         <i class="pi pi-exclamation-circle text-surface-300 mb-4 text-5xl"></i>
         <h3 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">Inserat nicht gefunden</h3>
         <p-button
-            label="Zurück zum Marktplatz"
-            icon="pi pi-arrow-left"
             [text]="true"
+            icon="pi pi-arrow-left"
+            label="Zurück zum Marktplatz"
             routerLink="/marketplace"
             styleClass="mt-4"
         />
     </div>
-    }
+    } }
 </div>
 
 <!-- Offer dialog -->
 <p-dialog
-    [visible]="offerVisible()"
     (visibleChange)="offerVisible.set($event)"
-    header="Angebot senden"
-    [modal]="true"
     [draggable]="false"
+    [modal]="true"
     [style]="{ width: '480px' }"
+    [visible]="offerVisible()"
     *transloco="let t"
+    header="Angebot senden"
 >
     <div class="flex flex-col gap-4 pt-2">
         @if (offerError) {
-        <p-message severity="error" [text]="offerError" />
+        <p-message [text]="offerError" severity="error" />
         }
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Angebotspreis (optional)</label>
+            <label class="text-sm font-medium" for="offerAmountInput">Angebotspreis (optional)</label>
             <p-inputnumber
                 [(ngModel)]="offerAmount"
-                [minFractionDigits]="2"
                 [maxFractionDigits]="2"
+                [minFractionDigits]="2"
                 currency="EUR"
-                mode="currency"
+                inputId="offerAmountInput"
                 locale="de-DE"
+                mode="currency"
                 placeholder="Preis eingeben..."
             />
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Nachricht <span class="text-red-400">*</span></label>
+            <label class="text-sm font-medium" for="offerMessage">Nachricht <span class="text-red-400">*</span></label>
             <textarea
-                pTextarea
+                id="offerMessage"
                 [(ngModel)]="offerMessage"
                 placeholder="Beschreibe dein Angebot..."
+                pTextarea
                 rows="4"
             ></textarea>
         </div>
     </div>
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Abbrechen" [outlined]="true" severity="secondary" (onClick)="offerVisible.set(false)" />
+            <p-button (onClick)="offerVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
             <p-button
+                (onClick)="submitOffer()"
+                [disabled]="!offerMessage.trim()"
+                [loading]="submittingOffer"
                 icon="pi pi-send"
                 label="Angebot senden"
-                [loading]="submittingOffer"
-                [disabled]="!offerMessage.trim()"
-                (onClick)="submitOffer()"
             />
         </div>
     </ng-template>
@@ -550,50 +529,49 @@
 
 <!-- Counter offer dialog -->
 <p-dialog
-    [visible]="counterVisible()"
     (visibleChange)="counterVisible.set($event)"
-    header="Gegenangebot machen"
-    [modal]="true"
     [draggable]="false"
+    [modal]="true"
     [style]="{ width: '480px' }"
+    [visible]="counterVisible()"
     *transloco="let t"
+    header="Gegenangebot machen"
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Gegenpreis (optional)</label>
+            <label class="text-sm font-medium" for="counterAmountInput">Gegenpreis (optional)</label>
             <p-inputnumber
                 [(ngModel)]="counterAmount"
-                [minFractionDigits]="2"
                 [maxFractionDigits]="2"
+                [minFractionDigits]="2"
                 currency="EUR"
-                mode="currency"
+                inputId="counterAmountInput"
                 locale="de-DE"
+                mode="currency"
                 placeholder="Preis eingeben..."
             />
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Nachricht <span class="text-red-400">*</span></label>
+            <label class="text-sm font-medium" for="counterMessage"
+                >Nachricht <span class="text-red-400">*</span></label
+            >
             <textarea
-                pTextarea
+                id="counterMessage"
                 [(ngModel)]="counterMessage"
                 placeholder="Erkläre dein Gegenangebot..."
+                pTextarea
                 rows="3"
             ></textarea>
         </div>
     </div>
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
+            <p-button (onClick)="counterVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
             <p-button
-                label="Abbrechen"
-                [outlined]="true"
-                severity="secondary"
-                (onClick)="counterVisible.set(false)"
-            />
-            <p-button
+                (onClick)="submitCounter()"
+                [disabled]="!counterMessage.trim()"
                 icon="pi pi-reply"
                 label="Gegenangebot senden"
-                [disabled]="!counterMessage.trim()"
-                (onClick)="submitCounter()"
             />
         </div>
     </ng-template>
@@ -601,24 +579,25 @@
 
 <!-- Report dialog -->
 <p-dialog
-    [visible]="reportVisible()"
     (visibleChange)="reportVisible.set($event)"
-    header="Inserat melden"
-    [modal]="true"
     [draggable]="false"
+    [modal]="true"
     [style]="{ width: '440px' }"
+    [visible]="reportVisible()"
     *transloco="let t"
+    header="Inserat melden"
 >
     <div class="flex flex-col gap-4 pt-2">
         @if (reportSuccess()) {
         <p-message severity="success" text="Vielen Dank! Das Inserat wurde gemeldet." />
         } @else {
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Grund <span class="text-red-400">*</span></label>
+            <label class="text-sm font-medium" for="reportReason">Grund <span class="text-red-400">*</span></label>
             <textarea
-                pTextarea
+                id="reportReason"
                 [(ngModel)]="reportReason"
                 placeholder="Bitte beschreibe den Meldegrund..."
+                pTextarea
                 rows="4"
             ></textarea>
         </div>
@@ -627,16 +606,16 @@
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
             @if (!reportSuccess()) {
-            <p-button label="Abbrechen" [outlined]="true" severity="secondary" (onClick)="reportVisible.set(false)" />
+            <p-button (onClick)="reportVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
             <p-button
+                (onClick)="submitReport()"
+                [disabled]="!reportReason.trim()"
                 icon="pi pi-flag"
                 label="Melden"
                 severity="warn"
-                [disabled]="!reportReason.trim()"
-                (onClick)="submitReport()"
             />
             } @else {
-            <p-button label="Schließen" (onClick)="reportVisible.set(false)" />
+            <p-button (onClick)="reportVisible.set(false)" label="Schließen" />
             }
         </div>
     </ng-template>
@@ -644,33 +623,34 @@
 
 <!-- Rating dialog -->
 <p-dialog
-    [visible]="ratingVisible()"
     (visibleChange)="ratingVisible.set($event)"
-    header="Bewertung abgeben"
-    [modal]="true"
     [draggable]="false"
+    [modal]="true"
     [style]="{ width: '440px' }"
+    [visible]="ratingVisible()"
     *transloco="let t"
+    header="Bewertung abgeben"
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Bewertung</label>
-            <p-rating [(ngModel)]="ratingScore" />
+            <label class="text-sm font-medium" for="ratingScore">Bewertung</label>
+            <p-rating [(ngModel)]="ratingScore" inputId="ratingScore" />
         </div>
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Kommentar (optional)</label>
+            <label class="text-sm font-medium" for="ratingText">Kommentar (optional)</label>
             <textarea
-                pTextarea
+                id="ratingText"
                 [(ngModel)]="ratingText"
                 placeholder="Deine Erfahrung..."
+                pTextarea
                 rows="3"
             ></textarea>
         </div>
     </div>
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Abbrechen" [outlined]="true" severity="secondary" (onClick)="ratingVisible.set(false)" />
-            <p-button icon="pi pi-star" label="Bewertung abgeben" (onClick)="submitRating()" />
+            <p-button (onClick)="ratingVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+            <p-button (onClick)="submitRating()" icon="pi pi-star" label="Bewertung abgeben" />
         </div>
     </ng-template>
 </p-dialog>

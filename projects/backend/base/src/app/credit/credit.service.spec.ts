@@ -2,9 +2,9 @@ import { BadRequestException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getDataSourceToken, getRepositoryToken } from "@nestjs/typeorm";
 
+import { CreditService } from "./credit.service";
 import { UserWalletEntity } from "./entities/user-wallet.entity";
 import { WalletTransactionEntity } from "./entities/wallet-transaction.entity";
-import { CreditService } from "./credit.service";
 
 const mockWalletRepo = {
     findOneBy: jest.fn(),
@@ -159,9 +159,7 @@ describe("CreditService", () => {
         it("should move funds from sender to receiver", async () => {
             const sender = makeWallet("sender-1", 100);
             const receiver = makeWallet("receiver-1", 20);
-            mockWalletRepo.findOneBy
-                .mockResolvedValueOnce(sender)
-                .mockResolvedValueOnce(receiver);
+            mockWalletRepo.findOneBy.mockResolvedValueOnce(sender).mockResolvedValueOnce(receiver);
 
             const result = await service.transfer("sender-1", "receiver-1", 40, "Test transfer");
 
@@ -312,10 +310,7 @@ describe("CreditService", () => {
         });
 
         it("should return a map of userId to balance", async () => {
-            mockWalletRepo.findBy.mockResolvedValue([
-                makeWallet("u1", 100),
-                makeWallet("u2", 200)
-            ]);
+            mockWalletRepo.findBy.mockResolvedValue([makeWallet("u1", 100), makeWallet("u2", 200)]);
 
             const result = await service.getBalances(["u1", "u2"]);
 

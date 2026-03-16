@@ -11,8 +11,8 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
-import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 import { ListingType, MarketListing } from "../../../core/models/marketplace/marketplace";
+import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
     selector: "marketplace-page",

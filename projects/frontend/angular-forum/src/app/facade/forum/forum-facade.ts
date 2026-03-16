@@ -179,10 +179,7 @@ export class ForumFacade {
     }
 
     markBestAnswer(threadId: string, postId: string): Observable<Post> {
-        return this.http.patch<Post>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.bestAnswer(threadId, postId)}`,
-            {}
-        );
+        return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.bestAnswer(threadId, postId)}`, {});
     }
 
     resetError(): void {

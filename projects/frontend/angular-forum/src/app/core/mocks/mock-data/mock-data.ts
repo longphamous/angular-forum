@@ -1,12 +1,4 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
-import {
-    MarketCategory,
-    MarketComment,
-    MarketListing,
-    MarketOffer,
-    MarketRating,
-    MarketReport
-} from "../../models/marketplace/marketplace";
 import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
 import { Forum } from "../../models/forum/forum";
@@ -17,6 +9,14 @@ import { GalleryAlbum, GalleryAlbumDetail, GalleryComment, GalleryMedia } from "
 import { Achievement, UserAchievement } from "../../models/gamification/achievement";
 import { Group, PagePermission } from "../../models/group/group";
 import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
+import {
+    MarketCategory,
+    MarketComment,
+    MarketListing,
+    MarketOffer,
+    MarketRating,
+    MarketReport
+} from "../../models/marketplace/marketplace";
 import { Conversation, ConversationDetail, Draft } from "../../models/messages/messages";
 import { AppNotification } from "../../models/notifications/notification";
 import { ShopItem, UserInventoryItem } from "../../models/shop/shop";

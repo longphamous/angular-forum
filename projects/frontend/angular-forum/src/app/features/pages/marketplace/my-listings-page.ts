@@ -67,53 +67,61 @@ export class MyListingsPage implements OnInit {
 
     statusSeverity(s: string): "success" | "warn" | "danger" | "info" | "secondary" {
         return (
-            ({
-                active: "success",
-                pending: "warn",
-                sold: "info",
-                closed: "secondary",
-                expired: "danger",
-                archived: "secondary",
-                draft: "secondary"
-            } as Record<string, "success" | "warn" | "danger" | "info" | "secondary">)[s] ?? "secondary"
+            (
+                {
+                    active: "success",
+                    pending: "warn",
+                    sold: "info",
+                    closed: "secondary",
+                    expired: "danger",
+                    archived: "secondary",
+                    draft: "secondary"
+                } as Record<string, "success" | "warn" | "danger" | "info" | "secondary">
+            )[s] ?? "secondary"
         );
     }
 
     statusLabel(s: string): string {
         return (
-            ({
-                active: "Aktiv",
-                pending: "Ausstehend",
-                sold: "Verkauft",
-                closed: "Geschlossen",
-                expired: "Abgelaufen",
-                archived: "Archiviert",
-                draft: "Entwurf"
-            } as Record<string, string>)[s] ?? s
+            (
+                {
+                    active: "Aktiv",
+                    pending: "Ausstehend",
+                    sold: "Verkauft",
+                    closed: "Geschlossen",
+                    expired: "Abgelaufen",
+                    archived: "Archiviert",
+                    draft: "Entwurf"
+                } as Record<string, string>
+            )[s] ?? s
         );
     }
 
     offerStatusSeverity(s: string): "success" | "warn" | "danger" | "info" | "secondary" {
         return (
-            ({
-                pending: "warn",
-                accepted: "success",
-                rejected: "danger",
-                withdrawn: "secondary",
-                countered: "info"
-            } as Record<string, "success" | "warn" | "danger" | "info" | "secondary">)[s] ?? "secondary"
+            (
+                {
+                    pending: "warn",
+                    accepted: "success",
+                    rejected: "danger",
+                    withdrawn: "secondary",
+                    countered: "info"
+                } as Record<string, "success" | "warn" | "danger" | "info" | "secondary">
+            )[s] ?? "secondary"
         );
     }
 
     offerStatusLabel(s: string): string {
         return (
-            ({
-                pending: "Ausstehend",
-                accepted: "Akzeptiert",
-                rejected: "Abgelehnt",
-                withdrawn: "Zurückgezogen",
-                countered: "Gegenangebot"
-            } as Record<string, string>)[s] ?? s
+            (
+                {
+                    pending: "Ausstehend",
+                    accepted: "Akzeptiert",
+                    rejected: "Abgelehnt",
+                    withdrawn: "Zurückgezogen",
+                    countered: "Gegenangebot"
+                } as Record<string, string>
+            )[s] ?? s
         );
     }
 

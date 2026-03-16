@@ -1,7 +1,7 @@
 import { CurrencyPipe } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
-import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
@@ -10,8 +10,8 @@ import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 
-import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 import { MarketListing } from "../../../core/models/marketplace/marketplace";
+import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
     selector: "admin-marketplace",

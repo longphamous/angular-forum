@@ -29,20 +29,18 @@
         <p-tablist>
             <p-tab [value]="0">
                 <i class="pi pi-clock mr-2"></i>
-                Ausstehende Inserate
-                @if (facade.pendingListings().length > 0) {
-                <span class="ml-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">{{
-                    facade.pendingListings().length
-                }}</span>
+                Ausstehende Inserate @if (facade.pendingListings().length > 0) {
+                <span class="ml-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white"
+                    >{{ facade.pendingListings().length }}</span
+                >
                 }
             </p-tab>
             <p-tab [value]="1">
                 <i class="pi pi-flag mr-2"></i>
-                Meldungen
-                @if (facade.pendingReports().length > 0) {
-                <span class="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{{
-                    facade.pendingReports().length
-                }}</span>
+                Meldungen @if (facade.pendingReports().length > 0) {
+                <span class="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white"
+                    >{{ facade.pendingReports().length }}</span
+                >
                 }
             </p-tab>
         </p-tablist>
@@ -79,18 +77,15 @@
                                     <h3 class="text-surface-900 dark:text-surface-0 text-lg font-bold">
                                         {{ listing.title }}
                                     </h3>
-                                    <p-tag value="Ausstehend" severity="warn" />
+                                    <p-tag severity="warn" value="Ausstehend" />
                                 </div>
                                 <div class="text-surface-500 flex flex-wrap gap-4 text-sm">
                                     <span><i class="pi pi-user mr-1"></i>{{ listing.authorName }}</span>
                                     <span><i class="pi pi-folder mr-1"></i>{{ listing.categoryName }}</span>
                                     <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(listing.createdAt) }}</span>
                                     @if (listing.price !== null) {
-                                    <span class="font-medium text-primary">
-                                        {{
-                                            listing.price
-                                                | currency: listing.currency : "symbol" : "1.2-2" : "de-DE"
-                                        }}
+                                    <span class="text-primary font-medium">
+                                        {{ listing.price | currency: listing.currency : "symbol" : "1.2-2" : "de-DE" }}
                                     </span>
                                     } @else {
                                     <span>Verhandelbar</span>
@@ -99,18 +94,18 @@
                             </div>
                             <div class="flex gap-2">
                                 <p-button
+                                    [routerLink]="['/marketplace', listing.id]"
+                                    [text]="true"
                                     icon="pi pi-eye"
                                     label="Ansehen"
-                                    [text]="true"
                                     size="small"
-                                    [routerLink]="['/marketplace', listing.id]"
                                 />
                             </div>
                         </div>
 
                         <!-- Description preview -->
                         <div
-                            class="bg-surface-50 dark:bg-surface-800 mb-4 rounded-xl p-4 text-sm text-surface-600 dark:text-surface-300"
+                            class="bg-surface-50 dark:bg-surface-800 text-surface-600 dark:text-surface-300 mb-4 rounded-xl p-4 text-sm"
                         >
                             <div
                                 class="prose prose-sm dark:prose-invert line-clamp-4 max-w-none"
@@ -121,7 +116,8 @@
                         @if (listing.tags?.length) {
                         <div class="mb-4 flex flex-wrap gap-1">
                             @for (tag of listing.tags; track tag) {
-                            <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs"
+                            <span
+                                class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs"
                                 >#{{ tag }}</span
                             >
                             }
@@ -131,17 +127,17 @@
                         <!-- Actions -->
                         <div class="border-surface-100 dark:border-surface-700 flex flex-wrap gap-2 border-t pt-3">
                             <p-button
+                                (onClick)="approveListing(listing.id)"
                                 icon="pi pi-check"
                                 label="Genehmigen"
                                 severity="success"
-                                (onClick)="approveListing(listing.id)"
                             />
                             <p-button
+                                (onClick)="openRejectDialog(listing)"
+                                [outlined]="true"
                                 icon="pi pi-times"
                                 label="Ablehnen"
                                 severity="danger"
-                                [outlined]="true"
-                                (onClick)="openRejectDialog(listing)"
                             />
                         </div>
                     </div>
@@ -172,10 +168,7 @@
                                     <h3 class="text-surface-900 dark:text-surface-0 font-bold">
                                         Meldung zu: {{ report.listingTitle }}
                                     </h3>
-                                    <p-tag
-                                        [value]="report.status"
-                                        [severity]="reportStatusSeverity(report.status)"
-                                    />
+                                    <p-tag [severity]="reportStatusSeverity(report.status)" [value]="report.status" />
                                 </div>
                                 <div class="text-surface-500 flex flex-wrap gap-4 text-sm">
                                     <span><i class="pi pi-user mr-1"></i>Gemeldet von: {{ report.reporterId }}</span>
@@ -183,26 +176,24 @@
                                 </div>
                             </div>
                             <p-button
+                                [routerLink]="['/marketplace', report.listingId]"
+                                [text]="true"
                                 icon="pi pi-eye"
                                 label="Inserat ansehen"
-                                [text]="true"
                                 size="small"
-                                [routerLink]="['/marketplace', report.listingId]"
                             />
                         </div>
 
                         <!-- Reason -->
                         <div
-                            class="bg-red-50 dark:bg-red-900/20 mb-4 rounded-xl p-4 text-sm text-surface-700 dark:text-surface-300"
+                            class="text-surface-700 dark:text-surface-300 mb-4 rounded-xl bg-red-50 p-4 text-sm dark:bg-red-900/20"
                         >
                             <span class="mb-1 block font-semibold text-red-600 dark:text-red-400">Meldegrund:</span>
                             {{ report.reason }}
                         </div>
 
                         @if (report.moderatorNote) {
-                        <div
-                            class="bg-surface-50 dark:bg-surface-800 mb-4 rounded-xl p-3 text-sm"
-                        >
+                        <div class="bg-surface-50 dark:bg-surface-800 mb-4 rounded-xl p-3 text-sm">
                             <span class="font-medium">Moderationsnotiz: </span>{{ report.moderatorNote }}
                         </div>
                         }
@@ -211,19 +202,19 @@
                         @if (report.status === 'pending') {
                         <div class="border-surface-100 dark:border-surface-700 flex flex-wrap gap-2 border-t pt-3">
                             <p-button
+                                (onClick)="actionReport(report.id, 'dismissed')"
+                                [outlined]="true"
                                 icon="pi pi-times"
                                 label="Schließen (Unbegründet)"
                                 severity="secondary"
-                                [outlined]="true"
                                 size="small"
-                                (onClick)="actionReport(report.id, 'dismissed')"
                             />
                             <p-button
+                                (onClick)="actionReport(report.id, 'actioned')"
                                 icon="pi pi-shield"
                                 label="Maßnahme ergreifen"
                                 severity="warn"
                                 size="small"
-                                (onClick)="actionReport(report.id, 'actioned')"
                             />
                         </div>
                         }
@@ -238,13 +229,13 @@
 
 <!-- Reject dialog -->
 <p-dialog
-    [visible]="rejectDialogVisible()"
     (visibleChange)="rejectDialogVisible.set($event)"
-    header="Inserat ablehnen"
-    [modal]="true"
     [draggable]="false"
+    [modal]="true"
     [style]="{ width: '460px' }"
+    [visible]="rejectDialogVisible()"
     *transloco="let t"
+    header="Inserat ablehnen"
 >
     <div class="flex flex-col gap-4 pt-2">
         @if (pendingListing) {
@@ -254,11 +245,12 @@
         </div>
         }
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">Ablehnungsgrund (optional)</label>
+            <label class="text-sm font-medium" for="rejectReason">Ablehnungsgrund (optional)</label>
             <textarea
-                pTextarea
+                id="rejectReason"
                 [(ngModel)]="rejectReason"
                 placeholder="Grund für die Ablehnung angeben..."
+                pTextarea
                 rows="4"
             ></textarea>
         </div>
@@ -266,12 +258,12 @@
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
             <p-button
-                label="Abbrechen"
-                [outlined]="true"
-                severity="secondary"
                 (onClick)="rejectDialogVisible.set(false)"
+                [outlined]="true"
+                label="Abbrechen"
+                severity="secondary"
             />
-            <p-button icon="pi pi-times" label="Ablehnen" severity="danger" (onClick)="confirmReject()" />
+            <p-button (onClick)="confirmReject()" icon="pi pi-times" label="Ablehnen" severity="danger" />
         </div>
     </ng-template>
 </p-dialog>

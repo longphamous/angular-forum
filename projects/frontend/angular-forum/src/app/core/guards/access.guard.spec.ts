@@ -29,10 +29,7 @@ describe("accessGuard", () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [
-                provideRouter([]),
-                { provide: AuthFacade, useValue: mockAuthFacade }
-            ]
+            providers: [provideRouter([]), { provide: AuthFacade, useValue: mockAuthFacade }]
         });
 
         router = TestBed.inject(Router);

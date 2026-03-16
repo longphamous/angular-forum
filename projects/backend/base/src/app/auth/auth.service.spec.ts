@@ -2,8 +2,8 @@ import { UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 
-import { AuthService } from "./auth.service";
 import { JWT_EXPIRES_IN, JWT_SECRET } from "./auth.constants";
+import { AuthService } from "./auth.service";
 
 const mockJwtService = {
     sign: jest.fn(),
@@ -18,10 +18,7 @@ describe("AuthService", () => {
         jest.clearAllMocks();
 
         const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                AuthService,
-                { provide: JwtService, useValue: mockJwtService }
-            ]
+            providers: [AuthService, { provide: JwtService, useValue: mockJwtService }]
         }).compile();
 
         service = module.get<AuthService>(AuthService);
@@ -33,9 +30,7 @@ describe("AuthService", () => {
 
     describe("signTokens", () => {
         it("should sign and return an access and refresh token pair", () => {
-            mockJwtService.sign
-                .mockReturnValueOnce("access-token-123")
-                .mockReturnValueOnce("refresh-token-456");
+            mockJwtService.sign.mockReturnValueOnce("access-token-123").mockReturnValueOnce("refresh-token-456");
 
             const result = service.signTokens("user-1", "testuser", "member");
 

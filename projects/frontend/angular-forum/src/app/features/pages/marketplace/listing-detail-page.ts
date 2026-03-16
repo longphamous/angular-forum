@@ -1,7 +1,7 @@
 import { CurrencyPipe } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
-import { ActivatedRoute, RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
@@ -15,9 +15,9 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
-import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
-import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { MarketOffer } from "../../../core/models/marketplace/marketplace";
+import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
     selector: "listing-detail-page",
@@ -117,24 +117,28 @@ export class ListingDetailPage implements OnInit {
 
     typeSeverity(t: string): "success" | "info" | "warn" | "secondary" {
         return (
-            ({ sell: "success", buy: "info", trade: "warn", gift: "secondary" } as Record<
-                string,
-                "success" | "info" | "warn" | "secondary"
-            >)[t] ?? "secondary"
+            (
+                { sell: "success", buy: "info", trade: "warn", gift: "secondary" } as Record<
+                    string,
+                    "success" | "info" | "warn" | "secondary"
+                >
+            )[t] ?? "secondary"
         );
     }
 
     statusLabel(s: string): string {
         return (
-            ({
-                active: "Aktiv",
-                pending: "Ausstehend",
-                sold: "Verkauft",
-                closed: "Geschlossen",
-                expired: "Abgelaufen",
-                archived: "Archiviert",
-                draft: "Entwurf"
-            } as Record<string, string>)[s] ?? s
+            (
+                {
+                    active: "Aktiv",
+                    pending: "Ausstehend",
+                    sold: "Verkauft",
+                    closed: "Geschlossen",
+                    expired: "Abgelaufen",
+                    archived: "Archiviert",
+                    draft: "Entwurf"
+                } as Record<string, string>
+            )[s] ?? s
         );
     }
 
@@ -149,23 +153,21 @@ export class ListingDetailPage implements OnInit {
         if (!this.offerMessage.trim()) return;
         this.submittingOffer = true;
         this.offerError = null;
-        this.facade
-            .sendOffer(this.listingId, { amount: this.offerAmount, message: this.offerMessage })
-            .subscribe({
-                next: () => {
-                    this.offerVisible.set(false);
-                    this.offerMessage = "";
-                    this.offerAmount = null;
-                    this.submittingOffer = false;
-                    this.facade.loadOffers(this.listingId);
-                    this.cd.markForCheck();
-                },
-                error: () => {
-                    this.offerError = "Fehler beim Senden des Angebots.";
-                    this.submittingOffer = false;
-                    this.cd.markForCheck();
-                }
-            });
+        this.facade.sendOffer(this.listingId, { amount: this.offerAmount, message: this.offerMessage }).subscribe({
+            next: () => {
+                this.offerVisible.set(false);
+                this.offerMessage = "";
+                this.offerAmount = null;
+                this.submittingOffer = false;
+                this.facade.loadOffers(this.listingId);
+                this.cd.markForCheck();
+            },
+            error: () => {
+                this.offerError = "Fehler beim Senden des Angebots.";
+                this.submittingOffer = false;
+                this.cd.markForCheck();
+            }
+        });
     }
 
     acceptOffer(offer: MarketOffer): void {
@@ -295,13 +297,15 @@ export class ListingDetailPage implements OnInit {
 
     offerStatusLabel(status: string): string {
         return (
-            ({
-                pending: "Ausstehend",
-                accepted: "Akzeptiert",
-                rejected: "Abgelehnt",
-                withdrawn: "Zurückgezogen",
-                countered: "Gegenangebot"
-            } as Record<string, string>)[status] ?? status
+            (
+                {
+                    pending: "Ausstehend",
+                    accepted: "Akzeptiert",
+                    rejected: "Abgelehnt",
+                    withdrawn: "Zurückgezogen",
+                    countered: "Gegenangebot"
+                } as Record<string, string>
+            )[status] ?? status
         );
     }
 

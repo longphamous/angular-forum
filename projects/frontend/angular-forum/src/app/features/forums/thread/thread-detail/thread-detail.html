@@ -57,7 +57,9 @@
         <div class="card overflow-hidden p-0">
             <div class="flex">
                 <!-- Sidebar skeleton -->
-                <div class="hidden w-44 shrink-0 flex-col items-center gap-3 bg-surface-50 px-4 py-6 dark:bg-surface-800/60 sm:flex">
+                <div
+                    class="bg-surface-50 dark:bg-surface-800/60 hidden w-44 shrink-0 flex-col items-center gap-3 px-4 py-6 sm:flex"
+                >
                     <p-skeleton shape="circle" size="4.5rem" />
                     <p-skeleton height="0.85rem" styleClass="w-3/4" />
                     <p-skeleton height="1.4rem" styleClass="w-2/3 rounded-full" />
@@ -83,192 +85,228 @@
     } @else { @for (post of facade.posts(); track post.id) {
     <div
         class="card overflow-hidden p-0"
-        [class.ring-2]="post.isBestAnswer"
-        [class.ring-green-400]="post.isBestAnswer"
-        [class.dark:ring-green-600]="post.isBestAnswer"
         [class.border-l-4]="post.isFirstPost"
         [class.border-primary-400]="post.isFirstPost"
         [class.dark:border-primary-500]="post.isFirstPost"
+        [class.dark:ring-green-600]="post.isBestAnswer"
+        [class.ring-2]="post.isBestAnswer"
+        [class.ring-green-400]="post.isBestAnswer"
     >
         <!-- Best-answer banner -->
         @if (post.isBestAnswer) {
-        <div class="flex items-center gap-2 bg-green-50 px-5 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <div
+            class="flex items-center gap-2 bg-green-50 px-5 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/20 dark:text-green-400"
+        >
             <i class="pi pi-check-circle"></i>
             {{ t('threadDetail.bestAnswer') }}
         </div>
         }
         <!-- Inner layout -->
         <div class="flex">
-
-        <!-- ── Author Panel ──────────────────────────────────────────── -->
-        <div class="hidden w-44 shrink-0 flex-col bg-surface-50 dark:bg-surface-800/60 sm:flex">
-
-            <!-- Avatar + Name + Badges -->
-            <div class="relative flex flex-col items-center overflow-hidden px-4 pb-4 pt-6">
-                <!-- Gradient backdrop -->
-                <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary-100/90 to-transparent dark:from-primary-900/40 dark:to-transparent"></div>
-
-                <!-- OP crown indicator -->
-                @if (isOpPost(post)) {
-                <div class="absolute right-3 top-2.5 flex items-center gap-1 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm dark:bg-amber-500/80">
-                    <i class="pi pi-star-fill text-[9px]"></i> OP
-                </div>
-                }
-
-                <!-- Avatar -->
-                <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]">
-                    @if (post.authorAvatarUrl) {
-                    <img
-                        class="h-[72px] w-[72px] rounded-full object-cover shadow-md ring-2 ring-white transition-all hover:ring-primary/60 dark:ring-surface-700"
-                        [alt]="post.authorName"
-                        [src]="post.authorAvatarUrl"
-                    />
-                    } @else {
+            <!-- ── Author Panel ──────────────────────────────────────────── -->
+            <div class="bg-surface-50 dark:bg-surface-800/60 hidden w-44 shrink-0 flex-col sm:flex">
+                <!-- Avatar + Name + Badges -->
+                <div class="relative flex flex-col items-center overflow-hidden px-4 pt-6 pb-4">
+                    <!-- Gradient backdrop -->
                     <div
-                        class="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-2xl font-bold text-white shadow-md ring-2 ring-white transition-all hover:ring-primary/60 dark:from-primary-500 dark:to-primary-700 dark:ring-surface-700"
+                        class="from-primary-100/90 dark:from-primary-900/40 absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent dark:to-transparent"
+                    ></div>
+
+                    <!-- OP crown indicator -->
+                    @if (isOpPost(post)) {
+                    <div
+                        class="absolute top-2.5 right-3 flex items-center gap-1 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm dark:bg-amber-500/80"
                     >
-                        {{ post.authorName.charAt(0).toUpperCase() }}
+                        <i class="pi pi-star-fill text-[9px]"></i> OP
                     </div>
                     }
-                </a>
 
-                <!-- Name -->
-                <a
-                    class="relative z-10 mt-2.5 max-w-full truncate text-center text-sm font-bold leading-tight text-surface-900 no-underline hover:underline dark:text-surface-0"
-                    [routerLink]="['/users', post.authorId]"
-                >{{ post.authorName }}</a>
+                    <!-- Avatar -->
+                    <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]">
+                        @if (post.authorAvatarUrl) {
+                        <img
+                            class="hover:ring-primary/60 dark:ring-surface-700 h-[72px] w-[72px] rounded-full object-cover shadow-md ring-2 ring-white transition-all"
+                            [alt]="post.authorName"
+                            [src]="post.authorAvatarUrl"
+                        />
+                        } @else {
+                        <div
+                            class="from-primary-400 to-primary-600 hover:ring-primary/60 dark:from-primary-500 dark:to-primary-700 dark:ring-surface-700 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br text-2xl font-bold text-white shadow-md ring-2 ring-white transition-all"
+                        >
+                            {{ post.authorName.charAt(0).toUpperCase() }}
+                        </div>
+                        }
+                    </a>
 
-                <!-- Role badge -->
-                <div class="mt-2">
-                    <p-tag [severity]="authorRoleSeverity(post.authorRole)" [value]="post.authorRole" styleClass="text-xs" />
+                    <!-- Name -->
+                    <a
+                        class="text-surface-900 dark:text-surface-0 relative z-10 mt-2.5 max-w-full truncate text-center text-sm leading-tight font-bold no-underline hover:underline"
+                        [routerLink]="['/users', post.authorId]"
+                        >{{ post.authorName }}</a
+                    >
+
+                    <!-- Role badge -->
+                    <div class="mt-2">
+                        <p-tag
+                            [severity]="authorRoleSeverity(post.authorRole)"
+                            [value]="post.authorRole"
+                            styleClass="text-xs"
+                        />
+                    </div>
+                </div>
+
+                <!-- Gradient divider -->
+                <div
+                    class="via-surface-300 dark:via-surface-600/70 mx-4 h-px bg-gradient-to-r from-transparent to-transparent"
+                ></div>
+
+                <!-- Stats -->
+                <div class="flex flex-col gap-2 px-3 py-4">
+                    <!-- Level -->
+                    <div class="flex justify-center">
+                        <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
+                    </div>
+
+                    <!-- Post count -->
+                    <div class="bg-surface-100 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-2.5 py-1.5">
+                        <i class="pi pi-comments text-surface-400 dark:text-surface-500 text-xs"></i>
+                        <span class="text-surface-700 dark:text-surface-200 text-xs font-semibold"
+                            >{{ post.authorPostCount }}</span
+                        >
+                        <span class="text-surface-400 dark:text-surface-500 ml-auto text-[10px] tracking-wide uppercase"
+                            >{{ t('threadDetail.posts') }}</span
+                        >
+                    </div>
+
+                    <!-- Balance -->
+                    @if (post.authorBalance !== undefined) {
+                    <div class="flex items-center gap-2 rounded-lg bg-amber-50 px-2.5 py-1.5 dark:bg-amber-900/20">
+                        <i class="pi pi-wallet text-xs text-amber-500"></i>
+                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400"
+                            >{{ post.authorBalance }}</span
+                        >
+                        <span
+                            class="ml-auto text-[10px] tracking-wide text-amber-400/70 uppercase dark:text-amber-500/60"
+                            >Credits</span
+                        >
+                    </div>
+                    }
                 </div>
             </div>
 
-            <!-- Gradient divider -->
-            <div class="mx-4 h-px bg-gradient-to-r from-transparent via-surface-300 to-transparent dark:via-surface-600/70"></div>
-
-            <!-- Stats -->
-            <div class="flex flex-col gap-2 px-3 py-4">
-                <!-- Level -->
-                <div class="flex justify-center">
-                    <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
+            <!-- ── Post content ──────────────────────────────────────────── -->
+            <div class="min-w-0 flex-1 p-5">
+                <!-- Mobile author row -->
+                <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
+                    <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
+                        <div
+                            class="from-primary-400 to-primary-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white"
+                        >
+                            {{ post.authorName.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                                >{{ post.authorName }}</span
+                            >
+                            <p-tag
+                                [severity]="authorRoleSeverity(post.authorRole)"
+                                [value]="post.authorRole"
+                                styleClass="text-[10px]"
+                            />
+                        </div>
+                    </a>
+                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
                 </div>
 
-                <!-- Post count -->
-                <div class="flex items-center gap-2 rounded-lg bg-surface-100 px-2.5 py-1.5 dark:bg-surface-800">
-                    <i class="pi pi-comments text-xs text-surface-400 dark:text-surface-500"></i>
-                    <span class="text-xs font-semibold text-surface-700 dark:text-surface-200">{{ post.authorPostCount }}</span>
-                    <span class="ml-auto text-[10px] uppercase tracking-wide text-surface-400 dark:text-surface-500">{{ t('threadDetail.posts') }}</span>
+                <!-- Desktop date + meta -->
+                <div class="mb-3 hidden items-center justify-between sm:flex">
+                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
+                    <div class="flex items-center gap-2">
+                        @if (post.isFirstPost) {
+                        <p-tag [value]="t('threadDetail.firstPost')" severity="info" styleClass="text-xs" />
+                        } @if (post.isEdited) {
+                        <span class="text-surface-400 text-xs italic">
+                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                        </span>
+                        } @if (post.reactionCount > 0) {
+                        <span class="text-surface-500 text-sm">
+                            <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
+                        </span>
+                        }
+                    </div>
                 </div>
 
-                <!-- Balance -->
-                @if (post.authorBalance !== undefined) {
-                <div class="flex items-center gap-2 rounded-lg bg-amber-50 px-2.5 py-1.5 dark:bg-amber-900/20">
-                    <i class="pi pi-wallet text-xs text-amber-500"></i>
-                    <span class="text-xs font-bold text-amber-600 dark:text-amber-400">{{ post.authorBalance }}</span>
-                    <span class="ml-auto text-[10px] uppercase tracking-wide text-amber-400/70 dark:text-amber-500/60">Credits</span>
+                <p-divider styleClass="my-3" />
+
+                <div class="post-content" [innerHTML]="post.content"></div>
+
+                <!-- Post actions -->
+                <div class="mt-4 flex items-center gap-1">
+                    <button
+                        (click)="toggleReact(post); $event.stopPropagation()"
+                        [class]="'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-red-50 dark:hover:bg-red-900/10 ' + (hasReacted(post.id) ? 'text-red-500' : 'text-surface-400 dark:text-surface-500 hover:text-red-400')"
+                        type="button"
+                    >
+                        <i
+                            class="pi text-sm"
+                            [class.pi-heart-fill]="hasReacted(post.id)"
+                            [class.pi-heart]="!hasReacted(post.id)"
+                        ></i>
+                        <span>{{ adjustedReactionCount(post) }}</span>
+                    </button>
+
+                    <button
+                        class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                        (click)="quotePost(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.quoteTooltip')"
+                    >
+                        <i class="pi pi-reply text-sm"></i>
+                        <span>{{ t('threadDetail.quote') }}</span>
+                    </button>
+
+                    <button
+                        class="text-surface-400 dark:text-surface-500 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-orange-900/10"
+                        (click)="openReport(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.reportTooltip')"
+                    >
+                        <i class="pi pi-flag text-sm"></i>
+                        <span>{{ t('threadDetail.report') }}</span>
+                    </button>
+
+                    <!-- Best-answer toggle: only for thread author on non-first posts -->
+                    @if (isThreadAuthor() && !post.isFirstPost) {
+                    <button
+                        (click)="markBestAnswer(post); $event.stopPropagation()"
+                        [class]="'ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ' + (post.isBestAnswer ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40' : 'text-surface-400 dark:text-surface-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/10')"
+                        [pTooltip]="post.isBestAnswer ? t('threadDetail.unmarkBestAnswerTooltip') : t('threadDetail.markBestAnswerTooltip')"
+                        type="button"
+                    >
+                        <i
+                            class="pi text-sm"
+                            [class.pi-check-circle]="post.isBestAnswer"
+                            [class.pi-circle]="!post.isBestAnswer"
+                        ></i>
+                        <span
+                            >{{ post.isBestAnswer ? t('threadDetail.unmarkBestAnswer') :
+                            t('threadDetail.markBestAnswer') }}</span
+                        >
+                    </button>
+                    }
+                </div>
+
+                @if (post.authorSignature) {
+                <div class="border-surface-200 dark:border-surface-700 mt-4 border-t pt-3">
+                    <p class="text-surface-400 dark:text-surface-500 text-xs whitespace-pre-line italic">
+                        {{ post.authorSignature }}
+                    </p>
                 </div>
                 }
             </div>
+            <!-- end post content -->
         </div>
-
-        <!-- ── Post content ──────────────────────────────────────────── -->
-        <div class="min-w-0 flex-1 p-5">
-            <!-- Mobile author row -->
-            <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
-                <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
-                    <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-sm font-bold text-white"
-                    >
-                        {{ post.authorName.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-semibold text-surface-900 dark:text-surface-0">{{ post.authorName }}</span>
-                        <p-tag [severity]="authorRoleSeverity(post.authorRole)" [value]="post.authorRole" styleClass="text-[10px]" />
-                    </div>
-                </a>
-                <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
-            </div>
-
-            <!-- Desktop date + meta -->
-            <div class="mb-3 hidden items-center justify-between sm:flex">
-                <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
-                <div class="flex items-center gap-2">
-                    @if (post.isFirstPost) {
-                    <p-tag [value]="t('threadDetail.firstPost')" severity="info" styleClass="text-xs" />
-                    } @if (post.isEdited) {
-                    <span class="text-surface-400 text-xs italic">
-                        {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
-                    </span>
-                    } @if (post.reactionCount > 0) {
-                    <span class="text-surface-500 text-sm">
-                        <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
-                    </span>
-                    }
-                </div>
-            </div>
-
-            <p-divider styleClass="my-3" />
-
-            <div class="post-content" [innerHTML]="post.content"></div>
-
-            <!-- Post actions -->
-            <div class="mt-4 flex items-center gap-1">
-                <button
-                    (click)="toggleReact(post); $event.stopPropagation()"
-                    [class]="'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-red-50 dark:hover:bg-red-900/10 ' + (hasReacted(post.id) ? 'text-red-500' : 'text-surface-400 dark:text-surface-500 hover:text-red-400')"
-                    type="button"
-                >
-                    <i
-                        class="pi text-sm"
-                        [class.pi-heart-fill]="hasReacted(post.id)"
-                        [class.pi-heart]="!hasReacted(post.id)"
-                    ></i>
-                    <span>{{ adjustedReactionCount(post) }}</span>
-                </button>
-
-                <button
-                    class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-                    (click)="quotePost(post); $event.stopPropagation()"
-                    [pTooltip]="t('threadDetail.quoteTooltip')"
-                >
-                    <i class="pi pi-reply text-sm"></i>
-                    <span>{{ t('threadDetail.quote') }}</span>
-                </button>
-
-                <button
-                    class="text-surface-400 dark:text-surface-500 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-orange-900/10"
-                    (click)="openReport(post); $event.stopPropagation()"
-                    [pTooltip]="t('threadDetail.reportTooltip')"
-                >
-                    <i class="pi pi-flag text-sm"></i>
-                    <span>{{ t('threadDetail.report') }}</span>
-                </button>
-
-                <!-- Best-answer toggle: only for thread author on non-first posts -->
-                @if (isThreadAuthor() && !post.isFirstPost) {
-                <button
-                    (click)="markBestAnswer(post); $event.stopPropagation()"
-                    [pTooltip]="post.isBestAnswer ? t('threadDetail.unmarkBestAnswerTooltip') : t('threadDetail.markBestAnswerTooltip')"
-                    [class]="'ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ' + (post.isBestAnswer ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40' : 'text-surface-400 dark:text-surface-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/10')"
-                    type="button"
-                >
-                    <i class="pi text-sm" [class.pi-check-circle]="post.isBestAnswer" [class.pi-circle]="!post.isBestAnswer"></i>
-                    <span>{{ post.isBestAnswer ? t('threadDetail.unmarkBestAnswer') : t('threadDetail.markBestAnswer') }}</span>
-                </button>
-                }
-            </div>
-
-            @if (post.authorSignature) {
-            <div class="border-surface-200 dark:border-surface-700 mt-4 border-t pt-3">
-                <p class="text-surface-400 dark:text-surface-500 text-xs whitespace-pre-line italic">
-                    {{ post.authorSignature }}
-                </p>
-            </div>
-            }
-        </div><!-- end post content -->
-        </div><!-- end inner layout flex -->
-    </div><!-- end card -->
+        <!-- end inner layout flex -->
+    </div>
+    <!-- end card -->
     } @if (facade.postTotal() > pageSize) {
     <p-paginator (onPageChange)="onPostsPageChange($event)" [rows]="pageSize" [totalRecords]="facade.postTotal()" />
     } }

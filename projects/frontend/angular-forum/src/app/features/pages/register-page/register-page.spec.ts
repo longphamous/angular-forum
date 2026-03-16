@@ -15,7 +15,10 @@ describe("RegisterPage", () => {
         await TestBed.configureTestingModule({
             imports: [
                 RegisterPage,
-                TranslocoTestingModule.forRoot({ langs: { en: {} }, translocoConfig: { availableLangs: ["en"], defaultLang: "en" } })
+                TranslocoTestingModule.forRoot({
+                    langs: { en: {} },
+                    translocoConfig: { availableLangs: ["en"], defaultLang: "en" }
+                })
             ],
             providers: [
                 provideHttpClient(),

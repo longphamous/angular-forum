@@ -1,19 +1,9 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    ParseUUIDPipe,
-    Patch,
-    Post,
-    Query,
-    UseGuards
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
+import { MarketplaceService } from "./marketplace.service";
 import {
     ActionReportDto,
     CounterOfferDto,
@@ -32,7 +22,6 @@ import {
     ReportListingDto,
     UpdateListingDto
 } from "./models/marketplace.model";
-import { MarketplaceService } from "./marketplace.service";
 
 @Controller("marketplace")
 @UseGuards(JwtAuthGuard)
@@ -72,10 +61,7 @@ export class MarketplaceController {
     }
 
     @Post("listings")
-    createListing(
-        @Body() dto: CreateListingDto,
-        @CurrentUser() user: AuthenticatedUser
-    ): Promise<MarketListingDto> {
+    createListing(@Body() dto: CreateListingDto, @CurrentUser() user: AuthenticatedUser): Promise<MarketListingDto> {
         return this.marketplaceService.createListing(dto, user.userId);
     }
 
@@ -127,7 +113,7 @@ export class MarketplaceController {
     @Patch("listings/:id/offers/:offerId")
     updateOffer(
         @Param("id", ParseUUIDPipe) id: string,
-        @Param("offerId", ParseUUIDPipe) offerId: string,
+        @Param("offerId", ParseUUIDPipe) _offerId: string,
         @Body() dto: CreateOfferDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<MarketOfferDto> {
@@ -239,10 +225,7 @@ export class MarketplaceController {
     }
 
     @Post("admin/:id/reject")
-    rejectListing(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Body() body: { reason: string }
-    ): Promise<MarketListingDto> {
+    rejectListing(@Param("id", ParseUUIDPipe) id: string, @Body() body: { reason: string }): Promise<MarketListingDto> {
         return this.marketplaceService.rejectListingAdmin(id, body.reason);
     }
 
@@ -252,10 +235,7 @@ export class MarketplaceController {
     }
 
     @Patch("admin/reports/:id")
-    actionReport(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Body() dto: ActionReportDto
-    ): Promise<MarketReportDto> {
+    actionReport(@Param("id", ParseUUIDPipe) id: string, @Body() dto: ActionReportDto): Promise<MarketReportDto> {
         return this.marketplaceService.actionReport(id, dto);
     }
 }

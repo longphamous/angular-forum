@@ -14,7 +14,13 @@ const mockUserXpRepo = { findOneBy: jest.fn(), find: jest.fn(), findBy: jest.fn(
 const mockXpEventRepo = { create: jest.fn(), save: jest.fn() };
 const mockXpConfigRepo = { find: jest.fn(), findOneBy: jest.fn(), create: jest.fn(), save: jest.fn() };
 const mockAchievementRepo = { find: jest.fn(), findOneBy: jest.fn(), create: jest.fn(), save: jest.fn() };
-const mockUserAchievementRepo = { find: jest.fn(), findOneBy: jest.fn(), findBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+const mockUserAchievementRepo = {
+    find: jest.fn(),
+    findOneBy: jest.fn(),
+    findBy: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn()
+};
 const mockDataSource = { query: jest.fn().mockResolvedValue([]) };
 
 describe("GamificationController", () => {

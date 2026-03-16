@@ -129,6 +129,9 @@ describe("WalletFacade", () => {
             facade.loadTransactions(2, 10);
 
             httpMock.expectOne(`${BASE}/credit/transactions?page=2&limit=10`).flush(mockPaginated);
+
+            expect(facade.transactions()).toHaveSize(1);
+            expect(facade.transactionsTotal()).toBe(1);
         });
 
         it("should set transactionsLoading to false on error", () => {
@@ -162,6 +165,7 @@ describe("WalletFacade", () => {
         });
 
         it("should set transferring to false on error", () => {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             facade.transfer("user-2", 50).subscribe({ error: () => {} });
 
             expect(facade.transferring()).toBeTrue();

@@ -18,10 +18,10 @@ import { LayoutService } from "./service/layout.service";
             <div
                 class="layout-menuitem-root-text"
                 *ngIf="root && item.visible !== false"
-                role="button"
-                tabindex="0"
                 (click)="rootToggle($event)"
                 (keydown.enter)="rootToggle($event)"
+                role="button"
+                tabindex="0"
             >
                 <span>{{ item.label }}</span>
                 <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
