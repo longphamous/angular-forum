@@ -305,6 +305,34 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-community-bot/admin-community-bot").then((c) => c.AdminCommunityBot)
+            },
+            {
+                path: "links",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/link-database/link-database-page").then((c) => c.LinkDatabasePage)
+            },
+            {
+                path: "links/submit",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/link-database/link-submit-page").then((c) => c.LinkSubmitPage)
+            },
+            {
+                path: "links/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/link-database/link-detail-page").then((c) => c.LinkDetailPage)
+            },
+            {
+                path: "admin/link-database",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-link-database/admin-link-database").then((c) => c.AdminLinkDatabase)
             }
         ]
     }

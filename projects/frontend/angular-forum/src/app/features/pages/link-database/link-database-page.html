@@ -1,0 +1,453 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                    <i class="pi pi-bookmark text-primary"></i>
+                    {{ t("links.header") }}
+                </h1>
+                <p class="text-surface-500 mt-1 text-sm">{{ t("links.subtitle") }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- View mode toggle -->
+                <div class="border-surface-200 dark:border-surface-700 flex overflow-hidden rounded-lg border">
+                    <button
+                        (click)="viewMode.set('grid')"
+                        [class]="
+                            'flex items-center justify-center px-3 py-2 transition-colors ' +
+                            (viewMode() === 'grid'
+                                ? 'bg-primary text-white'
+                                : 'bg-surface-0 dark:bg-surface-900 text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800')
+                        "
+                        [pTooltip]="'Kachelansicht'"
+                        type="button"
+                    >
+                        <i class="pi pi-th-large text-sm"></i>
+                    </button>
+                    <button
+                        (click)="viewMode.set('list')"
+                        [class]="
+                            'flex items-center justify-center px-3 py-2 transition-colors ' +
+                            (viewMode() === 'list'
+                                ? 'bg-primary text-white'
+                                : 'bg-surface-0 dark:bg-surface-900 text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800')
+                        "
+                        [pTooltip]="'Listenansicht'"
+                        type="button"
+                    >
+                        <i class="pi pi-list text-sm"></i>
+                    </button>
+                </div>
+                <p-button (onClick)="submitLink()" [label]="t('links.submitLink')" icon="pi pi-plus" />
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-6">
+        <!-- Category sidebar -->
+        <div class="hidden w-60 shrink-0 lg:block">
+            <div class="card sticky top-4">
+                <h3 class="text-surface-500 mb-3 text-xs font-semibold tracking-wide uppercase">
+                    {{ t("links.allCategories") }}
+                </h3>
+                <ul class="flex flex-col gap-1">
+                    <li>
+                        <button
+                            (click)="onCategorySelect(null)"
+                            [class]="
+                                'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-colors ' +
+                                (!selectedCategoryId()
+                                    ? 'bg-primary-50 text-primary font-semibold dark:bg-primary-900/20'
+                                    : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800')
+                            "
+                            type="button"
+                        >
+                            <span class="flex items-center gap-2">
+                                <i class="pi pi-th-large text-xs"></i>
+                                {{ t("links.allCategories") }}
+                            </span>
+                            <span
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-500 rounded-full px-2 py-0.5 text-xs"
+                            >
+                                {{ facade.total() }}
+                            </span>
+                        </button>
+                    </li>
+                    @for (cat of facade.categories(); track cat.id) {
+                    <li>
+                        <button
+                            (click)="onCategorySelect(cat.id)"
+                            [class]="
+                                'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-colors ' +
+                                (selectedCategoryId() === cat.id
+                                    ? 'bg-primary-50 text-primary font-semibold dark:bg-primary-900/20'
+                                    : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800')
+                            "
+                            type="button"
+                        >
+                            <span class="flex items-center gap-2 truncate">
+                                @if (cat.iconClass) {
+                                <i [class]="cat.iconClass + ' text-xs'" [style.color]="cat.color ?? undefined"></i>
+                                } @else {
+                                <i class="pi pi-folder text-xs"></i>
+                                }
+                                <span class="truncate">{{ cat.name }}</span>
+                            </span>
+                            <span
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-500 shrink-0 rounded-full px-2 py-0.5 text-xs"
+                            >
+                                {{ cat.linkCount }}
+                            </span>
+                        </button>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex min-w-0 flex-1 flex-col gap-4">
+            <!-- Search & filter bar -->
+            <div class="card">
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <p-iconfield class="flex-1">
+                            <p-inputicon styleClass="pi pi-search" />
+                            <input
+                                class="w-full"
+                                (keyup.enter)="onSearch(searchInput.value)"
+                                [placeholder]="t('links.searchPlaceholder')"
+                                #searchInput
+                                pInputText
+                                type="text"
+                            />
+                        </p-iconfield>
+                        <div class="flex items-center gap-2">
+                            <span class="text-surface-500 shrink-0 text-sm">{{ t("links.sortBy") }}</span>
+                            <p-select
+                                (onChange)="onSortChange($event.value)"
+                                [ngModel]="sortBy()"
+                                [options]="sortOptions"
+                                optionValue="value"
+                                styleClass="min-w-40"
+                            >
+                                <ng-template let-opt pTemplate="selectedItem"> {{ t(opt.label) }} </ng-template>
+                                <ng-template let-opt pTemplate="item"> {{ t(opt.label) }} </ng-template>
+                            </p-select>
+                        </div>
+                    </div>
+
+                    <!-- Active filters -->
+                    @if (hasFilters()) {
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-surface-500 text-xs">{{ t("links.filterActive") }}:</span>
+                        @if (selectedCategoryId()) {
+                        <p-chip
+                            (onRemove)="onCategorySelect(null)"
+                            [label]="selectedCategoryName()"
+                            [removable]="true"
+                            styleClass="text-xs"
+                        />
+                        } @if (selectedTag()) {
+                        <p-chip
+                            (onRemove)="onTagSelect(null)"
+                            [label]="'#' + selectedTag()"
+                            [removable]="true"
+                            styleClass="text-xs"
+                        />
+                        } @if (searchQuery()) {
+                        <p-chip
+                            (onRemove)="onSearch('')"
+                            [label]="searchLabel()"
+                            [removable]="true"
+                            styleClass="text-xs"
+                        />
+                        }
+                        <button class="text-primary text-xs hover:underline" (click)="clearFilters()" type="button">
+                            {{ t("links.clearFilters") }}
+                        </button>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Results count -->
+            @if (!facade.loading()) {
+            <div class="text-surface-500 px-1 text-sm">{{ facade.total() }} Einträge gefunden</div>
+            }
+
+            <!-- GRID VIEW -->
+            @if (viewMode() === 'grid') { @if (facade.loading()) {
+            <!-- Grid skeletons -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+                <div class="card flex flex-col gap-3">
+                    <p-skeleton height="160px" styleClass="w-full rounded-xl" />
+                    <p-skeleton height="1.2rem" styleClass="w-3/4" />
+                    <p-skeleton height="0.9rem" styleClass="w-1/2" />
+                    <p-skeleton height="3rem" styleClass="w-full" />
+                    <div class="flex gap-2">
+                        <p-skeleton height="1.5rem" styleClass="w-16 rounded-full" />
+                        <p-skeleton height="1.5rem" styleClass="w-16 rounded-full" />
+                    </div>
+                </div>
+                }
+            </div>
+            } @else if (facade.links().length === 0) {
+            <!-- Empty state -->
+            <div class="card flex flex-col items-center gap-4 py-16 text-center">
+                <div class="bg-surface-100 dark:bg-surface-800 flex h-20 w-20 items-center justify-center rounded-full">
+                    <i class="pi pi-bookmark text-surface-300 dark:text-surface-600 text-4xl"></i>
+                </div>
+                <div>
+                    <p class="text-surface-900 dark:text-surface-0 font-semibold">{{ t("links.noLinks") }}</p>
+                    <p class="text-surface-500 mt-1 text-sm">Noch keine Links in dieser Kategorie.</p>
+                </div>
+                @if (hasFilters()) {
+                <p-button
+                    (onClick)="clearFilters()"
+                    [label]="t('links.clearFilters')"
+                    [text]="true"
+                    severity="secondary"
+                />
+                }
+            </div>
+            } @else {
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                @for (link of facade.links(); track link.id) {
+                <div
+                    class="card group hover:border-primary/30 dark:hover:border-primary/30 flex cursor-pointer flex-col gap-0 overflow-hidden p-0 transition-all hover:shadow-lg"
+                    (click)="openLink(link)"
+                    (keyup.enter)="openLink(link)"
+                    role="button"
+                    tabindex="0"
+                >
+                    <!-- Preview image or placeholder -->
+                    @if (link.previewImageUrl) {
+                    <div class="relative h-40 overflow-hidden">
+                        <img
+                            class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            [alt]="link.title"
+                            [src]="link.previewImageUrl"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                        <!-- Domain badge over image -->
+                        <div class="absolute bottom-2 left-2">
+                            <span class="rounded-full bg-black/60 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+                                <i class="pi pi-globe mr-1 text-xs"></i>{{ getDomain(link.url) }}
+                            </span>
+                        </div>
+                    </div>
+                    } @else {
+                    <div
+                        class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 flex h-40 items-center justify-center bg-gradient-to-br"
+                    >
+                        <i class="pi pi-globe text-surface-300 dark:text-surface-600 text-5xl"></i>
+                    </div>
+                    }
+
+                    <!-- Card content -->
+                    <div class="flex flex-1 flex-col gap-2 p-4">
+                        <!-- Title & external link -->
+                        <div class="flex items-start justify-between gap-2">
+                            <h3
+                                class="text-surface-900 dark:text-surface-0 group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
+                            >
+                                {{ link.title }}
+                            </h3>
+                            <button
+                                class="text-surface-400 hover:text-primary mt-0.5 shrink-0 transition-colors"
+                                (click)="openExternal(link.url, $event)"
+                                [pTooltip]="t('links.detail.openSite')"
+                                type="button"
+                            >
+                                <i class="pi pi-external-link text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Domain (shown when no image) -->
+                        @if (!link.previewImageUrl) {
+                        <span
+                            class="bg-surface-100 dark:bg-surface-700 text-surface-500 w-fit rounded-full px-2 py-0.5 text-xs"
+                        >
+                            <i class="pi pi-globe mr-1"></i>{{ getDomain(link.url) }}
+                        </span>
+                        }
+
+                        <!-- Excerpt / Description -->
+                        @if (link.excerpt || link.description) {
+                        <p class="text-surface-500 line-clamp-2 text-sm">{{ link.excerpt || link.description }}</p>
+                        }
+
+                        <!-- Tags -->
+                        @if (link.tags?.length) {
+                        <div class="flex flex-wrap gap-1">
+                            @for (tag of link.tags.slice(0, 3); track tag) {
+                            <button
+                                class="bg-primary-50 text-primary dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-full px-2 py-0.5 text-xs transition-colors"
+                                (click)="onTagSelect(tag); $event.stopPropagation()"
+                                type="button"
+                            >
+                                #{{ tag }}
+                            </button>
+                            } @if (link.tags.length > 3) {
+                            <span class="text-surface-400 text-xs">+{{ link.tags.length - 3 }}</span>
+                            }
+                        </div>
+                        }
+
+                        <div class="mt-auto flex flex-col gap-2 pt-2">
+                            <!-- Rating & views row -->
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1">
+                                    <p-rating
+                                        [ngModel]="link.rating"
+                                        [readonly]="true"
+                                        [stars]="5"
+                                        styleClass="text-xs"
+                                    />
+                                    <span class="text-surface-400 text-xs">({{ link.ratingCount }})</span>
+                                </div>
+                                <span class="text-surface-400 flex items-center gap-1 text-xs">
+                                    <i class="pi pi-eye"></i>{{ link.viewCount }} {{ t("links.views") }}
+                                </span>
+                            </div>
+
+                            <!-- Category & date -->
+                            <div
+                                class="border-surface-100 dark:border-surface-700 flex items-center justify-between border-t pt-2"
+                            >
+                                <span
+                                    class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2 py-0.5 text-xs"
+                                >
+                                    {{ link.categoryName }}
+                                </span>
+                                <span class="text-surface-400 text-xs">{{ formatDate(link.createdAt) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+            } }
+
+            <!-- LIST VIEW -->
+            @if (viewMode() === 'list') { @if (facade.loading()) {
+            <!-- List skeletons -->
+            <div class="flex flex-col gap-3">
+                @for (_ of [1, 2, 3, 4, 5]; track $index) {
+                <div class="card flex gap-4">
+                    <p-skeleton height="80px" styleClass="rounded-lg shrink-0" width="120px" />
+                    <div class="flex flex-1 flex-col gap-2">
+                        <p-skeleton height="1.2rem" styleClass="w-1/2" />
+                        <p-skeleton height="0.9rem" styleClass="w-1/3" />
+                        <p-skeleton height="2rem" styleClass="w-full" />
+                    </div>
+                </div>
+                }
+            </div>
+            } @else if (facade.links().length === 0) {
+            <div class="card flex flex-col items-center gap-4 py-16 text-center">
+                <div class="bg-surface-100 dark:bg-surface-800 flex h-20 w-20 items-center justify-center rounded-full">
+                    <i class="pi pi-bookmark text-surface-300 dark:text-surface-600 text-4xl"></i>
+                </div>
+                <p class="text-surface-900 dark:text-surface-0 font-semibold">{{ t("links.noLinks") }}</p>
+            </div>
+            } @else {
+            <div class="flex flex-col gap-3">
+                @for (link of facade.links(); track link.id) {
+                <div
+                    class="card group hover:border-primary/30 dark:hover:border-primary/30 flex cursor-pointer gap-4 transition-all hover:shadow-md"
+                    (click)="openLink(link)"
+                    (keyup.enter)="openLink(link)"
+                    role="button"
+                    tabindex="0"
+                >
+                    <!-- Thumbnail -->
+                    @if (link.previewImageUrl) {
+                    <div class="h-20 w-28 shrink-0 overflow-hidden rounded-lg">
+                        <img
+                            class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            [alt]="link.title"
+                            [src]="link.previewImageUrl"
+                        />
+                    </div>
+                    } @else {
+                    <div
+                        class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 flex h-20 w-28 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br"
+                    >
+                        <i class="pi pi-globe text-surface-300 dark:text-surface-600 text-2xl"></i>
+                    </div>
+                    }
+
+                    <!-- Content -->
+                    <div class="flex min-w-0 flex-1 flex-col justify-between gap-1">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <h3
+                                    class="text-surface-900 dark:text-surface-0 group-hover:text-primary truncate font-semibold transition-colors"
+                                >
+                                    {{ link.title }}
+                                </h3>
+                                <span class="text-surface-400 text-xs">
+                                    <i class="pi pi-globe mr-1"></i>{{ getDomain(link.url) }}
+                                </span>
+                            </div>
+                            <button
+                                class="text-surface-400 hover:text-primary shrink-0 transition-colors"
+                                (click)="openExternal(link.url, $event)"
+                                [pTooltip]="t('links.detail.openSite')"
+                                type="button"
+                            >
+                                <i class="pi pi-external-link text-sm"></i>
+                            </button>
+                        </div>
+
+                        @if (link.excerpt || link.description) {
+                        <p class="text-surface-500 line-clamp-1 text-sm">{{ link.excerpt || link.description }}</p>
+                        }
+
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                            <span
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2 py-0.5"
+                            >
+                                {{ link.categoryName }}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <p-rating [ngModel]="link.rating" [readonly]="true" [stars]="5" styleClass="text-xs" />
+                                <span class="text-surface-400">({{ link.ratingCount }})</span>
+                            </div>
+                            <span class="text-surface-400 flex items-center gap-1">
+                                <i class="pi pi-eye"></i>{{ link.viewCount }}
+                            </span>
+                            @for (tag of link.tags.slice(0, 2); track tag) {
+                            <button
+                                class="bg-primary-50 text-primary dark:bg-primary-900/20 hover:bg-primary-100 rounded-full px-2 py-0.5"
+                                (click)="onTagSelect(tag); $event.stopPropagation()"
+                                type="button"
+                            >
+                                #{{ tag }}
+                            </button>
+                            }
+                            <span class="text-surface-400 ml-auto">{{ formatDate(link.createdAt) }}</span>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+            } }
+
+            <!-- Paginator -->
+            @if (facade.total() > pageSize) {
+            <p-paginator
+                (onPageChange)="onPageChange($event)"
+                [first]="page() * pageSize"
+                [rows]="pageSize"
+                [totalRecords]="facade.total()"
+                styleClass="mt-2"
+            />
+            }
+        </div>
+    </div>
+</div>

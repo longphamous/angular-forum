@@ -60,6 +60,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.marketplace"),
                         icon: "pi pi-fw pi-shopping-cart",
                         routerLink: ["/marketplace"]
+                    },
+                    {
+                        label: this.t("nav.linkDatabase"),
+                        icon: "pi pi-fw pi-link",
+                        routerLink: ["/links"]
                     }
                 ]
             },
@@ -131,6 +136,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.communityBot"),
                         icon: "pi pi-fw pi-robot",
                         routerLink: ["/admin/community-bot"]
+                    },
+                    {
+                        label: this.t("nav.linkDatabaseManagement"),
+                        icon: "pi pi-fw pi-link",
+                        routerLink: ["/admin/link-database"]
                     }
                 ]
             }

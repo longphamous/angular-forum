@@ -88,7 +88,10 @@
     "marketplace": "Marktplatz",
     "marketplaceManagement": "Marktplatz Verwaltung",
     "feed": "Feed",
-    "feedManagement": "Feed Verwaltung"
+    "feedManagement": "Feed Verwaltung",
+    "communityBot": "Community Bot",
+    "linkDatabase": "Link-Datenbank",
+    "linkDatabaseManagement": "Link-Datenbank Verwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -1264,6 +1267,61 @@
       "thread": "Thread",
       "add": "Hinzufügen",
       "noResults": "Keine Ergebnisse gefunden."
+    }
+  },
+  "links": {
+    "header": "Link-Datenbank",
+    "subtitle": "Entdecke und teile nützliche Links aus der Community",
+    "submitLink": "Link einreichen",
+    "noLinks": "Keine Links gefunden",
+    "by": "von",
+    "views": "Aufrufe",
+    "searchPlaceholder": "Links durchsuchen...",
+    "sortBy": "Sortieren nach",
+    "allCategories": "Alle Kategorien",
+    "filterActive": "Aktive Filter",
+    "clearFilters": "Filter zurücksetzen",
+    "sort": {
+      "newest": "Neueste",
+      "popular": "Beliebteste",
+      "rating": "Bewertung",
+      "alphabetical": "Alphabetisch"
+    },
+    "detail": {
+      "openSite": "Website öffnen",
+      "visitedOn": "Besucht am",
+      "comments": "Kommentare",
+      "addComment": "Kommentar schreiben",
+      "submitComment": "Kommentar absenden",
+      "noComments": "Noch keine Kommentare. Sei der Erste!",
+      "rating": "Bewertung",
+      "address": "Adresse",
+      "contact": "Kontakt",
+      "viewOnMaps": "Auf Google Maps anzeigen"
+    },
+    "submit": {
+      "title": "Link einreichen",
+      "url": "URL",
+      "category": "Kategorie",
+      "description": "Beschreibung",
+      "excerpt": "Kurztext",
+      "previewImage": "Vorschaubild-URL",
+      "tags": "Tags",
+      "addTag": "Tag hinzufügen",
+      "address": "Adresse",
+      "contact": {
+        "email": "Kontakt-E-Mail",
+        "phone": "Kontakt-Telefon"
+      },
+      "submitBtn": "Link einreichen",
+      "pending": "Dein Link wird nach Prüfung durch ein Moderatoren freigeschaltet."
+    },
+    "admin": {
+      "pending": "Ausstehende Links",
+      "categories": "Kategorien",
+      "approve": "Freigeben",
+      "reject": "Ablehnen",
+      "rejectReason": "Ablehnungsgrund"
     }
   }
 }

@@ -88,7 +88,10 @@
     "marketplace": "Marketplace",
     "marketplaceManagement": "Marketplace Mgmt.",
     "feed": "Feed",
-    "feedManagement": "Feed Management"
+    "feedManagement": "Feed Management",
+    "communityBot": "Community Bot",
+    "linkDatabase": "Link Database",
+    "linkDatabaseManagement": "Link Database Mgmt."
   },
   "login": {
     "title": "Welcome back",
@@ -1264,6 +1267,61 @@
       "thread": "Thread",
       "add": "Add",
       "noResults": "No results found."
+    }
+  },
+  "links": {
+    "header": "Link Database",
+    "subtitle": "Discover and share useful links from the community",
+    "submitLink": "Submit Link",
+    "noLinks": "No links found",
+    "by": "by",
+    "views": "views",
+    "searchPlaceholder": "Search links...",
+    "sortBy": "Sort by",
+    "allCategories": "All Categories",
+    "filterActive": "Active filters",
+    "clearFilters": "Clear filters",
+    "sort": {
+      "newest": "Newest",
+      "popular": "Most popular",
+      "rating": "Rating",
+      "alphabetical": "Alphabetical"
+    },
+    "detail": {
+      "openSite": "Open website",
+      "visitedOn": "Visited on",
+      "comments": "Comments",
+      "addComment": "Write a comment",
+      "submitComment": "Submit comment",
+      "noComments": "No comments yet. Be the first!",
+      "rating": "Rating",
+      "address": "Address",
+      "contact": "Contact",
+      "viewOnMaps": "View on Google Maps"
+    },
+    "submit": {
+      "title": "Submit Link",
+      "url": "URL",
+      "category": "Category",
+      "description": "Description",
+      "excerpt": "Short description",
+      "previewImage": "Preview image URL",
+      "tags": "Tags",
+      "addTag": "Add tag",
+      "address": "Address",
+      "contact": {
+        "email": "Contact email",
+        "phone": "Contact phone"
+      },
+      "submitBtn": "Submit link",
+      "pending": "Your link will be reviewed and published by a moderator."
+    },
+    "admin": {
+      "pending": "Pending Links",
+      "categories": "Categories",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectReason": "Rejection reason"
     }
   }
 }
