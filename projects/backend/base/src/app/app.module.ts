@@ -8,6 +8,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
+import { FeedModule } from "./feed/feed.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
@@ -46,7 +47,8 @@ import { UserModule } from "./user/user.module";
         NotificationsModule,
         MessagesModule,
         BlogModule,
-        MarketplaceModule
+        MarketplaceModule,
+        FeedModule
     ],
     controllers: [AppController],
     providers: [AppService]

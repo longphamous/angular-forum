@@ -8,7 +8,8 @@ export type AnimeSortField =
     | "seasonYear"
     | "startYear"
     | "member"
-    | "voter";
+    | "voter"
+    | "createdAt";
 
 export type SortOrder = "ASC" | "DESC";
 
@@ -41,6 +42,9 @@ export class AnimeQueryDto {
 
     // Genre filter
     genre?: string;
+
+    // Newly added filter (days since created_at)
+    newerThanDays?: number;
 
     // Sorting
     sortBy?: AnimeSortField;

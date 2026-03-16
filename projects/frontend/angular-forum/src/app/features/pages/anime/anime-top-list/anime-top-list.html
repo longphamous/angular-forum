@@ -20,7 +20,7 @@
             <span>{{ t('anime.topList.filter') }}</span>
         </div>
 
-        <!-- Row 0: Genre -->
+        <!-- Row 0: Genre + Neu hinzugefügt -->
         <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div class="flex flex-col gap-1">
                 <span class="text-surface-500 text-xs font-medium">{{ t('anime.topList.genre') }}</span>
@@ -32,6 +32,19 @@
                     [options]="facade.genres()"
                     [placeholder]="t('anime.topList.allGenres')"
                     [showClear]="true"
+                    styleClass="w-full"
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-surface-500 text-xs font-medium">{{ t('anime.topList.newerThan.label') }}</span>
+                <p-select
+                    (onChange)="applyFilters()"
+                    [(ngModel)]="selectedNewerThanDays"
+                    [options]="newerThanDaysOptions"
+                    [placeholder]="t('anime.topList.newerThan.allTime')"
+                    [showClear]="true"
+                    optionLabel="label"
+                    optionValue="value"
                     styleClass="w-full"
                 />
             </div>
@@ -274,6 +287,9 @@
                     {{ t('anime.topList.table.season') }} <p-sortIcon field="seasonYear" />
                 </th>
                 <th style="width: 6rem">{{ t('anime.topList.table.rating') }}</th>
+                <th pSortableColumn="createdAt" style="width: 9rem">
+                    {{ t('anime.topList.table.added') }} <p-sortIcon field="createdAt" />
+                </th>
             </tr>
         </ng-template>
 
@@ -385,12 +401,17 @@
 
                 <!-- Rating -->
                 <td class="text-surface-400 text-xs">{{ anime.rating || '—' }}</td>
+
+                <!-- Added -->
+                <td class="text-surface-400 text-xs">
+                    @if (anime.createdAt) { {{ anime.createdAt | date: 'dd.MM.yyyy' }} } @else { — }
+                </td>
             </tr>
         </ng-template>
 
         <ng-template #emptymessage>
             <tr>
-                <td colspan="10">
+                <td colspan="11">
                     <div class="text-surface-400 flex flex-col items-center justify-center py-12">
                         <i class="pi pi-inbox mb-3 text-5xl"></i>
                         <span class="text-lg">{{ t('anime.topList.noAnime') }}</span>
@@ -420,6 +441,7 @@
                 <td><p-skeleton height="1.25rem" width="4.5rem" /></td>
                 <td><p-skeleton height="1.25rem" width="5rem" /></td>
                 <td><p-skeleton height="1.25rem" width="3.5rem" /></td>
+                <td><p-skeleton height="1.25rem" width="5rem" /></td>
             </tr>
         </ng-template>
     </p-table>

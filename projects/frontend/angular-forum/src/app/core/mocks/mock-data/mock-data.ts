@@ -1,6 +1,7 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
 import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
+import { FeaturedThread, HotThread, PaginatedFeed } from "../../models/feed/feed";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
@@ -2250,3 +2251,98 @@ export const mockMarketComments: Record<string, MarketComment> = {
 
 export const mockMarketRatings: Record<string, MarketRating> = {};
 export const mockMarketReports: Record<string, MarketReport> = {};
+
+// ── Feed ──────────────────────────────────────────────────────────────────────
+
+export const mockFeaturedThreads: FeaturedThread[] = [
+    {
+        id: "ft000000-0000-0000-0000-000000000001",
+        threadId: "30000000-0000-0000-0000-000000000003",
+        title: "Vorlage zur Vorstellung – bitte lesen bevor ihr postet!",
+        slug: "vorlage-zur-vorstellung",
+        forumId: "20000000-0000-0000-0000-000000000002",
+        forumName: "Ankündigungen & Regeln",
+        authorId: adminUser.id,
+        authorName: adminUser.displayName,
+        authorLevel: 5,
+        authorLevelName: "Admin",
+        tags: ["wichtig", "vorlage"],
+        viewCount: 326,
+        replyCount: 0,
+        createdAt: twoDaysAgo,
+        lastPostAt: twoDaysAgo,
+        position: 0,
+        isActive: true
+    },
+    {
+        id: "ft000000-0000-0000-0000-000000000002",
+        threadId: "30000000-0000-0000-0000-000000000004",
+        title: "Hallo aus München! – NarutoFan99 stellt sich vor",
+        slug: "hallo-aus-muenchen-narutofan99",
+        forumId: "20000000-0000-0000-0000-000000000002",
+        forumName: "Vorstellungen",
+        authorId: memberUser.id,
+        authorName: memberUser.displayName,
+        authorLevel: 3,
+        authorLevelName: "Mitglied",
+        tags: ["vorstellung", "münchen"],
+        viewCount: 58,
+        replyCount: 1,
+        createdAt: oneHourAgo,
+        lastPostAt: thirtySecondsAgo,
+        position: 1,
+        isActive: true
+    }
+];
+
+const mockHotThreads: HotThread[] = [
+    {
+        id: "30000000-0000-0000-0000-000000000003",
+        title: "Vorlage zur Vorstellung – bitte lesen bevor ihr postet!",
+        slug: "vorlage-zur-vorstellung",
+        forumId: "20000000-0000-0000-0000-000000000002",
+        forumName: "Ankündigungen & Regeln",
+        authorId: adminUser.id,
+        authorName: adminUser.displayName,
+        authorLevel: 5,
+        authorLevelName: "Admin",
+        tags: ["wichtig", "vorlage"],
+        isPinned: true,
+        isLocked: false,
+        viewCount: 326,
+        replyCount: 0,
+        hotScore: 326,
+        excerpt:
+            "Bitte verwendet diese Vorlage wenn ihr euch vorstellt. Nennt euren Namen, woher ihr kommt und warum ihr hier seid. Viel Spaß in der Community!",
+        createdAt: twoDaysAgo,
+        lastPostAt: twoDaysAgo
+    },
+    {
+        id: "30000000-0000-0000-0000-000000000004",
+        title: "Hallo aus München! – NarutoFan99 stellt sich vor",
+        slug: "hallo-aus-muenchen-narutofan99",
+        forumId: "20000000-0000-0000-0000-000000000002",
+        forumName: "Vorstellungen",
+        authorId: memberUser.id,
+        authorName: memberUser.displayName,
+        authorLevel: 3,
+        authorLevelName: "Mitglied",
+        tags: ["vorstellung", "münchen"],
+        isPinned: false,
+        isLocked: false,
+        viewCount: 58,
+        replyCount: 1,
+        hotScore: 61,
+        excerpt:
+            "Hey Leute! Ich bin NarutoFan99 aus München und bin riesiger Anime-Fan seit meiner Kindheit. Freue mich auf tolle Diskussionen mit euch!",
+        createdAt: oneHourAgo,
+        lastPostAt: thirtySecondsAgo
+    }
+];
+
+export const mockFeed: PaginatedFeed = {
+    data: mockHotThreads,
+    total: mockHotThreads.length,
+    page: 1,
+    limit: 20
+};

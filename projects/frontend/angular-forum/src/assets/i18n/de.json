@@ -86,7 +86,9 @@
     "documentation": "Documentation",
     "viewSource": "View Source",
     "marketplace": "Marktplatz",
-    "marketplaceManagement": "Marktplatz Verwaltung"
+    "marketplaceManagement": "Marktplatz Verwaltung",
+    "feed": "Feed",
+    "feedManagement": "Feed Verwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -482,10 +484,18 @@
         "start": "Start",
         "end": "Ende",
         "season": "Saison",
-        "rating": "Rating"
+        "rating": "Rating",
+        "added": "Hinzugefügt"
       },
       "noAnime": "Keine Anime gefunden.",
       "noAnimeHint": "Versuche andere Filtereinstellungen.",
+      "newerThan": {
+        "label": "Hinzugefügt in",
+        "allTime": "Alle Zeiten",
+        "last7days": "Letzte 7 Tage",
+        "last30days": "Letzte 30 Tage",
+        "last90days": "Letzte 90 Tage"
+      },
       "seasons": {
         "spring": "Frühling",
         "summer": "Sommer",
@@ -554,7 +564,9 @@
     "database": {
       "title": "Anime-Datenbank",
       "entries": "{{count}} Einträge",
-      "noAnime": "Keine Anime gefunden."
+      "noAnime": "Keine Anime gefunden.",
+      "showNewest": "Neueste zuerst",
+      "showAll": "Alle anzeigen"
     }
   },
   "profile": {
@@ -1210,6 +1222,48 @@
       "noCategories": "Noch keine Kategorien.",
       "author": "Autor",
       "manage": "Blog Verwaltung"
+    }
+  },
+  "feed": {
+    "featured": "Empfohlen",
+    "threads": "Threads",
+    "by": "von",
+    "replies": "Antworten",
+    "lastReply": "Letzte Antwort",
+    "pinned": "Angeheftet",
+    "locked": "Gesperrt",
+    "end": "Das war's! Du hast alles gesehen.",
+    "empty": "Keine Beiträge vorhanden."
+  },
+  "adminFeed": {
+    "title": "Feed Verwaltung",
+    "addFeatured": "Thread hinzufügen",
+    "loadError": "Fehler beim Laden der empfohlenen Threads.",
+    "saveError": "Fehler beim Speichern.",
+    "addSuccess": "Thread erfolgreich hinzugefügt.",
+    "deleteSuccess": "Thread erfolgreich entfernt.",
+    "deleteError": "Fehler beim Entfernen.",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "empty": "Noch keine empfohlenen Threads.",
+    "table": {
+      "position": "Position",
+      "title": "Titel",
+      "forum": "Forum",
+      "active": "Aktiv",
+      "actions": "Aktionen"
+    },
+    "deleteDialog": {
+      "header": "Thread entfernen",
+      "confirm": "Möchtest du '{{ title }}' wirklich aus den empfohlenen Threads entfernen?"
+    },
+    "dialog": {
+      "title": "Thread zur Empfehlung hinzufügen",
+      "searchPlaceholder": "Thread suchen...",
+      "position": "Position",
+      "thread": "Thread",
+      "add": "Hinzufügen",
+      "noResults": "Keine Ergebnisse gefunden."
     }
   }
 }

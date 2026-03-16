@@ -40,6 +40,8 @@ import {
     mockConversationDetails,
     mockConversations,
     mockDrafts,
+    mockFeaturedThreads,
+    mockFeed,
     mockForums,
     mockGalleryAlbumDetails,
     mockGalleryAlbums,
@@ -2531,6 +2533,78 @@ export class MockInterceptor implements HttpInterceptor {
             if (!listing) return this.error("Inserat nicht gefunden", 404);
             listing.viewCount++;
             return this.ok({ ...listing });
+        }
+
+        // GET /api/feed/featured  (public)
+        if (method === "GET" && lowerUrl.match(/\/api\/feed\/featured$/)) {
+            return this.ok(mockFeaturedThreads.filter((f) => f.isActive));
+        }
+
+        // GET /api/feed/admin/featured  (admin)
+        if (method === "GET" && lowerUrl.match(/\/api\/feed\/admin\/featured$/)) {
+            return this.ok([...mockFeaturedThreads]);
+        }
+
+        // POST /api/feed/admin/featured
+        if (method === "POST" && lowerUrl.match(/\/api\/feed\/admin\/featured$/)) {
+            const payload = body as { threadId: string; position?: number } | null;
+            if (!payload?.threadId) return this.error("Fehlende threadId", 400);
+            const thread = Object.values(mockThreads).find((t) => t.id === payload.threadId);
+            const newFeatured = {
+                id: "ft" + Math.random().toString(36).substring(2),
+                threadId: payload.threadId,
+                title: thread?.title ?? "Unbekannter Thread",
+                slug: thread?.slug ?? "",
+                forumId: thread?.forumId ?? "",
+                forumName: "Forum",
+                authorId: thread?.authorId ?? "",
+                authorName: thread?.authorName ?? "",
+                authorLevel: thread?.authorLevel ?? 1,
+                authorLevelName: thread?.authorLevelName ?? "Mitglied",
+                tags: thread?.tags ?? [],
+                viewCount: thread?.viewCount ?? 0,
+                replyCount: thread?.replyCount ?? 0,
+                createdAt: new Date().toISOString(),
+                lastPostAt: thread?.lastPostAt ?? new Date().toISOString(),
+                position: payload.position ?? mockFeaturedThreads.length,
+                isActive: true
+            };
+            mockFeaturedThreads.push(newFeatured);
+            return this.ok(newFeatured);
+        }
+
+        // PATCH /api/feed/admin/featured/:id
+        const feedFeaturedIdMatch = url.match(/\/api\/feed\/admin\/featured\/([^/]+)$/);
+        if (method === "PATCH" && feedFeaturedIdMatch) {
+            const id = feedFeaturedIdMatch[1]!;
+            const idx = mockFeaturedThreads.findIndex((f) => f.id === id);
+            if (idx === -1) return this.error("Nicht gefunden", 404);
+            const patch = body as { position?: number; isActive?: boolean } | null;
+            Object.assign(mockFeaturedThreads[idx], patch);
+            return this.ok({ ...mockFeaturedThreads[idx] });
+        }
+
+        // DELETE /api/feed/admin/featured/:id
+        if (method === "DELETE" && feedFeaturedIdMatch) {
+            const id = feedFeaturedIdMatch[1]!;
+            const idx = mockFeaturedThreads.findIndex((f) => f.id === id);
+            if (idx === -1) return this.error("Nicht gefunden", 404);
+            mockFeaturedThreads.splice(idx, 1);
+            return this.ok({ success: true });
+        }
+
+        // GET /api/feed/admin/search-threads
+        if (method === "GET" && lowerUrl.match(/\/api\/feed\/admin\/search-threads/)) {
+            const q = req.params.get("q")?.toLowerCase() ?? "";
+            const results = Object.values(mockThreads)
+                .filter((t) => t.title.toLowerCase().includes(q))
+                .map((t) => ({ id: t.id, title: t.title, forumName: "Forum", forumId: t.forumId }));
+            return this.ok(results);
+        }
+
+        // GET /api/feed/hot
+        if (method === "GET" && lowerUrl.match(/\/api\/feed\/hot$/)) {
+            return this.ok({ ...mockFeed });
         }
 
         // Fallback: durchreichen

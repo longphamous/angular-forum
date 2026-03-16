@@ -46,6 +46,7 @@ export interface AnimeDto {
     userOnHold?: number;
     userDropped?: number;
     userPlanned?: number;
+    createdAt?: Date;
     genres?: string[];
     studios?: AnimeStudioDto[];
     relatedAnime?: RelatedAnimeDto[];

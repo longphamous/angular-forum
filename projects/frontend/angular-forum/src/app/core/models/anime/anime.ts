@@ -49,6 +49,7 @@ export interface Anime {
     userOnHold?: number;
     userDropped?: number;
     userPlanned?: number;
+    createdAt?: string;
 }
 
 export interface PaginatedAnime {
@@ -90,7 +91,8 @@ export type AnimeSortField =
     | "seasonYear"
     | "startYear"
     | "member"
-    | "voter";
+    | "voter"
+    | "createdAt";
 
 export interface AnimeFilter {
     genre?: string;
@@ -108,6 +110,7 @@ export interface AnimeFilter {
     maxEpisodes?: number;
     minScore?: number;
     maxScore?: number;
+    newerThanDays?: number;
     sortBy?: AnimeSortField;
     sortOrder?: "ASC" | "DESC";
 }

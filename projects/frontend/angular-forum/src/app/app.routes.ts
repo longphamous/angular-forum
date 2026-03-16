@@ -18,7 +18,13 @@ export const routes: Routes = [
         component: AppLayout,
         canActivate: [authGuard],
         children: [
-            { path: "", redirectTo: "dashboard", pathMatch: "full" },
+            { path: "", redirectTo: "feed", pathMatch: "full" },
+            {
+                path: "feed",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/feed/feed-page").then((c) => c.FeedPage)
+            },
             {
                 path: "dashboard",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
@@ -286,6 +292,12 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-marketplace/admin-marketplace").then((c) => c.AdminMarketplace)
+            },
+            {
+                path: "admin/feed",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-feed/admin-feed").then((c) => c.AdminFeed)
             }
         ]
     }

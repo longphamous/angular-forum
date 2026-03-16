@@ -25,6 +25,7 @@ export class AnimeDatabase implements OnInit {
     private readonly listStateService = inject(AnimeListStateService);
 
     tableFirst = 0;
+    showNewest = false;
     private currentRows = this.pageSize;
 
     ngOnInit(): void {
@@ -32,8 +33,9 @@ export class AnimeDatabase implements OnInit {
         if (saved) {
             this.tableFirst = saved.first;
             this.currentRows = saved.rows;
+            this.showNewest = saved.showNewest;
         } else {
-            this.facade.loadPage(1, this.pageSize);
+            this.loadCurrentPage(1, this.pageSize);
         }
     }
 
@@ -43,7 +45,21 @@ export class AnimeDatabase implements OnInit {
         const page = Math.floor(first / rows) + 1;
         this.tableFirst = first;
         this.currentRows = rows;
-        this.facade.loadPage(page, rows);
+        this.loadCurrentPage(page, rows);
+    }
+
+    toggleNewest(): void {
+        this.showNewest = !this.showNewest;
+        this.tableFirst = 0;
+        this.loadCurrentPage(1, this.currentRows);
+    }
+
+    private loadCurrentPage(page: number, rows: number): void {
+        if (this.showNewest) {
+            this.facade.loadWithFilters(page, rows, { sortBy: "createdAt", sortOrder: "DESC" });
+        } else {
+            this.facade.loadPage(page, rows);
+        }
     }
 
     formatDate(year?: number, month?: number, day?: number): string {
@@ -93,7 +109,11 @@ export class AnimeDatabase implements OnInit {
     }
 
     navigateToDetail(id: number): void {
-        this.listStateService.saveDatabaseState({ first: this.tableFirst, rows: this.currentRows });
+        this.listStateService.saveDatabaseState({
+            first: this.tableFirst,
+            rows: this.currentRows,
+            showNewest: this.showNewest
+        });
         void this.router.navigate(["/anime", id]);
     }
 

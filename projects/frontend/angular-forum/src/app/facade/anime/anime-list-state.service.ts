@@ -21,11 +21,13 @@ export interface AnimeTopListState {
     selectedMinScore: number | null;
     selectedMaxScore: number | null;
     selectedGenre: string | null;
+    selectedNewerThanDays: string | null;
 }
 
 export interface AnimeDatabaseState {
     first: number;
     rows: number;
+    showNewest: boolean;
 }
 
 @Injectable({ providedIn: "root" })

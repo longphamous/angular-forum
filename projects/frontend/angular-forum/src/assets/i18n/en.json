@@ -86,7 +86,9 @@
     "documentation": "Documentation",
     "viewSource": "View Source",
     "marketplace": "Marketplace",
-    "marketplaceManagement": "Marketplace Mgmt."
+    "marketplaceManagement": "Marketplace Mgmt.",
+    "feed": "Feed",
+    "feedManagement": "Feed Management"
   },
   "login": {
     "title": "Welcome back",
@@ -482,10 +484,18 @@
         "start": "Start",
         "end": "End",
         "season": "Season",
-        "rating": "Rating"
+        "rating": "Rating",
+        "added": "Added"
       },
       "noAnime": "No anime found.",
       "noAnimeHint": "Try different filter settings.",
+      "newerThan": {
+        "label": "Added within",
+        "allTime": "All time",
+        "last7days": "Last 7 days",
+        "last30days": "Last 30 days",
+        "last90days": "Last 90 days"
+      },
       "seasons": {
         "spring": "Spring",
         "summer": "Summer",
@@ -554,7 +564,9 @@
     "database": {
       "title": "Anime Database",
       "entries": "{{count}} entries",
-      "noAnime": "No anime found."
+      "noAnime": "No anime found.",
+      "showNewest": "Newest first",
+      "showAll": "Show all"
     }
   },
   "profile": {
@@ -1210,6 +1222,48 @@
       "noCategories": "No categories yet.",
       "author": "Author",
       "manage": "Blog Management"
+    }
+  },
+  "feed": {
+    "featured": "Featured",
+    "threads": "Threads",
+    "by": "by",
+    "replies": "Replies",
+    "lastReply": "Last Reply",
+    "pinned": "Pinned",
+    "locked": "Locked",
+    "end": "You've seen it all!",
+    "empty": "No posts yet."
+  },
+  "adminFeed": {
+    "title": "Feed Management",
+    "addFeatured": "Add Thread",
+    "loadError": "Error loading featured threads.",
+    "saveError": "Error saving.",
+    "addSuccess": "Thread added successfully.",
+    "deleteSuccess": "Thread removed successfully.",
+    "deleteError": "Error removing thread.",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "empty": "No featured threads yet.",
+    "table": {
+      "position": "Position",
+      "title": "Title",
+      "forum": "Forum",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "deleteDialog": {
+      "header": "Remove Thread",
+      "confirm": "Are you sure you want to remove '{{ title }}' from featured threads?"
+    },
+    "dialog": {
+      "title": "Add Thread to Featured",
+      "searchPlaceholder": "Search thread...",
+      "position": "Position",
+      "thread": "Thread",
+      "add": "Add",
+      "noResults": "No results found."
     }
   }
 }

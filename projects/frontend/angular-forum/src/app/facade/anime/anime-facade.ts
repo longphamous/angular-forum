@@ -88,6 +88,7 @@ export class AnimeFacade {
         if (filters.minScore != null) params = params.set("minScore", filters.minScore);
         if (filters.maxScore != null) params = params.set("maxScore", filters.maxScore);
         if (filters.genre) params = params.set("genre", filters.genre);
+        if (filters.newerThanDays != null) params = params.set("newerThanDays", filters.newerThanDays);
         if (filters.sortBy) params = params.set("sortBy", filters.sortBy);
         if (filters.sortOrder) params = params.set("sortOrder", filters.sortOrder);
 

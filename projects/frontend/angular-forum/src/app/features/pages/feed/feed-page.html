@@ -1,0 +1,189 @@
+<div class="feed-page" *transloco="let t">
+    <!-- ── Featured Carousel ───────────────────────────────────────────────── -->
+    @if (facade.featured().length > 0) {
+    <section class="mb-6">
+        <div class="mb-3 flex items-center gap-2">
+            <i class="pi pi-star-fill text-yellow-400"></i>
+            <h3 class="m-0 text-base font-semibold">{{ t('feed.featured') }}</h3>
+        </div>
+
+        <div class="featured-carousel">
+            @for (item of facade.featured(); track featuredTrackBy($index, item)) {
+            <div
+                class="featured-card"
+                (click)="navigateToThread(item.threadId)"
+                (keydown.enter)="navigateToThread(item.threadId)"
+                role="button"
+                tabindex="0"
+            >
+                <div class="featured-card__bg" [class]="'featured-bg-' + ($index % 6)"></div>
+                <div class="featured-card__content">
+                    <span class="featured-card__forum">{{ item.forumName }}</span>
+                    <h4 class="featured-card__title">{{ item.title }}</h4>
+                    @if (item.tags.length) {
+                    <div class="featured-card__tags">
+                        @for (tag of item.tags.slice(0, 2); track tag) {
+                        <span class="featured-tag">{{ tag }}</span>
+                        }
+                    </div>
+                    }
+                    <div class="featured-card__stats">
+                        <span><i class="pi pi-eye"></i> {{ item.viewCount }}</span>
+                        <span><i class="pi pi-comments"></i> {{ item.replyCount }}</span>
+                        <span class="featured-card__time">{{ formatRelative(item.lastPostAt ?? item.createdAt) }}</span>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </section>
+    } @else if (facade.loading()) {
+    <section class="mb-6">
+        <div class="featured-carousel">
+            @for (s of [1, 2, 3, 4]; track s) {
+            <div class="featured-card-skeleton">
+                <p-skeleton height="100%" styleClass="rounded-xl" />
+            </div>
+            }
+        </div>
+    </section>
+    }
+
+    <!-- ── Sort Bar ─────────────────────────────────────────────────────────── -->
+    <div class="mb-4 flex items-center justify-between gap-3">
+        <div class="sort-tabs">
+            @for (opt of sortOptions; track opt.value) {
+            <button
+                class="sort-tab"
+                (click)="onSortChange(opt.value)"
+                [class.sort-tab--active]="selectedSort === opt.value"
+            >
+                {{ opt.label }}
+            </button>
+            }
+        </div>
+        <span class="text-surface-400 text-sm"> {{ facade.feedTotal() }} {{ t('feed.threads') }} </span>
+    </div>
+
+    <!-- ── Feed ─────────────────────────────────────────────────────────────── -->
+    <div class="feed-list">
+        @for (thread of facade.feedItems(); track feedTrackBy($index, thread)) {
+        <article
+            class="feed-card"
+            (click)="navigateToThread(thread.id)"
+            (keydown.enter)="navigateToThread(thread.id)"
+            role="button"
+            tabindex="0"
+        >
+            <!-- Left: Vote/Score column -->
+            <div class="feed-card__vote">
+                <i class="pi pi-fire text-orange-400"></i>
+                <span class="feed-card__score-value">{{ thread.hotScore }}</span>
+            </div>
+
+            <!-- Main Content -->
+            <div class="feed-card__body">
+                <div class="feed-card__meta">
+                    <span class="feed-card__forum">
+                        <i class="pi pi-comments text-xs"></i> {{ thread.forumName }}
+                    </span>
+                    <span class="text-surface-400 text-xs">·</span>
+                    <span class="text-surface-400 text-xs">{{ t('feed.by') }} {{ thread.authorName }}</span>
+                    <span class="text-surface-400 text-xs">·</span>
+                    <span class="text-surface-400 text-xs">{{ formatRelative(thread.createdAt) }}</span>
+                </div>
+
+                <h3 class="feed-card__title">
+                    @if (thread.isPinned) {
+                    <i class="pi pi-thumbtack text-primary-500 mr-1 text-xs" [pTooltip]="t('feed.pinned')"></i>
+                    } @if (thread.isLocked) {
+                    <i class="pi pi-lock text-surface-400 mr-1 text-xs" [pTooltip]="t('feed.locked')"></i>
+                    } {{ thread.title }}
+                </h3>
+
+                @if (thread.excerpt) {
+                <p class="feed-card__excerpt">{{ thread.excerpt }}</p>
+                } @if (thread.tags.length) {
+                <div class="feed-card__tags">
+                    @for (tag of thread.tags.slice(0, 4); track tag) {
+                    <p-tag [severity]="getTagSeverity(tag)" [value]="tag" styleClass="text-xs" />
+                    }
+                </div>
+                }
+
+                <div class="feed-card__actions">
+                    <span class="feed-card__stat"> <i class="pi pi-eye"></i> {{ thread.viewCount }} </span>
+                    <span class="feed-card__stat">
+                        <i class="pi pi-comments"></i> {{ thread.replyCount }} {{ t('feed.replies') }}
+                    </span>
+                    @if (thread.lastPostAt) {
+                    <span class="text-surface-400 text-xs">
+                        {{ t('feed.lastReply') }}: {{ formatRelative(thread.lastPostAt) }}
+                    </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Right: Preview image or author avatar -->
+            <div class="feed-card__media">
+                @if (thread.previewImageUrl) {
+                <img
+                    class="feed-card__preview-img"
+                    [alt]="thread.title"
+                    [src]="thread.previewImageUrl"
+                    loading="lazy"
+                />
+                } @else {
+                <div class="feed-card__avatar-wrap" [pTooltip]="thread.authorName">
+                    @if (thread.authorAvatarUrl) {
+                    <img class="feed-card__avatar" [alt]="thread.authorName" [src]="thread.authorAvatarUrl" />
+                    } @else {
+                    <div class="feed-card__avatar feed-card__avatar--placeholder">
+                        {{ thread.authorName.charAt(0).toUpperCase() }}
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </article>
+        }
+
+        <!-- Loading skeletons -->
+        @if (facade.feedLoading()) { @for (s of [1, 2, 3]; track s) {
+        <div class="feed-card feed-card--skeleton">
+            <div class="feed-card__vote">
+                <p-skeleton height="3rem" width="1.5rem" />
+            </div>
+            <div class="feed-card__body">
+                <p-skeleton height="0.75rem" styleClass="mb-2" width="35%" />
+                <p-skeleton height="1.1rem" styleClass="mb-2" width="75%" />
+                <p-skeleton height="0.85rem" styleClass="mb-2" width="90%" />
+                <p-skeleton height="0.85rem" styleClass="mb-3" width="60%" />
+                <p-skeleton height="0.75rem" width="45%" />
+            </div>
+            <div class="feed-card__media">
+                <p-skeleton height="5rem" styleClass="rounded-lg" width="5rem" />
+            </div>
+        </div>
+        } }
+
+        <!-- Sentinel for infinite scroll -->
+        <div class="feed-sentinel" #sentinel></div>
+
+        <!-- End of feed -->
+        @if (!facade.hasMore() && facade.feedItems().length > 0) {
+        <div class="feed-end">
+            <i class="pi pi-check-circle text-surface-400 mb-2 text-2xl"></i>
+            <p class="text-surface-400 text-sm">{{ t('feed.end') }}</p>
+        </div>
+        }
+
+        <!-- Empty state -->
+        @if (!facade.feedLoading() && facade.feedItems().length === 0) {
+        <div class="feed-end">
+            <i class="pi pi-inbox text-surface-400 mb-3 text-4xl"></i>
+            <p class="text-surface-400">{{ t('feed.empty') }}</p>
+        </div>
+        }
+    </div>
+</div>

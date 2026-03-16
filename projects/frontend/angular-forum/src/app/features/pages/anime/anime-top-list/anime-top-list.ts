@@ -1,3 +1,4 @@
+import { DatePipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -27,6 +28,7 @@ interface SelectOption {
 @Component({
     selector: "anime-top-list",
     imports: [
+        DatePipe,
         FormsModule,
         TableModule,
         TagModule,
@@ -112,6 +114,9 @@ export class AnimeTopList implements OnInit, OnDestroy {
     selectedMaxEpisodes: number | null = null;
     selectedMinScore: number | null = null;
     selectedMaxScore: number | null = null;
+    selectedNewerThanDays: string | null = null;
+
+    newerThanDaysOptions: SelectOption[] = [];
 
     private currentRows = this.pageSize;
     private sortField: AnimeSortField = "mean";
@@ -123,7 +128,11 @@ export class AnimeTopList implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.buildSeasonOptions();
-        this.langSub = this.translocoService.langChanges$.subscribe(() => this.buildSeasonOptions());
+        this.buildNewerThanDaysOptions();
+        this.langSub = this.translocoService.langChanges$.subscribe(() => {
+            this.buildSeasonOptions();
+            this.buildNewerThanDaysOptions();
+        });
         this.facade.loadGenres();
         const saved = this.listStateService.consumeTopListState();
         if (saved) {
@@ -147,6 +156,7 @@ export class AnimeTopList implements OnInit, OnDestroy {
             this.selectedMaxEpisodes = saved.selectedMaxEpisodes;
             this.selectedMinScore = saved.selectedMinScore;
             this.selectedMaxScore = saved.selectedMaxScore;
+            this.selectedNewerThanDays = saved.selectedNewerThanDays;
         }
     }
 
@@ -191,6 +201,7 @@ export class AnimeTopList implements OnInit, OnDestroy {
         this.selectedMaxEpisodes = null;
         this.selectedMinScore = null;
         this.selectedMaxScore = null;
+        this.selectedNewerThanDays = null;
         this.sortField = "mean";
         this.sortOrder = "DESC";
         this.tableSortField = "mean";
@@ -272,7 +283,8 @@ export class AnimeTopList implements OnInit, OnDestroy {
             selectedMinEpisodes: this.selectedMinEpisodes,
             selectedMaxEpisodes: this.selectedMaxEpisodes,
             selectedMinScore: this.selectedMinScore,
-            selectedMaxScore: this.selectedMaxScore
+            selectedMaxScore: this.selectedMaxScore,
+            selectedNewerThanDays: this.selectedNewerThanDays
         });
         void this.router.navigate(["/anime", id]);
     }
@@ -283,6 +295,14 @@ export class AnimeTopList implements OnInit, OnDestroy {
             { label: this.translocoService.translate("anime.topList.seasons.summer"), value: "summer" },
             { label: this.translocoService.translate("anime.topList.seasons.fall"), value: "fall" },
             { label: this.translocoService.translate("anime.topList.seasons.winter"), value: "winter" }
+        ];
+    }
+
+    private buildNewerThanDaysOptions(): void {
+        this.newerThanDaysOptions = [
+            { label: this.translocoService.translate("anime.topList.newerThan.last7days"), value: "7" },
+            { label: this.translocoService.translate("anime.topList.newerThan.last30days"), value: "30" },
+            { label: this.translocoService.translate("anime.topList.newerThan.last90days"), value: "90" }
         ];
     }
 
@@ -306,6 +326,7 @@ export class AnimeTopList implements OnInit, OnDestroy {
         if (this.selectedMaxEpisodes != null) filters.maxEpisodes = this.selectedMaxEpisodes;
         if (this.selectedMinScore != null) filters.minScore = this.selectedMinScore;
         if (this.selectedMaxScore != null) filters.maxScore = this.selectedMaxScore;
+        if (this.selectedNewerThanDays) filters.newerThanDays = Number(this.selectedNewerThanDays);
 
         this.facade.loadWithFilters(page, this.currentRows, filters);
     }

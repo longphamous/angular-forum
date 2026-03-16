@@ -47,6 +47,7 @@ export class AppMenu implements OnInit, OnDestroy {
             {
                 label: this.t("nav.community"),
                 items: [
+                    { label: this.t("nav.feed"), icon: "pi pi-fw pi-th-large", routerLink: ["/feed"] },
                     { label: this.t("nav.dashboard"), icon: "pi pi-fw pi-home", routerLink: ["/dashboard"] },
                     { label: this.t("nav.forumOverview"), icon: "pi pi-fw pi-comments", routerLink: ["/forum"] },
                     { label: this.t("nav.messages"), icon: "pi pi-fw pi-envelope", routerLink: ["/messages"] },
@@ -120,6 +121,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.marketplaceManagement"),
                         icon: "pi pi-fw pi-shopping-cart",
                         routerLink: ["/admin/marketplace"]
+                    },
+                    {
+                        label: this.t("nav.feedManagement"),
+                        icon: "pi pi-fw pi-th-large",
+                        routerLink: ["/admin/feed"]
                     }
                 ]
             }

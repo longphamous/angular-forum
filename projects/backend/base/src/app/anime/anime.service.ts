@@ -20,7 +20,8 @@ const ALLOWED_SORT_FIELDS: Record<AnimeSortField, string> = {
     seasonYear: "anime.season_year",
     startYear: "anime.start_year",
     member: "anime.member",
-    voter: "anime.voter"
+    voter: "anime.voter",
+    createdAt: "anime.created_at"
 };
 
 function toDto(
@@ -64,6 +65,7 @@ function toDto(
         userOnHold: entity.userOnHold !== undefined ? Number(entity.userOnHold) : undefined,
         userDropped: entity.userDropped !== undefined ? Number(entity.userDropped) : undefined,
         userPlanned: entity.userPlanned !== undefined ? Number(entity.userPlanned) : undefined,
+        createdAt: entity.createdAt,
         genres,
         studios,
         relatedAnime
@@ -157,6 +159,13 @@ export class AnimeService {
         }
         if (query.maxRank !== undefined) {
             qb.andWhere("anime.rank <= :maxRank", { maxRank: query.maxRank });
+        }
+
+        // Newly added filter
+        if (query.newerThanDays !== undefined) {
+            qb.andWhere("anime.created_at >= NOW() - (:days::integer * INTERVAL '1 day')", {
+                days: query.newerThanDays
+            });
         }
 
         // Genre filter

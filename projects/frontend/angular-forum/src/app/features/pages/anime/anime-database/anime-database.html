@@ -8,6 +8,13 @@
             </p>
             }
         </div>
+        <p-button
+            (onClick)="toggleNewest()"
+            [label]="showNewest ? t('anime.database.showAll') : t('anime.database.showNewest')"
+            [outlined]="!showNewest"
+            [severity]="showNewest ? 'success' : 'secondary'"
+            icon="pi pi-star"
+        />
     </div>
 
     @if (facade.error()) {
