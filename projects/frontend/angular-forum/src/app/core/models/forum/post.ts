@@ -12,6 +12,7 @@ export interface Post {
     authorBalance?: number;
     content: string;
     isFirstPost: boolean;
+    isBestAnswer: boolean;
     isEdited: boolean;
     editedAt?: string;
     editCount: number;

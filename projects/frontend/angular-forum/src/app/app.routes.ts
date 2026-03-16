@@ -251,6 +251,41 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-coins/admin-coins").then((c) => c.AdminCoins)
+            },
+            {
+                path: "marketplace",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/marketplace-page").then((c) => c.MarketplacePage)
+            },
+            {
+                path: "marketplace/my",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/my-listings-page").then((c) => c.MyListingsPage)
+            },
+            {
+                path: "marketplace/create",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/create-listing-page").then((c) => c.CreateListingPage)
+            },
+            {
+                path: "marketplace/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/listing-detail-page").then((c) => c.ListingDetailPage)
+            },
+            {
+                path: "admin/marketplace",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-marketplace/admin-marketplace").then((c) => c.AdminMarketplace)
             }
         ]
     }

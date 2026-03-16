@@ -46,6 +46,9 @@ export class ForumPostEntity {
     @Column({ name: "reaction_count", default: 0 })
     reactionCount!: number;
 
+    @Column({ name: "is_best_answer", default: false })
+    isBestAnswer!: boolean;
+
     @OneToMany(() => ForumPostReactionEntity, (reaction) => reaction.post)
     reactions!: ForumPostReactionEntity[];
 

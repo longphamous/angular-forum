@@ -84,7 +84,9 @@
     "coinManagement": "Coin-Verwaltung",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
-    "viewSource": "View Source"
+    "viewSource": "View Source",
+    "marketplace": "Marktplatz",
+    "marketplaceManagement": "Marktplatz Verwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -143,11 +145,17 @@
     "sticky": "Wichtig",
     "locked": "Gesperrt",
     "firstPost": "Erster Beitrag",
+    "op": "OP",
     "edited": "bearbeitet",
     "quote": "Zitieren",
     "quoteTooltip": "Diesen Beitrag zitieren",
     "report": "Melden",
     "reportTooltip": "Diesen Beitrag melden",
+    "bestAnswer": "Beste Antwort",
+    "markBestAnswer": "Als beste Antwort markieren",
+    "markBestAnswerTooltip": "Diese Antwort als hilfreichste markieren",
+    "unmarkBestAnswer": "Markierung aufheben",
+    "unmarkBestAnswerTooltip": "Markierung als beste Antwort entfernen",
     "posts": "Beiträge",
     "replyHeader": "Antworten",
     "replyPlaceholder": "Deine Antwort...",
@@ -1093,6 +1101,49 @@
       "public": "Öffentlich",
       "members_only": "Nur Mitglieder",
       "private": "Privat"
+    }
+  },
+  "marketplace": {
+    "title": "Community Marktplatz",
+    "subtitle": "Kaufe, verkaufe und tausche mit der Community",
+    "categories": "Kategorien",
+    "allCategories": "Alle Kategorien",
+    "createListing": "Inserat erstellen",
+    "createListingSubtitle": "Füll die Details für dein Inserat aus",
+    "myListings": "Meine Inserate",
+    "searchPlaceholder": "Inserate suchen...",
+    "noListings": "Keine Inserate gefunden",
+    "noListingsHint": "Sei der Erste und erstelle ein Inserat!",
+    "backToListings": "Zurück zum Marktplatz",
+    "type": {
+      "sell": "Verkaufen",
+      "buy": "Kaufen",
+      "trade": "Tauschen",
+      "gift": "Verschenken"
+    },
+    "status": {
+      "active": "Aktiv",
+      "pending": "Ausstehend",
+      "sold": "Verkauft",
+      "closed": "Geschlossen",
+      "expired": "Abgelaufen",
+      "archived": "Archiviert",
+      "draft": "Entwurf"
+    },
+    "offer": {
+      "send": "Angebot senden",
+      "accept": "Akzeptieren",
+      "reject": "Ablehnen",
+      "counter": "Gegenangebot",
+      "withdraw": "Zurückziehen"
+    },
+    "report": "Inserat melden",
+    "admin": {
+      "title": "Marktplatz Verwaltung",
+      "pendingListings": "Ausstehende Inserate",
+      "reports": "Meldungen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen"
     }
   },
   "blog": {

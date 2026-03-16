@@ -15,6 +15,7 @@ import { ForumModule } from "./forum/forum.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { GroupModule } from "./group/group.module";
+import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MessagesModule } from "./messages/messages.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { ShopModule } from "./shop/shop.module";
@@ -44,7 +45,8 @@ import { UserModule } from "./user/user.module";
         GalleryModule,
         NotificationsModule,
         MessagesModule,
-        BlogModule
+        BlogModule,
+        MarketplaceModule
     ],
     controllers: [AppController],
     providers: [AppService]

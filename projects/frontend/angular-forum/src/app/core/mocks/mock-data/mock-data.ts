@@ -1,4 +1,12 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
+import {
+    MarketCategory,
+    MarketComment,
+    MarketListing,
+    MarketOffer,
+    MarketRating,
+    MarketReport
+} from "../../models/marketplace/marketplace";
 import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
 import { Forum } from "../../models/forum/forum";
@@ -310,6 +318,7 @@ export const mockPosts: Record<string, Post> = {
         content:
             "<p><strong>Name:</strong> NarutoFan99<br><strong>Wohnort:</strong> München 🥨<br><strong>Lieblings-Anime:</strong> Naruto Shippuden, Attack on Titan, Demon Slayer</p>",
         isFirstPost: true,
+        isBestAnswer: false,
         isEdited: false,
         editCount: 0,
         reactionCount: 3,
@@ -329,6 +338,7 @@ export const mockPosts: Record<string, Post> = {
         content:
             "<p>Hey NarutoFan99, herzlich willkommen! 😊 Dem Namen nach zu urteilen bist du ein echter Naruto-Fan!</p>",
         isFirstPost: false,
+        isBestAnswer: false,
         isEdited: false,
         editCount: 0,
         reactionCount: 2,
@@ -2068,3 +2078,175 @@ export const mockCoinConfig: CoinEarnConfig = {
     dailyLogin: { enabled: true, amount: 1 },
     excludedCategoryIds: []
 };
+
+// ── Marketplace ───────────────────────────────────────────────────────────────
+
+export const mockMarketCategories: Record<string, MarketCategory> = {
+    "c1000000-0000-0000-0000-000000000001": {
+        id: "c1000000-0000-0000-0000-000000000001",
+        name: "Allgemein",
+        description: "Allgemeine Artikel",
+        parentId: null,
+        icon: "pi pi-tag",
+        sortOrder: 0,
+        requiresApproval: false,
+        isActive: true
+    },
+    "c1000000-0000-0000-0000-000000000002": {
+        id: "c1000000-0000-0000-0000-000000000002",
+        name: "Anime & Manga",
+        description: "Figuren, Poster, Merchandise",
+        parentId: null,
+        icon: "pi pi-star",
+        sortOrder: 1,
+        requiresApproval: false,
+        isActive: true
+    },
+    "c1000000-0000-0000-0000-000000000003": {
+        id: "c1000000-0000-0000-0000-000000000003",
+        name: "Spiele",
+        description: "Videospiele und Brettspiele",
+        parentId: null,
+        icon: "pi pi-desktop",
+        sortOrder: 2,
+        requiresApproval: false,
+        isActive: true
+    },
+    "c1000000-0000-0000-0000-000000000004": {
+        id: "c1000000-0000-0000-0000-000000000004",
+        name: "Kleidung",
+        description: "Cosplay und Merchandise",
+        parentId: null,
+        icon: "pi pi-user",
+        sortOrder: 3,
+        requiresApproval: false,
+        isActive: true
+    }
+};
+
+export const mockMarketListings: Record<string, MarketListing> = {
+    "l1000000-0000-0000-0000-000000000001": {
+        id: "l1000000-0000-0000-0000-000000000001",
+        title: "Attack on Titan Figuren-Set (Staffel 1)",
+        description:
+            "<p>Verkaufe mein <strong>Attack on Titan</strong> Figuren-Set aus Staffel 1. Alle Figuren sind in einwandfreiem Zustand und vollständig mit OVP.</p><p>Im Set enthalten: Eren, Mikasa, Armin (je ca. 18cm). Keine Beschädigungen, nie bespielt.</p>",
+        price: 45.0,
+        currency: "EUR",
+        type: "sell",
+        status: "active",
+        categoryId: "c1000000-0000-0000-0000-000000000002",
+        categoryName: "Anime & Manga",
+        authorId: "00000000-0000-0000-0000-000000000003",
+        authorName: "NarutoFan99",
+        authorAvatarUrl: null,
+        images: [],
+        customFields: null,
+        tags: ["Attack on Titan", "Figuren", "AOT"],
+        expiresAt: null,
+        viewCount: 24,
+        offerCount: 2,
+        commentCount: 3,
+        bestOfferId: null,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "l1000000-0000-0000-0000-000000000002": {
+        id: "l1000000-0000-0000-0000-000000000002",
+        title: "Suche: Demon Slayer Manga Band 1-10",
+        description:
+            "<p>Suche die ersten 10 Bände des Demon Slayer Mangas. Zustand egal, Hauptsache lesbar. Bitte PN mit Preis.</p>",
+        price: null,
+        currency: "EUR",
+        type: "buy",
+        status: "active",
+        categoryId: "c1000000-0000-0000-0000-000000000002",
+        categoryName: "Anime & Manga",
+        authorId: "00000000-0000-0000-0000-000000000002",
+        authorName: "ModerationQueen",
+        authorAvatarUrl: null,
+        images: [],
+        customFields: null,
+        tags: ["Demon Slayer", "Manga"],
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        viewCount: 8,
+        offerCount: 0,
+        commentCount: 1,
+        bestOfferId: null,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "l1000000-0000-0000-0000-000000000003": {
+        id: "l1000000-0000-0000-0000-000000000003",
+        title: "PS5 Controller (Weiß) tauschen gegen Xbox Controller",
+        description:
+            "<p>Tausche meinen PS5 Controller (Weiß, kaum benutzt) gegen einen Xbox Series X/S Controller. Zustand sollte gut sein.</p>",
+        price: null,
+        currency: "EUR",
+        type: "trade",
+        status: "active",
+        categoryId: "c1000000-0000-0000-0000-000000000003",
+        categoryName: "Spiele",
+        authorId: "00000000-0000-0000-0000-000000000003",
+        authorName: "NarutoFan99",
+        authorAvatarUrl: null,
+        images: [],
+        customFields: null,
+        tags: ["PS5", "Controller", "Xbox"],
+        expiresAt: null,
+        viewCount: 15,
+        offerCount: 1,
+        commentCount: 2,
+        bestOfferId: null,
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export const mockMarketOffers: Record<string, MarketOffer> = {
+    "o1000000-0000-0000-0000-000000000001": {
+        id: "o1000000-0000-0000-0000-000000000001",
+        listingId: "l1000000-0000-0000-0000-000000000001",
+        senderId: "00000000-0000-0000-0000-000000000002",
+        senderName: "ModerationQueen",
+        senderAvatarUrl: null,
+        amount: 38.0,
+        message: "Hallo! Würde gerne 38€ bieten. Bitte melden!",
+        status: "pending",
+        counterAmount: null,
+        counterMessage: null,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export const mockMarketComments: Record<string, MarketComment> = {
+    "mc000000-0000-0000-0000-000000000001": {
+        id: "mc000000-0000-0000-0000-000000000001",
+        listingId: "l1000000-0000-0000-0000-000000000001",
+        authorId: "00000000-0000-0000-0000-000000000002",
+        authorName: "ModerationQueen",
+        authorAvatarUrl: null,
+        content: "Sind die Figuren noch versiegelt (OVP)?",
+        parentId: null,
+        isEdited: false,
+        replies: [],
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
+    },
+    "mc000000-0000-0000-0000-000000000002": {
+        id: "mc000000-0000-0000-0000-000000000002",
+        listingId: "l1000000-0000-0000-0000-000000000001",
+        authorId: "00000000-0000-0000-0000-000000000003",
+        authorName: "NarutoFan99",
+        authorAvatarUrl: null,
+        content: "Ja, alle drei noch in der Original-Verpackung!",
+        parentId: "mc000000-0000-0000-0000-000000000001",
+        isEdited: false,
+        replies: [],
+        createdAt: new Date(Date.now() - 11 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 11 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export const mockMarketRatings: Record<string, MarketRating> = {};
+export const mockMarketReports: Record<string, MarketReport> = {};

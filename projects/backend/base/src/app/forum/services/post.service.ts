@@ -43,6 +43,7 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
         authorBalance: author?.balance,
         content: entity.content,
         isFirstPost: entity.isFirstPost,
+        isBestAnswer: entity.isBestAnswer,
         isEdited: entity.isEdited,
         editedAt: entity.editedAt?.toISOString(),
         editCount: entity.editCount,
@@ -253,6 +254,48 @@ export class PostService {
             [threadId, userId]
         );
         return rows.map((r) => r.post_id);
+    }
+
+    /**
+     * Mark (or unmark) a reply as the best answer.
+     * Only the thread author may call this. The first post (OP) cannot be marked.
+     */
+    async markBestAnswer(threadId: string, postId: string, userId: string): Promise<PostDto> {
+        const thread = await this.threadRepo.findOneBy({ id: threadId });
+        if (!thread) throw new NotFoundException(`Thread "${threadId}" not found`);
+
+        if (thread.authorId !== userId) {
+            throw new ForbiddenException("Only the thread author may mark a best answer");
+        }
+
+        const post = await this.findEntityById(postId);
+        if (post.threadId !== threadId) {
+            throw new ForbiddenException("Post does not belong to this thread");
+        }
+        if (post.isFirstPost) {
+            throw new ForbiddenException("The first post cannot be marked as best answer");
+        }
+
+        // Toggle: if already the best answer, unmark it
+        const isSame = thread.bestAnswerPostId === postId;
+
+        // Clear old best-answer flag if it exists
+        if (thread.bestAnswerPostId) {
+            await this.postRepo.update({ id: thread.bestAnswerPostId }, { isBestAnswer: false });
+        }
+
+        if (isSame) {
+            // Unmark
+            await this.threadRepo.update(threadId, { bestAnswerPostId: undefined });
+            post.isBestAnswer = false;
+        } else {
+            // Mark new best answer
+            await this.threadRepo.update(threadId, { bestAnswerPostId: postId });
+            await this.postRepo.update({ id: postId }, { isBestAnswer: true });
+            post.isBestAnswer = true;
+        }
+
+        return toDto(post);
     }
 
     async unreact(postId: string, userId: string): Promise<void> {

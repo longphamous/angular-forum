@@ -56,6 +56,9 @@ export class ForumThreadEntity {
     @Column({ name: "last_post_by_user_id", nullable: true, type: "uuid" })
     lastPostByUserId?: string;
 
+    @Column({ name: "best_answer_post_id", nullable: true, type: "uuid" })
+    bestAnswerPostId?: string;
+
     @CreateDateColumn({ name: "created_at", type: "timestamptz" })
     createdAt!: Date;
 

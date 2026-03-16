@@ -16,6 +16,7 @@ export interface Thread {
     replyCount: number;
     lastPostAt?: string;
     lastPostByUserId?: string;
+    bestAnswerPostId?: string;
     createdAt: string;
     updatedAt: string;
 }

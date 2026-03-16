@@ -1,0 +1,239 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" routerLink="/marketplace" />
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 text-2xl font-bold">
+                {{ t("marketplace.createListing") }}
+            </h1>
+            <p class="text-surface-500 mt-0.5 text-sm">{{ t("marketplace.createListingSubtitle") }}</p>
+        </div>
+    </div>
+
+    @if (error) {
+    <p-message severity="error" [text]="error" />
+    }
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Main form -->
+        <div class="lg:col-span-2 flex flex-col gap-4">
+            <!-- Basic info -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-info-circle text-primary mr-2"></i>Grundinformationen
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <!-- Title -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="listing-title">
+                            Titel <span class="text-red-400">*</span>
+                        </label>
+                        <input
+                            id="listing-title"
+                            pInputText
+                            type="text"
+                            [(ngModel)]="title"
+                            placeholder="Was bietest du an?"
+                            class="w-full"
+                        />
+                    </div>
+
+                    <!-- Description -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium" for="listing-desc">
+                            Beschreibung <span class="text-red-400">*</span>
+                        </label>
+                        <textarea
+                            id="listing-desc"
+                            pTextarea
+                            [(ngModel)]="description"
+                            placeholder="Beschreibe deinen Artikel so detailliert wie möglich. Zustand, Alter, Besonderheiten..."
+                            rows="6"
+                            class="w-full"
+                        ></textarea>
+                    </div>
+
+                    <!-- Type & Category -->
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm font-medium" for="listing-type">
+                                Typ <span class="text-red-400">*</span>
+                            </label>
+                            <p-select
+                                [(ngModel)]="selectedType"
+                                [options]="typeOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                inputId="listing-type"
+                                [fluid]="true"
+                                placeholder="Typ wählen..."
+                            />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm font-medium" for="listing-cat">
+                                Kategorie <span class="text-red-400">*</span>
+                            </label>
+                            <p-select
+                                [(ngModel)]="selectedCategoryId"
+                                [options]="flatCategories"
+                                optionLabel="name"
+                                optionValue="id"
+                                inputId="listing-cat"
+                                [fluid]="true"
+                                placeholder="Kategorie wählen..."
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-euro text-primary mr-2"></i>Preis
+                </h2>
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium">Preis (leer lassen = Verhandelbar)</label>
+                        <p-inputnumber
+                            [(ngModel)]="price"
+                            [minFractionDigits]="2"
+                            [maxFractionDigits]="2"
+                            currency="EUR"
+                            mode="currency"
+                            locale="de-DE"
+                            placeholder="0,00 €"
+                            [fluid]="true"
+                        />
+                    </div>
+                    @if (selectedType === 'gift') {
+                    <p-message severity="info" text="Beim Typ 'Verschenken' ist kein Preis erforderlich." />
+                    }
+                    @if (selectedType === 'buy') {
+                    <p-message
+                        severity="info"
+                        text="Beim Typ 'Kaufen (Gesuch)' gibst du deinen maximalen Wunschpreis an."
+                    />
+                    }
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-tag text-primary mr-2"></i>Details
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <!-- Tags -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium">Tags</label>
+                        <div class="flex gap-2">
+                            <input
+                                pInputText
+                                type="text"
+                                [(ngModel)]="tagInput"
+                                (keydown.enter)="$event.preventDefault(); addTag()"
+                                placeholder="Tag hinzufügen und Enter drücken..."
+                                class="flex-1"
+                            />
+                            <p-button icon="pi pi-plus" [outlined]="true" size="small" (onClick)="addTag()" />
+                        </div>
+                        @if (tags.length > 0) {
+                        <div class="mt-1 flex flex-wrap gap-2">
+                            @for (tag of tags; track tag) {
+                            <p-chip [label]="'#' + tag" [removable]="true" (onRemove)="removeTag(tag)" />
+                            }
+                        </div>
+                        }
+                        <span class="text-surface-400 text-xs">Füge relevante Schlagwörter hinzu, um die Sichtbarkeit zu erhöhen.</span>
+                    </div>
+
+                    <!-- Expiry date -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium">Ablaufdatum (optional)</label>
+                        <p-date-picker
+                            [(ngModel)]="expiresAt"
+                            [showTime]="false"
+                            [fluid]="true"
+                            placeholder="Kein Ablaufdatum"
+                            dateFormat="dd.mm.yy"
+                        />
+                        <span class="text-surface-400 text-xs">Das Inserat wird nach diesem Datum automatisch als abgelaufen markiert.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar preview / actions -->
+        <div class="flex flex-col gap-4">
+            <!-- Preview card -->
+            <div class="card">
+                <h3 class="text-surface-700 dark:text-surface-300 mb-3 font-semibold">Vorschau</h3>
+                <div class="border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border">
+                    <div
+                        class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 flex h-28 items-center justify-center bg-gradient-to-br"
+                    >
+                        <i class="pi pi-shopping-bag text-surface-300 text-3xl"></i>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-surface-900 dark:text-surface-0 truncate text-sm font-bold">
+                            {{ title || "Titel des Inserats" }}
+                        </h4>
+                        <div class="mt-1 text-sm font-bold text-primary">
+                            {{ price !== null ? (price | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE') : "Verhandelbar" }}
+                        </div>
+                        <div class="text-surface-400 mt-1 text-xs">{{ selectedType }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips card -->
+            <div class="card">
+                <h3 class="text-surface-700 dark:text-surface-300 mb-3 font-semibold">
+                    <i class="pi pi-lightbulb text-primary mr-1"></i>Tipps
+                </h3>
+                <ul class="text-surface-500 flex flex-col gap-2 text-sm">
+                    <li class="flex items-start gap-2">
+                        <i class="pi pi-check-circle mt-0.5 text-green-500 text-xs"></i>
+                        Nutze eine klare, präzise Beschreibung
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="pi pi-check-circle mt-0.5 text-green-500 text-xs"></i>
+                        Gib den Zustand des Artikels an
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="pi pi-check-circle mt-0.5 text-green-500 text-xs"></i>
+                        Setze relevante Tags für bessere Sichtbarkeit
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="pi pi-check-circle mt-0.5 text-green-500 text-xs"></i>
+                        Sei ehrlich über Mängel oder Gebrauchsspuren
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Submit -->
+            <div class="card">
+                <p-button
+                    icon="pi pi-check"
+                    label="Inserat erstellen"
+                    [fluid]="true"
+                    [loading]="submitting"
+                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId"
+                    (onClick)="submit()"
+                />
+                <p-button
+                    label="Abbrechen"
+                    severity="secondary"
+                    [outlined]="true"
+                    [fluid]="true"
+                    styleClass="mt-2"
+                    routerLink="/marketplace"
+                />
+                <p class="text-surface-400 mt-3 text-center text-xs">
+                    Das Inserat wird nach Einreichung ggf. geprüft.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

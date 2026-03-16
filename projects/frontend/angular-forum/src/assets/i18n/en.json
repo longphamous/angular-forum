@@ -84,7 +84,9 @@
     "coinManagement": "Coin Management",
     "furtherLinks": "Further Links",
     "documentation": "Documentation",
-    "viewSource": "View Source"
+    "viewSource": "View Source",
+    "marketplace": "Marketplace",
+    "marketplaceManagement": "Marketplace Mgmt."
   },
   "login": {
     "title": "Welcome back",
@@ -143,11 +145,17 @@
     "sticky": "Important",
     "locked": "Locked",
     "firstPost": "First post",
+    "op": "OP",
     "edited": "edited",
     "quote": "Quote",
     "quoteTooltip": "Quote this post",
     "report": "Report",
     "reportTooltip": "Report this post",
+    "bestAnswer": "Best Answer",
+    "markBestAnswer": "Mark as best answer",
+    "markBestAnswerTooltip": "Mark this reply as the best answer",
+    "unmarkBestAnswer": "Unmark best answer",
+    "unmarkBestAnswerTooltip": "Remove best answer mark",
     "posts": "Posts",
     "replyHeader": "Reply",
     "replyPlaceholder": "Your reply...",
@@ -1093,6 +1101,49 @@
       "public": "Public",
       "members_only": "Members Only",
       "private": "Private"
+    }
+  },
+  "marketplace": {
+    "title": "Community Marketplace",
+    "subtitle": "Buy, sell and trade with the community",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "createListing": "Create Listing",
+    "createListingSubtitle": "Fill in the details for your listing",
+    "myListings": "My Listings",
+    "searchPlaceholder": "Search listings...",
+    "noListings": "No listings found",
+    "noListingsHint": "Be the first to create a listing!",
+    "backToListings": "Back to Marketplace",
+    "type": {
+      "sell": "Sell",
+      "buy": "Buy",
+      "trade": "Trade",
+      "gift": "Gift"
+    },
+    "status": {
+      "active": "Active",
+      "pending": "Pending",
+      "sold": "Sold",
+      "closed": "Closed",
+      "expired": "Expired",
+      "archived": "Archived",
+      "draft": "Draft"
+    },
+    "offer": {
+      "send": "Send Offer",
+      "accept": "Accept",
+      "reject": "Decline",
+      "counter": "Counter Offer",
+      "withdraw": "Withdraw"
+    },
+    "report": "Report Listing",
+    "admin": {
+      "title": "Marketplace Management",
+      "pendingListings": "Pending Listings",
+      "reports": "Reports",
+      "approve": "Approve",
+      "reject": "Reject"
     }
   },
   "blog": {

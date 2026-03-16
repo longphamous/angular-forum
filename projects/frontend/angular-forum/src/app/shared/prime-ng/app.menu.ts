@@ -54,7 +54,12 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.gallery"), icon: "pi pi-fw pi-images", routerLink: ["/gallery"] },
                     { label: this.t("nav.calendar"), icon: "pi pi-fw pi-calendar", routerLink: ["/calendar"] },
                     { label: this.t("nav.lotto"), icon: "pi pi-fw pi-ticket", routerLink: ["/lotto"] },
-                    { label: this.t("nav.shop"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/shop"] }
+                    { label: this.t("nav.shop"), icon: "pi pi-fw pi-shopping-bag", routerLink: ["/shop"] },
+                    {
+                        label: this.t("nav.marketplace"),
+                        icon: "pi pi-fw pi-shopping-cart",
+                        routerLink: ["/marketplace"]
+                    }
                 ]
             },
             {
@@ -110,7 +115,12 @@ export class AppMenu implements OnInit, OnDestroy {
                     },
                     { label: this.t("nav.lottoManagement"), icon: "pi pi-fw pi-ticket", routerLink: ["/admin/lotto"] },
                     { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] },
-                    { label: this.t("nav.coinManagement"), icon: "pi pi-fw pi-bitcoin", routerLink: ["/admin/coins"] }
+                    { label: this.t("nav.coinManagement"), icon: "pi pi-fw pi-bitcoin", routerLink: ["/admin/coins"] },
+                    {
+                        label: this.t("nav.marketplaceManagement"),
+                        icon: "pi pi-fw pi-shopping-cart",
+                        routerLink: ["/admin/marketplace"]
+                    }
                 ]
             }
         ];

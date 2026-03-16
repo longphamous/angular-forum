@@ -89,6 +89,20 @@ export class PostController {
     }
 
     /**
+     * PATCH /forum/threads/:threadId/best-answer/:postId
+     * Marks (or toggles off) a post as the best answer for a thread.
+     * Only the thread author may call this endpoint.
+     */
+    @Patch("threads/:threadId/best-answer/:postId")
+    markBestAnswer(
+        @Param("threadId", ParseUUIDPipe) threadId: string,
+        @Param("postId", ParseUUIDPipe) postId: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PostDto> {
+        return this.postService.markBestAnswer(threadId, postId, user.userId);
+    }
+
+    /**
      * POST /forum/posts/:id/react
      * Adds or updates a reaction on a post. Requires authentication.
      */

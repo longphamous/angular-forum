@@ -178,6 +178,13 @@ export class ForumFacade {
         return this.http.delete<void>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`);
     }
 
+    markBestAnswer(threadId: string, postId: string): Observable<Post> {
+        return this.http.patch<Post>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.bestAnswer(threadId, postId)}`,
+            {}
+        );
+    }
+
     resetError(): void {
         this._error.set(null);
     }

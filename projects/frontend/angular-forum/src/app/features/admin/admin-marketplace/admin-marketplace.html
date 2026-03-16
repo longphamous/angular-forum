@@ -1,0 +1,277 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                    <i class="pi pi-shopping-cart text-primary"></i>
+                    {{ t("nav.marketplaceManagement") }}
+                </h1>
+                <p class="text-surface-500 mt-1 text-sm">Prüfe ausstehende Inserate und gemeldete Inhalte</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="text-center">
+                    <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold text-orange-500">
+                        {{ facade.pendingListings().length }}
+                    </div>
+                    <div class="text-surface-500 text-xs">Ausstehende Inserate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-500">{{ facade.pendingReports().length }}</div>
+                    <div class="text-surface-500 text-xs">Offene Meldungen</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [value]="0">
+        <p-tablist>
+            <p-tab [value]="0">
+                <i class="pi pi-clock mr-2"></i>
+                Ausstehende Inserate
+                @if (facade.pendingListings().length > 0) {
+                <span class="ml-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">{{
+                    facade.pendingListings().length
+                }}</span>
+                }
+            </p-tab>
+            <p-tab [value]="1">
+                <i class="pi pi-flag mr-2"></i>
+                Meldungen
+                @if (facade.pendingReports().length > 0) {
+                <span class="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{{
+                    facade.pendingReports().length
+                }}</span>
+                }
+            </p-tab>
+        </p-tablist>
+
+        <!-- Pending listings tab -->
+        <p-tabpanel [value]="0">
+            <div class="mt-4">
+                @if (facade.loading()) {
+                <div class="flex flex-col gap-3">
+                    @for (_ of [1, 2, 3]; track $index) {
+                    <div class="card">
+                        <p-skeleton height="1.3rem" styleClass="mb-2 w-1/2" />
+                        <p-skeleton height="1rem" styleClass="mb-3 w-3/4" />
+                        <p-skeleton height="4rem" styleClass="w-full" />
+                    </div>
+                    }
+                </div>
+                } @else if (facade.pendingListings().length === 0) {
+                <div class="card flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-check-circle text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+                    <h3 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">
+                        Keine ausstehenden Inserate
+                    </h3>
+                    <p class="text-surface-500 mt-1 text-sm">Alle Inserate wurden geprüft.</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-4">
+                    @for (listing of facade.pendingListings(); track listing.id) {
+                    <div class="card">
+                        <!-- Listing header -->
+                        <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <div class="mb-1 flex flex-wrap items-center gap-2">
+                                    <h3 class="text-surface-900 dark:text-surface-0 text-lg font-bold">
+                                        {{ listing.title }}
+                                    </h3>
+                                    <p-tag value="Ausstehend" severity="warn" />
+                                </div>
+                                <div class="text-surface-500 flex flex-wrap gap-4 text-sm">
+                                    <span><i class="pi pi-user mr-1"></i>{{ listing.authorName }}</span>
+                                    <span><i class="pi pi-folder mr-1"></i>{{ listing.categoryName }}</span>
+                                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(listing.createdAt) }}</span>
+                                    @if (listing.price !== null) {
+                                    <span class="font-medium text-primary">
+                                        {{
+                                            listing.price
+                                                | currency: listing.currency : "symbol" : "1.2-2" : "de-DE"
+                                        }}
+                                    </span>
+                                    } @else {
+                                    <span>Verhandelbar</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <p-button
+                                    icon="pi pi-eye"
+                                    label="Ansehen"
+                                    [text]="true"
+                                    size="small"
+                                    [routerLink]="['/marketplace', listing.id]"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Description preview -->
+                        <div
+                            class="bg-surface-50 dark:bg-surface-800 mb-4 rounded-xl p-4 text-sm text-surface-600 dark:text-surface-300"
+                        >
+                            <div
+                                class="prose prose-sm dark:prose-invert line-clamp-4 max-w-none"
+                                [innerHTML]="listing.description"
+                            ></div>
+                        </div>
+
+                        @if (listing.tags?.length) {
+                        <div class="mb-4 flex flex-wrap gap-1">
+                            @for (tag of listing.tags; track tag) {
+                            <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs"
+                                >#{{ tag }}</span
+                            >
+                            }
+                        </div>
+                        }
+
+                        <!-- Actions -->
+                        <div class="border-surface-100 dark:border-surface-700 flex flex-wrap gap-2 border-t pt-3">
+                            <p-button
+                                icon="pi pi-check"
+                                label="Genehmigen"
+                                severity="success"
+                                (onClick)="approveListing(listing.id)"
+                            />
+                            <p-button
+                                icon="pi pi-times"
+                                label="Ablehnen"
+                                severity="danger"
+                                [outlined]="true"
+                                (onClick)="openRejectDialog(listing)"
+                            />
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- Reports tab -->
+        <p-tabpanel [value]="1">
+            <div class="mt-4">
+                @if (facade.pendingReports().length === 0) {
+                <div class="card flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-shield text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+                    <h3 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">
+                        Keine offenen Meldungen
+                    </h3>
+                    <p class="text-surface-500 mt-1 text-sm">Alle Meldungen wurden bearbeitet.</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-4">
+                    @for (report of facade.pendingReports(); track report.id) {
+                    <div class="card">
+                        <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <div class="mb-1 flex flex-wrap items-center gap-2">
+                                    <h3 class="text-surface-900 dark:text-surface-0 font-bold">
+                                        Meldung zu: {{ report.listingTitle }}
+                                    </h3>
+                                    <p-tag
+                                        [value]="report.status"
+                                        [severity]="reportStatusSeverity(report.status)"
+                                    />
+                                </div>
+                                <div class="text-surface-500 flex flex-wrap gap-4 text-sm">
+                                    <span><i class="pi pi-user mr-1"></i>Gemeldet von: {{ report.reporterId }}</span>
+                                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(report.createdAt) }}</span>
+                                </div>
+                            </div>
+                            <p-button
+                                icon="pi pi-eye"
+                                label="Inserat ansehen"
+                                [text]="true"
+                                size="small"
+                                [routerLink]="['/marketplace', report.listingId]"
+                            />
+                        </div>
+
+                        <!-- Reason -->
+                        <div
+                            class="bg-red-50 dark:bg-red-900/20 mb-4 rounded-xl p-4 text-sm text-surface-700 dark:text-surface-300"
+                        >
+                            <span class="mb-1 block font-semibold text-red-600 dark:text-red-400">Meldegrund:</span>
+                            {{ report.reason }}
+                        </div>
+
+                        @if (report.moderatorNote) {
+                        <div
+                            class="bg-surface-50 dark:bg-surface-800 mb-4 rounded-xl p-3 text-sm"
+                        >
+                            <span class="font-medium">Moderationsnotiz: </span>{{ report.moderatorNote }}
+                        </div>
+                        }
+
+                        <!-- Actions -->
+                        @if (report.status === 'pending') {
+                        <div class="border-surface-100 dark:border-surface-700 flex flex-wrap gap-2 border-t pt-3">
+                            <p-button
+                                icon="pi pi-times"
+                                label="Schließen (Unbegründet)"
+                                severity="secondary"
+                                [outlined]="true"
+                                size="small"
+                                (onClick)="actionReport(report.id, 'dismissed')"
+                            />
+                            <p-button
+                                icon="pi pi-shield"
+                                label="Maßnahme ergreifen"
+                                severity="warn"
+                                size="small"
+                                (onClick)="actionReport(report.id, 'actioned')"
+                            />
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+    </p-tabs>
+</div>
+
+<!-- Reject dialog -->
+<p-dialog
+    [visible]="rejectDialogVisible()"
+    (visibleChange)="rejectDialogVisible.set($event)"
+    header="Inserat ablehnen"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '460px' }"
+    *transloco="let t"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        @if (pendingListing) {
+        <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-sm">
+            <span class="text-surface-500">Inserat: </span>
+            <span class="text-surface-900 dark:text-surface-0 font-medium">{{ pendingListing.title }}</span>
+        </div>
+        }
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Ablehnungsgrund (optional)</label>
+            <textarea
+                pTextarea
+                [(ngModel)]="rejectReason"
+                placeholder="Grund für die Ablehnung angeben..."
+                rows="4"
+            ></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button
+                label="Abbrechen"
+                [outlined]="true"
+                severity="secondary"
+                (onClick)="rejectDialogVisible.set(false)"
+            />
+            <p-button icon="pi pi-times" label="Ablehnen" severity="danger" (onClick)="confirmReject()" />
+        </div>
+    </ng-template>
+</p-dialog>

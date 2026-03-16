@@ -50,6 +50,7 @@ function toDto(entity: ForumThreadEntity, author?: ThreadAuthorInfo): ThreadDto 
         replyCount: entity.replyCount,
         lastPostAt: entity.lastPostAt?.toISOString(),
         lastPostByUserId: entity.lastPostByUserId,
+        bestAnswerPostId: entity.bestAnswerPostId,
         createdAt: entity.createdAt.toISOString(),
         updatedAt: entity.updatedAt.toISOString()
     };

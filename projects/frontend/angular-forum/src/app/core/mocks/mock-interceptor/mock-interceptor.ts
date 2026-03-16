@@ -20,6 +20,12 @@ import { ForumCategory } from "../../models/forum/forum-category";
 import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { GalleryAlbum, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
+import {
+    MarketComment,
+    MarketListing,
+    MarketOffer,
+    MarketReport
+} from "../../models/marketplace/marketplace";
 import { Group } from "../../models/group/group";
 import { LottoDraw, LottoPrizeClass, LottoResult, LottoTicket } from "../../models/lotto/lotto";
 import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
@@ -63,6 +69,12 @@ import {
     mockUsers,
     mockWallets,
     mockWalletTransactions,
+    mockMarketCategories,
+    mockMarketListings,
+    mockMarketOffers,
+    mockMarketComments,
+    mockMarketRatings,
+    mockMarketReports,
     User
 } from "../mock-data/mock-data";
 
@@ -381,6 +393,7 @@ export class MockInterceptor implements HttpInterceptor {
                 authorLevelName: postAuthor?.levelName ?? "Neuling",
                 content: payload.content,
                 isFirstPost: false,
+                isBestAnswer: false,
                 isEdited: false,
                 editCount: 0,
                 reactionCount: 0,
@@ -391,6 +404,30 @@ export class MockInterceptor implements HttpInterceptor {
             thread.replyCount += 1;
             thread.lastPostAt = now;
             return this.ok(newPost);
+        }
+
+        // PATCH /api/forum/threads/:threadId/best-answer/:postId
+        const bestAnswerMatch = lowerUrl.match(/\/api\/forum\/threads\/([^/]+)\/best-answer\/([^/]+)$/);
+        if (method === "PATCH" && bestAnswerMatch) {
+            const threadId = bestAnswerMatch[1];
+            const postId = bestAnswerMatch[2];
+            const thread = mockThreads[threadId] as Thread | undefined;
+            if (!thread) return this.error("Thread nicht gefunden", 404);
+            const post = mockPosts[postId] as Post | undefined;
+            if (!post || post.threadId !== threadId) return this.error("Beitrag nicht gefunden", 404);
+            const isSame = thread.bestAnswerPostId === postId;
+            if (thread.bestAnswerPostId) {
+                const prev = mockPosts[thread.bestAnswerPostId];
+                if (prev) prev.isBestAnswer = false;
+            }
+            if (isSame) {
+                thread.bestAnswerPostId = undefined;
+                post.isBestAnswer = false;
+            } else {
+                thread.bestAnswerPostId = postId;
+                post.isBestAnswer = true;
+            }
+            return this.ok(post);
         }
 
         // GET /api/anime/genres
@@ -2134,6 +2171,393 @@ export class MockInterceptor implements HttpInterceptor {
         const galleryRateMatch = url.match(/\/api\/gallery\/media\/([^/]+)\/rate$/);
         if (method === "POST" && galleryRateMatch) {
             return this.ok({ success: true });
+        }
+
+        // ── Marketplace ──────────────────────────────────────────────────────
+
+        const MOCK_MEMBER_ID = "00000000-0000-0000-0000-000000000003";
+
+        // GET /api/marketplace/categories
+        if (method === "GET" && /\/api\/marketplace\/categories$/.test(url)) {
+            return this.ok(Object.values(mockMarketCategories));
+        }
+
+        // GET /api/marketplace/admin/pending
+        if (method === "GET" && /\/api\/marketplace\/admin\/pending$/.test(url)) {
+            return this.ok(
+                Object.values(mockMarketListings).filter((l) => l.status === "pending")
+            );
+        }
+
+        // GET /api/marketplace/admin/reports
+        if (method === "GET" && /\/api\/marketplace\/admin\/reports$/.test(url)) {
+            return this.ok(Object.values(mockMarketReports));
+        }
+
+        // POST /api/marketplace/admin/:id/approve
+        const marketAdminApproveMatch = url.match(/\/api\/marketplace\/admin\/([^/]+)\/approve$/);
+        if (method === "POST" && marketAdminApproveMatch) {
+            const id = marketAdminApproveMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            listing.status = "active";
+            listing.updatedAt = new Date().toISOString();
+            return this.ok({ ...listing });
+        }
+
+        // POST /api/marketplace/admin/:id/reject
+        const marketAdminRejectMatch = url.match(/\/api\/marketplace\/admin\/([^/]+)\/reject$/);
+        if (method === "POST" && marketAdminRejectMatch) {
+            const id = marketAdminRejectMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            listing.status = "archived";
+            listing.updatedAt = new Date().toISOString();
+            return this.ok({ ...listing });
+        }
+
+        // PATCH /api/marketplace/admin/reports/:id
+        const marketAdminReportPatchMatch = url.match(/\/api\/marketplace\/admin\/reports\/([^/]+)$/);
+        if (method === "PATCH" && marketAdminReportPatchMatch) {
+            const id = marketAdminReportPatchMatch[1]!;
+            const report = mockMarketReports[id];
+            if (!report) return this.error("Meldung nicht gefunden", 404);
+            const patch = req.body as Partial<MarketReport>;
+            Object.assign(report, patch, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...report });
+        }
+
+        // GET /api/marketplace/listings/my-offers
+        if (method === "GET" && /\/api\/marketplace\/listings\/my-offers$/.test(url)) {
+            return this.ok(
+                Object.values(mockMarketOffers).filter((o) => o.senderId === MOCK_MEMBER_ID)
+            );
+        }
+
+        // GET /api/marketplace/listings/my
+        if (method === "GET" && /\/api\/marketplace\/listings\/my$/.test(url)) {
+            return this.ok(
+                Object.values(mockMarketListings).filter((l) => l.authorId === MOCK_MEMBER_ID)
+            );
+        }
+
+        // POST /api/marketplace/listings/:id/close
+        const marketListingCloseMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/close$/);
+        if (method === "POST" && marketListingCloseMatch) {
+            const id = marketListingCloseMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            listing.status = "closed";
+            listing.updatedAt = new Date().toISOString();
+            return this.ok({ ...listing });
+        }
+
+        // POST /api/marketplace/listings/:id/report
+        const marketListingReportMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/report$/);
+        if (method === "POST" && marketListingReportMatch) {
+            const id = marketListingReportMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            const payload = req.body as { reason: string };
+            const reportId = `rep-${Date.now()}`;
+            const newReport: MarketReport = {
+                id: reportId,
+                listingId: id,
+                listingTitle: listing.title,
+                reporterId: MOCK_MEMBER_ID,
+                reason: payload.reason,
+                status: "pending",
+                moderatorNote: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockMarketReports[reportId] = newReport;
+            return this.ok(null);
+        }
+
+        // POST /api/marketplace/listings/:id/offers/:offerId/accept
+        const marketOfferAcceptMatch = url.match(
+            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/accept$/
+        );
+        if (method === "POST" && marketOfferAcceptMatch) {
+            const offerId = marketOfferAcceptMatch[2]!;
+            const listingId = marketOfferAcceptMatch[1]!;
+            const offer = mockMarketOffers[offerId];
+            if (!offer) return this.error("Angebot nicht gefunden", 404);
+            offer.status = "accepted";
+            offer.updatedAt = new Date().toISOString();
+            const listing = mockMarketListings[listingId];
+            if (listing) {
+                listing.status = "sold";
+                listing.bestOfferId = offerId;
+            }
+            return this.ok({ ...offer });
+        }
+
+        // POST /api/marketplace/listings/:id/offers/:offerId/reject
+        const marketOfferRejectMatch = url.match(
+            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/reject$/
+        );
+        if (method === "POST" && marketOfferRejectMatch) {
+            const offerId = marketOfferRejectMatch[2]!;
+            const offer = mockMarketOffers[offerId];
+            if (!offer) return this.error("Angebot nicht gefunden", 404);
+            offer.status = "rejected";
+            offer.updatedAt = new Date().toISOString();
+            return this.ok({ ...offer });
+        }
+
+        // POST /api/marketplace/listings/:id/offers/:offerId/counter
+        const marketOfferCounterMatch = url.match(
+            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)\/counter$/
+        );
+        if (method === "POST" && marketOfferCounterMatch) {
+            const offerId = marketOfferCounterMatch[2]!;
+            const offer = mockMarketOffers[offerId];
+            if (!offer) return this.error("Angebot nicht gefunden", 404);
+            const payload = req.body as { counterAmount?: number | null; counterMessage: string };
+            offer.status = "countered";
+            offer.counterAmount = payload.counterAmount ?? null;
+            offer.counterMessage = payload.counterMessage;
+            offer.updatedAt = new Date().toISOString();
+            return this.ok({ ...offer });
+        }
+
+        // DELETE /api/marketplace/listings/:id/offers/:offerId (withdraw)
+        const marketOfferDeleteMatch = url.match(
+            /\/api\/marketplace\/listings\/([^/]+)\/offers\/([^/]+)$/
+        );
+        if (method === "DELETE" && marketOfferDeleteMatch) {
+            const offerId = marketOfferDeleteMatch[2]!;
+            const offer = mockMarketOffers[offerId];
+            if (offer) {
+                offer.status = "withdrawn";
+                offer.updatedAt = new Date().toISOString();
+            }
+            return this.ok(null);
+        }
+
+        // PATCH /api/marketplace/listings/:id/offers/:offerId
+        if (method === "PATCH" && marketOfferDeleteMatch) {
+            const offerId = marketOfferDeleteMatch[2]!;
+            const offer = mockMarketOffers[offerId];
+            if (!offer) return this.error("Angebot nicht gefunden", 404);
+            const patch = req.body as Partial<MarketOffer>;
+            Object.assign(offer, patch, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...offer });
+        }
+
+        // GET /api/marketplace/listings/:id/offers
+        const marketOffersMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/offers$/);
+        if (method === "GET" && marketOffersMatch) {
+            const listingId = marketOffersMatch[1]!;
+            return this.ok(
+                Object.values(mockMarketOffers).filter((o) => o.listingId === listingId)
+            );
+        }
+
+        // POST /api/marketplace/listings/:id/offers
+        if (method === "POST" && marketOffersMatch) {
+            const listingId = marketOffersMatch[1]!;
+            const listing = mockMarketListings[listingId];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            const payload = req.body as { amount?: number | null; message: string };
+            const offerId = `offer-${Date.now()}`;
+            const newOffer: MarketOffer = {
+                id: offerId,
+                listingId,
+                senderId: MOCK_MEMBER_ID,
+                senderName: "NarutoFan99",
+                senderAvatarUrl: null,
+                amount: payload.amount ?? null,
+                message: payload.message,
+                status: "pending",
+                counterAmount: null,
+                counterMessage: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockMarketOffers[offerId] = newOffer;
+            listing.offerCount++;
+            return this.ok(newOffer);
+        }
+
+        // GET /api/marketplace/listings/:id/ratings
+        const marketRatingsMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/ratings$/);
+        if (method === "GET" && marketRatingsMatch) {
+            const listingId = marketRatingsMatch[1]!;
+            return this.ok(
+                Object.values(mockMarketRatings).filter((r) => r.listingId === listingId)
+            );
+        }
+
+        // POST /api/marketplace/listings/:id/ratings
+        if (method === "POST" && marketRatingsMatch) {
+            const listingId = marketRatingsMatch[1]!;
+            const payload = req.body as { offerId: string; ratedUserId: string; score: number; text?: string };
+            const ratingId = `rating-${Date.now()}`;
+            const newRating = {
+                id: ratingId,
+                listingId,
+                offerId: payload.offerId,
+                raterId: MOCK_MEMBER_ID,
+                raterName: "NarutoFan99",
+                raterAvatarUrl: null,
+                ratedUserId: payload.ratedUserId,
+                score: payload.score,
+                text: payload.text ?? null,
+                reply: null,
+                createdAt: new Date().toISOString()
+            };
+            mockMarketRatings[ratingId] = newRating;
+            return this.ok(newRating);
+        }
+
+        // DELETE /api/marketplace/listings/:id/comments/:commentId
+        const marketCommentDeleteMatch = url.match(
+            /\/api\/marketplace\/listings\/([^/]+)\/comments\/([^/]+)$/
+        );
+        if (method === "DELETE" && marketCommentDeleteMatch) {
+            const commentId = marketCommentDeleteMatch[2]!;
+            delete mockMarketComments[commentId];
+            return this.ok(null);
+        }
+
+        // GET /api/marketplace/listings/:id/comments
+        const marketCommentsMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)\/comments$/);
+        if (method === "GET" && marketCommentsMatch) {
+            const listingId = marketCommentsMatch[1]!;
+            const topLevel = Object.values(mockMarketComments).filter(
+                (c) => c.listingId === listingId && !c.parentId
+            );
+            // Build tree
+            const tree = topLevel.map((c) => ({
+                ...c,
+                replies: Object.values(mockMarketComments).filter(
+                    (r) => r.parentId === c.id && r.listingId === listingId
+                )
+            }));
+            return this.ok(tree);
+        }
+
+        // POST /api/marketplace/listings/:id/comments
+        if (method === "POST" && marketCommentsMatch) {
+            const listingId = marketCommentsMatch[1]!;
+            const payload = req.body as { content: string; parentId?: string | null };
+            const commentId = `mc-${Date.now()}`;
+            const newComment: MarketComment = {
+                id: commentId,
+                listingId,
+                authorId: MOCK_MEMBER_ID,
+                authorName: "NarutoFan99",
+                authorAvatarUrl: null,
+                content: payload.content,
+                parentId: payload.parentId ?? null,
+                isEdited: false,
+                replies: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockMarketComments[commentId] = newComment;
+            const listing = mockMarketListings[listingId];
+            if (listing) listing.commentCount++;
+            return this.ok(newComment);
+        }
+
+        // GET /api/marketplace/listings (paginated) — must be before /:id
+        if (method === "GET" && /\/api\/marketplace\/listings(\?|$)/.test(url)) {
+            const params = new URL(url, "http://localhost").searchParams;
+            const page = parseInt(params.get("page") ?? "1", 10);
+            const limit = parseInt(params.get("limit") ?? "12", 10);
+            const categoryId = params.get("categoryId");
+            const type = params.get("type");
+            const search = params.get("search");
+
+            let all = Object.values(mockMarketListings).filter((l) => l.status === "active");
+            if (categoryId) all = all.filter((l) => l.categoryId === categoryId);
+            if (type) all = all.filter((l) => l.type === type);
+            if (search) {
+                const q = search.toLowerCase();
+                all = all.filter(
+                    (l) =>
+                        l.title.toLowerCase().includes(q) ||
+                        l.description.toLowerCase().includes(q) ||
+                        l.tags.some((t) => t.toLowerCase().includes(q))
+                );
+            }
+            const total = all.length;
+            const data = all.slice((page - 1) * limit, page * limit);
+            return this.ok({ data, total, page, limit });
+        }
+
+        // POST /api/marketplace/listings (create)
+        if (method === "POST" && /\/api\/marketplace\/listings$/.test(url)) {
+            const payload = req.body as {
+                title: string;
+                description: string;
+                price?: number | null;
+                currency?: string;
+                type: string;
+                categoryId: string;
+                tags?: string[];
+                expiresAt?: string | null;
+            };
+            const category = mockMarketCategories[payload.categoryId];
+            const listingId = `listing-${Date.now()}`;
+            const newListing: MarketListing = {
+                id: listingId,
+                title: payload.title,
+                description: payload.description,
+                price: payload.price ?? null,
+                currency: payload.currency ?? "EUR",
+                type: payload.type as MarketListing["type"],
+                status: category?.requiresApproval ? "pending" : "active",
+                categoryId: payload.categoryId,
+                categoryName: category?.name ?? "Unbekannt",
+                authorId: MOCK_MEMBER_ID,
+                authorName: "NarutoFan99",
+                authorAvatarUrl: null,
+                images: [],
+                customFields: null,
+                tags: payload.tags ?? [],
+                expiresAt: payload.expiresAt ?? null,
+                viewCount: 0,
+                offerCount: 0,
+                commentCount: 0,
+                bestOfferId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockMarketListings[listingId] = newListing;
+            return this.ok(newListing);
+        }
+
+        // PATCH /api/marketplace/listings/:id
+        const marketListingDetailMatch = url.match(/\/api\/marketplace\/listings\/([^/]+)$/);
+        if (method === "PATCH" && marketListingDetailMatch) {
+            const id = marketListingDetailMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            const patch = req.body as Partial<MarketListing>;
+            Object.assign(listing, patch, { updatedAt: new Date().toISOString() });
+            return this.ok({ ...listing });
+        }
+
+        // DELETE /api/marketplace/listings/:id
+        if (method === "DELETE" && marketListingDetailMatch) {
+            const id = marketListingDetailMatch[1]!;
+            if (!mockMarketListings[id]) return this.error("Inserat nicht gefunden", 404);
+            delete mockMarketListings[id];
+            return this.ok(null);
+        }
+
+        // GET /api/marketplace/listings/:id
+        if (method === "GET" && marketListingDetailMatch) {
+            const id = marketListingDetailMatch[1]!;
+            const listing = mockMarketListings[id];
+            if (!listing) return this.error("Inserat nicht gefunden", 404);
+            listing.viewCount++;
+            return this.ok({ ...listing });
         }
 
         // Fallback: durchreichen

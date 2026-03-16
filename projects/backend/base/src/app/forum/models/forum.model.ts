@@ -70,6 +70,7 @@ export interface ThreadDto {
     replyCount: number;
     lastPostAt?: string;
     lastPostByUserId?: string;
+    bestAnswerPostId?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -95,6 +96,7 @@ export interface PostDto {
     authorBalance?: number;
     content: string;
     isFirstPost: boolean;
+    isBestAnswer: boolean;
     isEdited: boolean;
     editedAt?: string;
     editCount: number;

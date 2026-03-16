@@ -15,6 +15,7 @@ export const FORUM_ROUTES = {
         myReactions: (threadId: string) => `/forum/threads/${threadId}/my-reactions`
     },
     posts: {
-        react: (postId: string) => `/forum/posts/${postId}/react`
+        react: (postId: string) => `/forum/posts/${postId}/react`,
+        bestAnswer: (threadId: string, postId: string) => `/forum/threads/${threadId}/best-answer/${postId}`
     }
 } as const;

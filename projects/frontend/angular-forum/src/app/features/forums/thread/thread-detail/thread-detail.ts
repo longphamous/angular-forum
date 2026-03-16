@@ -174,6 +174,34 @@ export class ThreadDetail implements OnInit {
         this.cd.markForCheck();
     }
 
+    // ── Author / Best-answer helpers ──────────────────────────────────────────
+
+    isThreadAuthor(): boolean {
+        const user = this.authFacade.currentUser();
+        const thread = this.facade.currentThread();
+        return !!user && !!thread && user.id === thread.authorId;
+    }
+
+    isCurrentUser(authorId: string): boolean {
+        return this.authFacade.currentUser()?.id === authorId;
+    }
+
+    isOpPost(post: Post): boolean {
+        const thread = this.facade.currentThread();
+        return !!thread && post.authorId === thread.authorId;
+    }
+
+    markBestAnswer(post: Post): void {
+        this.facade.markBestAnswer(this.threadId, post.id).subscribe({
+            next: () => {
+                // Reload thread (bestAnswerPostId) and current page of posts
+                this.facade.loadThread(this.threadId);
+                this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
+                this.cd.markForCheck();
+            }
+        });
+    }
+
     // ── Report ────────────────────────────────────────────────────────────────
 
     openReport(post: Post): void {
