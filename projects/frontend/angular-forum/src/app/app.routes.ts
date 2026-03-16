@@ -333,6 +333,28 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-link-database/admin-link-database").then((c) => c.AdminLinkDatabase)
+            },
+            {
+                path: "chronik",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/chronik/chronik-page").then((c) => c.ChronikPage)
+            },
+            {
+                path: "market",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/dynamic-market/dynamic-market-page").then((c) => c.DynamicMarketPage)
+            },
+            {
+                path: "admin/market",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-dynamic-market/admin-dynamic-market").then(
+                        (c) => c.AdminDynamicMarket
+                    )
             }
         ]
     }

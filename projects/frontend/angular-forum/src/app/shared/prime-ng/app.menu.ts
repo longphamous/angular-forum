@@ -65,6 +65,16 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.linkDatabase"),
                         icon: "pi pi-fw pi-link",
                         routerLink: ["/links"]
+                    },
+                    {
+                        label: this.t("nav.chronik"),
+                        icon: "pi pi-fw pi-history",
+                        routerLink: ["/chronik"]
+                    },
+                    {
+                        label: this.t("nav.dynamicMarket"),
+                        icon: "pi pi-fw pi-chart-line",
+                        routerLink: ["/market"]
                     }
                 ]
             },
@@ -141,6 +151,11 @@ export class AppMenu implements OnInit, OnDestroy {
                         label: this.t("nav.linkDatabaseManagement"),
                         icon: "pi pi-fw pi-link",
                         routerLink: ["/admin/link-database"]
+                    },
+                    {
+                        label: this.t("nav.dynamicMarketManagement"),
+                        icon: "pi pi-fw pi-chart-line",
+                        routerLink: ["/admin/market"]
                     }
                 ]
             }

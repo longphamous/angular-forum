@@ -1,0 +1,24 @@
+export const DYNAMIC_MARKET_ROUTES = {
+    overview: () => "/gamification/market/overview",
+    resource: (slug: string) => `/gamification/market/resources/${slug}`,
+    resourceHistory: (slug: string, limit = 20) => `/gamification/market/resources/${slug}/history?limit=${limit}`,
+    recentEvents: (limit = 10) => `/gamification/market/events/recent?limit=${limit}`,
+    buy: () => "/gamification/market/buy",
+    sell: () => "/gamification/market/sell",
+    inventory: () => "/gamification/market/inventory",
+    transactions: (page = 1, limit = 20) => `/gamification/market/transactions?page=${page}&limit=${limit}`,
+    // Admin
+    adminResources: () => "/gamification/market/admin/resources",
+    adminCreateResource: () => "/gamification/market/admin/resources",
+    adminUpdateResource: (id: string) => `/gamification/market/admin/resources/${id}`,
+    adminDeleteResource: (id: string) => `/gamification/market/admin/resources/${id}`,
+    adminResetPrices: () => "/gamification/market/admin/reset-prices",
+    adminRecalculate: () => "/gamification/market/admin/recalculate",
+    adminEvents: () => "/gamification/market/admin/events",
+    adminCreateEvent: () => "/gamification/market/admin/events",
+    adminUpdateEvent: (id: string) => `/gamification/market/admin/events/${id}`,
+    adminDeleteEvent: (id: string) => `/gamification/market/admin/events/${id}`,
+    adminTriggerEvent: () => "/gamification/market/admin/trigger-event",
+    adminConfig: () => "/gamification/market/admin/config",
+    adminUpdateConfig: () => "/gamification/market/admin/config"
+} as const;

@@ -11,7 +11,7 @@ export class AchievementEntity {
     @Column({ length: 100 })
     name!: string;
 
-    @Column({ nullable: true, length: 255 })
+    @Column({ type: "varchar", nullable: true, length: 255 })
     description?: string;
 
     @Column({ length: 50 })

@@ -1,3 +1,4 @@
+import { KeyValuePipe } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
@@ -28,6 +29,7 @@ import { LinkDatabaseFacade } from "../../../facade/link-database/link-database-
         ChipModule,
         DividerModule,
         FormsModule,
+        KeyValuePipe,
         RatingModule,
         RouterModule,
         SkeletonModule,

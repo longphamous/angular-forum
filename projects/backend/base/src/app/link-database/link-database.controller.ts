@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request } from "@nestjs/common";
 
-import { Public } from "../auth/decorators/public.decorator";
+import { Public } from "../auth/auth.decorators";
 import {
     CreateCategoryDto,
     CreateLinkDto,

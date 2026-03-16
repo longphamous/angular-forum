@@ -26,8 +26,8 @@ export class LinkEntryEntity {
     @Column({ type: "text", nullable: true }) address!: string | null;
     @Column({ type: "numeric", precision: 10, scale: 7, nullable: true }) latitude!: number | null;
     @Column({ type: "numeric", precision: 10, scale: 7, nullable: true }) longitude!: number | null;
-    @Column({ name: "contact_email", length: 255, nullable: true }) contactEmail!: string | null;
-    @Column({ name: "contact_phone", length: 50, nullable: true }) contactPhone!: string | null;
+    @Column({ name: "contact_email", type: "varchar", length: 255, nullable: true }) contactEmail!: string | null;
+    @Column({ name: "contact_phone", type: "varchar", length: 50, nullable: true }) contactPhone!: string | null;
     @Column({ name: "custom_fields", type: "jsonb", nullable: true }) customFields!: Record<string, string> | null;
     @Column({ name: "comment_count", default: 0 }) commentCount!: number;
     @CreateDateColumn({ name: "created_at", type: "timestamptz" }) createdAt!: Date;

@@ -1,0 +1,105 @@
+/* Flash animation for price changes */
+@keyframes flash-green {
+    0% {
+        background-color: transparent;
+    }
+    20% {
+        background-color: rgba(34, 197, 94, 0.3);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+@keyframes flash-red {
+    0% {
+        background-color: transparent;
+    }
+    20% {
+        background-color: rgba(239, 68, 68, 0.3);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+:host ::ng-deep .cell-flash-up {
+    animation: flash-green 1.5s ease-out;
+}
+
+:host ::ng-deep .cell-flash-down {
+    animation: flash-red 1.5s ease-out;
+}
+
+/* Price cell styling */
+.price-up {
+    color: #22c55e;
+}
+
+.price-down {
+    color: #ef4444;
+}
+
+.price-neutral {
+    color: #94a3b8;
+}
+
+/* Range bar */
+.range-bar {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    width: 80px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.range-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+/* Sparkline container */
+.sparkline-container {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Selected row highlight */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr.selected-row {
+    background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+    cursor: pointer;
+}
+
+/* Change badge */
+.change-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.change-badge-up {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.change-badge-down {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.change-badge-neutral {
+    background-color: rgba(148, 163, 184, 0.15);
+    color: #64748b;
+}

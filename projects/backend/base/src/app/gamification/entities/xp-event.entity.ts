@@ -16,7 +16,7 @@ export class XpEventEntity {
     @Column({ name: "xp_gained", type: "int" })
     xpGained!: number;
 
-    @Column({ name: "reference_id", nullable: true, length: 255 })
+    @Column({ name: "reference_id", type: "varchar", nullable: true, length: 255 })
     referenceId?: string;
 
     @CreateDateColumn({ name: "created_at", type: "timestamptz" })

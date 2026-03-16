@@ -7,7 +7,9 @@ export type WalletTransactionType =
     | "lotto_ticket"
     | "lotto_win"
     | "admin_transfer"
-    | "recalculate";
+    | "recalculate"
+    | "market_buy"
+    | "market_sell";
 
 export interface Wallet {
     id: string;

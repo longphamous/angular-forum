@@ -11,7 +11,7 @@ export class XpConfigEntity {
     @Column({ length: 100 })
     label!: string;
 
-    @Column({ nullable: true, length: 255 })
+    @Column({ type: "varchar", nullable: true, length: 255 })
     description?: string;
 
     @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })

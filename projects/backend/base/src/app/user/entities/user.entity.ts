@@ -31,13 +31,13 @@ export class UserEntity {
     @Column({ nullable: true, type: "date" })
     birthday?: Date;
 
-    @Column({ nullable: true, length: 20 })
+    @Column({ type: "varchar", nullable: true, length: 20 })
     gender?: string;
 
-    @Column({ nullable: true, length: 100 })
+    @Column({ type: "varchar", nullable: true, length: 100 })
     location?: string;
 
-    @Column({ nullable: true, length: 255 })
+    @Column({ type: "varchar", nullable: true, length: 255 })
     website?: string;
 
     @Column({ nullable: true, type: "text" })

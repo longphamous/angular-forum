@@ -8,6 +8,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
+import { ChronikModule } from "./chronik/chronik.module";
 import { CommunityBotModule } from "./community-bot/community-bot.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
@@ -49,6 +50,7 @@ import { UserModule } from "./user/user.module";
         NotificationsModule,
         MessagesModule,
         BlogModule,
+        ChronikModule,
         MarketplaceModule,
         FeedModule,
         CommunityBotModule,
