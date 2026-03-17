@@ -25,6 +25,9 @@ export class UserEntity {
     @Column({ name: "avatar_url", nullable: true, type: "text" })
     avatarUrl?: string;
 
+    @Column({ name: "cover_url", nullable: true, type: "text" })
+    coverUrl!: string | null;
+
     @Column({ nullable: true, type: "text" })
     bio?: string;
 

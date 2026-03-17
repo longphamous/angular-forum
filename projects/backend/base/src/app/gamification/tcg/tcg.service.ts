@@ -1,13 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 
 import { CreditService } from "../../credit/credit.service";
+import { MarketCategoryEntity } from "../../marketplace/entities/market-category.entity";
+import { MarketListingEntity } from "../../marketplace/entities/market-listing.entity";
+import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity } from "../../user/entities/user.entity";
 import { BoosterPackEntity } from "./entities/booster-pack.entity";
 import { BoosterPackCardEntity } from "./entities/booster-pack-card.entity";
 import { CardEntity } from "./entities/card.entity";
-import { CardListingEntity } from "./entities/card-listing.entity";
 import { UserBoosterEntity } from "./entities/user-booster.entity";
 import { UserCardEntity } from "./entities/user-card.entity";
 
@@ -15,6 +17,10 @@ import { UserCardEntity } from "./entities/user-card.entity";
 
 export type CardRarity = "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
 export type CardElement = "fire" | "water" | "earth" | "wind" | "light" | "dark" | "neutral";
+
+/** Slug used to identify the auto-seeded marketplace category for TCG cards. */
+const TCG_CATEGORY_NAME = "Trading Cards";
+const TCG_CATEGORY_ICON = "pi pi-id-card";
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -138,6 +144,16 @@ export interface AdminBoosterDetailDto extends BoosterPackDto {
     cards: { cardId: string; cardName: string; cardRarity: CardRarity; dropWeight: number }[];
 }
 
+/** Shape of the JSONB stored in MarketListingEntity.customFields for TCG cards. */
+interface TcgCustomFields {
+    tcgCardId: string;
+    tcgCardQuantity: number;
+    tcgCardRarity: string;
+    tcgCardName: string;
+    tcgCardIcon: string | null;
+    tcgCardImageUrl: string | null;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toCardDto(entity: CardEntity, owned?: number): CardDto {
@@ -189,7 +205,10 @@ function toBoosterPackDto(entity: BoosterPackEntity, totalCards: number, userPur
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class TcgService {
+export class TcgService implements OnModuleInit {
+    private readonly logger = new Logger(TcgService.name);
+    private tcgCategoryId: string | null = null;
+
     constructor(
         @InjectRepository(CardEntity)
         private readonly cardRepo: Repository<CardEntity>,
@@ -201,12 +220,50 @@ export class TcgService {
         private readonly userCardRepo: Repository<UserCardEntity>,
         @InjectRepository(UserBoosterEntity)
         private readonly userBoosterRepo: Repository<UserBoosterEntity>,
-        @InjectRepository(CardListingEntity)
-        private readonly cardListingRepo: Repository<CardListingEntity>,
+        @InjectRepository(MarketListingEntity)
+        private readonly listingRepo: Repository<MarketListingEntity>,
+        @InjectRepository(MarketCategoryEntity)
+        private readonly categoryRepo: Repository<MarketCategoryEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly creditService: CreditService
+        private readonly creditService: CreditService,
+        private readonly notificationsService: NotificationsService
     ) {}
+
+    async onModuleInit(): Promise<void> {
+        try {
+            await this.ensureTcgCategory();
+        } catch (err) {
+            this.logger.warn(`TCG category seed skipped: ${String(err)}`);
+        }
+    }
+
+    /** Find or create the "Trading Cards" category in the community marketplace. */
+    private async ensureTcgCategory(): Promise<void> {
+        let category = await this.categoryRepo.findOne({
+            where: { name: TCG_CATEGORY_NAME, parentId: IsNull() }
+        });
+        if (!category) {
+            category = this.categoryRepo.create({
+                name: TCG_CATEGORY_NAME,
+                description: "Sammelkarten aus dem Trading Card Game",
+                icon: TCG_CATEGORY_ICON,
+                sortOrder: 999,
+                requiresApproval: false,
+                isActive: true
+            });
+            category = await this.categoryRepo.save(category);
+            this.logger.log(`Created marketplace category "${TCG_CATEGORY_NAME}" (${category.id})`);
+        }
+        this.tcgCategoryId = category.id;
+    }
+
+    private async getTcgCategoryId(): Promise<string> {
+        if (!this.tcgCategoryId) {
+            await this.ensureTcgCategory();
+        }
+        return this.tcgCategoryId!;
+    }
 
     // ─── Public ───────────────────────────────────────────────────────────────
 
@@ -368,6 +425,17 @@ export class TcgService {
             }
         }
 
+        const rareCards = drawnCards.filter((c) => c.rarity === "legendary" || c.rarity === "mythic");
+        for (const rareCard of rareCards) {
+            await this.notificationsService.create(
+                userId,
+                "system",
+                "Seltene Karte!",
+                `Du hast eine ${rareCard.rarity} Karte gezogen: ${rareCard.name}!`,
+                "/tcg"
+            );
+        }
+
         return {
             boosterId: userBoosterId,
             cards: drawnCards.map((c) => toCardDto(c)),
@@ -406,7 +474,6 @@ export class TcgService {
         for (const card of allCards) {
             const rarity = card.rarity as CardRarity;
 
-            // Series
             const seriesEntry = seriesMap.get(card.series) ?? { total: 0, owned: 0 };
             seriesEntry.total += 1;
             if (ownedCardIds.has(card.id)) {
@@ -414,7 +481,6 @@ export class TcgService {
             }
             seriesMap.set(card.series, seriesEntry);
 
-            // Rarity
             const rarityEntry = rarityMap.get(rarity) ?? { total: 0, owned: 0 };
             rarityEntry.total += 1;
             if (ownedCardIds.has(card.id)) {
@@ -524,35 +590,65 @@ export class TcgService {
             });
             await this.userCardRepo.save(newCard);
         }
+
+        const sender = await this.userRepo.findOneBy({ id: userId });
+        const card = await this.cardRepo.findOneBy({ id: cardId });
+        const senderName = sender?.displayName ?? "Unbekannt";
+        const cardName = card?.name ?? "Unbekannte Karte";
+        await this.notificationsService.create(
+            targetUserId,
+            "system",
+            "Karte erhalten",
+            `${senderName} hat dir ${quantity}x ${cardName} übertragen.`,
+            "/tcg"
+        );
     }
 
-    // ─── Marketplace ──────────────────────────────────────────────────────────
+    // ─── Marketplace (unified with community marketplace) ─────────────────────
 
     async getActiveListings(): Promise<CardListingDto[]> {
-        const listings = await this.cardListingRepo.find({
-            where: { status: "active" },
-            relations: ["card"],
+        const categoryId = await this.getTcgCategoryId();
+
+        const listings = await this.listingRepo.find({
+            where: { categoryId, status: "active", deletedAt: undefined },
             order: { createdAt: "DESC" }
         });
 
-        const userIds = [...new Set(listings.map((l) => l.userId))];
-        const users = userIds.length > 0 ? await this.userRepo.findByIds(userIds) : [];
-        const userMap = new Map<string, string>();
-        for (const user of users) {
-            userMap.set(user.id, user.displayName);
+        // Collect unique user IDs and card IDs
+        const userIds = new Set<string>();
+        const cardIds = new Set<string>();
+        for (const l of listings) {
+            userIds.add(l.authorId);
+            const cf = l.customFields as TcgCustomFields | null;
+            if (cf?.tcgCardId) cardIds.add(cf.tcgCardId);
         }
 
-        return listings.map((l) => ({
-            id: l.id,
-            userId: l.userId,
-            sellerName: userMap.get(l.userId) ?? "Unknown",
-            cardId: l.cardId,
-            card: toCardDto(l.card),
-            price: l.price,
-            quantity: l.quantity,
-            status: l.status,
-            createdAt: l.createdAt.toISOString()
-        }));
+        const users = userIds.size > 0 ? await this.userRepo.findByIds([...userIds]) : [];
+        const userMap = new Map(users.map((u) => [u.id, u.displayName]));
+
+        const cards = cardIds.size > 0 ? await this.cardRepo.findByIds([...cardIds]) : [];
+        const cardMap = new Map(cards.map((c) => [c.id, c]));
+
+        return listings
+            .map((l) => {
+                const cf = l.customFields as TcgCustomFields | null;
+                if (!cf?.tcgCardId) return null;
+                const card = cardMap.get(cf.tcgCardId);
+                if (!card) return null;
+
+                return {
+                    id: l.id,
+                    userId: l.authorId,
+                    sellerName: userMap.get(l.authorId) ?? "Unknown",
+                    cardId: cf.tcgCardId,
+                    card: toCardDto(card),
+                    price: Number(l.price) || 0,
+                    quantity: cf.tcgCardQuantity ?? 1,
+                    status: "active" as CardListingDto["status"],
+                    createdAt: l.createdAt.toISOString()
+                };
+            })
+            .filter((dto): dto is CardListingDto => dto !== null);
     }
 
     async createListing(userId: string, cardId: string, price: number, quantity: number): Promise<CardListingDto> {
@@ -571,6 +667,9 @@ export class TcgService {
             throw new BadRequestException("You do not have enough copies of this card");
         }
 
+        const card = userCard.card;
+
+        // Deduct cards from user's collection
         userCard.quantity -= quantity;
         if (userCard.quantity === 0) {
             await this.userCardRepo.remove(userCard);
@@ -578,34 +677,50 @@ export class TcgService {
             await this.userCardRepo.save(userCard);
         }
 
-        const listing = this.cardListingRepo.create({
-            userId,
-            cardId,
-            price,
-            quantity,
-            status: "active"
-        });
-        const saved = await this.cardListingRepo.save(listing);
+        // Create a marketplace listing
+        const categoryId = await this.getTcgCategoryId();
+        const customFields: TcgCustomFields = {
+            tcgCardId: cardId,
+            tcgCardQuantity: quantity,
+            tcgCardRarity: card.rarity,
+            tcgCardName: card.name,
+            tcgCardIcon: card.imageUrl ?? null,
+            tcgCardImageUrl: card.imageUrl ?? null
+        };
 
-        const card = userCard.card;
+        const listing = this.listingRepo.create({
+            title: `${card.name} x${quantity}`,
+            description: card.description ?? `Trading Card: ${card.name} (${card.rarity})`,
+            price,
+            currency: "COINS",
+            type: "sell" as const,
+            status: "active" as const,
+            categoryId,
+            authorId: userId,
+            images: card.imageUrl ? [card.imageUrl] : [],
+            tags: ["tcg", card.rarity, card.series],
+            customFields: customFields as unknown as Record<string, unknown>
+        });
+        const saved = await this.listingRepo.save(listing);
+
         const user = await this.userRepo.findOneBy({ id: userId });
 
         return {
             id: saved.id,
-            userId: saved.userId,
+            userId: saved.authorId,
             sellerName: user?.displayName ?? "Unknown",
-            cardId: saved.cardId,
+            cardId,
             card: toCardDto(card),
-            price: saved.price,
-            quantity: saved.quantity,
-            status: saved.status,
+            price: Number(saved.price) || 0,
+            quantity,
+            status: "active",
             createdAt: saved.createdAt.toISOString()
         };
     }
 
     async cancelListing(userId: string, listingId: string): Promise<void> {
-        const listing = await this.cardListingRepo.findOne({
-            where: { id: listingId, userId }
+        const listing = await this.listingRepo.findOne({
+            where: { id: listingId, authorId: userId }
         });
         if (!listing) {
             throw new NotFoundException("Listing not found");
@@ -614,30 +729,35 @@ export class TcgService {
             throw new BadRequestException("Listing is not active");
         }
 
-        listing.status = "cancelled";
-        await this.cardListingRepo.save(listing);
+        const cf = listing.customFields as TcgCustomFields | null;
+        if (!cf?.tcgCardId) {
+            throw new BadRequestException("Not a TCG card listing");
+        }
+
+        // Mark as closed
+        listing.status = "closed";
+        await this.listingRepo.save(listing);
 
         // Return cards to user
         const userCard = await this.userCardRepo.findOne({
-            where: { userId, cardId: listing.cardId }
+            where: { userId, cardId: cf.tcgCardId }
         });
         if (userCard) {
-            userCard.quantity += listing.quantity;
+            userCard.quantity += cf.tcgCardQuantity;
             await this.userCardRepo.save(userCard);
         } else {
             const newCard = this.userCardRepo.create({
                 userId,
-                cardId: listing.cardId,
-                quantity: listing.quantity
+                cardId: cf.tcgCardId,
+                quantity: cf.tcgCardQuantity
             });
             await this.userCardRepo.save(newCard);
         }
     }
 
     async buyListing(buyerId: string, listingId: string): Promise<CardListingDto> {
-        const listing = await this.cardListingRepo.findOne({
-            where: { id: listingId },
-            relations: ["card"]
+        const listing = await this.listingRepo.findOne({
+            where: { id: listingId }
         });
         if (!listing) {
             throw new NotFoundException("Listing not found");
@@ -645,57 +765,77 @@ export class TcgService {
         if (listing.status !== "active") {
             throw new BadRequestException("Listing is no longer active");
         }
-        if (listing.userId === buyerId) {
+        if (listing.authorId === buyerId) {
             throw new BadRequestException("You cannot buy your own listing");
         }
+
+        const cf = listing.customFields as TcgCustomFields | null;
+        if (!cf?.tcgCardId) {
+            throw new BadRequestException("Not a TCG card listing");
+        }
+
+        const card = await this.cardRepo.findOneBy({ id: cf.tcgCardId });
+        if (!card) {
+            throw new NotFoundException("Card no longer exists");
+        }
+
+        const totalPrice = Number(listing.price) || 0;
 
         // Deduct coins from buyer
         await this.creditService.deductCredits(
             buyerId,
-            listing.price,
+            totalPrice,
             "tcg_card_buy",
-            `Purchased card listing: ${listing.card.name} x${listing.quantity}`
+            `Purchased card listing: ${card.name} x${cf.tcgCardQuantity}`
         );
 
         // Add coins to seller
         await this.creditService.addCredits(
-            listing.userId,
-            listing.price,
+            listing.authorId,
+            totalPrice,
             "tcg_card_sell",
-            `Sold card: ${listing.card.name} x${listing.quantity}`
+            `Sold card: ${card.name} x${cf.tcgCardQuantity}`
         );
 
         // Transfer cards to buyer
         const buyerCard = await this.userCardRepo.findOne({
-            where: { userId: buyerId, cardId: listing.cardId }
+            where: { userId: buyerId, cardId: cf.tcgCardId }
         });
         if (buyerCard) {
-            buyerCard.quantity += listing.quantity;
+            buyerCard.quantity += cf.tcgCardQuantity;
             await this.userCardRepo.save(buyerCard);
         } else {
             const newCard = this.userCardRepo.create({
                 userId: buyerId,
-                cardId: listing.cardId,
-                quantity: listing.quantity
+                cardId: cf.tcgCardId,
+                quantity: cf.tcgCardQuantity
             });
             await this.userCardRepo.save(newCard);
         }
 
+        // Mark listing as sold
         listing.status = "sold";
-        listing.buyerId = buyerId;
-        const saved = await this.cardListingRepo.save(listing);
+        const saved = await this.listingRepo.save(listing);
 
-        const seller = await this.userRepo.findOneBy({ id: listing.userId });
+        await this.notificationsService.create(
+            listing.authorId,
+            "system",
+            "Karte verkauft!",
+            `${card.name} x${cf.tcgCardQuantity} wurde für ${totalPrice} Coins verkauft.`,
+            "/tcg"
+        );
+
+        const seller = await this.userRepo.findOneBy({ id: listing.authorId });
 
         return {
             id: saved.id,
-            userId: saved.userId,
+            userId: saved.authorId,
             sellerName: seller?.displayName ?? "Unknown",
-            cardId: saved.cardId,
-            card: toCardDto(saved.card),
-            price: saved.price,
-            quantity: saved.quantity,
-            status: saved.status,
+            cardId: cf.tcgCardId,
+            card: toCardDto(card),
+            price: totalPrice,
+            quantity: cf.tcgCardQuantity,
+            status: "sold",
             createdAt: saved.createdAt.toISOString()
         };
     }
@@ -898,17 +1038,14 @@ export class TcgService {
         const result: CardEntity[] = [];
         const available = [...packCards];
 
-        // If guaranteed rarity, pick one card of that rarity first
         if (guaranteedRarity) {
             const rarityCards = available.filter((pc) => pc.card.rarity === guaranteedRarity);
             if (rarityCards.length > 0) {
                 const picked = this.weightedRandom(rarityCards);
                 result.push(picked.card);
-                // Don't remove from pool - can get duplicates
             }
         }
 
-        // Fill remaining slots with weighted random
         while (result.length < count && available.length > 0) {
             const picked = this.weightedRandom(available);
             result.push(picked.card);

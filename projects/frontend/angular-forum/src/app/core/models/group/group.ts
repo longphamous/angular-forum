@@ -12,6 +12,7 @@ export interface PagePermission {
     id: string;
     route: string;
     name: string;
+    category?: string;
     groups: GroupRef[];
     createdAt: string;
     updatedAt: string;

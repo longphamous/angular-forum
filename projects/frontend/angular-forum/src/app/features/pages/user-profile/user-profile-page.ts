@@ -7,6 +7,7 @@ import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
 import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
@@ -26,10 +27,13 @@ import {
     ChronikVisibility,
     CreateChronikEntry
 } from "../../../core/models/chronik/chronik";
+import { FriendshipStatusResult } from "../../../core/models/friends/friends";
 import { UserAchievement } from "../../../core/models/gamification/achievement";
 import { UserProfile, UserRole } from "../../../core/models/user/user";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
+import { FriendsFacade } from "../../../facade/friends/friends-facade";
+import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +43,7 @@ import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
         ButtonModule,
         CardModule,
         DatePipe,
+        DialogModule,
         DividerModule,
         FormsModule,
         InputTextModule,
@@ -49,9 +54,11 @@ import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
         TagModule,
         TextareaModule,
         TooltipModule,
-        TranslocoModule
+        TranslocoModule,
+        OnlineIndicator
     ],
     selector: "app-user-profile-page",
+    styleUrl: "./user-profile-page.css",
     templateUrl: "./user-profile-page.html"
 })
 export class UserProfilePage implements OnInit {
@@ -62,7 +69,14 @@ export class UserProfilePage implements OnInit {
     protected readonly loading = signal(true);
     protected readonly profile = signal<UserProfile | null>(null);
     protected readonly achievements = signal<UserAchievement[]>([]);
-    protected readonly activeTab = signal<"info" | "chronik">("info");
+
+    // Friend status
+    protected readonly friendStatus = signal<FriendshipStatusResult | null>(null);
+    private readonly friendsFacade = inject(FriendsFacade);
+
+    // Cover photo editing
+    protected readonly coverEditing = signal(false);
+    protected coverUrlDraft = "";
 
     // Chronik on profile
     readonly chronikFacade = inject(ChronikFacade);
@@ -121,16 +135,32 @@ export class UserProfilePage implements OnInit {
             },
             error: () => undefined
         });
+
+        // Auto-load chronik data
+        this.chronikFacade.loadProfileEntries(userId);
+        this.chronikFacade.loadProfileStats(userId);
+        this.chronikLoaded.set(true);
+
+        // Load friend status (only for other users' profiles)
+        if (userId !== this.authFacade.currentUser()?.id) {
+            this.friendsFacade.getFriendshipStatus(userId).subscribe({
+                next: (status) => {
+                    this.friendStatus.set(status);
+                    this.cd.markForCheck();
+                },
+                error: () => undefined
+            });
+        }
     }
 
-    protected switchTab(tab: "info" | "chronik"): void {
-        this.activeTab.set(tab);
-        if (tab === "chronik" && !this.chronikLoaded()) {
-            const userId = this.profileUserId()!;
-            this.chronikFacade.loadProfileEntries(userId);
-            this.chronikFacade.loadProfileStats(userId);
-            this.chronikLoaded.set(true);
-        }
+    protected saveCover(): void {
+        this.authFacade.updateProfile({ coverUrl: this.coverUrlDraft }).subscribe({
+            next: () => {
+                this.profile.update((p) => (p ? { ...p, coverUrl: this.coverUrlDraft } : p));
+                this.coverEditing.set(false);
+                this.cd.markForCheck();
+            }
+        });
     }
 
     protected loadMoreChronik(): void {
@@ -320,6 +350,61 @@ export class UserProfilePage implements OnInit {
 
     protected initial(profile: UserProfile): string {
         return (profile.displayName || profile.username).charAt(0).toUpperCase();
+    }
+
+    protected sendFriendRequest(): void {
+        const userId = this.profileUserId();
+        if (!userId) return;
+        this.friendsFacade.sendRequest(userId).subscribe({
+            next: () => {
+                this.friendStatus.set({ status: "pending_sent", friendshipId: null });
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    protected acceptFriendRequest(): void {
+        const status = this.friendStatus();
+        if (!status?.friendshipId) return;
+        this.friendsFacade.acceptRequest(status.friendshipId).subscribe({
+            next: () => {
+                this.friendStatus.set({ status: "friends", friendshipId: status.friendshipId });
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    protected declineFriendRequest(): void {
+        const status = this.friendStatus();
+        if (!status?.friendshipId) return;
+        this.friendsFacade.declineRequest(status.friendshipId).subscribe({
+            next: () => {
+                this.friendStatus.set({ status: "none", friendshipId: null });
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    protected removeFriend(): void {
+        const status = this.friendStatus();
+        if (!status?.friendshipId) return;
+        this.friendsFacade.removeFriend(status.friendshipId).subscribe({
+            next: () => {
+                this.friendStatus.set({ status: "none", friendshipId: null });
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    protected cancelFriendRequest(): void {
+        const status = this.friendStatus();
+        if (!status?.friendshipId) return;
+        this.friendsFacade.cancelRequest(status.friendshipId).subscribe({
+            next: () => {
+                this.friendStatus.set({ status: "none", friendshipId: null });
+                this.cd.markForCheck();
+            }
+        });
     }
 
     private resetForm(): void {

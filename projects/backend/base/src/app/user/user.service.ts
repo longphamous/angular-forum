@@ -38,6 +38,7 @@ function toProfile(user: UserEntity, postCount = 0, xpData: UserXpData = DEFAULT
         email: user.email,
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
+        coverUrl: user.coverUrl ?? undefined,
         bio: user.bio,
         birthday: user.birthday ? (user.birthday as Date).toISOString().split("T")[0] : undefined,
         gender: user.gender,
@@ -141,6 +142,7 @@ export class UserService {
         const user = await this.findById(userId);
         if (dto.displayName !== undefined) user.displayName = dto.displayName;
         if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
+        if (dto.coverUrl !== undefined) user.coverUrl = dto.coverUrl;
         if (dto.bio !== undefined) user.bio = dto.bio;
         if (dto.birthday !== undefined) user.birthday = dto.birthday ? new Date(dto.birthday) : undefined;
         if (dto.gender !== undefined) user.gender = dto.gender;
@@ -199,6 +201,7 @@ export class UserService {
         const user = await this.findById(userId);
         if (dto.displayName !== undefined) user.displayName = dto.displayName;
         if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
+        if (dto.coverUrl !== undefined) user.coverUrl = dto.coverUrl;
         if (dto.bio !== undefined) user.bio = dto.bio;
         if (dto.birthday !== undefined) user.birthday = dto.birthday ? new Date(dto.birthday) : undefined;
         if (dto.gender !== undefined) user.gender = dto.gender;
@@ -247,6 +250,17 @@ export class UserService {
             avatarUrl: u.avatarUrl ?? null,
             lastSeenAt: u.lastSeenAt!.toISOString()
         }));
+    }
+
+    async getOnlineUserIds(thresholdMinutes = 5): Promise<string[]> {
+        const since = new Date(Date.now() - thresholdMinutes * 60_000);
+        const users = await this.userRepo
+            .createQueryBuilder("u")
+            .select("u.id")
+            .where("u.lastSeenAt >= :since", { since })
+            .andWhere("u.status = :status", { status: "active" })
+            .getMany();
+        return users.map((u) => u.id);
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

@@ -64,9 +64,10 @@ export class BlogService {
     }): Promise<object[]> {
         const qb = this.postRepo.createQueryBuilder("p").leftJoinAndSelect("p.category", "c");
 
+        const validStatuses: BlogStatus[] = ["draft", "published", "archived"];
         if (!options.isAdmin) {
             qb.where("p.status = 'published'");
-        } else if (options.status) {
+        } else if (options.status && validStatuses.includes(options.status)) {
             qb.where("p.status = :status", { status: options.status });
         }
 

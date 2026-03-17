@@ -22,7 +22,7 @@ export class BoosterPackEntity {
     @Column({ name: "cards_per_pack", type: "int", default: 5 })
     cardsPerPack!: number;
 
-    @Column({ name: "guaranteed_rarity", length: 20, nullable: true })
+    @Column({ type: "varchar", name: "guaranteed_rarity", length: 20, nullable: true })
     guaranteedRarity!: string | null;
 
     @Column({ length: 100 })

@@ -1,5 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 
+import { NotificationsService } from "../../notifications/notifications.service";
 import { CreditService } from "../credit.service";
 import {
     CreateSpecialDrawDto,
@@ -102,7 +103,10 @@ export class LottoService {
     private readonly logger = new Logger(LottoService.name);
     private config: DrawScheduleConfig = { ...DEFAULT_CONFIG };
 
-    constructor(@Inject(forwardRef(() => CreditService)) private readonly creditService: CreditService) {}
+    constructor(
+        @Inject(forwardRef(() => CreditService)) private readonly creditService: CreditService,
+        private readonly notificationsService: NotificationsService
+    ) {}
 
     // ─── Config ───────────────────────────────────────────────────────────────
 
@@ -229,6 +233,13 @@ export class LottoService {
                     "lotto_win",
                     `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`
                 );
+                await this.notificationsService.create(
+                    winner.userId,
+                    "coins_received",
+                    "Lottogewinn!",
+                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
+                );
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
@@ -305,6 +316,14 @@ export class LottoService {
             totalCost,
             "lotto_ticket",
             `Lotto Ticket (${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"}): ${numbers.join(", ")} | SZ: ${superNumber}`
+        );
+
+        await this.notificationsService.create(
+            userId,
+            "system",
+            "Lottoticket gekauft",
+            "Du hast ein Lottoticket für die nächste Ziehung gekauft.",
+            "/lotto"
         );
 
         const createdTickets: LottoTicket[] = [];
@@ -506,6 +525,13 @@ export class LottoService {
                     winner.prizeAmount,
                     "lotto_special_win",
                     `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass} (${winner.prizeAmount} Credits)`
+                );
+                await this.notificationsService.create(
+                    winner.userId,
+                    "coins_received",
+                    "Sonderziehung Gewinn!",
+                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
                 );
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);

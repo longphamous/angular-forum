@@ -116,3 +116,53 @@
         transform: scale(1);
     }
 }
+
+/* ─── Mobile responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    /* Booster reveal grid: 2 columns on mobile */
+    :host ::ng-deep .p-dialog .grid.grid-cols-2.sm\\:grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem;
+    }
+
+    /* Reduce card hover effect on mobile (no hover on touch) */
+    .tcg-card:hover {
+        transform: none;
+    }
+
+    .booster-card:hover {
+        transform: none;
+    }
+
+    /* Filter selects: full width on mobile */
+    :host ::ng-deep .p-select {
+        width: 100% !important;
+    }
+
+    /* Collection filter row: stack vertically */
+    .flex.flex-wrap.items-center.gap-3 :host ::ng-deep .p-select {
+        min-width: 100%;
+    }
+
+    /* Marketplace sell section: stack fields */
+    .flex.flex-wrap.items-end.gap-3 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .flex.flex-wrap.items-end.gap-3 > div {
+        width: 100%;
+    }
+
+    .flex.flex-wrap.items-end.gap-3 :host ::ng-deep .p-select {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Cards grid: single column on very small screens */
+    :host .grid.grid-cols-2 {
+        grid-template-columns: repeat(1, 1fr) !important;
+    }
+}

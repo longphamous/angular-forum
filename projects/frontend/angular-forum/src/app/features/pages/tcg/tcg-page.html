@@ -1,11 +1,11 @@
 <div class="p-4" *transloco="let t">
     <!-- Header -->
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold dark:text-white">{{ t('tcg.title') }}</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('tcg.subtitle') }}</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             @let balance = walletFacade.wallet(); @if (balance) {
             <div
                 class="flex items-center gap-1.5 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-1.5 dark:border-yellow-800 dark:bg-yellow-950"
@@ -220,7 +220,7 @@
                         inputId="filterSeries"
                         optionLabel="label"
                         optionValue="value"
-                        styleClass="w-48"
+                        styleClass="w-full sm:w-48"
                     />
                     <p-select
                         [(ngModel)]="filterRarity"
@@ -229,7 +229,7 @@
                         inputId="filterRarity"
                         optionLabel="label"
                         optionValue="value"
-                        styleClass="w-48"
+                        styleClass="w-full sm:w-48"
                     />
                     <p-select
                         [(ngModel)]="filterElement"
@@ -238,7 +238,7 @@
                         inputId="filterElement"
                         optionLabel="label"
                         optionValue="value"
-                        styleClass="w-48"
+                        styleClass="w-full sm:w-48"
                     />
                     <p-select
                         [(ngModel)]="filterOwned"
@@ -247,7 +247,7 @@
                         inputId="filterOwned"
                         optionLabel="label"
                         optionValue="value"
-                        styleClass="w-48"
+                        styleClass="w-full sm:w-48"
                     />
                 </div>
 
@@ -398,7 +398,7 @@
                                 inputId="sellCardSelect"
                                 optionLabel="label"
                                 optionValue="value"
-                                styleClass="w-64"
+                                styleClass="w-full sm:w-64"
                             />
                         </div>
                         <div>

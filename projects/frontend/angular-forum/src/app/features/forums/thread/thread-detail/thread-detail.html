@@ -120,19 +120,24 @@
 
                     <!-- Avatar -->
                     <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]">
-                        @if (post.authorAvatarUrl) {
-                        <img
-                            class="hover:ring-primary/60 dark:ring-surface-700 h-[72px] w-[72px] rounded-full object-cover shadow-md ring-2 ring-white transition-all"
-                            [alt]="post.authorName"
-                            [src]="post.authorAvatarUrl"
-                        />
-                        } @else {
-                        <div
-                            class="from-primary-400 to-primary-600 hover:ring-primary/60 dark:from-primary-500 dark:to-primary-700 dark:ring-surface-700 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br text-2xl font-bold text-white shadow-md ring-2 ring-white transition-all"
-                        >
-                            {{ post.authorName.charAt(0).toUpperCase() }}
+                        <div class="relative inline-block">
+                            @if (post.authorAvatarUrl) {
+                            <img
+                                class="hover:ring-primary/60 dark:ring-surface-700 h-[72px] w-[72px] rounded-full object-cover shadow-md ring-2 ring-white transition-all"
+                                [alt]="post.authorName"
+                                [src]="post.authorAvatarUrl"
+                            />
+                            } @else {
+                            <div
+                                class="from-primary-400 to-primary-600 hover:ring-primary/60 dark:from-primary-500 dark:to-primary-700 dark:ring-surface-700 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br text-2xl font-bold text-white shadow-md ring-2 ring-white transition-all"
+                            >
+                                {{ post.authorName.charAt(0).toUpperCase() }}
+                            </div>
+                            }
+                            <div class="absolute -right-0.5 -bottom-0.5">
+                                <online-indicator [userId]="post.authorId" size="md" />
+                            </div>
                         </div>
-                        }
                     </a>
 
                     <!-- Name -->
@@ -196,10 +201,15 @@
                 <!-- Mobile author row -->
                 <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
                     <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
-                        <div
-                            class="from-primary-400 to-primary-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white"
-                        >
-                            {{ post.authorName.charAt(0).toUpperCase() }}
+                        <div class="relative inline-block">
+                            <div
+                                class="from-primary-400 to-primary-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white"
+                            >
+                                {{ post.authorName.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="absolute -right-0.5 -bottom-0.5">
+                                <online-indicator [userId]="post.authorId" size="sm" />
+                            </div>
                         </div>
                         <div class="flex flex-col">
                             <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"

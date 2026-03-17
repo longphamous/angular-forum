@@ -2,7 +2,7 @@
 <p-confirmDialog />
 
 <div *transloco="let t">
-    <div class="mb-5 flex items-center justify-between">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
             <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
                 <i class="pi pi-ticket text-primary"></i>
@@ -10,7 +10,7 @@
             </h1>
             <p class="text-surface-500 mt-1 text-sm">{{ t('adminLotto.subtitle') }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <p-button
                 (click)="openSpecialDrawDialog()"
                 [label]="t('adminLotto.createSpecialDraw')"

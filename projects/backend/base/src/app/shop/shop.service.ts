@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CreditService } from "../credit/credit.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { ShopItemEntity } from "./entities/shop-item.entity";
 import { UserInventoryEntity } from "./entities/user-inventory.entity";
 
@@ -71,7 +72,8 @@ export class ShopService {
         private readonly itemRepo: Repository<ShopItemEntity>,
         @InjectRepository(UserInventoryEntity)
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
-        private readonly creditService: CreditService
+        private readonly creditService: CreditService,
+        private readonly notificationsService: NotificationsService
     ) {}
 
     // ─── Public ───────────────────────────────────────────────────────────────
@@ -149,6 +151,14 @@ export class ShopService {
         }
 
         await this.creditService.deductCredits(userId, item.price, "purchase", `Shop purchase: ${item.name}`);
+
+        await this.notificationsService.create(
+            userId,
+            "system",
+            "Einkauf bestätigt",
+            `${item.name} wurde erfolgreich gekauft.`,
+            "/shop"
+        );
 
         if (item.stock !== null) {
             item.stock -= 1;

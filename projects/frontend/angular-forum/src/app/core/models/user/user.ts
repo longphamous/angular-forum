@@ -7,6 +7,7 @@ export interface UserProfile {
     email: string;
     displayName: string;
     avatarUrl?: string;
+    coverUrl?: string;
     bio?: string;
     birthday?: string;
     gender?: string;

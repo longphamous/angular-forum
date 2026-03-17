@@ -1,11 +1,11 @@
 <div class="p-4" *transloco="let t">
     <!-- Header -->
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold dark:text-white">{{ t('dynamicMarket.title') }}</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.subtitle') }}</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <!-- Wallet balance -->
             @if (currentBalance() !== null) {
             <div
@@ -174,15 +174,10 @@
     </div>
     }
 
-    <!-- Tabs: Markt / Aktivitäten -->
-    <p-tabs [(value)]="activeTab">
-        <p-tablist>
-            <p-tab value="market"><i class="pi pi-chart-line mr-2"></i>{{ t('dynamicMarket.tabs.market') }}</p-tab>
-            <p-tab value="activities"><i class="pi pi-list mr-2"></i>{{ t('dynamicMarket.tabs.activities') }}</p-tab>
-        </p-tablist>
-
-        <p-tabpanel value="market">
-            <!-- Main Market Table (AG Grid-inspired stock ticker style) -->
+    <!-- Main content: Market Table + Activity Widget side by side -->
+    <div class="market-layout">
+        <!-- Market Table -->
+        <div class="market-table-col">
             @if (marketFacade.loading() && marketFacade.allResources().length === 0) {
             <p-skeleton height="24rem" />
             } @else {
@@ -236,7 +231,6 @@
                         (click)="selectResource(resource)"
                         [class.selected-row]="selectedResource()?.slug === resource.slug"
                     >
-                        <!-- Resource Name & Icon/Image -->
                         <td class="resource-name-cell">
                             <div class="flex items-center gap-2">
                                 @if (resource.imageUrl) {
@@ -252,8 +246,6 @@
                                 </div>
                             </div>
                         </td>
-
-                        <!-- Sparkline -->
                         <td>
                             @if (resource.priceHistory && resource.priceHistory.length >= 2) {
                             <div class="sparkline-container">
@@ -272,8 +264,6 @@
                             <span class="text-xs text-gray-400">—</span>
                             }
                         </td>
-
-                        <!-- Current Price -->
                         <td
                             class="text-right font-mono text-base font-bold"
                             [class.cell-flash-down]="isFlashing(resource.slug) && resource.trend < 0"
@@ -282,8 +272,6 @@
                             <span class="dark:text-white">{{ resource.currentPrice }}</span>
                             <span class="ml-1 text-xs text-gray-400">C</span>
                         </td>
-
-                        <!-- Change % -->
                         <td class="text-right">
                             <span
                                 class="change-badge"
@@ -298,8 +286,6 @@
                                 } {{ resource.changePercent > 0 ? '+' : '' }}{{ resource.changePercent }}%
                             </span>
                         </td>
-
-                        <!-- Price Range Bar -->
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-1">
                                 <span class="text-xs text-gray-400">{{ resource.minPrice }}</span>
@@ -313,8 +299,6 @@
                                 <span class="text-xs text-gray-400">{{ resource.maxPrice }}</span>
                             </div>
                         </td>
-
-                        <!-- Owned -->
                         <td class="text-right font-mono">
                             @if (getInventoryQty(resource.slug) > 0) {
                             <span class="font-semibold dark:text-white">{{ getInventoryQty(resource.slug) }}</span>
@@ -322,8 +306,6 @@
                             <span class="text-gray-300 dark:text-gray-600">0</span>
                             }
                         </td>
-
-                        <!-- Volatility -->
                         <td class="text-right">
                             <span
                                 class="text-xs"
@@ -334,8 +316,6 @@
                                 {{ resource.volatility }}x
                             </span>
                         </td>
-
-                        <!-- Trade Actions -->
                         <td class="text-center" style="min-width: 290px; width: 290px">
                             <div class="flex items-center justify-center gap-1" style="flex-wrap: nowrap">
                                 @if (resource.canBuy) {
@@ -361,9 +341,7 @@
                                     severity="success"
                                     size="small"
                                 />
-                                }
-                                <!-- Always in DOM when canSell so width stays constant; hidden via CSS when user owns none -->
-                                @if (resource.canSell) {
+                                } @if (resource.canSell) {
                                 <p-button
                                     (onClick)="onSell(resource.slug); $event.stopPropagation()"
                                     [disabled]="getInventoryQty(resource.slug) === 0"
@@ -387,112 +365,108 @@
                 </ng-template>
             </p-table>
             }
-        </p-tabpanel>
+        </div>
 
-        <p-tabpanel value="activities">
-            <div class="pt-4">
+        <!-- Activity Feed Widget -->
+        <div class="activity-widget-col">
+            <div class="activity-widget">
+                <div class="mb-3 flex items-center gap-2">
+                    <i class="pi pi-list text-sm text-gray-500"></i>
+                    <h3 class="text-sm font-bold tracking-wide text-gray-600 uppercase dark:text-gray-300">
+                        {{ t('dynamicMarket.tabs.activities') }}
+                    </h3>
+                </div>
+
                 @if (marketFacade.activitiesLoading() && marketFacade.activities().length === 0) {
-                <div class="flex flex-col gap-3">
-                    @for (_ of [1,2,3,4,5]; track $index) {
-                    <p-skeleton height="3.5rem" styleClass="rounded-xl" />
+                <div class="flex flex-col gap-2">
+                    @for (_ of [1,2,3,4]; track $index) {
+                    <p-skeleton height="3rem" styleClass="rounded-lg" />
                     }
                 </div>
                 } @else if (marketFacade.activities().length === 0) {
-                <div class="py-12 text-center text-gray-400 dark:text-gray-600">
-                    <i class="pi pi-list mb-3 text-4xl"></i>
-                    <p>{{ t('dynamicMarket.noActivities') }}</p>
+                <div class="py-8 text-center text-gray-400 dark:text-gray-600">
+                    <i class="pi pi-list mb-2 text-2xl"></i>
+                    <p class="text-xs">{{ t('dynamicMarket.noActivities') }}</p>
                 </div>
                 } @else {
-                <div class="flex flex-col gap-2">
+                <div class="activity-feed">
                     @for (act of marketFacade.activities(); track act.id) {
                     <div
-                        class="flex items-start gap-3 rounded-xl border p-3 transition-colors"
-                        [class]="
-                            act.type === 'buy' ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950' :
-                            act.type === 'sell' ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950' :
-                            act.type === 'event' ? 'border-purple-200 bg-purple-50 dark:border-purple-900 dark:bg-purple-950' :
-                            'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'
-                        "
+                        class="activity-entry"
+                        [class.act-buy]="act.type === 'buy'"
+                        [class.act-event]="act.type === 'event'"
+                        [class.act-price]="act.type === 'price_update'"
+                        [class.act-sell]="act.type === 'sell'"
                     >
-                        <!-- Icon -->
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                            class="act-icon"
                             [class]="
-                                act.type === 'buy' ? 'bg-green-100 dark:bg-green-900' :
-                                act.type === 'sell' ? 'bg-amber-100 dark:bg-amber-900' :
-                                act.type === 'event' ? 'bg-purple-100 dark:bg-purple-900' :
-                                'bg-blue-100 dark:bg-blue-900'
+                                act.type === 'buy' ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400' :
+                                act.type === 'sell' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400' :
+                                act.type === 'event' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400' :
+                                'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
                             "
                         >
                             <i
                                 [class]="
-                                    act.type === 'buy' ? 'pi pi-shopping-cart text-green-600 dark:text-green-400' :
-                                    act.type === 'sell' ? 'pi pi-arrow-up text-amber-600 dark:text-amber-400' :
-                                    act.type === 'event' ? 'pi pi-bolt text-purple-600 dark:text-purple-400' :
-                                    'pi pi-refresh text-blue-600 dark:text-blue-400'
+                                    act.type === 'buy' ? 'pi pi-shopping-cart' :
+                                    act.type === 'sell' ? 'pi pi-arrow-up' :
+                                    act.type === 'event' ? 'pi pi-bolt' :
+                                    'pi pi-refresh'
                                 "
                             ></i>
                         </div>
-
-                        <!-- Content -->
                         <div class="min-w-0 flex-1">
                             @if (act.type === 'buy' || act.type === 'sell') {
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                <span
+                            <p class="act-text">
+                                <strong
                                     [class]="act.type === 'buy' ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'"
+                                    >{{ act.userDisplay }}</strong
                                 >
-                                    {{ act.userDisplay }}
-                                </span>
                                 {{ act.type === 'buy' ? t('dynamicMarket.activityBought') :
                                 t('dynamicMarket.activitySold') }}
                                 <strong>{{ act.quantity }}×</strong>
-                                <i [class]="act.resourceIcon + ' mx-1'"></i>
+                                <i [class]="act.resourceIcon + ' mx-0.5'"></i>
                                 {{ act.resourceName }}
                             </p>
-                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                {{ act.totalPrice | number }} Coins ({{ act.pricePerUnit | number }} {{
+                            <p class="act-meta">
+                                {{ act.totalPrice | number }} C ({{ act.pricePerUnit | number }} {{
                                 t('dynamicMarket.perUnit') }})
                             </p>
                             } @else if (act.type === 'event') {
-                            <p class="text-sm font-medium text-purple-800 dark:text-purple-300">
-                                <i class="pi pi-bolt mr-1"></i>{{ act.eventTitle }}
+                            <p class="act-text text-purple-800 dark:text-purple-300">
+                                <i class="pi pi-bolt mr-0.5"></i>{{ act.eventTitle }}
                             </p>
-                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                {{ act.eventDescription }} · {{ act.affectedCount }} {{
-                                t('dynamicMarket.activityResourcesAffected') }}
+                            <p class="act-meta">
+                                {{ act.affectedCount }} {{ t('dynamicMarket.activityResourcesAffected') }}
                             </p>
                             } @else {
-                            <p class="text-sm font-medium text-blue-800 dark:text-blue-300">
-                                <i class="pi pi-refresh mr-1"></i>{{ t('dynamicMarket.activityPriceUpdate') }}
-                                <span class="font-normal text-gray-600 dark:text-gray-400"
-                                    >({{ act.changedCount }} {{ t('dynamicMarket.activityResourcesChanged') }})</span
-                                >
+                            <p class="act-text text-blue-800 dark:text-blue-300">
+                                {{ t('dynamicMarket.activityPriceUpdate') }}
+                            </p>
+                            <p class="act-meta">
+                                {{ act.changedCount }} {{ t('dynamicMarket.activityResourcesChanged') }}
                             </p>
                             @if (act.topChanges && act.topChanges.length > 0) {
-                            <div class="mt-1 flex flex-wrap gap-1.5">
-                                @for (ch of act.topChanges; track ch.name) {
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                @for (ch of act.topChanges.slice(0, 3); track ch.name) {
                                 <span
-                                    class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                    class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium"
                                     [class]="ch.changePercent > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'"
                                 >
-                                    <i [class]="ch.icon"></i>
-                                    {{ ch.name }}
-                                    <span>{{ ch.changePercent > 0 ? '+' : '' }}{{ ch.changePercent }}%</span>
+                                    <i [class]="ch.icon" style="font-size: 0.6rem"></i>
+                                    {{ ch.changePercent > 0 ? '+' : '' }}{{ ch.changePercent }}%
                                 </span>
                                 }
                             </div>
                             } }
                         </div>
-
-                        <!-- Timestamp -->
-                        <span class="shrink-0 text-xs text-gray-400 dark:text-gray-600"
-                            >{{ relativeTime(act.timestamp) }}</span
-                        >
+                        <span class="act-time">{{ relativeTime(act.timestamp) }}</span>
                     </div>
                     }
                 </div>
                 }
             </div>
-        </p-tabpanel>
-    </p-tabs>
+        </div>
+    </div>
 </div>

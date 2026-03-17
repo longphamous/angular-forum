@@ -21,6 +21,7 @@ export interface RegisterPayload {
 
 export interface UpdateProfilePayload {
     avatarUrl?: string;
+    coverUrl?: string;
     bio?: string;
     birthday?: string;
     displayName?: string;

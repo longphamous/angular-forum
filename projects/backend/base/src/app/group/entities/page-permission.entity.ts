@@ -21,6 +21,9 @@ export class PagePermissionEntity {
     @Column({ length: 200 })
     name!: string;
 
+    @Column({ type: "varchar", length: 100, default: "Allgemein" })
+    category!: string;
+
     @ManyToMany(() => GroupEntity)
     @JoinTable({
         name: "page_permission_groups",

@@ -95,8 +95,14 @@
     "chronik": "Chronicle",
     "dynamicMarket": "Dynamic Market",
     "dynamicMarketManagement": "Market Management",
+    "friends": "Friends",
     "tcg": "Trading Cards",
-    "adminTcg": "TCG Management"
+    "adminTcg": "TCG Management",
+    "gamificationSection": "Gamification",
+    "adminUsers": "Users & Permissions",
+    "adminCommunity": "Community",
+    "adminGamification": "Gamification",
+    "adminAppearance": "Appearance"
   },
   "login": {
     "title": "Welcome back",
@@ -305,7 +311,7 @@
   },
   "adminPermissions": {
     "title": "Page Permissions",
-    "subtitle": "Configure which groups can access which pages",
+    "subtitle": "Manage access permissions for all modules and pages",
     "table": {
       "page": "Page",
       "route": "Route",
@@ -659,6 +665,7 @@
     "animeListBtn": "View {{name}}'s anime list",
     "notFound": "User not found.",
     "editProfile": "Edit profile",
+    "changeCover": "Change cover photo",
     "tabInfo": "Info",
     "tabChronik": "Chronicle",
     "roles": {
@@ -1646,5 +1653,30 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirmDelete": "Really delete?"
+  },
+  "friends": {
+    "title": "Friends",
+    "subtitle": "Manage your friendships",
+    "tabs": {
+      "friends": "Friends",
+      "incoming": "Requests",
+      "outgoing": "Sent"
+    },
+    "noFriends": "No friends yet",
+    "noIncoming": "No pending requests",
+    "noOutgoing": "No sent requests",
+    "friendsSince": "Friends since",
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "cancelRequest": "Withdraw",
+    "accept": "Accept",
+    "decline": "Decline",
+    "removeFriend": "Remove",
+    "isFriend": "Friends",
+    "profile": "Profile",
+    "searchPlaceholder": "Search friends...",
+    "confirmRemove": "Really end this friendship?",
+    "mutualFriends": "Mutual Friends",
+    "requestReceived": "Wants to be your friend"
   }
 }

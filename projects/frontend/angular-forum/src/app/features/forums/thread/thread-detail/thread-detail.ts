@@ -18,6 +18,7 @@ import { Post } from "../../../../core/models/forum/post";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../../facade/auth/auth-facade";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
+import { OnlineIndicator } from "../../../../shared/components/online-indicator/online-indicator";
 
 @Component({
     selector: "thread-detail",
@@ -28,6 +29,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         DividerModule,
         EditorModule,
         LevelBadge,
+        OnlineIndicator,
         MessageModule,
         PaginatorModule,
         RouterModule,

@@ -41,9 +41,9 @@
     <!-- Resources Tab -->
     @if (activeTab() === 'resources') {
     <p-card>
-        <div class="mb-3 flex items-center justify-between">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-semibold dark:text-white">{{ t('dynamicMarket.admin.resourceList') }}</h2>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <p-button
                     (onClick)="onResetPrices()"
                     [label]="t('dynamicMarket.admin.resetPrices')"

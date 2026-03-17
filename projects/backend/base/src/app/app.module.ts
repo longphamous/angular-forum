@@ -15,6 +15,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { FeedModule } from "./feed/feed.module";
 import { ForumModule } from "./forum/forum.module";
+import { FriendsModule } from "./friends/friends.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { TcgModule } from "./gamification/tcg/tcg.module";
@@ -54,6 +55,7 @@ import { UserModule } from "./user/user.module";
         ChronikModule,
         MarketplaceModule,
         FeedModule,
+        FriendsModule,
         CommunityBotModule,
         LinkDatabaseModule,
         TcgModule

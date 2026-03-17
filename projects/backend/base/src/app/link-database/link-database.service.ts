@@ -105,10 +105,10 @@ export class LinkDatabaseService {
             sortBy === "title"
                 ? "l.title"
                 : sortBy === "viewCount"
-                  ? "l.view_count"
+                  ? "l.viewCount"
                   : sortBy === "rating"
                     ? "l.rating"
-                    : "l.created_at";
+                    : "l.createdAt";
         qb.orderBy(sortCol, sortBy === "title" ? "ASC" : "DESC");
 
         qb.skip(filter.offset ?? 0).take(filter.limit ?? 20);

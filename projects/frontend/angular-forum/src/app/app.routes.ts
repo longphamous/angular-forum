@@ -357,6 +357,12 @@ export const routes: Routes = [
                     )
             },
             {
+                path: "friends",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/friends/friends-page").then((c) => c.FriendsPage)
+            },
+            {
                 path: "tcg",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],

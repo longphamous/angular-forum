@@ -95,8 +95,14 @@
     "chronik": "Chronik",
     "dynamicMarket": "Dynamischer Markt",
     "dynamicMarketManagement": "Markt-Verwaltung",
+    "friends": "Freunde",
     "tcg": "Trading Cards",
-    "adminTcg": "TCG Verwaltung"
+    "adminTcg": "TCG Verwaltung",
+    "gamificationSection": "Gamification",
+    "adminUsers": "Benutzer & Rechte",
+    "adminCommunity": "Community",
+    "adminGamification": "Gamification",
+    "adminAppearance": "Darstellung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -305,7 +311,7 @@
   },
   "adminPermissions": {
     "title": "Seitenberechtigungen",
-    "subtitle": "Konfiguriere welche Gruppen auf welche Seiten zugreifen dürfen",
+    "subtitle": "Verwalte die Zugriffsberechtigungen für alle Module und Seiten",
     "table": {
       "page": "Seite",
       "route": "Route",
@@ -659,6 +665,7 @@
     "animeListBtn": "Anime-Liste von {{name}} ansehen",
     "notFound": "Benutzer nicht gefunden.",
     "editProfile": "Profil bearbeiten",
+    "changeCover": "Titelbild ändern",
     "tabInfo": "Info",
     "tabChronik": "Chronik",
     "roles": {
@@ -1646,5 +1653,30 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "confirmDelete": "Wirklich löschen?"
+  },
+  "friends": {
+    "title": "Freunde",
+    "subtitle": "Verwalte deine Freundschaften",
+    "tabs": {
+      "friends": "Freunde",
+      "incoming": "Anfragen",
+      "outgoing": "Gesendet"
+    },
+    "noFriends": "Noch keine Freunde",
+    "noIncoming": "Keine offenen Anfragen",
+    "noOutgoing": "Keine gesendeten Anfragen",
+    "friendsSince": "Freunde seit",
+    "addFriend": "Freund hinzufügen",
+    "requestSent": "Anfrage gesendet",
+    "cancelRequest": "Zurückziehen",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "removeFriend": "Entfernen",
+    "isFriend": "Befreundet",
+    "profile": "Profil",
+    "searchPlaceholder": "Freunde suchen...",
+    "confirmRemove": "Freundschaft wirklich beenden?",
+    "mutualFriends": "Gemeinsame Freunde",
+    "requestReceived": "Möchte mit dir befreundet sein"
   }
 }

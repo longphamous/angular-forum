@@ -3,6 +3,7 @@ import { UserRole, UserStatus } from "../entities/user.entity";
 export class AdminUpdateUserDto {
     displayName?: string;
     avatarUrl?: string;
+    coverUrl?: string;
     bio?: string;
     birthday?: string;
     gender?: string;

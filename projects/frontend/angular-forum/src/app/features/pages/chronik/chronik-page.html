@@ -199,19 +199,24 @@
         <!-- Entry Header -->
         <div class="flex items-start justify-between p-4 pb-3">
             <div class="flex items-center gap-3">
-                @if (entry.authorAvatar) {
-                <img
-                    class="h-10 w-10 rounded-full object-cover"
-                    [alt]="entry.authorDisplayName"
-                    [src]="entry.authorAvatar"
-                />
-                } @else {
-                <p-avatar
-                    [label]="getAvatarLabel(entry.authorDisplayName)"
-                    shape="circle"
-                    styleClass="bg-primary-100 text-primary font-bold"
-                />
-                }
+                <div class="relative">
+                    @if (entry.authorAvatar) {
+                    <img
+                        class="h-10 w-10 rounded-full object-cover"
+                        [alt]="entry.authorDisplayName"
+                        [src]="entry.authorAvatar"
+                    />
+                    } @else {
+                    <p-avatar
+                        [label]="getAvatarLabel(entry.authorDisplayName)"
+                        shape="circle"
+                        styleClass="bg-primary-100 text-primary font-bold"
+                    />
+                    }
+                    <div class="absolute -right-0.5 -bottom-0.5">
+                        <online-indicator [userId]="entry.authorId" size="sm" />
+                    </div>
+                </div>
                 <div>
                     <p class="text-surface-900 dark:text-surface-0 leading-tight font-semibold">
                         {{ entry.authorDisplayName }}

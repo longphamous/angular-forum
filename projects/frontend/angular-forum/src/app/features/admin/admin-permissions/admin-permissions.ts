@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
@@ -6,7 +6,6 @@ import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
 import { MessageModule } from "primeng/message";
 import { SkeletonModule } from "primeng/skeleton";
-import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
@@ -22,7 +21,6 @@ import { GroupFacade } from "../../../facade/group/group-facade";
         CheckboxModule,
         MessageModule,
         SkeletonModule,
-        TableModule,
         TagModule,
         TooltipModule,
         TranslocoModule
@@ -39,10 +37,68 @@ export class AdminPermissions implements OnInit {
     protected readonly editingGroupIds = signal<string[]>([]);
     protected readonly saving = signal(false);
     protected readonly saveError = signal<string | null>(null);
+    protected readonly collapsedCategories = signal<Set<string>>(new Set());
+
+    readonly groupedPermissions = computed(() => {
+        const perms = this.facade.pagePermissions();
+        const groups = new Map<string, PagePermission[]>();
+        const order = [
+            "Community",
+            "Forum",
+            "Anime",
+            "Gamification",
+            "Marktplatz",
+            "Benutzer",
+            "Administration",
+            "Allgemein"
+        ];
+        for (const perm of perms) {
+            const cat = perm.category || "Allgemein";
+            if (!groups.has(cat)) groups.set(cat, []);
+            groups.get(cat)!.push(perm);
+        }
+        return order
+            .filter((cat) => groups.has(cat))
+            .map((cat) => ({ category: cat, permissions: groups.get(cat)! }))
+            .concat(
+                [...groups.entries()]
+                    .filter(([cat]) => !order.includes(cat))
+                    .map(([category, permissions]) => ({ category, permissions }))
+            );
+    });
 
     ngOnInit(): void {
         this.facade.loadPagePermissions();
         this.facade.loadGroups();
+    }
+
+    protected categoryIcon(cat: string): string {
+        const icons: Record<string, string> = {
+            Community: "pi pi-users",
+            Forum: "pi pi-comments",
+            Anime: "pi pi-play",
+            Gamification: "pi pi-trophy",
+            Marktplatz: "pi pi-shopping-cart",
+            Benutzer: "pi pi-user",
+            Administration: "pi pi-cog",
+            Allgemein: "pi pi-th-large"
+        };
+        return icons[cat] ?? "pi pi-folder";
+    }
+
+    protected toggleCategory(cat: string): void {
+        const current = this.collapsedCategories();
+        const next = new Set(current);
+        if (next.has(cat)) {
+            next.delete(cat);
+        } else {
+            next.add(cat);
+        }
+        this.collapsedCategories.set(next);
+    }
+
+    protected isCategoryCollapsed(cat: string): boolean {
+        return this.collapsedCategories().has(cat);
     }
 
     protected groupNames(perm: PagePermission): string {

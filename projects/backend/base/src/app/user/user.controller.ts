@@ -70,6 +70,16 @@ export class UserController {
         });
     }
 
+    /**
+     * GET /user/online-ids
+     * Returns IDs of users seen within the last 5 minutes.
+     */
+    @Public()
+    @Get("online-ids")
+    getOnlineUserIds(): Promise<string[]> {
+        return this.userService.getOnlineUserIds();
+    }
+
     // ─── Profile (any authenticated user) ────────────────────────────────────
 
     /**

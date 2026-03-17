@@ -7,7 +7,6 @@ import { CardModule } from "primeng/card";
 import { InputNumberModule } from "primeng/inputnumber";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
-import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
@@ -31,7 +30,6 @@ const POLL_INTERVAL = 60_000;
         InputNumberModule,
         SkeletonModule,
         TableModule,
-        TabsModule,
         TagModule,
         TooltipModule
     ],
@@ -53,8 +51,6 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
     readonly selectedResource = signal<MarketResource | null>(null);
     readonly countdown = signal<string>("");
     readonly countdownPercent = signal<number>(100);
-    readonly activeTab = signal<"market" | "activities">("market");
-
     buyQuantities: Record<string, number> = {};
     sellQuantities: Record<string, number> = {};
 

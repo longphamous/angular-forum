@@ -20,6 +20,7 @@ import {
     CreateChronikEntry
 } from "../../../core/models/chronik/chronik";
 import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
+import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
 
 @Component({
     selector: "app-chronik-page",
@@ -39,7 +40,8 @@ import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
         TagModule,
         TooltipModule,
         DividerModule,
-        BadgeModule
+        BadgeModule,
+        OnlineIndicator
     ],
     templateUrl: "./chronik-page.html"
 })
