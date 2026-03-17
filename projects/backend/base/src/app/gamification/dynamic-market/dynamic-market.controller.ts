@@ -6,6 +6,7 @@ import {
     CreateMarketEventDto,
     CreateMarketResourceDto,
     DynamicMarketService,
+    MarketActivityDto,
     MarketStatsDto,
     UpdateMarketResourceDto
 } from "./dynamic-market.service";
@@ -44,6 +45,12 @@ export class DynamicMarketController {
     @Get("schedule/next")
     getNextUpdate() {
         return this.marketService.getNextUpdateAt();
+    }
+
+    @Public()
+    @Get("activities")
+    getActivities(@Query("limit") limit?: string): MarketActivityDto[] {
+        return this.marketService.getRecentActivities(limit ? parseInt(limit, 10) : 50);
     }
 
     // ─── Authenticated: Trading ─────────────────────────────────────────────

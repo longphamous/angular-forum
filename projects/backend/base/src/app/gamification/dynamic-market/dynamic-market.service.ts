@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CreditService } from "../../credit/credit.service";
+import { UserEntity } from "../../user/entities/user.entity";
 import { DEFAULT_SCHEDULE, MarketConfigEntity, MarketSchedule } from "./entities/market-config.entity";
 import { MarketEventEntity } from "./entities/market-event.entity";
 import { MarketEventLogEntity } from "./entities/market-event-log.entity";
@@ -175,6 +176,36 @@ export interface AdminOrgInventoryDto {
     resourceIcon: string;
     quantity: number;
     currentPrice: number;
+}
+
+// ─── Market Activity Log ─────────────────────────────────────────────────────
+
+export type MarketActivityType = "buy" | "sell" | "event" | "price_update";
+
+export interface MarketPriceChangeDto {
+    name: string;
+    icon: string;
+    oldPrice: number;
+    newPrice: number;
+    changePercent: number;
+}
+
+export interface MarketActivityDto {
+    id: string;
+    type: MarketActivityType;
+    resourceSlug?: string;
+    resourceName?: string;
+    resourceIcon?: string;
+    quantity?: number;
+    pricePerUnit?: number;
+    totalPrice?: number;
+    userDisplay?: string;
+    eventTitle?: string;
+    eventDescription?: string;
+    affectedCount?: number;
+    changedCount?: number;
+    topChanges?: MarketPriceChangeDto[];
+    timestamp: string;
 }
 
 // ─── Default resources (anime/manga themed) ─────────────────────────────────
@@ -1102,6 +1133,21 @@ const DEFAULT_EVENTS: CreateMarketEventDto[] = [
     }
 ];
 
+// ─── Activity log ─────────────────────────────────────────────────────────────
+
+const ACTIVITY_MAX = 200;
+const activityLog: MarketActivityDto[] = [];
+
+function pushActivity(act: Omit<MarketActivityDto, "id">): void {
+    activityLog.unshift({
+        id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        ...act
+    });
+    if (activityLog.length > ACTIVITY_MAX) {
+        activityLog.length = ACTIVITY_MAX;
+    }
+}
+
 // ─── Schedule Helper ─────────────────────────────────────────────────────────
 
 function computeNextUpdate(schedule: MarketSchedule): Date | null {
@@ -1176,6 +1222,8 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
         @InjectRepository(MarketConfigEntity)
         private readonly configRepo: Repository<MarketConfigEntity>,
+        @InjectRepository(UserEntity)
+        private readonly userRepo: Repository<UserEntity>,
         private readonly creditService: CreditService
     ) {}
 
@@ -1293,7 +1341,22 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
             })
         );
 
-        const wallet = await this.creditService.getWallet(userId);
+        const [wallet, buyer] = await Promise.all([
+            this.creditService.getWallet(userId),
+            this.userRepo.findOne({ where: { id: userId }, select: { displayName: true } })
+        ]);
+
+        pushActivity({
+            type: "buy",
+            resourceSlug: resource.slug,
+            resourceName: resource.name,
+            resourceIcon: resource.icon,
+            quantity,
+            pricePerUnit: resource.currentPrice,
+            totalPrice,
+            userDisplay: buyer?.displayName ?? `Spieler #${userId.slice(-4)}`,
+            timestamp: new Date().toISOString()
+        });
 
         return {
             action: "buy",
@@ -1357,7 +1420,22 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
             })
         );
 
-        const wallet = await this.creditService.getWallet(userId);
+        const [wallet, seller] = await Promise.all([
+            this.creditService.getWallet(userId),
+            this.userRepo.findOne({ where: { id: userId }, select: { displayName: true } })
+        ]);
+
+        pushActivity({
+            type: "sell",
+            resourceSlug: resource.slug,
+            resourceName: resource.name,
+            resourceIcon: resource.icon,
+            quantity,
+            pricePerUnit: sellPrice,
+            totalPrice,
+            userDisplay: seller?.displayName ?? `Spieler #${userId.slice(-4)}`,
+            timestamp: new Date().toISOString()
+        });
 
         return {
             action: "sell",
@@ -1571,6 +1649,7 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
         }
 
         // Snapshot previous prices
+        const prevPricesForLog = new Map<string, number>(resources.map((r) => [r.slug, r.currentPrice]));
         for (const r of resources) {
             this.previousPrices.set(r.slug, r.currentPrice);
         }
@@ -1609,6 +1688,33 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
         }
 
         await this.resourceRepo.save(resources);
+
+        const topChanges = resources
+            .map((r) => {
+                const old = prevPricesForLog.get(r.slug) ?? r.currentPrice;
+                if (old === r.currentPrice) return null;
+                const cp = old > 0 ? ((r.currentPrice - old) / old) * 100 : 0;
+                return {
+                    name: r.name,
+                    icon: r.icon,
+                    oldPrice: old,
+                    newPrice: r.currentPrice,
+                    changePercent: Math.round(cp * 10) / 10
+                };
+            })
+            .filter((c): c is MarketPriceChangeDto => c !== null && Math.abs(c.changePercent) >= 0.5)
+            .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
+            .slice(0, 5);
+        const changedCount = resources.filter((r) => prevPricesForLog.get(r.slug) !== r.currentPrice).length;
+        if (changedCount > 0) {
+            pushActivity({
+                type: "price_update",
+                changedCount,
+                topChanges,
+                timestamp: new Date().toISOString()
+            });
+        }
+
         this.logger.log("Market prices recalculated.");
     }
 
@@ -1680,6 +1786,14 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
             priceChanges
         });
         const savedLog = await this.eventLogRepo.save(log);
+
+        pushActivity({
+            type: "event",
+            eventTitle: selected.title,
+            eventDescription: selected.description,
+            affectedCount: Object.keys(priceChanges).length,
+            timestamp: new Date().toISOString()
+        });
 
         this.logger.log(`Market event triggered: "${selected.title}"`);
         return this.toEventLogDto(savedLog);
@@ -1868,6 +1982,12 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
         } finally {
             await this.scheduleNextUpdate();
         }
+    }
+
+    // ─── Activity log ────────────────────────────────────────────────────────
+
+    getRecentActivities(limit = 50): MarketActivityDto[] {
+        return activityLog.slice(0, Math.min(limit, ACTIVITY_MAX));
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────

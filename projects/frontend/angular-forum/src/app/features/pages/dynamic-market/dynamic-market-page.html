@@ -174,204 +174,325 @@
     </div>
     }
 
-    <!-- Main Market Table (AG Grid-inspired stock ticker style) -->
-    @if (marketFacade.loading() && marketFacade.allResources().length === 0) {
-    <p-skeleton height="24rem" />
-    } @else {
-    <p-table
-        [groupRowsBy]="'groupKey'"
-        [rowGroupMode]="'subheader'"
-        [rowHover]="true"
-        [scrollable]="true"
-        [sortField]="'groupKey'"
-        [sortOrder]="1"
-        [value]="marketFacade.allResources()"
-        styleClass="p-datatable-sm p-datatable-striped"
-    >
-        <ng-template let-group pTemplate="groupheader">
-            <tr class="font-semibold">
-                <td class="!bg-gray-100 dark:!bg-gray-800" colspan="8">
-                    <span class="text-sm font-bold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                        {{ getGroupLabel(group.groupKey) }}
-                    </span>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="header">
-            <tr>
-                <th pSortableColumn="name" style="min-width: 200px">
-                    {{ t('dynamicMarket.resource') }}
-                    <p-sortIcon field="name" />
-                </th>
-                <th style="width: 140px">{{ t('dynamicMarket.timeline') }}</th>
-                <th class="text-right" pSortableColumn="currentPrice" style="min-width: 100px">
-                    {{ t('dynamicMarket.price') }}
-                    <p-sortIcon field="currentPrice" />
-                </th>
-                <th class="text-right" pSortableColumn="changePercent" style="min-width: 100px">
-                    {{ t('dynamicMarket.change') }}
-                    <p-sortIcon field="changePercent" />
-                </th>
-                <th class="text-center" style="width: 100px">{{ t('dynamicMarket.range') }}</th>
-                <th class="text-right" style="width: 80px">{{ t('dynamicMarket.owned') }}</th>
-                <th class="text-right" pSortableColumn="volatility" style="width: 60px">
-                    Vol.
-                    <p-sortIcon field="volatility" />
-                </th>
-                <th class="text-center" style="min-width: 290px; width: 290px">{{ t('dynamicMarket.trade') }}</th>
-            </tr>
-        </ng-template>
-        <ng-template let-resource pTemplate="body">
-            <tr (click)="selectResource(resource)" [class.selected-row]="selectedResource()?.slug === resource.slug">
-                <!-- Resource Name & Icon/Image -->
-                <td class="resource-name-cell">
-                    <div class="flex items-center gap-2">
-                        @if (resource.imageUrl) {
-                        <div class="resource-img-wrapper">
-                            <img class="resource-img" [alt]="resource.name" [src]="resource.imageUrl" />
-                        </div>
-                        } @else {
-                        <i [class]="resource.icon + ' text-lg'" style="width: 32px; text-align: center"></i>
-                        }
-                        <div>
-                            <div class="font-semibold dark:text-white">{{ resource.name }}</div>
-                            <div class="text-xs text-gray-400">{{ resource.slug }}</div>
-                        </div>
-                    </div>
-                </td>
+    <!-- Tabs: Markt / Aktivitäten -->
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab value="market"><i class="pi pi-chart-line mr-2"></i>{{ t('dynamicMarket.tabs.market') }}</p-tab>
+            <p-tab value="activities"><i class="pi pi-list mr-2"></i>{{ t('dynamicMarket.tabs.activities') }}</p-tab>
+        </p-tablist>
 
-                <!-- Sparkline -->
-                <td>
-                    @if (resource.priceHistory && resource.priceHistory.length >= 2) {
-                    <div class="sparkline-container">
-                        <svg height="28" viewBox="0 0 120 28" width="120">
-                            <path
-                                [attr.d]="getSparklinePath(resource.priceHistory)"
-                                [attr.stroke]="getSparklineColor(resource)"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                            />
-                        </svg>
-                    </div>
-                    } @else {
-                    <span class="text-xs text-gray-400">—</span>
-                    }
-                </td>
-
-                <!-- Current Price -->
-                <td
-                    class="text-right font-mono text-base font-bold"
-                    [class.cell-flash-down]="isFlashing(resource.slug) && resource.trend < 0"
-                    [class.cell-flash-up]="isFlashing(resource.slug) && resource.trend > 0"
-                >
-                    <span class="dark:text-white">{{ resource.currentPrice }}</span>
-                    <span class="ml-1 text-xs text-gray-400">C</span>
-                </td>
-
-                <!-- Change % -->
-                <td class="text-right">
-                    <span
-                        class="change-badge"
-                        [class.change-badge-down]="resource.changePercent < 0"
-                        [class.change-badge-neutral]="resource.changePercent === 0"
-                        [class.change-badge-up]="resource.changePercent > 0"
+        <p-tabpanel value="market">
+            <!-- Main Market Table (AG Grid-inspired stock ticker style) -->
+            @if (marketFacade.loading() && marketFacade.allResources().length === 0) {
+            <p-skeleton height="24rem" />
+            } @else {
+            <p-table
+                [groupRowsBy]="'groupKey'"
+                [rowGroupMode]="'subheader'"
+                [rowHover]="true"
+                [scrollable]="true"
+                [sortField]="'groupKey'"
+                [sortOrder]="1"
+                [value]="marketFacade.allResources()"
+                styleClass="p-datatable-sm p-datatable-striped"
+            >
+                <ng-template let-group pTemplate="groupheader">
+                    <tr class="font-semibold">
+                        <td class="!bg-gray-100 dark:!bg-gray-800" colspan="8">
+                            <span class="text-sm font-bold tracking-wide text-gray-600 uppercase dark:text-gray-300">
+                                {{ getGroupLabel(group.groupKey) }}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="name" style="min-width: 200px">
+                            {{ t('dynamicMarket.resource') }}
+                            <p-sortIcon field="name" />
+                        </th>
+                        <th style="width: 140px">{{ t('dynamicMarket.timeline') }}</th>
+                        <th class="text-right" pSortableColumn="currentPrice" style="min-width: 100px">
+                            {{ t('dynamicMarket.price') }}
+                            <p-sortIcon field="currentPrice" />
+                        </th>
+                        <th class="text-right" pSortableColumn="changePercent" style="min-width: 100px">
+                            {{ t('dynamicMarket.change') }}
+                            <p-sortIcon field="changePercent" />
+                        </th>
+                        <th class="text-center" style="width: 100px">{{ t('dynamicMarket.range') }}</th>
+                        <th class="text-right" style="width: 80px">{{ t('dynamicMarket.owned') }}</th>
+                        <th class="text-right" pSortableColumn="volatility" style="width: 60px">
+                            Vol.
+                            <p-sortIcon field="volatility" />
+                        </th>
+                        <th class="text-center" style="min-width: 290px; width: 290px">
+                            {{ t('dynamicMarket.trade') }}
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template let-resource pTemplate="body">
+                    <tr
+                        (click)="selectResource(resource)"
+                        [class.selected-row]="selectedResource()?.slug === resource.slug"
                     >
-                        @if (resource.changePercent > 0) {
-                        <i class="pi pi-arrow-up" style="font-size: 0.6rem"></i>
-                        } @else if (resource.changePercent < 0) {
-                        <i class="pi pi-arrow-down" style="font-size: 0.6rem"></i>
-                        } {{ resource.changePercent > 0 ? '+' : '' }}{{ resource.changePercent }}%
-                    </span>
-                </td>
+                        <!-- Resource Name & Icon/Image -->
+                        <td class="resource-name-cell">
+                            <div class="flex items-center gap-2">
+                                @if (resource.imageUrl) {
+                                <div class="resource-img-wrapper">
+                                    <img class="resource-img" [alt]="resource.name" [src]="resource.imageUrl" />
+                                </div>
+                                } @else {
+                                <i [class]="resource.icon + ' text-lg'" style="width: 32px; text-align: center"></i>
+                                }
+                                <div>
+                                    <div class="font-semibold dark:text-white">{{ resource.name }}</div>
+                                    <div class="text-xs text-gray-400">{{ resource.slug }}</div>
+                                </div>
+                            </div>
+                        </td>
 
-                <!-- Price Range Bar -->
-                <td class="text-center">
-                    <div class="flex items-center justify-center gap-1">
-                        <span class="text-xs text-gray-400">{{ resource.minPrice }}</span>
-                        <div class="range-bar bg-gray-200 dark:bg-gray-700">
-                            <div
-                                class="range-bar-fill"
-                                [style.background-color]="resource.changePercent >= 0 ? '#22c55e' : '#ef4444'"
-                                [style.width.%]="getPricePercent(resource)"
-                            ></div>
-                        </div>
-                        <span class="text-xs text-gray-400">{{ resource.maxPrice }}</span>
-                    </div>
-                </td>
+                        <!-- Sparkline -->
+                        <td>
+                            @if (resource.priceHistory && resource.priceHistory.length >= 2) {
+                            <div class="sparkline-container">
+                                <svg height="28" viewBox="0 0 120 28" width="120">
+                                    <path
+                                        [attr.d]="getSparklinePath(resource.priceHistory)"
+                                        [attr.stroke]="getSparklineColor(resource)"
+                                        fill="none"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                    />
+                                </svg>
+                            </div>
+                            } @else {
+                            <span class="text-xs text-gray-400">—</span>
+                            }
+                        </td>
 
-                <!-- Owned -->
-                <td class="text-right font-mono">
-                    @if (getInventoryQty(resource.slug) > 0) {
-                    <span class="font-semibold dark:text-white">{{ getInventoryQty(resource.slug) }}</span>
-                    } @else {
-                    <span class="text-gray-300 dark:text-gray-600">0</span>
+                        <!-- Current Price -->
+                        <td
+                            class="text-right font-mono text-base font-bold"
+                            [class.cell-flash-down]="isFlashing(resource.slug) && resource.trend < 0"
+                            [class.cell-flash-up]="isFlashing(resource.slug) && resource.trend > 0"
+                        >
+                            <span class="dark:text-white">{{ resource.currentPrice }}</span>
+                            <span class="ml-1 text-xs text-gray-400">C</span>
+                        </td>
+
+                        <!-- Change % -->
+                        <td class="text-right">
+                            <span
+                                class="change-badge"
+                                [class.change-badge-down]="resource.changePercent < 0"
+                                [class.change-badge-neutral]="resource.changePercent === 0"
+                                [class.change-badge-up]="resource.changePercent > 0"
+                            >
+                                @if (resource.changePercent > 0) {
+                                <i class="pi pi-arrow-up" style="font-size: 0.6rem"></i>
+                                } @else if (resource.changePercent < 0) {
+                                <i class="pi pi-arrow-down" style="font-size: 0.6rem"></i>
+                                } {{ resource.changePercent > 0 ? '+' : '' }}{{ resource.changePercent }}%
+                            </span>
+                        </td>
+
+                        <!-- Price Range Bar -->
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <span class="text-xs text-gray-400">{{ resource.minPrice }}</span>
+                                <div class="range-bar bg-gray-200 dark:bg-gray-700">
+                                    <div
+                                        class="range-bar-fill"
+                                        [style.background-color]="resource.changePercent >= 0 ? '#22c55e' : '#ef4444'"
+                                        [style.width.%]="getPricePercent(resource)"
+                                    ></div>
+                                </div>
+                                <span class="text-xs text-gray-400">{{ resource.maxPrice }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Owned -->
+                        <td class="text-right font-mono">
+                            @if (getInventoryQty(resource.slug) > 0) {
+                            <span class="font-semibold dark:text-white">{{ getInventoryQty(resource.slug) }}</span>
+                            } @else {
+                            <span class="text-gray-300 dark:text-gray-600">0</span>
+                            }
+                        </td>
+
+                        <!-- Volatility -->
+                        <td class="text-right">
+                            <span
+                                class="text-xs"
+                                [class.text-amber-500]="resource.volatility >= 1.1 && resource.volatility < 1.5"
+                                [class.text-gray-400]="resource.volatility < 1.1"
+                                [class.text-red-500]="resource.volatility >= 1.5"
+                            >
+                                {{ resource.volatility }}x
+                            </span>
+                        </td>
+
+                        <!-- Trade Actions -->
+                        <td class="text-center" style="min-width: 290px; width: 290px">
+                            <div class="flex items-center justify-center gap-1" style="flex-wrap: nowrap">
+                                @if (resource.canBuy) {
+                                <p-inputNumber
+                                    [(ngModel)]="buyQuantities[resource.slug]"
+                                    [max]="100"
+                                    [min]="1"
+                                    [showButtons]="true"
+                                    buttonLayout="horizontal"
+                                    decrementButtonClass="p-button-secondary p-button-sm"
+                                    decrementButtonIcon="pi pi-minus"
+                                    incrementButtonClass="p-button-secondary p-button-sm"
+                                    incrementButtonIcon="pi pi-plus"
+                                    inputStyleClass="w-10 text-center"
+                                    size="small"
+                                />
+                                <p-button
+                                    (onClick)="onBuy(resource.slug); $event.stopPropagation()"
+                                    [label]="(resource.currentPrice * (buyQuantities[resource.slug] || 1)) + 'C'"
+                                    [loading]="marketFacade.trading()"
+                                    icon="pi pi-shopping-cart"
+                                    pTooltip="{{ t('dynamicMarket.buy') }}"
+                                    severity="success"
+                                    size="small"
+                                />
+                                }
+                                <!-- Always in DOM when canSell so width stays constant; hidden via CSS when user owns none -->
+                                @if (resource.canSell) {
+                                <p-button
+                                    (onClick)="onSell(resource.slug); $event.stopPropagation()"
+                                    [disabled]="getInventoryQty(resource.slug) === 0"
+                                    [loading]="marketFacade.trading()"
+                                    [rounded]="true"
+                                    [style.visibility]="getInventoryQty(resource.slug) > 0 ? 'visible' : 'hidden'"
+                                    icon="pi pi-arrow-down"
+                                    pTooltip="{{ t('dynamicMarket.sell') }}"
+                                    severity="warn"
+                                    size="small"
+                                />
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td class="text-center text-gray-500" colspan="8">{{ t('common.noData') }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            }
+        </p-tabpanel>
+
+        <p-tabpanel value="activities">
+            <div class="pt-4">
+                @if (marketFacade.activitiesLoading() && marketFacade.activities().length === 0) {
+                <div class="flex flex-col gap-3">
+                    @for (_ of [1,2,3,4,5]; track $index) {
+                    <p-skeleton height="3.5rem" styleClass="rounded-xl" />
                     }
-                </td>
-
-                <!-- Volatility -->
-                <td class="text-right">
-                    <span
-                        class="text-xs"
-                        [class.text-amber-500]="resource.volatility >= 1.1 && resource.volatility < 1.5"
-                        [class.text-gray-400]="resource.volatility < 1.1"
-                        [class.text-red-500]="resource.volatility >= 1.5"
+                </div>
+                } @else if (marketFacade.activities().length === 0) {
+                <div class="py-12 text-center text-gray-400 dark:text-gray-600">
+                    <i class="pi pi-list mb-3 text-4xl"></i>
+                    <p>{{ t('dynamicMarket.noActivities') }}</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-2">
+                    @for (act of marketFacade.activities(); track act.id) {
+                    <div
+                        class="flex items-start gap-3 rounded-xl border p-3 transition-colors"
+                        [class]="
+                            act.type === 'buy' ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950' :
+                            act.type === 'sell' ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950' :
+                            act.type === 'event' ? 'border-purple-200 bg-purple-50 dark:border-purple-900 dark:bg-purple-950' :
+                            'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'
+                        "
                     >
-                        {{ resource.volatility }}x
-                    </span>
-                </td>
+                        <!-- Icon -->
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                            [class]="
+                                act.type === 'buy' ? 'bg-green-100 dark:bg-green-900' :
+                                act.type === 'sell' ? 'bg-amber-100 dark:bg-amber-900' :
+                                act.type === 'event' ? 'bg-purple-100 dark:bg-purple-900' :
+                                'bg-blue-100 dark:bg-blue-900'
+                            "
+                        >
+                            <i
+                                [class]="
+                                    act.type === 'buy' ? 'pi pi-shopping-cart text-green-600 dark:text-green-400' :
+                                    act.type === 'sell' ? 'pi pi-arrow-up text-amber-600 dark:text-amber-400' :
+                                    act.type === 'event' ? 'pi pi-bolt text-purple-600 dark:text-purple-400' :
+                                    'pi pi-refresh text-blue-600 dark:text-blue-400'
+                                "
+                            ></i>
+                        </div>
 
-                <!-- Trade Actions -->
-                <td class="text-center" style="min-width: 290px; width: 290px">
-                    <div class="flex items-center justify-center gap-1" style="flex-wrap: nowrap">
-                        @if (resource.canBuy) {
-                        <p-inputNumber
-                            [(ngModel)]="buyQuantities[resource.slug]"
-                            [max]="100"
-                            [min]="1"
-                            [showButtons]="true"
-                            buttonLayout="horizontal"
-                            decrementButtonClass="p-button-secondary p-button-sm"
-                            decrementButtonIcon="pi pi-minus"
-                            incrementButtonClass="p-button-secondary p-button-sm"
-                            incrementButtonIcon="pi pi-plus"
-                            inputStyleClass="w-10 text-center"
-                            size="small"
-                        />
-                        <p-button
-                            (onClick)="onBuy(resource.slug); $event.stopPropagation()"
-                            [label]="(resource.currentPrice * (buyQuantities[resource.slug] || 1)) + 'C'"
-                            [loading]="marketFacade.trading()"
-                            icon="pi pi-shopping-cart"
-                            pTooltip="{{ t('dynamicMarket.buy') }}"
-                            severity="success"
-                            size="small"
-                        />
-                        }
-                        <!-- Always in DOM when canSell so width stays constant; hidden via CSS when user owns none -->
-                        @if (resource.canSell) {
-                        <p-button
-                            (onClick)="onSell(resource.slug); $event.stopPropagation()"
-                            [disabled]="getInventoryQty(resource.slug) === 0"
-                            [loading]="marketFacade.trading()"
-                            [rounded]="true"
-                            [style.visibility]="getInventoryQty(resource.slug) > 0 ? 'visible' : 'hidden'"
-                            icon="pi pi-arrow-down"
-                            pTooltip="{{ t('dynamicMarket.sell') }}"
-                            severity="warn"
-                            size="small"
-                        />
-                        }
+                        <!-- Content -->
+                        <div class="min-w-0 flex-1">
+                            @if (act.type === 'buy' || act.type === 'sell') {
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                <span
+                                    [class]="act.type === 'buy' ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'"
+                                >
+                                    {{ act.userDisplay }}
+                                </span>
+                                {{ act.type === 'buy' ? t('dynamicMarket.activityBought') :
+                                t('dynamicMarket.activitySold') }}
+                                <strong>{{ act.quantity }}×</strong>
+                                <i [class]="act.resourceIcon + ' mx-1'"></i>
+                                {{ act.resourceName }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                {{ act.totalPrice | number }} Coins ({{ act.pricePerUnit | number }} {{
+                                t('dynamicMarket.perUnit') }})
+                            </p>
+                            } @else if (act.type === 'event') {
+                            <p class="text-sm font-medium text-purple-800 dark:text-purple-300">
+                                <i class="pi pi-bolt mr-1"></i>{{ act.eventTitle }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                {{ act.eventDescription }} · {{ act.affectedCount }} {{
+                                t('dynamicMarket.activityResourcesAffected') }}
+                            </p>
+                            } @else {
+                            <p class="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                <i class="pi pi-refresh mr-1"></i>{{ t('dynamicMarket.activityPriceUpdate') }}
+                                <span class="font-normal text-gray-600 dark:text-gray-400"
+                                    >({{ act.changedCount }} {{ t('dynamicMarket.activityResourcesChanged') }})</span
+                                >
+                            </p>
+                            @if (act.topChanges && act.topChanges.length > 0) {
+                            <div class="mt-1 flex flex-wrap gap-1.5">
+                                @for (ch of act.topChanges; track ch.name) {
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                    [class]="ch.changePercent > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'"
+                                >
+                                    <i [class]="ch.icon"></i>
+                                    {{ ch.name }}
+                                    <span>{{ ch.changePercent > 0 ? '+' : '' }}{{ ch.changePercent }}%</span>
+                                </span>
+                                }
+                            </div>
+                            } }
+                        </div>
+
+                        <!-- Timestamp -->
+                        <span class="shrink-0 text-xs text-gray-400 dark:text-gray-600"
+                            >{{ relativeTime(act.timestamp) }}</span
+                        >
                     </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-            <tr>
-                <td class="text-center text-gray-500" colspan="8">{{ t('common.noData') }}</td>
-            </tr>
-        </ng-template>
-    </p-table>
-    }
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+    </p-tabs>
 </div>

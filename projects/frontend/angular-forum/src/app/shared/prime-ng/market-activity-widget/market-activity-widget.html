@@ -1,0 +1,53 @@
+<div class="market-activity-widget" *transloco="let t">
+    <div class="widget-header">
+        <i class="pi pi-chart-line"></i>
+        <span>{{ t('dynamicMarket.tabs.activities') }}</span>
+        <a class="widget-link" routerLink="/dynamic-market">
+            <i class="pi pi-external-link"></i>
+        </a>
+    </div>
+
+    @if (marketFacade.activitiesLoading() && marketFacade.activities().length === 0) {
+    <div class="widget-body">
+        @for (_ of [1,2,3]; track $index) {
+        <p-skeleton height="2.5rem" styleClass="mb-1 rounded-lg" />
+        }
+    </div>
+    } @else if (marketFacade.activities().length === 0) {
+    <div class="widget-empty">
+        <span>{{ t('dynamicMarket.noActivities') }}</span>
+    </div>
+    } @else {
+    <div class="widget-body">
+        @for (act of marketFacade.activities().slice(0, 8); track act.id) {
+        <div
+            class="widget-entry"
+            [class.entry-buy]="act.type === 'buy'"
+            [class.entry-event]="act.type === 'event'"
+            [class.entry-price]="act.type === 'price_update'"
+            [class.entry-sell]="act.type === 'sell'"
+        >
+            <i
+                class="entry-icon"
+                [class]="
+                    act.type === 'buy' ? 'pi pi-shopping-cart' :
+                    act.type === 'sell' ? 'pi pi-arrow-up' :
+                    act.type === 'event' ? 'pi pi-bolt' :
+                    'pi pi-refresh'
+                "
+            ></i>
+            <span class="entry-text">
+                @if (act.type === 'buy' || act.type === 'sell') {
+                <strong>{{ act.userDisplay }}</strong>
+                {{ act.type === 'buy' ? t('dynamicMarket.activityBought') : t('dynamicMarket.activitySold') }} {{
+                act.quantity }}× <i [class]="act.resourceIcon + ' text-xs'"></i> {{ act.resourceName }} } @else if
+                (act.type === 'event') {
+                <strong>{{ act.eventTitle }}</strong>
+                } @else { {{ t('dynamicMarket.activityPriceUpdate') }} ({{ act.changedCount }}) }
+            </span>
+            <span class="entry-time">{{ relativeTime(act.timestamp) }}</span>
+        </div>
+        }
+    </div>
+    }
+</div>

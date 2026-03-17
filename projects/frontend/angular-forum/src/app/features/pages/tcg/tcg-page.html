@@ -1,0 +1,779 @@
+<div class="p-4" *transloco="let t">
+    <!-- Header -->
+    <div class="mb-4 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold dark:text-white">{{ t('tcg.title') }}</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('tcg.subtitle') }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            @let balance = walletFacade.wallet(); @if (balance) {
+            <div
+                class="flex items-center gap-1.5 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-1.5 dark:border-yellow-800 dark:bg-yellow-950"
+            >
+                <i class="pi pi-wallet text-yellow-500"></i>
+                <span class="font-mono text-sm font-bold text-yellow-700 dark:text-yellow-300"
+                    >{{ balance.balance | number }}</span
+                >
+                <span class="text-xs text-yellow-600 dark:text-yellow-400">Coins</span>
+            </div>
+            } @else if (walletFacade.walletLoading()) {
+            <div class="h-8 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+            }
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab value="boosters"> <i class="pi pi-box mr-2"></i>{{ t('tcg.tabs.boosters') }} </p-tab>
+            <p-tab value="collection"> <i class="pi pi-th-large mr-2"></i>{{ t('tcg.tabs.collection') }} </p-tab>
+            <p-tab value="marketplace"> <i class="pi pi-shopping-cart mr-2"></i>{{ t('tcg.tabs.marketplace') }} </p-tab>
+            <p-tab value="progress"> <i class="pi pi-chart-bar mr-2"></i>{{ t('tcg.tabs.progress') }} </p-tab>
+        </p-tablist>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 1: Booster Shop                                                -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="boosters">
+            <div class="pt-4">
+                <!-- Unopened Boosters -->
+                @if (tcgFacade.unopenedBoosters().length > 0) {
+                <div class="mb-6">
+                    <h2 class="mb-3 text-lg font-semibold dark:text-white">
+                        <i class="pi pi-gift mr-2 text-purple-500"></i>{{ t('tcg.booster.unopened') }}
+                    </h2>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        @for (booster of tcgFacade.unopenedBoosters(); track booster.id) {
+                        <div
+                            class="unopened-booster-card flex items-center justify-between rounded-xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-950"
+                        >
+                            <div class="flex items-center gap-3">
+                                @if (booster.boosterPack.imageUrl) {
+                                <img
+                                    class="h-12 w-12 rounded-lg object-cover"
+                                    [alt]="booster.boosterPack.name"
+                                    [src]="booster.boosterPack.imageUrl"
+                                />
+                                } @else {
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-200 dark:bg-purple-800"
+                                >
+                                    <i class="pi pi-box text-2xl text-purple-500"></i>
+                                </div>
+                                }
+                                <div>
+                                    <div class="font-semibold dark:text-white">{{ booster.boosterPack.name }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ relativeTime(booster.purchasedAt) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <p-button
+                                (onClick)="onOpenBooster(booster.id)"
+                                [label]="t('tcg.booster.open')"
+                                [loading]="tcgFacade.opening()"
+                                icon="pi pi-lock-open"
+                                severity="help"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </div>
+                </div>
+                } @else if (!tcgFacade.unopenedBoostersLoading()) {
+                <div
+                    class="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 text-center text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-500"
+                >
+                    <i class="pi pi-inbox mb-2 text-2xl"></i>
+                    <p>{{ t('tcg.booster.noUnopened') }}</p>
+                </div>
+                }
+
+                <!-- Booster Packs Grid -->
+                <h2 class="mb-3 text-lg font-semibold dark:text-white">
+                    <i class="pi pi-shopping-bag mr-2 text-blue-500"></i>{{ t('tcg.tabs.boosters') }}
+                </h2>
+                @if (tcgFacade.boostersLoading() && tcgFacade.boosters().length === 0) {
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @for (_ of [1, 2, 3]; track $index) {
+                    <p-skeleton height="16rem" styleClass="rounded-xl" />
+                    }
+                </div>
+                } @else {
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @for (booster of tcgFacade.boosters(); track booster.id) {
+                    <div
+                        class="booster-card rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+                    >
+                        <!-- Image / Icon -->
+                        <div class="mb-4 flex justify-center">
+                            @if (booster.imageUrl) {
+                            <img
+                                class="h-32 w-32 rounded-xl object-cover"
+                                [alt]="booster.name"
+                                [src]="booster.imageUrl"
+                            />
+                            } @else {
+                            <div
+                                class="flex h-32 w-32 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-purple-500"
+                            >
+                                <i class="pi pi-box text-5xl text-white"></i>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Info -->
+                        <h3 class="mb-1 text-center text-lg font-bold dark:text-white">{{ booster.name }}</h3>
+                        @if (booster.description) {
+                        <p class="mb-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                            {{ booster.description }}
+                        </p>
+                        }
+
+                        <!-- Details -->
+                        <div class="mb-3 flex flex-wrap items-center justify-center gap-2">
+                            <p-tag
+                                [value]="booster.cardsPerPack + ' ' + t('tcg.booster.cardsPerPack')"
+                                severity="info"
+                            />
+                            @if (booster.guaranteedRarity) {
+                            <p-tag
+                                [severity]="getRaritySeverity(booster.guaranteedRarity)"
+                                [value]="t('tcg.booster.guaranteed') + ': ' + t('tcg.rarity.' + booster.guaranteedRarity)"
+                            />
+                            }
+                            <p-tag [value]="booster.series" severity="secondary" />
+                        </div>
+
+                        <!-- Availability -->
+                        @if (booster.availableUntil) {
+                        <div class="mb-3 text-center text-xs text-gray-400 dark:text-gray-500">
+                            <i class="pi pi-clock mr-1"></i>
+                            {{ t('tcg.booster.available') }} {{ t('tcg.booster.until') }} {{ booster.availableUntil |
+                            date: 'dd.MM.yyyy HH:mm' }}
+                        </div>
+                        }
+
+                        <!-- Price & Buy -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <i class="pi pi-bitcoin text-yellow-500"></i>
+                                <span class="text-xl font-bold text-yellow-600 dark:text-yellow-400"
+                                    >{{ booster.price }}</span
+                                >
+                                <span class="text-sm text-gray-400">Coins</span>
+                            </div>
+                            @let statusKey = getBoosterStatusKey(booster); @if (statusKey) {
+                            <p-tag [value]="t(statusKey)" severity="danger" />
+                            } @else {
+                            <p-button
+                                (onClick)="onBuyBooster(booster)"
+                                [disabled]="!isBoosterAvailable(booster)"
+                                [label]="t('tcg.booster.buy')"
+                                [loading]="tcgFacade.buying()"
+                                icon="pi pi-shopping-cart"
+                                severity="success"
+                                size="small"
+                            />
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 2: Sammlung (Collection)                                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="collection">
+            <div class="pt-4">
+                <!-- Progress Overview -->
+                @let prog = tcgFacade.progress(); @if (prog) {
+                <div
+                    class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
+                >
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="font-semibold dark:text-white">
+                            {{ prog.ownedUniqueCards }}/{{ prog.totalCards }} {{ t('tcg.collection.cards') }}
+                        </span>
+                        <span class="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">
+                            {{ prog.completionPercent }}%
+                        </span>
+                    </div>
+                    <div class="h-3 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-800">
+                        <div
+                            class="h-full rounded-full bg-blue-500 transition-all duration-500"
+                            [style.width.%]="prog.completionPercent"
+                        ></div>
+                    </div>
+                </div>
+                }
+
+                <!-- Filters -->
+                <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <p-select
+                        [(ngModel)]="filterSeries"
+                        [options]="seriesOptions()"
+                        [placeholder]="t('tcg.collection.filterSeries')"
+                        inputId="filterSeries"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-48"
+                    />
+                    <p-select
+                        [(ngModel)]="filterRarity"
+                        [options]="rarityOptions"
+                        [placeholder]="t('tcg.collection.filterRarity')"
+                        inputId="filterRarity"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-48"
+                    />
+                    <p-select
+                        [(ngModel)]="filterElement"
+                        [options]="elementOptions"
+                        [placeholder]="t('tcg.collection.filterElement')"
+                        inputId="filterElement"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-48"
+                    />
+                    <p-select
+                        [(ngModel)]="filterOwned"
+                        [options]="ownershipOptions"
+                        [placeholder]="t('tcg.collection.filterOwned')"
+                        inputId="filterOwned"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-48"
+                    />
+                </div>
+
+                <!-- Cards Grid -->
+                @if (tcgFacade.cardsLoading() && tcgFacade.cards().length === 0) {
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                    @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+                    <p-skeleton height="18rem" styleClass="rounded-xl" />
+                    }
+                </div>
+                } @else {
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                    @for (card of filteredCards(); track card.id) { @let isOwned = card.userCard &&
+                    card.userCard.quantity > 0;
+                    <div
+                        class="tcg-card relative overflow-hidden rounded-xl border-2 transition-all"
+                        [class.tcg-card-owned]="isOwned"
+                        [class.tcg-card-unowned]="!isOwned"
+                        [style.border-color]="getRarityColor(card.rarity)"
+                    >
+                        <!-- Card Image -->
+                        <div class="relative">
+                            @if (isOwned && card.imageUrl) {
+                            <img class="h-40 w-full object-cover" [alt]="card.name" [src]="card.imageUrl" />
+                            } @else {
+                            <div
+                                class="flex h-40 w-full items-center justify-center"
+                                [class.bg-gray-100]="isOwned"
+                                [class.bg-gray-200]="!isOwned"
+                                [class.dark:bg-gray-700]="isOwned"
+                                [class.dark:bg-gray-800]="!isOwned"
+                            >
+                                @if (isOwned) {
+                                <i class="pi pi-image text-4xl text-gray-400"></i>
+                                } @else {
+                                <span class="text-5xl font-bold text-gray-300 dark:text-gray-600">?</span>
+                                }
+                            </div>
+                            }
+
+                            <!-- Rarity badge -->
+                            <div class="absolute top-2 left-2">
+                                <p-tag
+                                    [rounded]="true"
+                                    [severity]="getRaritySeverity(card.rarity)"
+                                    [value]="t('tcg.rarity.' + card.rarity)"
+                                />
+                            </div>
+
+                            <!-- Element icon -->
+                            @if (card.element) {
+                            <div class="absolute top-2 right-2">
+                                <div
+                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 dark:bg-black/50"
+                                    [pTooltip]="elementConfig[card.element].label"
+                                >
+                                    <i
+                                        [class]="getElementIcon(card.element)"
+                                        [style.color]="getElementColor(card.element)"
+                                    ></i>
+                                </div>
+                            </div>
+                            }
+
+                            <!-- Owned quantity badge -->
+                            @if (isOwned && card.userCard) {
+                            <div class="absolute right-2 bottom-2">
+                                <span class="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">
+                                    x{{ card.userCard.quantity }}
+                                </span>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Card Info -->
+                        <div class="p-3" [class.opacity-50]="!isOwned">
+                            <div class="mb-1 truncate text-sm font-bold dark:text-white">
+                                @if (isOwned) { {{ card.name }} } @else { ??? }
+                            </div>
+
+                            <!-- Stats -->
+                            @if (isOwned) {
+                            <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span class="text-red-500" pTooltip="ATK">
+                                    <i class="pi pi-bolt mr-0.5"></i>{{ card.attack }}
+                                </span>
+                                <span class="text-blue-500" pTooltip="DEF">
+                                    <i class="pi pi-shield mr-0.5"></i>{{ card.defense }}
+                                </span>
+                                <span class="text-green-500" pTooltip="HP">
+                                    <i class="pi pi-heart mr-0.5"></i>{{ card.hp }}
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="mt-2 flex items-center justify-between">
+                                @if (card.userCard) {
+                                <button
+                                    class="text-sm transition-colors"
+                                    (click)="onToggleFavorite(card.id)"
+                                    [class.dark:text-gray-600]="!card.userCard.isFavorite"
+                                    [class.hover:text-red-400]="!card.userCard.isFavorite"
+                                    [class.text-gray-300]="!card.userCard.isFavorite"
+                                    [class.text-red-500]="card.userCard.isFavorite"
+                                    [pTooltip]="t('tcg.card.favorite')"
+                                >
+                                    <i class="pi pi-heart-fill"></i>
+                                </button>
+                                <button
+                                    class="text-sm text-gray-400 transition-colors hover:text-blue-500 dark:text-gray-500"
+                                    (click)="openTransferDialog(card.id)"
+                                    [pTooltip]="t('tcg.marketplace.transfer')"
+                                >
+                                    <i class="pi pi-send"></i>
+                                </button>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 3: Marktplatz (Marketplace)                                    -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="marketplace">
+            <div class="pt-4">
+                <!-- Sell Section -->
+                <div
+                    class="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
+                >
+                    <h3 class="mb-3 font-semibold dark:text-white">
+                        <i class="pi pi-tag mr-2 text-green-500"></i>{{ t('tcg.marketplace.sell') }}
+                    </h3>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div>
+                            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="sellCardSelect">
+                                {{ t('tcg.marketplace.selectCard') }}
+                            </label>
+                            <p-select
+                                [(ngModel)]="sellCardId"
+                                [options]="ownedCards()"
+                                [placeholder]="t('tcg.marketplace.selectCard')"
+                                inputId="sellCardSelect"
+                                optionLabel="label"
+                                optionValue="value"
+                                styleClass="w-64"
+                            />
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="sellPriceInput">
+                                {{ t('tcg.marketplace.setPrice') }}
+                            </label>
+                            <p-inputNumber
+                                [(ngModel)]="sellPrice"
+                                [min]="1"
+                                [showButtons]="true"
+                                inputId="sellPriceInput"
+                                size="small"
+                            />
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="sellQuantityInput">
+                                {{ t('tcg.marketplace.quantity') }}
+                            </label>
+                            <p-inputNumber
+                                [(ngModel)]="sellQuantity"
+                                [max]="99"
+                                [min]="1"
+                                [showButtons]="true"
+                                inputId="sellQuantityInput"
+                                size="small"
+                            />
+                        </div>
+                        <p-button
+                            (onClick)="onCreateListing()"
+                            [disabled]="!sellCardId()"
+                            [label]="t('tcg.marketplace.createListing')"
+                            icon="pi pi-plus"
+                            severity="success"
+                            size="small"
+                        />
+                    </div>
+                </div>
+
+                <!-- Your Listings -->
+                @if (myListings().length > 0) {
+                <div class="mb-6">
+                    <h3 class="mb-3 font-semibold dark:text-white">
+                        <i class="pi pi-list mr-2 text-blue-500"></i>{{ t('tcg.marketplace.yourListings') }}
+                    </h3>
+                    <p-table [value]="myListings()" styleClass="p-datatable-sm p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>{{ t('adminTcg.card.name') }}</th>
+                                <th>{{ t('tcg.card.rarity') }}</th>
+                                <th class="text-right">{{ t('tcg.marketplace.price') }}</th>
+                                <th class="text-right">{{ t('tcg.marketplace.quantity') }}</th>
+                                <th class="text-center">{{ t('common.actions') }}</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-listing pTemplate="body">
+                            <tr>
+                                <td class="font-medium dark:text-white">{{ listing.card.name }}</td>
+                                <td>
+                                    <p-tag
+                                        [severity]="getRaritySeverity(listing.card.rarity)"
+                                        [value]="t('tcg.rarity.' + listing.card.rarity)"
+                                    />
+                                </td>
+                                <td class="text-right font-mono">{{ listing.price }} C</td>
+                                <td class="text-right font-mono">{{ listing.quantity }}</td>
+                                <td class="text-center">
+                                    <p-button
+                                        (onClick)="onCancelListing(listing.id)"
+                                        [label]="t('tcg.marketplace.cancel')"
+                                        [text]="true"
+                                        icon="pi pi-times"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+                }
+
+                <!-- Active Listings from Others -->
+                <h3 class="mb-3 font-semibold dark:text-white">
+                    <i class="pi pi-shopping-cart mr-2 text-purple-500"></i>{{ t('tcg.tabs.marketplace') }}
+                </h3>
+                @if (tcgFacade.listingsLoading() && tcgFacade.listings().length === 0) {
+                <p-skeleton height="12rem" />
+                } @else if (otherListings().length === 0) {
+                <div class="py-8 text-center text-gray-400 dark:text-gray-600">
+                    <i class="pi pi-inbox mb-3 text-4xl"></i>
+                    <p>{{ t('tcg.marketplace.noListings') }}</p>
+                </div>
+                } @else {
+                <p-table [rowHover]="true" [value]="otherListings()" styleClass="p-datatable-sm p-datatable-striped">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ t('tcg.marketplace.seller') }}</th>
+                            <th>{{ t('adminTcg.card.name') }}</th>
+                            <th>{{ t('tcg.card.rarity') }}</th>
+                            <th class="text-right">{{ t('tcg.marketplace.price') }}</th>
+                            <th class="text-right">{{ t('tcg.marketplace.quantity') }}</th>
+                            <th class="text-center">{{ t('common.actions') }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-listing pTemplate="body">
+                        <tr>
+                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ listing.sellerName }}</td>
+                            <td class="font-medium dark:text-white">{{ listing.card.name }}</td>
+                            <td>
+                                <p-tag
+                                    [severity]="getRaritySeverity(listing.card.rarity)"
+                                    [value]="t('tcg.rarity.' + listing.card.rarity)"
+                                />
+                            </td>
+                            <td class="text-right font-mono font-bold">
+                                <i class="pi pi-bitcoin mr-1 text-yellow-500"></i>{{ listing.price }}
+                            </td>
+                            <td class="text-right font-mono">{{ listing.quantity }}</td>
+                            <td class="text-center">
+                                <p-button
+                                    (onClick)="onBuyListing(listing.id)"
+                                    [label]="t('tcg.marketplace.buy')"
+                                    [loading]="tcgFacade.buying()"
+                                    icon="pi pi-shopping-cart"
+                                    severity="success"
+                                    size="small"
+                                />
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 4: Fortschritt (Progress)                                      -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="progress">
+            <div class="pt-4">
+                @if (tcgFacade.progressLoading()) {
+                <div class="flex flex-col gap-4">
+                    @for (_ of [1, 2, 3]; track $index) {
+                    <p-skeleton height="4rem" styleClass="rounded-xl" />
+                    }
+                </div>
+                } @else { @let progressData = tcgFacade.progress(); @if (progressData) {
+                <!-- Overall Stats -->
+                <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div
+                        class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center dark:border-blue-800 dark:bg-blue-950"
+                    >
+                        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                            {{ progressData.ownedUniqueCards }}
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ t('tcg.collection.cards') }} ({{ t('tcg.card.owned') }})
+                        </div>
+                    </div>
+                    <div
+                        class="rounded-xl border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-950"
+                    >
+                        <div class="text-3xl font-bold text-green-600 dark:text-green-400">
+                            {{ progressData.totalCards }}
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ t('tcg.collection.cards') }} ({{ t('tcg.collection.all') }})
+                        </div>
+                    </div>
+                    <div
+                        class="rounded-xl border border-purple-200 bg-purple-50 p-4 text-center dark:border-purple-800 dark:bg-purple-950"
+                    >
+                        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                            {{ progressData.completionPercent }}%
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('tcg.collection.completion') }}</div>
+                    </div>
+                </div>
+
+                <!-- By Series -->
+                <h3 class="mb-3 font-semibold dark:text-white">
+                    <i class="pi pi-folder mr-2 text-blue-500"></i>{{ t('tcg.collection.bySeries') }}
+                </h3>
+                <div class="mb-6 flex flex-col gap-3">
+                    @for (series of progressData.bySeries; track series.series) {
+                    <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+                        <div class="mb-1 flex items-center justify-between">
+                            <span class="text-sm font-medium dark:text-white">{{ series.series }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ series.owned }}/{{ series.total }} ({{ series.percent }}%)
+                            </span>
+                        </div>
+                        <div class="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div
+                                class="h-full rounded-full bg-blue-500 transition-all duration-500"
+                                [style.width.%]="series.percent"
+                            ></div>
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- By Rarity -->
+                <h3 class="mb-3 font-semibold dark:text-white">
+                    <i class="pi pi-star mr-2 text-yellow-500"></i>{{ t('tcg.collection.byRarity') }}
+                </h3>
+                <div class="flex flex-col gap-3">
+                    @for (rarity of progressData.byRarity; track rarity.rarity) { @let rarityPercent = rarity.total > 0
+                    ? (rarity.owned / rarity.total) * 100 : 0;
+                    <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+                        <div class="mb-1 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="inline-block h-3 w-3 rounded-full"
+                                    [style.background-color]="getRarityColor(rarity.rarity)"
+                                ></span>
+                                <span class="text-sm font-medium dark:text-white">
+                                    {{ t('tcg.rarity.' + rarity.rarity) }}
+                                </span>
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ rarity.owned }}/{{ rarity.total }}
+                            </span>
+                        </div>
+                        <div class="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div
+                                class="h-full rounded-full transition-all duration-500"
+                                [style.background-color]="getRarityColor(rarity.rarity)"
+                                [style.width.%]="rarityPercent"
+                            ></div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                } @else {
+                <div class="py-12 text-center text-gray-400 dark:text-gray-600">
+                    <i class="pi pi-chart-bar mb-3 text-4xl"></i>
+                    <p>{{ t('common.noData') }}</p>
+                </div>
+                } }
+            </div>
+        </p-tabpanel>
+    </p-tabs>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- Booster Open Result Dialog                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <p-dialog
+        (onHide)="onCloseOpenDialog()"
+        [(visible)]="showOpenDialog"
+        [closable]="true"
+        [draggable]="false"
+        [header]="t('tcg.openResult.title')"
+        [modal]="true"
+        [style]="{ width: '700px', maxWidth: '95vw' }"
+    >
+        @if (tcgFacade.opening()) {
+        <div class="flex flex-col items-center gap-4 py-8">
+            <div class="booster-opening-animation">
+                <i class="pi pi-spin pi-spinner text-5xl text-purple-500"></i>
+            </div>
+            <p class="text-lg font-semibold text-purple-600 dark:text-purple-400">{{ t('common.loading') }}</p>
+        </div>
+        } @else { @let result = tcgFacade.openResult(); @if (result) {
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            @for (card of result.cards; track $index) { @let isNew = isNewCard(card.id);
+            <div
+                class="reveal-card relative overflow-hidden rounded-xl border-2 p-3 text-center"
+                [class.rarity-glow]="true"
+                [style.animation-delay]="($index * 150) + 'ms'"
+                [style.border-color]="getRarityColor(card.rarity)"
+            >
+                <!-- NEW badge -->
+                @if (isNew) {
+                <div
+                    class="new-badge absolute top-1 right-1 z-10 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white"
+                >
+                    {{ t('tcg.openResult.newCard') }}
+                </div>
+                }
+
+                <!-- Card Image -->
+                @if (card.imageUrl) {
+                <img class="mx-auto mb-2 h-24 w-24 rounded-lg object-cover" [alt]="card.name" [src]="card.imageUrl" />
+                } @else {
+                <div
+                    class="mx-auto mb-2 flex h-24 w-24 items-center justify-center rounded-lg"
+                    [style.background-color]="getRarityColor(card.rarity) + '22'"
+                >
+                    <i class="pi pi-image text-3xl" [style.color]="getRarityColor(card.rarity)"></i>
+                </div>
+                }
+
+                <div class="mb-1 truncate text-sm font-bold dark:text-white">{{ card.name }}</div>
+                <p-tag
+                    [rounded]="true"
+                    [severity]="getRaritySeverity(card.rarity)"
+                    [value]="t('tcg.rarity.' + card.rarity)"
+                />
+
+                <!-- Stats -->
+                <div class="mt-2 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="text-red-500">{{ card.attack }}</span>
+                    /
+                    <span class="text-blue-500">{{ card.defense }}</span>
+                    /
+                    <span class="text-green-500">{{ card.hp }}</span>
+                </div>
+            </div>
+            }
+        </div>
+
+        <div class="mt-4 text-center">
+            <p-button
+                (onClick)="onCloseOpenDialog()"
+                [label]="t('tcg.openResult.close')"
+                icon="pi pi-check"
+                severity="secondary"
+            />
+        </div>
+        } }
+    </p-dialog>
+
+    <!-- Transfer Dialog -->
+    <p-dialog
+        [(visible)]="showTransferDialog"
+        [closable]="true"
+        [draggable]="false"
+        [header]="t('tcg.marketplace.transferTo')"
+        [modal]="true"
+        [style]="{ width: '400px' }"
+    >
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="transferTargetInput">
+                    {{ t('tcg.marketplace.targetUser') }}
+                </label>
+                <input
+                    class="w-full"
+                    id="transferTargetInput"
+                    [(ngModel)]="transferTargetUser"
+                    pInputText
+                    type="text"
+                />
+            </div>
+            <div>
+                <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="transferQuantityInput">
+                    {{ t('tcg.marketplace.quantity') }}
+                </label>
+                <p-inputNumber
+                    [(ngModel)]="transferQuantity"
+                    [max]="99"
+                    [min]="1"
+                    [showButtons]="true"
+                    inputId="transferQuantityInput"
+                    size="small"
+                />
+            </div>
+            <div class="flex justify-end gap-2">
+                <p-button
+                    (onClick)="showTransferDialog.set(false)"
+                    [label]="t('tcg.marketplace.cancel')"
+                    [text]="true"
+                    severity="secondary"
+                    size="small"
+                />
+                <p-button
+                    (onClick)="onTransfer()"
+                    [disabled]="!transferTargetUser()"
+                    [label]="t('tcg.marketplace.transfer')"
+                    icon="pi pi-send"
+                    severity="success"
+                    size="small"
+                />
+            </div>
+        </div>
+    </p-dialog>
+</div>

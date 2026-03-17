@@ -94,7 +94,9 @@
     "linkDatabaseManagement": "Link-Datenbank Verwaltung",
     "chronik": "Chronik",
     "dynamicMarket": "Dynamischer Markt",
-    "dynamicMarketManagement": "Markt-Verwaltung"
+    "dynamicMarketManagement": "Markt-Verwaltung",
+    "tcg": "Trading Cards",
+    "adminTcg": "TCG Verwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -1435,6 +1437,16 @@
     "owned": "Besitz",
     "trade": "Handeln",
     "nextUpdate": "Nächste Preisaktualisierung",
+    "tabs": {
+      "market": "Markt",
+      "activities": "Aktivitäten"
+    },
+    "noActivities": "Noch keine Aktivitäten vorhanden.",
+    "activityBought": "hat gekauft:",
+    "activitySold": "hat verkauft:",
+    "activityResourcesAffected": "Ressourcen betroffen",
+    "activityPriceUpdate": "Preisaktualisierung",
+    "activityResourcesChanged": "Ressourcen angepasst",
     "admin": {
       "title": "Dynamischer Markt – Verwaltung",
       "resources": "Ressourcen",
@@ -1503,5 +1515,136 @@
       "noOrgStock": "Noch keine Artikel im Org-Inventar.",
       "fullReset": "Komplett-Reset"
     }
+  },
+  "tcg": {
+    "title": "Trading Card Game",
+    "subtitle": "Sammle, tausche und handle mit Karten",
+    "tabs": {
+      "boosters": "Booster Shop",
+      "collection": "Sammlung",
+      "marketplace": "Marktplatz",
+      "progress": "Fortschritt"
+    },
+    "booster": {
+      "buy": "Kaufen",
+      "open": "Öffnen",
+      "cardsPerPack": "Karten pro Pack",
+      "guaranteed": "Garantiert",
+      "available": "Verfügbar",
+      "until": "bis",
+      "soldOut": "Ausverkauft",
+      "maxReached": "Maximum erreicht",
+      "unopened": "Ungeöffnete Booster",
+      "noUnopened": "Keine ungeöffneten Booster",
+      "price": "Preis"
+    },
+    "card": {
+      "attack": "Angriff",
+      "defense": "Verteidigung",
+      "hp": "HP",
+      "element": "Element",
+      "rarity": "Seltenheit",
+      "series": "Serie",
+      "artist": "Künstler",
+      "owned": "Im Besitz",
+      "notOwned": "Nicht im Besitz",
+      "favorite": "Favorit",
+      "new": "NEU!"
+    },
+    "collection": {
+      "progress": "Fortschritt",
+      "cards": "Karten",
+      "completion": "Abschluss",
+      "bySeries": "Nach Serie",
+      "byRarity": "Nach Seltenheit",
+      "filterSeries": "Serie filtern",
+      "filterRarity": "Seltenheit filtern",
+      "filterElement": "Element filtern",
+      "filterOwned": "Besitz filtern",
+      "all": "Alle",
+      "ownedOnly": "Im Besitz",
+      "notOwnedOnly": "Nicht im Besitz"
+    },
+    "marketplace": {
+      "sell": "Verkaufen",
+      "buy": "Kaufen",
+      "cancel": "Abbrechen",
+      "seller": "Verkäufer",
+      "price": "Preis",
+      "quantity": "Anzahl",
+      "selectCard": "Karte auswählen",
+      "setPrice": "Preis festlegen",
+      "createListing": "Angebot erstellen",
+      "yourListings": "Deine Angebote",
+      "noListings": "Keine Angebote vorhanden",
+      "transfer": "Übertragen",
+      "transferTo": "An Spieler übertragen",
+      "targetUser": "Empfänger (User-ID)"
+    },
+    "openResult": {
+      "title": "Booster geöffnet!",
+      "newCard": "NEU!",
+      "close": "Schließen"
+    },
+    "rarity": {
+      "common": "Gewöhnlich",
+      "uncommon": "Ungewöhnlich",
+      "rare": "Selten",
+      "epic": "Episch",
+      "legendary": "Legendär",
+      "mythic": "Mythisch"
+    }
+  },
+  "adminTcg": {
+    "title": "Trading Card Game Verwaltung",
+    "tabs": {
+      "cards": "Karten",
+      "boosters": "Booster Packs"
+    },
+    "card": {
+      "create": "Neue Karte",
+      "edit": "Karte bearbeiten",
+      "delete": "Karte löschen",
+      "name": "Name",
+      "description": "Beschreibung",
+      "imageUrl": "Bild-URL",
+      "rarity": "Seltenheit",
+      "series": "Serie",
+      "element": "Element",
+      "attack": "Angriff",
+      "defense": "Verteidigung",
+      "hp": "HP",
+      "artistCredit": "Künstler",
+      "flavorText": "Flavor-Text",
+      "sortOrder": "Reihenfolge",
+      "active": "Aktiv"
+    },
+    "booster": {
+      "create": "Neuer Booster",
+      "edit": "Booster bearbeiten",
+      "delete": "Booster löschen",
+      "name": "Name",
+      "description": "Beschreibung",
+      "imageUrl": "Bild-URL",
+      "price": "Preis (Coins)",
+      "cardsPerPack": "Karten pro Pack",
+      "guaranteedRarity": "Garantierte Seltenheit",
+      "series": "Serie",
+      "availableFrom": "Verfügbar ab",
+      "availableUntil": "Verfügbar bis",
+      "maxPurchases": "Max. Käufe pro User",
+      "sortOrder": "Reihenfolge",
+      "active": "Aktiv",
+      "manageCards": "Karten verwalten",
+      "addCard": "Karte hinzufügen",
+      "removeCard": "Karte entfernen",
+      "dropWeight": "Drop-Gewicht",
+      "cardName": "Kartenname",
+      "cardRarity": "Seltenheit",
+      "noCards": "Keine Karten zugewiesen"
+    },
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirmDelete": "Wirklich löschen?"
   }
 }

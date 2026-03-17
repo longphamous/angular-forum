@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { CreditModule } from "../../credit/credit.module";
+import { UserEntity } from "../../user/entities/user.entity";
 import { DynamicMarketController } from "./dynamic-market.controller";
 import { DynamicMarketService } from "./dynamic-market.service";
 import { MarketConfigEntity } from "./entities/market-config.entity";
@@ -19,7 +20,8 @@ import { UserInventoryEntity } from "./entities/user-inventory.entity";
             MarketEventLogEntity,
             MarketTransactionEntity,
             UserInventoryEntity,
-            MarketConfigEntity
+            MarketConfigEntity,
+            UserEntity
         ]),
         CreditModule
     ],

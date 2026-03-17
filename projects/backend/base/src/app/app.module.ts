@@ -17,6 +17,7 @@ import { FeedModule } from "./feed/feed.module";
 import { ForumModule } from "./forum/forum.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
+import { TcgModule } from "./gamification/tcg/tcg.module";
 import { GroupModule } from "./group/group.module";
 import { LinkDatabaseModule } from "./link-database/link-database.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
@@ -54,7 +55,8 @@ import { UserModule } from "./user/user.module";
         MarketplaceModule,
         FeedModule,
         CommunityBotModule,
-        LinkDatabaseModule
+        LinkDatabaseModule,
+        TcgModule
     ],
     controllers: [AppController],
     providers: [AppService]

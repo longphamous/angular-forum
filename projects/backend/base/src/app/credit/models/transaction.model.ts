@@ -11,7 +11,10 @@ export type TransactionType =
     | "admin_transfer"
     | "recalculate"
     | "market_buy"
-    | "market_sell";
+    | "market_sell"
+    | "tcg_booster_buy"
+    | "tcg_card_sell"
+    | "tcg_card_buy";
 
 export interface Transaction {
     id: string;

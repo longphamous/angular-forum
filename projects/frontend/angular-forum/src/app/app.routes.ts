@@ -355,6 +355,18 @@ export const routes: Routes = [
                     import("./features/admin/admin-dynamic-market/admin-dynamic-market").then(
                         (c) => c.AdminDynamicMarket
                     )
+            },
+            {
+                path: "tcg",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/tcg/tcg-page").then((c) => c.TcgPage)
+            },
+            {
+                path: "admin/tcg",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-tcg/admin-tcg").then((c) => c.AdminTcg)
             }
         ]
     }

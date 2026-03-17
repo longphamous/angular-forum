@@ -1,0 +1,5 @@
+/* Admin TCG styles */
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+    cursor: pointer;
+}

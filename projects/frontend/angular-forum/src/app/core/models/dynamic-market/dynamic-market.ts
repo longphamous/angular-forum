@@ -141,3 +141,31 @@ export const MARKET_GROUP_LABELS: Record<string, { de: string; en: string }> = {
     food: { de: "Speisen & Getränke", en: "Food & Drinks" },
     rare: { de: "Seltene Güter", en: "Rare Goods" }
 };
+
+export type MarketActivityType = "buy" | "sell" | "event" | "price_update";
+
+export interface MarketPriceChange {
+    name: string;
+    icon: string;
+    oldPrice: number;
+    newPrice: number;
+    changePercent: number;
+}
+
+export interface MarketActivity {
+    id: string;
+    type: MarketActivityType;
+    resourceSlug?: string;
+    resourceName?: string;
+    resourceIcon?: string;
+    quantity?: number;
+    pricePerUnit?: number;
+    totalPrice?: number;
+    userDisplay?: string;
+    eventTitle?: string;
+    eventDescription?: string;
+    affectedCount?: number;
+    changedCount?: number;
+    topChanges?: MarketPriceChange[];
+    timestamp: string;
+}

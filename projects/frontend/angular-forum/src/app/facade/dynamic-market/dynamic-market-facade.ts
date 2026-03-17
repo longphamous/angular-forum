@@ -5,6 +5,7 @@ import { DYNAMIC_MARKET_ROUTES } from "../../core/api/dynamic-market.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import {
     AdminOrgInventoryItem,
+    MarketActivity,
     MarketConfig,
     MarketEvent,
     MarketEventLog,
@@ -34,6 +35,8 @@ export class DynamicMarketFacade {
 
     /** Track which cells recently changed for flash animation */
     readonly changedSlugs = signal<Set<string>>(new Set());
+    readonly activities = signal<MarketActivity[]>([]);
+    readonly activitiesLoading = signal(false);
 
     private get base(): string {
         return this.apiConfig.baseUrl;
@@ -82,6 +85,17 @@ export class DynamicMarketFacade {
                 this.inventoryLoading.set(false);
             },
             error: () => this.inventoryLoading.set(false)
+        });
+    }
+
+    loadActivities(limit = 50): void {
+        this.activitiesLoading.set(true);
+        this.http.get<MarketActivity[]>(`${this.base}${DYNAMIC_MARKET_ROUTES.activities(limit)}`).subscribe({
+            next: (a) => {
+                this.activities.set(a);
+                this.activitiesLoading.set(false);
+            },
+            error: () => this.activitiesLoading.set(false)
         });
     }
 

@@ -94,7 +94,9 @@
     "linkDatabaseManagement": "Link Database Mgmt.",
     "chronik": "Chronicle",
     "dynamicMarket": "Dynamic Market",
-    "dynamicMarketManagement": "Market Management"
+    "dynamicMarketManagement": "Market Management",
+    "tcg": "Trading Cards",
+    "adminTcg": "TCG Management"
   },
   "login": {
     "title": "Welcome back",
@@ -1435,6 +1437,16 @@
     "owned": "Owned",
     "trade": "Trade",
     "nextUpdate": "Next price update",
+    "tabs": {
+      "market": "Market",
+      "activities": "Activities"
+    },
+    "noActivities": "No activities yet.",
+    "activityBought": "bought:",
+    "activitySold": "sold:",
+    "activityResourcesAffected": "resources affected",
+    "activityPriceUpdate": "Price update",
+    "activityResourcesChanged": "resources adjusted",
     "admin": {
       "title": "Dynamic Market Management",
       "resources": "Resources",
@@ -1503,5 +1515,136 @@
       "noOrgStock": "No items in org inventory yet.",
       "fullReset": "Full Reset"
     }
+  },
+  "tcg": {
+    "title": "Trading Card Game",
+    "subtitle": "Collect, trade, and deal cards",
+    "tabs": {
+      "boosters": "Booster Shop",
+      "collection": "Collection",
+      "marketplace": "Marketplace",
+      "progress": "Progress"
+    },
+    "booster": {
+      "buy": "Buy",
+      "open": "Open",
+      "cardsPerPack": "Cards per Pack",
+      "guaranteed": "Guaranteed",
+      "available": "Available",
+      "until": "until",
+      "soldOut": "Sold Out",
+      "maxReached": "Maximum reached",
+      "unopened": "Unopened Boosters",
+      "noUnopened": "No unopened boosters",
+      "price": "Price"
+    },
+    "card": {
+      "attack": "Attack",
+      "defense": "Defense",
+      "hp": "HP",
+      "element": "Element",
+      "rarity": "Rarity",
+      "series": "Series",
+      "artist": "Artist",
+      "owned": "Owned",
+      "notOwned": "Not owned",
+      "favorite": "Favorite",
+      "new": "NEW!"
+    },
+    "collection": {
+      "progress": "Progress",
+      "cards": "Cards",
+      "completion": "Completion",
+      "bySeries": "By Series",
+      "byRarity": "By Rarity",
+      "filterSeries": "Filter by series",
+      "filterRarity": "Filter by rarity",
+      "filterElement": "Filter by element",
+      "filterOwned": "Filter by ownership",
+      "all": "All",
+      "ownedOnly": "Owned",
+      "notOwnedOnly": "Not owned"
+    },
+    "marketplace": {
+      "sell": "Sell",
+      "buy": "Buy",
+      "cancel": "Cancel",
+      "seller": "Seller",
+      "price": "Price",
+      "quantity": "Quantity",
+      "selectCard": "Select card",
+      "setPrice": "Set price",
+      "createListing": "Create listing",
+      "yourListings": "Your Listings",
+      "noListings": "No listings available",
+      "transfer": "Transfer",
+      "transferTo": "Transfer to player",
+      "targetUser": "Recipient (User-ID)"
+    },
+    "openResult": {
+      "title": "Booster Opened!",
+      "newCard": "NEW!",
+      "close": "Close"
+    },
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "mythic": "Mythic"
+    }
+  },
+  "adminTcg": {
+    "title": "Trading Card Game Management",
+    "tabs": {
+      "cards": "Cards",
+      "boosters": "Booster Packs"
+    },
+    "card": {
+      "create": "New Card",
+      "edit": "Edit Card",
+      "delete": "Delete Card",
+      "name": "Name",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "rarity": "Rarity",
+      "series": "Series",
+      "element": "Element",
+      "attack": "Attack",
+      "defense": "Defense",
+      "hp": "HP",
+      "artistCredit": "Artist",
+      "flavorText": "Flavor Text",
+      "sortOrder": "Sort Order",
+      "active": "Active"
+    },
+    "booster": {
+      "create": "New Booster",
+      "edit": "Edit Booster",
+      "delete": "Delete Booster",
+      "name": "Name",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "price": "Price (Coins)",
+      "cardsPerPack": "Cards per Pack",
+      "guaranteedRarity": "Guaranteed Rarity",
+      "series": "Series",
+      "availableFrom": "Available From",
+      "availableUntil": "Available Until",
+      "maxPurchases": "Max Purchases per User",
+      "sortOrder": "Sort Order",
+      "active": "Active",
+      "manageCards": "Manage Cards",
+      "addCard": "Add Card",
+      "removeCard": "Remove Card",
+      "dropWeight": "Drop Weight",
+      "cardName": "Card Name",
+      "cardRarity": "Rarity",
+      "noCards": "No cards assigned"
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmDelete": "Really delete?"
   }
 }

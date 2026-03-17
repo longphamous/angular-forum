@@ -26,5 +26,6 @@ export const DYNAMIC_MARKET_ROUTES = {
     adminInterventionInventory: () => "/gamification/market/admin/intervention/inventory",
     adminInterventionBuy: () => "/gamification/market/admin/intervention/buy",
     adminInterventionSell: () => "/gamification/market/admin/intervention/sell",
-    adminFullReset: () => "/gamification/market/admin/full-reset"
+    adminFullReset: () => "/gamification/market/admin/full-reset",
+    activities: (limit = 50) => `/gamification/market/activities?limit=${limit}`
 } as const;

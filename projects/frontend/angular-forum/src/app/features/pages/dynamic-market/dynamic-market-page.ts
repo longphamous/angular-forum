@@ -7,6 +7,7 @@ import { CardModule } from "primeng/card";
 import { InputNumberModule } from "primeng/inputnumber";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
+import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
@@ -30,6 +31,7 @@ const POLL_INTERVAL = 60_000;
         InputNumberModule,
         SkeletonModule,
         TableModule,
+        TabsModule,
         TagModule,
         TooltipModule
     ],
@@ -51,12 +53,14 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
     readonly selectedResource = signal<MarketResource | null>(null);
     readonly countdown = signal<string>("");
     readonly countdownPercent = signal<number>(100);
+    readonly activeTab = signal<"market" | "activities">("market");
 
     buyQuantities: Record<string, number> = {};
     sellQuantities: Record<string, number> = {};
 
     private pollTimer: ReturnType<typeof setInterval> | null = null;
     private countdownTimer: ReturnType<typeof setInterval> | null = null;
+    private activitiesTimer: ReturnType<typeof setInterval> | null = null;
     private countdownTotalMs = 0;
 
     ngOnInit(): void {
@@ -76,11 +80,17 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
 
         // Countdown tick every second
         this.countdownTimer = setInterval(() => this.tickCountdown(), 1000);
+
+        this.marketFacade.loadActivities();
+        this.activitiesTimer = setInterval(() => {
+            this.marketFacade.loadActivities();
+        }, 10_000);
     }
 
     ngOnDestroy(): void {
         if (this.pollTimer) clearInterval(this.pollTimer);
         if (this.countdownTimer) clearInterval(this.countdownTimer);
+        if (this.activitiesTimer) clearInterval(this.activitiesTimer);
     }
 
     private tickCountdown(): void {
@@ -180,5 +190,15 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
     getInventoryQty(slug: string): number {
         const item = this.marketFacade.inventory().find((i) => i.resourceSlug === slug);
         return item?.quantity ?? 0;
+    }
+
+    protected relativeTime(iso: string): string {
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60_000);
+        const hours = Math.floor(diff / 3_600_000);
+        if (diff < 60_000) return "gerade eben";
+        if (mins < 60) return `vor ${mins} Min.`;
+        if (hours < 24) return `vor ${hours} Std.`;
+        return `vor ${Math.floor(hours / 24)} Tag(en)`;
     }
 }
