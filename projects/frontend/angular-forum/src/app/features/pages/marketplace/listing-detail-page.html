@@ -35,7 +35,7 @@
             <!-- Listing header card -->
             <div class="card">
                 <!-- Image gallery -->
-                @if (listing.images?.length) {
+                @if (listing.images.length) {
                 <div class="mb-4 overflow-hidden rounded-xl">
                     <img class="h-72 w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
                 </div>
@@ -93,7 +93,7 @@
                 </div>
 
                 <!-- Tags -->
-                @if (listing.tags?.length) {
+                @if (listing.tags.length) {
                 <div class="mt-4">
                     <div class="flex flex-wrap gap-2">
                         @for (tag of listing.tags; track tag) {

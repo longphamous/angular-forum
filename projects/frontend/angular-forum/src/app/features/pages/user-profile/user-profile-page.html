@@ -329,6 +329,7 @@
             <textarea
                 class="w-full"
                 [(ngModel)]="formContent"
+                [disabled]="saving()"
                 [placeholder]="t('chronik.whatMovesYou')"
                 pTextarea
                 rows="3"
@@ -347,6 +348,7 @@
                     class="w-full"
                     id="profile-chronik-image-url"
                     [(ngModel)]="formImageUrl"
+                    [disabled]="saving()"
                     [placeholder]="t('chronik.imageUrl')"
                     pInputText
                     type="url"
@@ -368,6 +370,7 @@
                         class="w-full"
                         id="profile-chronik-link-url"
                         [(ngModel)]="formLinkUrl"
+                        [disabled]="saving()"
                         [placeholder]="t('chronik.linkUrl')"
                         pInputText
                         type="url"
@@ -384,6 +387,7 @@
                         class="w-full"
                         id="profile-chronik-link-title"
                         [(ngModel)]="formLinkTitle"
+                        [disabled]="saving()"
                         [placeholder]="t('chronik.linkTitle')"
                         pInputText
                     />
@@ -399,6 +403,7 @@
                         class="w-full"
                         id="profile-chronik-link-desc"
                         [(ngModel)]="formLinkDescription"
+                        [disabled]="saving()"
                         [placeholder]="t('chronik.linkDescription')"
                         pInputText
                     />
@@ -414,6 +419,7 @@
                         class="w-full"
                         id="profile-chronik-link-img"
                         [(ngModel)]="formLinkImageUrl"
+                        [disabled]="saving()"
                         [placeholder]="t('chronik.imageUrl')"
                         pInputText
                         type="url"

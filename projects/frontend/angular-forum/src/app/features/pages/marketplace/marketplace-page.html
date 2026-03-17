@@ -133,7 +133,7 @@
                     <div
                         class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br"
                     >
-                        @if (listing.images?.length) {
+                        @if (listing.images.length) {
                         <img class="h-full w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
                         } @else {
                         <i
@@ -169,7 +169,7 @@
                             <span class="text-primary text-lg font-bold">{{ formatPrice(listing) }}</span>
                             <span class="text-surface-400 text-xs">{{ listing.categoryName }}</span>
                         </div>
-                        @if (listing.tags?.length) {
+                        @if (listing.tags.length) {
                         <div class="mb-2 flex flex-wrap gap-1">
                             @for (tag of listing.tags.slice(0, 3); track tag) {
                             <span

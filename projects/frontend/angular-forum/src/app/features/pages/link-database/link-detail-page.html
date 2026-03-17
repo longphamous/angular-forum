@@ -139,7 +139,7 @@
             }
 
             <!-- Tags -->
-            @if (link.tags?.length) {
+            @if (link.tags.length) {
             <div class="card">
                 <h2 class="text-surface-900 dark:text-surface-0 mb-3 font-semibold">Tags</h2>
                 <div class="flex flex-wrap gap-2">
@@ -268,6 +268,7 @@
                         <textarea
                             class="w-full"
                             (ngModelChange)="newComment.set($event)"
+                            [disabled]="submittingComment()"
                             [ngModel]="newComment()"
                             [placeholder]="t('links.detail.addComment') + '...'"
                             pTextarea

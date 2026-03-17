@@ -37,6 +37,7 @@
                             class="w-full"
                             id="link-title"
                             [(ngModel)]="formTitle"
+                            [disabled]="saving()"
                             [placeholder]="t('links.submit.title') + '...'"
                             pInputText
                             type="text"
@@ -52,6 +53,7 @@
                             class="w-full"
                             id="link-url"
                             [(ngModel)]="formUrl"
+                            [disabled]="saving()"
                             pInputText
                             placeholder="https://..."
                             type="url"
@@ -87,6 +89,7 @@
                             class="w-full"
                             id="link-desc"
                             [(ngModel)]="formDescription"
+                            [disabled]="saving()"
                             [placeholder]="t('links.submit.description') + '...'"
                             pTextarea
                             rows="4"
@@ -102,6 +105,7 @@
                             class="w-full"
                             id="link-excerpt"
                             [(ngModel)]="formExcerpt"
+                            [disabled]="saving()"
                             [placeholder]="t('links.submit.excerpt') + '...'"
                             pTextarea
                             rows="2"
@@ -117,6 +121,7 @@
                             class="w-full"
                             id="link-preview"
                             [(ngModel)]="formPreviewImageUrl"
+                            [disabled]="saving()"
                             pInputText
                             placeholder="https://..."
                             type="url"
@@ -139,6 +144,7 @@
                             class="flex-1"
                             (keydown)="onTagKeydown($event)"
                             [(ngModel)]="formTagInput"
+                            [disabled]="saving()"
                             [placeholder]="t('links.submit.addTag') + '...'"
                             pInputText
                             type="text"
@@ -175,6 +181,7 @@
                             class="w-full"
                             id="link-address"
                             [(ngModel)]="formAddress"
+                            [disabled]="saving()"
                             pInputText
                             placeholder="Straße, PLZ Ort..."
                             type="text"
@@ -191,6 +198,7 @@
                                 class="w-full"
                                 id="link-email"
                                 [(ngModel)]="formContactEmail"
+                                [disabled]="saving()"
                                 pInputText
                                 placeholder="kontakt@beispiel.de"
                                 type="email"
@@ -206,6 +214,7 @@
                                 class="w-full"
                                 id="link-phone"
                                 [(ngModel)]="formContactPhone"
+                                [disabled]="saving()"
                                 pInputText
                                 placeholder="+49 ..."
                                 type="tel"

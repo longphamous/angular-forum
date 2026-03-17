@@ -32,6 +32,7 @@
                             class="w-full"
                             id="listing-title"
                             [(ngModel)]="title"
+                            [disabled]="submitting"
                             pInputText
                             placeholder="Was bietest du an?"
                             type="text"
@@ -47,6 +48,7 @@
                             class="w-full"
                             id="listing-desc"
                             [(ngModel)]="description"
+                            [disabled]="submitting"
                             placeholder="Beschreibe deinen Artikel so detailliert wie möglich. Zustand, Alter, Besonderheiten..."
                             pTextarea
                             rows="6"
@@ -61,6 +63,7 @@
                             </label>
                             <p-select
                                 [(ngModel)]="selectedType"
+                                [disabled]="submitting"
                                 [fluid]="true"
                                 [options]="typeOptions"
                                 inputId="listing-type"
@@ -75,6 +78,7 @@
                             </label>
                             <p-select
                                 [(ngModel)]="selectedCategoryId"
+                                [disabled]="submitting"
                                 [fluid]="true"
                                 [options]="flatCategories"
                                 inputId="listing-cat"
@@ -97,6 +101,7 @@
                         <label class="text-sm font-medium" for="priceInput">Preis (leer lassen = Verhandelbar)</label>
                         <p-inputnumber
                             [(ngModel)]="price"
+                            [disabled]="submitting"
                             [fluid]="true"
                             [maxFractionDigits]="2"
                             [minFractionDigits]="2"
@@ -133,11 +138,18 @@
                                 id="tagInput"
                                 (keydown.enter)="$event.preventDefault(); addTag()"
                                 [(ngModel)]="tagInput"
+                                [disabled]="submitting"
                                 pInputText
                                 placeholder="Tag hinzufügen und Enter drücken..."
                                 type="text"
                             />
-                            <p-button (onClick)="addTag()" [outlined]="true" icon="pi pi-plus" size="small" />
+                            <p-button
+                                (onClick)="addTag()"
+                                [disabled]="submitting"
+                                [outlined]="true"
+                                icon="pi pi-plus"
+                                size="small"
+                            />
                         </div>
                         @if (tags.length > 0) {
                         <div class="mt-1 flex flex-wrap gap-2">
@@ -156,6 +168,7 @@
                         <label class="text-sm font-medium" for="expiresAtInput">Ablaufdatum (optional)</label>
                         <p-date-picker
                             [(ngModel)]="expiresAt"
+                            [disabled]="submitting"
                             [fluid]="true"
                             [showTime]="false"
                             dateFormat="dd.mm.yy"

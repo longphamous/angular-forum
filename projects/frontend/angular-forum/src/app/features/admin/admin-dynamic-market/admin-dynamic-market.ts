@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { DialogModule } from "primeng/dialog";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { SkeletonModule } from "primeng/skeleton";
@@ -58,6 +59,7 @@ export interface DependencyRow {
         TranslocoModule,
         CardModule,
         ButtonModule,
+        DialogModule,
         InputNumberModule,
         InputTextModule,
         SkeletonModule,
@@ -277,6 +279,11 @@ export class AdminDynamicMarket implements OnInit {
 
     onResetPrices(): void {
         this.marketFacade.resetPrices();
+    }
+
+    onFullReset(): void {
+        if (!window.confirm("Alle Marktdaten löschen?")) return;
+        this.marketFacade.fullReset();
     }
 
     onRecalculate(): void {

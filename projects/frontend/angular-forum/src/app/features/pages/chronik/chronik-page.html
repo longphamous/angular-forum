@@ -58,6 +58,7 @@
         <textarea
             class="w-full"
             [(ngModel)]="formContent"
+            [disabled]="saving()"
             [placeholder]="t('chronik.whatMovesYou')"
             pTextarea
             rows="3"
@@ -406,6 +407,8 @@
                             ></textarea>
                             <p-button
                                 (onClick)="submitReply(entry.id, comment.id)"
+                                [disabled]="isCommentsLoading(entry.id)"
+                                [loading]="isCommentsLoading(entry.id)"
                                 [pTooltip]="t('chronik.submit')"
                                 icon="pi pi-send"
                                 size="small"
@@ -488,6 +491,8 @@
                 ></textarea>
                 <p-button
                     (onClick)="submitComment(entry.id)"
+                    [disabled]="isCommentsLoading(entry.id)"
+                    [loading]="isCommentsLoading(entry.id)"
                     [pTooltip]="t('chronik.submit')"
                     icon="pi pi-send"
                     size="small"
