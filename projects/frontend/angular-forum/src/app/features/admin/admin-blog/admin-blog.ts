@@ -105,6 +105,7 @@ export class AdminBlog implements OnInit {
                     summary: "Gelöscht",
                     detail: "Artikel wurde gelöscht."
                 });
+                this.loadData();
             },
             error: () =>
                 this.messageService.add({ severity: "error", summary: "Fehler", detail: "Löschen fehlgeschlagen." })

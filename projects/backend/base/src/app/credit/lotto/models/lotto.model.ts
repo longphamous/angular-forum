@@ -81,3 +81,41 @@ export interface LottoStats {
     hotNumbers: number[];
     coldNumbers: number[];
 }
+
+export type SpecialDrawTicketMode = "all_current" | "separate";
+export type SpecialDrawPrizeMode = "standard" | "custom_jackpot" | "single_class";
+
+export interface SpecialDraw {
+    id: string;
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+    status: "pending" | "drawn";
+    winningNumbers?: number[];
+    superNumber?: number;
+    totalTickets?: number;
+    createdAt: string;
+}
+
+export interface CreateSpecialDrawDto {
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+}
+
+export interface SpecialDrawResult {
+    draw: SpecialDraw;
+    totalTickets: number;
+    winners: LottoResult[];
+    totalPrizesPaid: number;
+}

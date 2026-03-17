@@ -4,7 +4,17 @@ import { Request } from "express";
 import { Public, Roles } from "../../auth/auth.decorators";
 import { LottoScheduler } from "./lotto.scheduler";
 import { LottoService } from "./lotto.service";
-import { DrawResult, DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "./models/lotto.model";
+import {
+    CreateSpecialDrawDto,
+    DrawResult,
+    DrawScheduleConfig,
+    LottoDraw,
+    LottoResult,
+    LottoStats,
+    LottoTicket,
+    SpecialDraw,
+    SpecialDrawResult
+} from "./models/lotto.model";
 
 @Controller("credit/lotto")
 export class LottoController {
@@ -113,5 +123,35 @@ export class LottoController {
     @Get("users/:userId/results")
     getUserResults(@Param("userId") userId: string, @Query("drawId") drawId?: string): LottoResult[] {
         return this.lottoService.getUserResults(userId, drawId);
+    }
+
+    // ─── Special draws ────────────────────────────────────────────────────────
+
+    @Public()
+    @Get("special-draws")
+    getAllSpecialDraws(): SpecialDraw[] {
+        return this.lottoService.getAllSpecialDraws();
+    }
+
+    @Roles("admin")
+    @Post("special-draws")
+    createSpecialDraw(@Body() body: CreateSpecialDrawDto): SpecialDraw {
+        return this.lottoService.createSpecialDraw(body);
+    }
+
+    @Roles("admin")
+    @Post("special-draws/:id/perform")
+    async performSpecialDraw(@Param("id") id: string): Promise<SpecialDrawResult> {
+        return this.lottoService.performSpecialDraw(id);
+    }
+
+    @Post("special-draws/:id/tickets")
+    async purchaseSpecialTicket(
+        @Req() req: Request,
+        @Body() body: { numbers: number[]; superNumber: number }
+    ): Promise<LottoTicket> {
+        const user = req.user as { userId: string } | undefined;
+        if (!user?.userId) throw new Error("Unauthorized");
+        return this.lottoService.purchaseSpecialTicket(user.userId, body.numbers, body.superNumber, req.params["id"]);
     }
 }

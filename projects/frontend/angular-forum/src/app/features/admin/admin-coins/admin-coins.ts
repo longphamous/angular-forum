@@ -147,6 +147,7 @@ export class AdminCoins implements OnInit {
                 this.config.set(updated);
                 this.savingConfig.set(false);
                 this.messageService.add({ severity: "success", summary: "Einstellungen gespeichert", life: 3000 });
+                this.loadConfig();
             },
             error: () => {
                 this.savingConfig.set(false);

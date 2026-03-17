@@ -6,7 +6,10 @@ import { ConfirmationService, MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { DialogModule } from "primeng/dialog";
 import { InputNumberModule } from "primeng/inputnumber";
+import { InputTextModule } from "primeng/inputtext";
+import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
@@ -15,7 +18,18 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { LOTTO_ROUTES } from "../../../core/api/lotto.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { DrawResult, DrawScheduleConfig, LottoDraw } from "../../../core/models/lotto/lotto";
+import {
+    CreateSpecialDrawDto,
+    DrawResult,
+    DrawScheduleConfig,
+    LottoDraw,
+    LottoPrizeClass,
+    PRIZE_CLASSES,
+    SpecialDraw,
+    SpecialDrawPrizeMode,
+    SpecialDrawResult,
+    SpecialDrawTicketMode
+} from "../../../core/models/lotto/lotto";
 
 interface DayOption {
     value: number;
@@ -28,8 +42,11 @@ interface DayOption {
         ButtonModule,
         CheckboxModule,
         ConfirmDialogModule,
+        DialogModule,
         FormsModule,
         InputNumberModule,
+        InputTextModule,
+        SelectModule,
         SkeletonModule,
         TableModule,
         TagModule,
@@ -51,6 +68,9 @@ export class AdminLotto implements OnInit {
     protected readonly saving = signal(false);
     protected readonly draws = signal<LottoDraw[]>([]);
     protected readonly config = signal<DrawScheduleConfig | null>(null);
+    protected readonly specialDraws = signal<SpecialDraw[]>([]);
+    protected readonly showSpecialDrawDialog = signal(false);
+    protected readonly savingSpecial = signal(false);
 
     protected readonly dayOptions: DayOption[] = [
         { value: 1, label: "Mo" },
@@ -61,6 +81,24 @@ export class AdminLotto implements OnInit {
         { value: 6, label: "Sa" },
         { value: 0, label: "So" }
     ];
+
+    protected readonly ticketModeOptions: { value: SpecialDrawTicketMode; label: string }[] = [
+        { value: "all_current", label: "Alle aktuellen Tickets gelten" },
+        { value: "separate", label: "Separate Tickets kaufen" }
+    ];
+
+    protected readonly prizeModeOptions: { value: SpecialDrawPrizeMode; label: string }[] = [
+        { value: "standard", label: "Standard Gewinnquoten" },
+        { value: "custom_jackpot", label: "Eigener Jackpot" },
+        { value: "single_class", label: "Nur eine Gewinnklasse" }
+    ];
+
+    protected readonly prizeClassOptions: { value: LottoPrizeClass; label: string }[] = PRIZE_CLASSES.map((c) => ({
+        value: c,
+        label: c.replace("class", "Klasse ")
+    }));
+
+    protected specialDrawForm: CreateSpecialDrawDto = this.defaultSpecialDrawForm();
 
     protected form: DrawScheduleConfig = {
         drawDays: [6],
@@ -73,6 +111,7 @@ export class AdminLotto implements OnInit {
 
     ngOnInit(): void {
         this.loadData();
+        this.loadSpecialDraws();
     }
 
     private loadData(): void {
@@ -90,6 +129,12 @@ export class AdminLotto implements OnInit {
                 this.loading.set(false);
             },
             error: () => this.loading.set(false)
+        });
+    }
+
+    private loadSpecialDraws(): void {
+        this.http.get<SpecialDraw[]>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.specialDraws()}`).subscribe({
+            next: (s) => this.specialDraws.set(s)
         });
     }
 
@@ -115,6 +160,7 @@ export class AdminLotto implements OnInit {
                 this.saving.set(false);
                 this.config.set(c);
                 this.messageService.add({ severity: "success", summary: "Konfiguration gespeichert", life: 2000 });
+                this.loadData();
             },
             error: () => {
                 this.saving.set(false);
@@ -125,9 +171,9 @@ export class AdminLotto implements OnInit {
 
     protected scheduleNextDraw(): void {
         this.http.post<LottoDraw>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.scheduleNextDraw()}`, {}).subscribe({
-            next: (draw) => {
-                this.draws.update((d) => [...d, draw]);
+            next: () => {
                 this.messageService.add({ severity: "success", summary: "Ziehung geplant", life: 2000 });
+                this.loadData();
             },
             error: () => this.messageService.add({ severity: "error", summary: "Fehler", life: 3000 })
         });
@@ -154,6 +200,76 @@ export class AdminLotto implements OnInit {
             },
             error: () => this.messageService.add({ severity: "error", summary: "Fehler bei der Ziehung", life: 3000 })
         });
+    }
+
+    // ─── Special draws ────────────────────────────────────────────────────────
+
+    protected openSpecialDrawDialog(): void {
+        this.specialDrawForm = this.defaultSpecialDrawForm();
+        this.showSpecialDrawDialog.set(true);
+    }
+
+    protected createSpecialDraw(): void {
+        this.savingSpecial.set(true);
+        this.http
+            .post<SpecialDraw>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.createSpecialDraw()}`, this.specialDrawForm)
+            .subscribe({
+                next: (draw) => {
+                    this.savingSpecial.set(false);
+                    this.showSpecialDrawDialog.set(false);
+                    this.specialDraws.update((s) => [...s, draw]);
+                    this.messageService.add({ severity: "success", summary: "Sonderziehung erstellt", life: 2000 });
+                },
+                error: (err) => {
+                    this.savingSpecial.set(false);
+                    const msg = err?.error?.message ?? "Fehler beim Erstellen";
+                    this.messageService.add({ severity: "error", summary: msg, life: 3000 });
+                }
+            });
+    }
+
+    protected confirmPerformSpecialDraw(draw: SpecialDraw): void {
+        this.confirmationService.confirm({
+            message: `Sonderziehung "${draw.name}" jetzt ausführen?`,
+            header: "Sonderziehung ausführen",
+            icon: "pi pi-exclamation-triangle",
+            accept: () => this.performSpecialDraw(draw.id)
+        });
+    }
+
+    private performSpecialDraw(drawId: string): void {
+        this.http
+            .post<SpecialDrawResult>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.performSpecialDraw(drawId)}`, {})
+            .subscribe({
+                next: (result) => {
+                    this.messageService.add({
+                        severity: "success",
+                        summary: `Sonderziehung abgeschlossen! ${result.winners.length} Gewinner`,
+                        life: 4000
+                    });
+                    this.loadSpecialDraws();
+                },
+                error: () =>
+                    this.messageService.add({
+                        severity: "error",
+                        summary: "Fehler bei der Sonderziehung",
+                        life: 3000
+                    })
+            });
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private defaultSpecialDrawForm(): CreateSpecialDrawDto {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(19, 0, 0, 0);
+        return {
+            name: "",
+            drawDate: tomorrow.toISOString().slice(0, 16),
+            ticketMode: "separate",
+            prizeMode: "standard"
+        };
     }
 
     protected formatDate(dateStr: string): string {

@@ -96,6 +96,7 @@ export class AdminGamification implements OnInit {
                         this.t.translate("adminGamification.saveSuccess", { label: entry.label, amount })
                     );
                     this.saving.set(null);
+                    this.loadConfig();
                 },
                 error: () => {
                     this.error.set(this.t.translate("adminGamification.saveError"));
@@ -116,6 +117,7 @@ export class AdminGamification implements OnInit {
                         this.t.translate("adminGamification.recalculateSuccessCount", { count: result.updatedUsers })
                     );
                     this.recalculating.set(false);
+                    this.loadConfig();
                 },
                 error: () => {
                     this.error.set(this.t.translate("adminGamification.recalculateError"));

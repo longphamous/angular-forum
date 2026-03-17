@@ -2,6 +2,7 @@ import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundEx
 
 import { CreditService } from "../credit.service";
 import {
+    CreateSpecialDrawDto,
     DrawResult,
     DrawScheduleConfig,
     LottoDraw,
@@ -9,6 +10,8 @@ import {
     LottoResult,
     LottoStats,
     LottoTicket,
+    SpecialDraw,
+    SpecialDrawResult,
     Weekday
 } from "./models/lotto.model";
 
@@ -27,8 +30,8 @@ import {
  * Class 9  – 2 numbers + super number matched
  */
 const PRIZE_TABLE: Record<LottoPrizeClass, number> = {
-    class1: 10_000_000,
-    class2: 1_000_000,
+    class1: 10_000_000, // overridden by draw.jackpot at payout time
+    class2: 500_000,
     class3: 100_000,
     class4: 5_000,
     class5: 500,
@@ -91,6 +94,9 @@ const tickets: LottoTicket[] = [
     }
 ];
 
+const specialDraws: SpecialDraw[] = [];
+const specialTickets: LottoTicket[] = [];
+
 @Injectable()
 export class LottoService {
     private readonly logger = new Logger(LottoService.name);
@@ -133,8 +139,25 @@ export class LottoService {
             throw new BadRequestException("ticketCost must be greater than 0");
         }
 
+        const scheduleChanged =
+            partial.drawDays !== undefined || partial.drawHourUtc !== undefined || partial.drawMinuteUtc !== undefined;
+
         this.config = { ...this.config, ...partial };
         this.logger.log(`Schedule config updated: ${JSON.stringify(this.config)}`);
+
+        if (scheduleChanged) {
+            // Remove pending draws (wrong dates) and schedule a fresh one
+            const pendingIndices = draws
+                .map((d, i) => (d.status === "pending" ? i : -1))
+                .filter((i) => i !== -1)
+                .reverse();
+            for (const i of pendingIndices) {
+                draws.splice(i, 1);
+            }
+            this.scheduleNextDraw();
+            this.logger.log("Pending draws rescheduled after config change");
+        }
+
         return { ...this.config };
     }
 
@@ -422,6 +445,110 @@ export class LottoService {
         return fallback;
     }
 
+    // ─── Special draws ────────────────────────────────────────────────────────
+
+    createSpecialDraw(dto: CreateSpecialDrawDto): SpecialDraw {
+        if (!dto.name?.trim()) throw new BadRequestException("name is required");
+        if (!dto.drawDate) throw new BadRequestException("drawDate is required");
+        if (new Date(dto.drawDate) <= new Date()) throw new BadRequestException("drawDate must be in the future");
+
+        const draw: SpecialDraw = {
+            id: `special-${Date.now()}`,
+            name: dto.name.trim(),
+            drawDate: dto.drawDate,
+            ticketMode: dto.ticketMode ?? "separate",
+            prizeMode: dto.prizeMode ?? "standard",
+            customJackpot: dto.customJackpot,
+            singlePrizeClass: dto.singlePrizeClass,
+            singlePrizeAmount: dto.singlePrizeAmount,
+            ticketCost: dto.ticketCost,
+            status: "pending",
+            createdAt: new Date().toISOString()
+        };
+        specialDraws.push(draw);
+        this.logger.log(`Special draw created: "${draw.id}" – "${draw.name}"`);
+        return draw;
+    }
+
+    getAllSpecialDraws(): SpecialDraw[] {
+        return specialDraws.map((d) => ({
+            ...d,
+            totalTickets:
+                d.ticketMode === "all_current" ? tickets.length : specialTickets.filter((t) => t.drawId === d.id).length
+        }));
+    }
+
+    async performSpecialDraw(drawId: string): Promise<SpecialDrawResult> {
+        const draw = specialDraws.find((d) => d.id === drawId);
+        if (!draw) throw new NotFoundException(`Special draw "${drawId}" not found`);
+        if (draw.status === "drawn") throw new BadRequestException(`Special draw "${drawId}" has already been drawn`);
+
+        const winningNumbers = this.drawUniqueNumbers(1, 49, 6);
+        const superNumber = Math.floor(Math.random() * 10);
+        draw.winningNumbers = winningNumbers;
+        draw.superNumber = superNumber;
+        draw.status = "drawn";
+
+        const ticketsForDraw =
+            draw.ticketMode === "all_current" ? tickets : specialTickets.filter((t) => t.drawId === drawId);
+        const allResults = ticketsForDraw.map((ticket) => this.evaluateSpecialTicket(ticket, draw));
+        const winners = allResults.filter((r) => r.prizeAmount > 0);
+        const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
+
+        this.logger.log(
+            `Special draw "${drawId}" completed. Numbers: [${winningNumbers.join(", ")}] Super: ${superNumber}. Winners: ${winners.length}`
+        );
+
+        for (const winner of winners) {
+            try {
+                await this.creditService.addCredits(
+                    winner.userId,
+                    winner.prizeAmount,
+                    "lotto_special_win",
+                    `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass} (${winner.prizeAmount} Credits)`
+                );
+            } catch (err) {
+                this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
+            }
+        }
+
+        return { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid };
+    }
+
+    async purchaseSpecialTicket(
+        userId: string,
+        numbers: number[],
+        superNumber: number,
+        drawId: string
+    ): Promise<LottoTicket> {
+        this.validateNumbers(numbers, superNumber);
+        const draw = specialDraws.find((d) => d.id === drawId);
+        if (!draw) throw new NotFoundException(`Special draw "${drawId}" not found`);
+        if (draw.status === "drawn") throw new BadRequestException("Special draw has already been drawn");
+        if (draw.ticketMode !== "separate")
+            throw new BadRequestException("This special draw uses all existing tickets");
+
+        const cost = draw.ticketCost ?? this.config.ticketCost;
+        await this.creditService.deductCredits(
+            userId,
+            cost,
+            "lotto_special_ticket",
+            `Sonderziehung Ticket "${draw.name}"`
+        );
+
+        const ticket: LottoTicket = {
+            id: `sticket-${Date.now()}`,
+            userId,
+            numbers: [...numbers].sort((a, b) => a - b),
+            superNumber,
+            drawId,
+            purchasedAt: new Date().toISOString(),
+            cost
+        };
+        specialTickets.push(ticket);
+        return ticket;
+    }
+
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     private evaluateTicket(ticket: LottoTicket, draw: LottoDraw): LottoResult {
@@ -430,6 +557,35 @@ export class LottoService {
         const superNumberMatched = ticket.superNumber === draw.superNumber;
         const prizeClass = this.determinePrizeClass(matchedCount, superNumberMatched);
         const prizeAmount = prizeClass === "class1" ? draw.jackpot : PRIZE_TABLE[prizeClass];
+
+        return {
+            ticketId: ticket.id,
+            userId: ticket.userId,
+            drawId: draw.id,
+            matchedNumbers,
+            matchedCount,
+            superNumberMatched,
+            prizeClass,
+            prizeAmount
+        };
+    }
+
+    private evaluateSpecialTicket(ticket: LottoTicket, draw: SpecialDraw): LottoResult {
+        const matchedNumbers = ticket.numbers.filter((n) => (draw.winningNumbers ?? []).includes(n));
+        const matchedCount = matchedNumbers.length;
+        const superNumberMatched = ticket.superNumber === draw.superNumber;
+        const prizeClass = this.determinePrizeClass(matchedCount, superNumberMatched);
+
+        let prizeAmount: number;
+        if (draw.prizeMode === "single_class") {
+            prizeAmount =
+                prizeClass !== "no_win" && draw.singlePrizeClass === prizeClass ? (draw.singlePrizeAmount ?? 0) : 0;
+        } else if (draw.prizeMode === "custom_jackpot") {
+            prizeAmount =
+                prizeClass === "class1" ? (draw.customJackpot ?? PRIZE_TABLE.class1) : PRIZE_TABLE[prizeClass];
+        } else {
+            prizeAmount = PRIZE_TABLE[prizeClass];
+        }
 
         return {
             ticketId: ticket.id,

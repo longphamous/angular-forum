@@ -150,6 +150,7 @@ export class AdminLinkDatabase implements OnInit {
                     summary: "Freigegeben",
                     detail: `"${link.title}" wurde freigegeben.`
                 });
+                this.facade.loadPending();
                 this.cd.markForCheck();
             }
         });
@@ -173,6 +174,7 @@ export class AdminLinkDatabase implements OnInit {
                     summary: "Abgelehnt",
                     detail: "Link wurde abgelehnt."
                 });
+                this.facade.loadPending();
                 this.cd.markForCheck();
             }
         });

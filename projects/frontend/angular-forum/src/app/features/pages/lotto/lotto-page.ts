@@ -25,7 +25,8 @@ import {
     LottoTicket,
     MyTicketWithResult,
     PRIZE_CLASS_INFO,
-    PRIZE_CLASSES
+    PRIZE_CLASSES,
+    SpecialDraw
 } from "../../../core/models/lotto/lotto";
 import { Wallet } from "../../../core/models/wallet/wallet";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
@@ -64,6 +65,8 @@ export class LottoPage implements OnInit, OnDestroy {
     protected readonly myTickets = signal<LottoTicket[]>([]);
     protected readonly myResults = signal<LottoResult[]>([]);
     protected readonly purchasing = signal(false);
+    protected readonly specialDraws = signal<SpecialDraw[]>([]);
+    protected readonly purchasingSpecial = signal<string | null>(null); // drawId being purchased
 
     // ─── Ticket form ──────────────────────────────────────────────────────────
     protected selectedNumbers = signal<number[]>([]);
@@ -163,6 +166,10 @@ export class LottoPage implements OnInit, OnDestroy {
             },
             error: () => this.loading.set(false)
         });
+
+        this.http.get<SpecialDraw[]>(`${base}${LOTTO_ROUTES.specialDraws()}`).subscribe({
+            next: (s) => this.specialDraws.set(s)
+        });
     }
 
     // ─── Number selection ─────────────────────────────────────────────────────
@@ -226,6 +233,41 @@ export class LottoPage implements OnInit, OnDestroy {
                 this.messageService.add({ severity: "error", summary: msg, life: 3000 });
             }
         });
+    }
+
+    protected purchaseSpecialTicket(draw: SpecialDraw): void {
+        if (!this.canBuy()) return;
+        this.purchasingSpecial.set(draw.id);
+
+        const payload = {
+            numbers: this.selectedNumbers(),
+            superNumber: this.selectedSuperNumber()!
+        };
+
+        this.http
+            .post<LottoTicket>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.buySpecialTicket(draw.id)}`, payload)
+            .subscribe({
+                next: () => {
+                    this.purchasingSpecial.set(null);
+                    const cost = draw.ticketCost ?? this.config()?.ticketCost ?? 2;
+                    this.wallet.update((w) => (w ? { ...w, balance: w.balance - cost } : w));
+                    this.clearSelection();
+                    this.messageService.add({
+                        severity: "success",
+                        summary: `Ticket für Sonderziehung "${draw.name}" gekauft!`,
+                        life: 3000
+                    });
+                },
+                error: (err) => {
+                    this.purchasingSpecial.set(null);
+                    const msg = err?.error?.message ?? "Fehler beim Kauf";
+                    this.messageService.add({ severity: "error", summary: msg, life: 3000 });
+                }
+            });
+    }
+
+    protected pendingSpecialDraws(): SpecialDraw[] {
+        return this.specialDraws().filter((d) => d.status === "pending");
     }
 
     // ─── Countdown ────────────────────────────────────────────────────────────

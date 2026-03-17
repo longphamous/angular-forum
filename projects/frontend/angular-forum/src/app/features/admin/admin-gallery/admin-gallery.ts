@@ -80,6 +80,7 @@ export class AdminGallery implements OnInit {
             next: () => {
                 this.albums.update((list) => list.filter((a) => a.id !== album.id));
                 this.messageService.add({ severity: "success", summary: "Deleted", detail: album.title });
+                this.loadAlbums();
             },
             error: () =>
                 this.messageService.add({ severity: "error", summary: "Error", detail: "Failed to delete album" })

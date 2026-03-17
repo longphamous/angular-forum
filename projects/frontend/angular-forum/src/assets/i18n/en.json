@@ -997,6 +997,11 @@
       "hotNumbers": "Hot Numbers",
       "coldNumbers": "Cold Numbers",
       "pastDraws": "Past Draws"
+    },
+    "specialDraws": "Special Draws",
+    "specialDraw": {
+      "allCurrentTickets": "All current tickets apply",
+      "buyTicket": "Buy Ticket"
     }
   },
   "notifications": {
@@ -1062,7 +1067,33 @@
       "drawDate": "Draw date",
       "jackpot": "Jackpot",
       "tickets": "Tickets",
-      "status": "Status"
+      "status": "Status",
+      "name": "Name",
+      "ticketMode": "Ticket Mode",
+      "prizeMode": "Prize Mode"
+    },
+    "createSpecialDraw": "Create special draw",
+    "specialDraws": "Special Draws",
+    "ticketMode": {
+      "allCurrent": "All current",
+      "separate": "Separate ticket"
+    },
+    "prizeMode": {
+      "standard": "Standard",
+      "customJackpot": "Custom jackpot",
+      "singleClass": "Single class"
+    },
+    "specialDraw": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Christmas Special Draw",
+      "drawDate": "Date & Time",
+      "ticketMode": "Ticket Mode",
+      "prizeMode": "Prize Mode",
+      "customJackpot": "Jackpot",
+      "singlePrizeClass": "Prize Class",
+      "singlePrizeAmount": "Prize Amount",
+      "ticketCost": "Ticket cost",
+      "ticketCostHint": "Use default"
     }
   },
   "gallery": {

@@ -209,6 +209,7 @@ export class AdminSlideshow implements OnInit {
                 }
                 this.saving.set(false);
                 this.dialogVisible.set(false);
+                this.loadSlides();
             },
             error: () => {
                 this.error.set(this.translocoService.translate("adminSlideshow.saveError"));
@@ -236,6 +237,7 @@ export class AdminSlideshow implements OnInit {
                 this.successMsg.set(
                     this.translocoService.translate("adminSlideshow.deleteSuccess", { title: slide.title })
                 );
+                this.loadSlides();
             },
             error: () => this.error.set(this.translocoService.translate("adminSlideshow.deleteError"))
         });

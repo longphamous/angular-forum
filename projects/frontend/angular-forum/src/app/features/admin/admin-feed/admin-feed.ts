@@ -103,6 +103,7 @@ export class AdminFeed implements OnInit {
                 this.successMsg.set(this.translocoService.translate("adminFeed.addSuccess"));
                 this.saving.set(false);
                 this.dialogVisible.set(false);
+                this.loadFeatured();
             },
             error: () => {
                 this.error.set(this.translocoService.translate("adminFeed.saveError"));
@@ -115,6 +116,7 @@ export class AdminFeed implements OnInit {
         this.facade.updateFeatured(item.id, { isActive: !item.isActive }).subscribe({
             next: (updated) => {
                 this.featured.update((list) => list.map((f) => (f.id === updated.id ? updated : f)));
+                this.loadFeatured();
             },
             error: () => this.error.set(this.translocoService.translate("adminFeed.saveError"))
         });
@@ -126,6 +128,7 @@ export class AdminFeed implements OnInit {
                 this.featured.update((list) =>
                     list.map((f) => (f.id === updated.id ? updated : f)).sort((a, b) => a.position - b.position)
                 );
+                this.loadFeatured();
             },
             error: () => this.error.set(this.translocoService.translate("adminFeed.saveError"))
         });
@@ -148,6 +151,7 @@ export class AdminFeed implements OnInit {
             next: () => {
                 this.featured.update((list) => list.filter((f) => f.id !== item.id));
                 this.successMsg.set(this.translocoService.translate("adminFeed.deleteSuccess"));
+                this.loadFeatured();
             },
             error: () => this.error.set(this.translocoService.translate("adminFeed.deleteError"))
         });

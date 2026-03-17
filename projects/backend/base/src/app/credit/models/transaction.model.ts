@@ -6,6 +6,8 @@ export type TransactionType =
     | "purchase"
     | "lotto_ticket"
     | "lotto_win"
+    | "lotto_special_ticket"
+    | "lotto_special_win"
     | "admin_transfer"
     | "recalculate"
     | "market_buy"

@@ -997,6 +997,11 @@
       "hotNumbers": "Heiße Zahlen",
       "coldNumbers": "Kalte Zahlen",
       "pastDraws": "Vergangene Ziehungen"
+    },
+    "specialDraws": "Sonderziehungen",
+    "specialDraw": {
+      "allCurrentTickets": "Alle aktuellen Tickets gelten",
+      "buyTicket": "Ticket kaufen"
     }
   },
   "notifications": {
@@ -1062,7 +1067,33 @@
       "drawDate": "Ziehungsdatum",
       "jackpot": "Jackpot",
       "tickets": "Tickets",
-      "status": "Status"
+      "status": "Status",
+      "name": "Name",
+      "ticketMode": "Ticket-Modus",
+      "prizeMode": "Gewinnmodus"
+    },
+    "createSpecialDraw": "Sonderziehung erstellen",
+    "specialDraws": "Sonderziehungen",
+    "ticketMode": {
+      "allCurrent": "Alle aktuellen",
+      "separate": "Separates Ticket"
+    },
+    "prizeMode": {
+      "standard": "Standard",
+      "customJackpot": "Eigener Jackpot",
+      "singleClass": "Eine Klasse"
+    },
+    "specialDraw": {
+      "name": "Name",
+      "namePlaceholder": "z.B. Weihnachts-Sonderziehung",
+      "drawDate": "Datum & Uhrzeit",
+      "ticketMode": "Ticket-Modus",
+      "prizeMode": "Gewinnmodus",
+      "customJackpot": "Jackpot",
+      "singlePrizeClass": "Gewinnklasse",
+      "singlePrizeAmount": "Gewinnbetrag",
+      "ticketCost": "Ticketpreis",
+      "ticketCostHint": "Standard verwenden"
     }
   },
   "gallery": {

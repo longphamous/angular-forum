@@ -85,7 +85,7 @@ export interface PrizeClassInfo {
 
 export const PRIZE_CLASS_INFO: Record<LottoPrizeClass, PrizeClassInfo> = {
     class1: { label: "lotto.prizeClass.class1", description: "lotto.prizeDesc.class1", amount: 10_000_000 },
-    class2: { label: "lotto.prizeClass.class2", description: "lotto.prizeDesc.class2", amount: 1_000_000 },
+    class2: { label: "lotto.prizeClass.class2", description: "lotto.prizeDesc.class2", amount: 500_000 },
     class3: { label: "lotto.prizeClass.class3", description: "lotto.prizeDesc.class3", amount: 100_000 },
     class4: { label: "lotto.prizeClass.class4", description: "lotto.prizeDesc.class4", amount: 5_000 },
     class5: { label: "lotto.prizeClass.class5", description: "lotto.prizeDesc.class5", amount: 500 },
@@ -107,3 +107,41 @@ export const PRIZE_CLASSES: LottoPrizeClass[] = [
     "class8",
     "class9"
 ];
+
+export type SpecialDrawTicketMode = "all_current" | "separate";
+export type SpecialDrawPrizeMode = "standard" | "custom_jackpot" | "single_class";
+
+export interface SpecialDraw {
+    id: string;
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+    status: "pending" | "drawn";
+    winningNumbers?: number[];
+    superNumber?: number;
+    totalTickets?: number;
+    createdAt: string;
+}
+
+export interface CreateSpecialDrawDto {
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+}
+
+export interface SpecialDrawResult {
+    draw: SpecialDraw;
+    totalTickets: number;
+    winners: LottoResult[];
+    totalPrizesPaid: number;
+}

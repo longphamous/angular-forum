@@ -96,10 +96,52 @@
                     </div>
                     @if (lastDraw()!.totalTickets) {
                     <p class="text-surface-500 mt-3 text-sm">
-                        {{ lastDraw()!.totalTickets }} {{ t('lotto.ticketsSold') }} · {{ t('lotto.jackpot') }}: {{
-                        formatCredits(lastDraw()!.jackpot) }}
+                        {{ lastDraw()!.totalTickets }} {{ t('lotto.ticketsSold') }}
                     </p>
                     }
+                </div>
+                }
+
+                <!-- Special draws -->
+                @let pendingSpecial = pendingSpecialDraws(); @if (pendingSpecial.length > 0) {
+                <div
+                    class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-5"
+                >
+                    <h3 class="text-surface-700 dark:text-surface-300 mb-4 flex items-center gap-2 font-semibold">
+                        <i class="pi pi-star text-yellow-500"></i>
+                        {{ t('lotto.specialDraws') }}
+                    </h3>
+                    <div class="flex flex-col gap-3">
+                        @for (sd of pendingSpecial; track sd.id) {
+                        <div
+                            class="bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
+                        >
+                            <div>
+                                <p class="text-surface-900 dark:text-surface-0 font-semibold">{{ sd.name }}</p>
+                                <p class="text-surface-500 mt-0.5 text-xs">
+                                    {{ t('lotto.drawOn') }}: {{ formatDate(sd.drawDate) }} @if (sd.prizeMode ===
+                                    'custom_jackpot' && sd.customJackpot) { · {{ t('lotto.jackpot') }}: {{
+                                    formatCredits(sd.customJackpot) }} } @if (sd.prizeMode === 'single_class' &&
+                                    sd.singlePrizeClass) { · {{ t('lotto.prizeClass.' + sd.singlePrizeClass) }}: {{
+                                    formatCredits(sd.singlePrizeAmount ?? 0) }} }
+                                </p>
+                                <p class="text-surface-400 mt-0.5 text-xs">
+                                    {{ sd.totalTickets ?? 0 }} {{ t('lotto.ticketsSold') }} @if (sd.ticketMode ===
+                                    'all_current') { · {{ t('lotto.specialDraw.allCurrentTickets') }} }
+                                </p>
+                            </div>
+                            @if (sd.ticketMode === 'separate' && authFacade.isAuthenticated()) {
+                            <p-button
+                                (click)="purchaseSpecialTicket(sd)"
+                                [label]="t('lotto.specialDraw.buyTicket')"
+                                [loading]="purchasingSpecial() === sd.id"
+                                icon="pi pi-ticket"
+                                size="small"
+                            />
+                            }
+                        </div>
+                        }
+                    </div>
                 </div>
                 }
 

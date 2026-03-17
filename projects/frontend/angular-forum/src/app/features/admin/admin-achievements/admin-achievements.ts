@@ -201,6 +201,7 @@ export class AdminAchievements implements OnInit {
                 }
                 this.saving.set(false);
                 this.dialogVisible.set(false);
+                this.loadAchievements();
             },
             error: () => {
                 this.error.set(this.translocoService.translate("adminAchievements.saveError"));
@@ -230,6 +231,7 @@ export class AdminAchievements implements OnInit {
                 this.successMsg.set(
                     this.translocoService.translate("adminAchievements.deleteSuccess", { name: achievement.name })
                 );
+                this.loadAchievements();
             },
             error: () => this.error.set(this.translocoService.translate("adminAchievements.deleteError"))
         });
