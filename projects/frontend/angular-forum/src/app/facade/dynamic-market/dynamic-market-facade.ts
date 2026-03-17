@@ -4,11 +4,14 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { DYNAMIC_MARKET_ROUTES } from "../../core/api/dynamic-market.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import {
+    AdminOrgInventoryItem,
     MarketConfig,
+    MarketEvent,
     MarketEventLog,
     MarketGroup,
     MarketResource,
     MarketSchedule,
+    MarketStats,
     MarketTradeResult,
     UserInventoryItem
 } from "../../core/models/dynamic-market/dynamic-market";
@@ -90,6 +93,7 @@ export class DynamicMarketFacade {
                 this.trading.set(false);
                 this.loadOverview();
                 this.loadInventory();
+                this.scheduleResultDismiss();
             },
             error: () => this.trading.set(false)
         });
@@ -103,9 +107,20 @@ export class DynamicMarketFacade {
                 this.trading.set(false);
                 this.loadOverview();
                 this.loadInventory();
+                this.scheduleResultDismiss();
             },
             error: () => this.trading.set(false)
         });
+    }
+
+    private resultDismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+    private scheduleResultDismiss(): void {
+        if (this.resultDismissTimer) clearTimeout(this.resultDismissTimer);
+        this.resultDismissTimer = setTimeout(() => {
+            this.lastTradeResult.set(null);
+            this.resultDismissTimer = null;
+        }, 5000);
     }
 
     // ─── Admin methods ──────────────────────────────────────────────────────
@@ -129,11 +144,23 @@ export class DynamicMarketFacade {
     }
 
     readonly adminResources = signal<MarketResource[]>([]);
+    readonly adminEvents = signal<MarketEvent[]>([]);
     readonly adminConfig = signal<MarketConfig | null>(null);
+    readonly adminStats = signal<MarketStats | null>(null);
+    readonly adminStatsLoading = signal(false);
+    readonly adminOrgInventory = signal<AdminOrgInventoryItem[]>([]);
+    readonly interventionTrading = signal(false);
 
     loadAdminResources(): void {
         this.http.get<MarketResource[]>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminResources()}`).subscribe({
             next: (resources) => this.adminResources.set(resources),
+            error: () => undefined
+        });
+    }
+
+    loadAdminEvents(): void {
+        this.http.get<MarketEvent[]>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminEvents()}`).subscribe({
+            next: (events) => this.adminEvents.set(events),
             error: () => undefined
         });
     }
@@ -183,6 +210,70 @@ export class DynamicMarketFacade {
                 },
                 error: () => undefined
             });
+    }
+
+    loadAdminStats(): void {
+        this.adminStatsLoading.set(true);
+        this.http.get<MarketStats>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminStats()}`).subscribe({
+            next: (stats) => {
+                this.adminStats.set(stats);
+                this.adminStatsLoading.set(false);
+            },
+            error: () => this.adminStatsLoading.set(false)
+        });
+    }
+
+    loadAdminOrgInventory(): void {
+        this.http
+            .get<AdminOrgInventoryItem[]>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminInterventionInventory()}`)
+            .subscribe({
+                next: (items) => this.adminOrgInventory.set(items),
+                error: () => undefined
+            });
+    }
+
+    adminInterventionBuy(slug: string, quantity: number): void {
+        this.interventionTrading.set(true);
+        this.http
+            .post<
+                AdminOrgInventoryItem[]
+            >(`${this.base}${DYNAMIC_MARKET_ROUTES.adminInterventionBuy()}`, { slug, quantity })
+            .subscribe({
+                next: (items) => {
+                    this.adminOrgInventory.set(items);
+                    this.interventionTrading.set(false);
+                    this.loadAdminResources();
+                },
+                error: () => this.interventionTrading.set(false)
+            });
+    }
+
+    adminInterventionSell(slug: string, quantity: number): void {
+        this.interventionTrading.set(true);
+        this.http
+            .post<
+                AdminOrgInventoryItem[]
+            >(`${this.base}${DYNAMIC_MARKET_ROUTES.adminInterventionSell()}`, { slug, quantity })
+            .subscribe({
+                next: (items) => {
+                    this.adminOrgInventory.set(items);
+                    this.interventionTrading.set(false);
+                    this.loadAdminResources();
+                },
+                error: () => this.interventionTrading.set(false)
+            });
+    }
+
+    fullReset(): void {
+        this.http.post<{ message: string }>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminFullReset()}`, {}).subscribe({
+            next: () => {
+                this.loadAdminResources();
+                this.loadAdminStats();
+                this.loadAdminOrgInventory();
+                this.recentEvents.set([]);
+            },
+            error: () => undefined
+        });
     }
 
     loadAdminConfig(): void {

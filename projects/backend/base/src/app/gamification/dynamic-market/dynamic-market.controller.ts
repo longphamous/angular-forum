@@ -2,9 +2,11 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request 
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import {
+    AdminOrgInventoryDto,
     CreateMarketEventDto,
     CreateMarketResourceDto,
     DynamicMarketService,
+    MarketStatsDto,
     UpdateMarketResourceDto
 } from "./dynamic-market.service";
 
@@ -112,6 +114,12 @@ export class DynamicMarketController {
         return this.marketService.recalculatePrices();
     }
 
+    @Roles("admin")
+    @Post("admin/full-reset")
+    adminFullReset() {
+        return this.marketService.fullReset();
+    }
+
     // ─── Admin: Events ──────────────────────────────────────────────────────
 
     @Roles("admin")
@@ -164,5 +172,33 @@ export class DynamicMarketController {
         }>
     ) {
         return this.marketService.updateConfig(dto);
+    }
+
+    // ─── Admin: Stats ───────────────────────────────────────────────────────
+
+    @Roles("admin")
+    @Get("admin/stats")
+    adminGetStats(): Promise<MarketStatsDto> {
+        return this.marketService.getMarketStats();
+    }
+
+    // ─── Admin: Intervention ────────────────────────────────────────────────
+
+    @Roles("admin")
+    @Get("admin/intervention/inventory")
+    adminGetOrgInventory(): Promise<AdminOrgInventoryDto[]> {
+        return this.marketService.getAdminInventory();
+    }
+
+    @Roles("admin")
+    @Post("admin/intervention/buy")
+    adminInterventionBuy(@Body() body: { slug: string; quantity: number }): Promise<AdminOrgInventoryDto[]> {
+        return this.marketService.adminBuy(body.slug, body.quantity);
+    }
+
+    @Roles("admin")
+    @Post("admin/intervention/sell")
+    adminInterventionSell(@Body() body: { slug: string; quantity: number }): Promise<AdminOrgInventoryDto[]> {
+        return this.marketService.adminSell(body.slug, body.quantity);
     }
 }

@@ -2,7 +2,7 @@
     <h1 class="mb-4 text-2xl font-bold dark:text-white">{{ t('dynamicMarket.admin.title') }}</h1>
 
     <!-- Tab Navigation -->
-    <div class="mb-4 flex gap-2">
+    <div class="mb-4 flex flex-wrap gap-2">
         <p-button
             (onClick)="activeTab.set('resources')"
             [label]="t('dynamicMarket.admin.resources')"
@@ -12,6 +12,24 @@
             (onClick)="activeTab.set('events')"
             [label]="t('dynamicMarket.admin.events')"
             [outlined]="activeTab() !== 'events'"
+        />
+        <p-button
+            (onClick)="activeTab.set('dependencies')"
+            [label]="t('dynamicMarket.admin.dependencies')"
+            [outlined]="activeTab() !== 'dependencies'"
+            icon="pi pi-sitemap"
+        />
+        <p-button
+            (onClick)="activeTab.set('stats')"
+            [label]="t('dynamicMarket.admin.stats')"
+            [outlined]="activeTab() !== 'stats'"
+            icon="pi pi-chart-bar"
+        />
+        <p-button
+            (onClick)="activeTab.set('intervention')"
+            [label]="t('dynamicMarket.admin.intervention')"
+            [outlined]="activeTab() !== 'intervention'"
+            icon="pi pi-building"
         />
         <p-button
             (onClick)="activeTab.set('config')"
@@ -45,6 +63,13 @@
                     [label]="t('dynamicMarket.admin.triggerEvent')"
                     icon="pi pi-bolt"
                     severity="info"
+                    size="small"
+                />
+                <p-button
+                    (onClick)="marketFacade.fullReset()"
+                    [label]="t('dynamicMarket.admin.fullReset')"
+                    icon="pi pi-trash"
+                    severity="danger"
                     size="small"
                 />
             </div>
@@ -193,6 +218,33 @@
                     }
                 </div>
             </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="res-max-stock">
+                    {{ t('dynamicMarket.admin.maxStock') }}
+                    <span class="ml-1 text-xs text-gray-400">({{ t('dynamicMarket.admin.unlimited') }} = leer)</span>
+                </label>
+                <p-inputNumber
+                    class="w-full"
+                    id="res-max-stock"
+                    [(ngModel)]="editingResource()!.maxStock"
+                    [min]="1"
+                    [showButtons]="false"
+                    placeholder="∞"
+                />
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="res-current-stock">
+                    {{ t('dynamicMarket.admin.currentStock') }}
+                </label>
+                <p-inputNumber
+                    class="w-full"
+                    id="res-current-stock"
+                    [(ngModel)]="editingResource()!.currentStock"
+                    [min]="0"
+                    [showButtons]="false"
+                    placeholder="—"
+                />
+            </div>
             <div class="flex items-end gap-3">
                 <label class="flex items-center gap-2 dark:text-gray-300" for="res-active">
                     <input id="res-active" [(ngModel)]="editingResource()!.isActive" type="checkbox" />
@@ -252,6 +304,484 @@
         </div>
         }
     </p-card>
+    }
+
+    <!-- Dependencies Tab -->
+    @if (activeTab() === 'dependencies') {
+    <div class="space-y-4">
+        <!-- Header + Filter -->
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-semibold dark:text-white">{{ t('dynamicMarket.admin.depTitle') }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.admin.depSubtitle') }}</p>
+            </div>
+            <input
+                class="rounded border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                (ngModelChange)="depFilter.set($event)"
+                [ngModel]="depFilter()"
+                [placeholder]="t('common.search') + '…'"
+                style="width: 220px"
+            />
+        </div>
+
+        <!-- Legend -->
+        <div
+            class="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs dark:border-gray-700 dark:bg-gray-800"
+        >
+            <span class="font-semibold text-gray-600 dark:text-gray-300"
+                >{{ t('dynamicMarket.admin.depLegend') }}:</span
+            >
+            <span class="flex items-center gap-1"
+                ><span class="inline-block h-3 w-3 rounded-full bg-blue-400"></span> {{
+                t('dynamicMarket.admin.depGroupPeer') }}</span
+            >
+            <span class="flex items-center gap-1"
+                ><i class="pi pi-arrow-up text-green-500" style="font-size: 0.7rem"></i> {{
+                t('dynamicMarket.admin.depEventUp') }}</span
+            >
+            <span class="flex items-center gap-1"
+                ><i class="pi pi-arrow-down text-red-500" style="font-size: 0.7rem"></i> {{
+                t('dynamicMarket.admin.depEventDown') }}</span
+            >
+            <span class="flex items-center gap-1"
+                ><i class="pi pi-sort-alt text-amber-500" style="font-size: 0.7rem"></i> {{
+                t('dynamicMarket.admin.depEventMixed') }}</span
+            >
+        </div>
+
+        @if (marketFacade.adminResources().length === 0) {
+        <p-skeleton height="12rem" />
+        } @else if (depGroupKeys().length === 0) {
+        <p class="text-gray-500 dark:text-gray-400">{{ t('common.noData') }}</p>
+        } @for (groupKey of depGroupKeys(); track groupKey) {
+        <p-card>
+            <!-- Group header -->
+            <ng-template pTemplate="header">
+                <div class="flex items-center gap-2 px-4 pt-4">
+                    <span
+                        class="rounded bg-indigo-100 px-2 py-0.5 text-xs font-bold tracking-wide text-indigo-700 uppercase dark:bg-indigo-900 dark:text-indigo-300"
+                    >
+                        {{ getGroupLabel(groupKey) }}
+                    </span>
+                    <span class="text-xs text-gray-400">
+                        {{ filteredDepsByGroup().get(groupKey)!.length }} {{ t('dynamicMarket.admin.depResources') }} —
+                        {{ t('dynamicMarket.admin.depGroupHint') }}
+                    </span>
+                </div>
+            </ng-template>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b dark:border-gray-700">
+                            <th
+                                class="py-2 pr-4 text-left font-medium text-gray-600 dark:text-gray-400"
+                                style="min-width: 180px"
+                            >
+                                {{ t('dynamicMarket.resource') }}
+                            </th>
+                            <th class="py-2 pr-4 text-left font-medium text-gray-600 dark:text-gray-400">
+                                {{ t('dynamicMarket.admin.depGroupInfluences') }}
+                            </th>
+                            <th class="py-2 text-left font-medium text-gray-600 dark:text-gray-400">
+                                {{ t('dynamicMarket.admin.depEventInfluences') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (row of filteredDepsByGroup().get(groupKey)!; track row.resource.id) {
+                        <tr class="border-b last:border-0 dark:border-gray-700">
+                            <!-- Resource -->
+                            <td class="py-2.5 pr-4 align-top">
+                                <div class="flex items-center gap-2">
+                                    <i [class]="row.resource.icon + ' text-gray-500'"></i>
+                                    <div>
+                                        <div class="font-semibold dark:text-white">{{ row.resource.name }}</div>
+                                        <div class="text-xs text-gray-400">
+                                            {{ row.resource.slug }} · Vol. {{ row.resource.volatility }}x
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Group peers (inverse relationship) -->
+                            <td class="py-2.5 pr-4 align-top">
+                                @if (row.groupPeers.length === 0) {
+                                <span class="text-xs text-gray-400">—</span>
+                                } @else {
+                                <div class="flex flex-wrap gap-1">
+                                    @for (peer of row.groupPeers; track peer.id) {
+                                    <span
+                                        class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                        [pTooltip]="t('dynamicMarket.admin.depPeerTooltip', { name: peer.name })"
+                                        tooltipPosition="top"
+                                    >
+                                        <i [class]="peer.icon" style="font-size: 0.65rem"></i>
+                                        {{ peer.name }}
+                                    </span>
+                                    }
+                                </div>
+                                }
+                            </td>
+
+                            <!-- Event impacts -->
+                            <td class="py-2.5 align-top">
+                                @if (row.eventImpacts.length === 0) {
+                                <span class="text-xs text-gray-400">—</span>
+                                } @else {
+                                <div class="flex flex-col gap-1">
+                                    @for (ei of row.eventImpacts; track ei.event.id) {
+                                    <div
+                                        class="flex items-start gap-1.5 rounded px-2 py-1"
+                                        [class.bg-amber-50]="ei.direction === 'mixed'"
+                                        [class.bg-green-50]="ei.direction === 'up'"
+                                        [class.bg-red-50]="ei.direction === 'down'"
+                                        [class.dark:bg-amber-950]="ei.direction === 'mixed'"
+                                        [class.dark:bg-green-950]="ei.direction === 'up'"
+                                        [class.dark:bg-red-950]="ei.direction === 'down'"
+                                        [pTooltip]="ei.event.description"
+                                        tooltipPosition="top"
+                                    >
+                                        <i
+                                            class="mt-0.5 shrink-0"
+                                            [class.pi-arrow-down]="ei.direction === 'down'"
+                                            [class.pi-arrow-up]="ei.direction === 'up'"
+                                            [class.pi-sort-alt]="ei.direction === 'mixed'"
+                                            [class.pi]="true"
+                                            [class.text-amber-600]="ei.direction === 'mixed'"
+                                            [class.text-green-600]="ei.direction === 'up'"
+                                            [class.text-red-600]="ei.direction === 'down'"
+                                            style="font-size: 0.7rem"
+                                        ></i>
+                                        <span
+                                            class="text-xs font-medium"
+                                            [class.dark:text-amber-300]="ei.direction === 'mixed'"
+                                            [class.dark:text-green-300]="ei.direction === 'up'"
+                                            [class.dark:text-red-300]="ei.direction === 'down'"
+                                            [class.text-amber-700]="ei.direction === 'mixed'"
+                                            [class.text-green-700]="ei.direction === 'up'"
+                                            [class.text-red-700]="ei.direction === 'down'"
+                                            >{{ ei.event.title }}</span
+                                        >
+                                        <span class="ml-auto shrink-0 text-xs text-gray-400"
+                                            >W:{{ ei.event.weight }}</span
+                                        >
+                                    </div>
+                                    }
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </p-card>
+        }
+    </div>
+    }
+
+    <!-- Stats Tab -->
+    @if (activeTab() === 'stats') {
+    <div class="space-y-4">
+        <div>
+            <h2 class="text-lg font-semibold dark:text-white">{{ t('dynamicMarket.admin.stats') }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.admin.statsSubtitle') }}</p>
+        </div>
+
+        @let stats = marketFacade.adminStats(); @if (marketFacade.adminStatsLoading()) {
+        <p-skeleton height="8rem" />
+        } @else if (stats) {
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ t('dynamicMarket.admin.totalTransactions') }}
+                </div>
+                <div class="mt-1 text-2xl font-bold dark:text-white">{{ stats.totalTransactions | number }}</div>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ t('dynamicMarket.admin.totalBuyVolume') }}
+                </div>
+                <div class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+                    {{ stats.totalBuyVolume | number }}
+                </div>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ t('dynamicMarket.admin.totalSellVolume') }}
+                </div>
+                <div class="mt-1 text-2xl font-bold text-red-500 dark:text-red-400">
+                    {{ stats.totalSellVolume | number }}
+                </div>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ t('dynamicMarket.admin.uniqueTraders') }}
+                </div>
+                <div class="mt-1 text-2xl font-bold dark:text-white">{{ stats.uniqueTraders | number }}</div>
+            </div>
+        </div>
+
+        <!-- Per-resource table -->
+        <p-card>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b dark:border-gray-700">
+                            <th class="p-2 text-left dark:text-gray-300">{{ t('dynamicMarket.resource') }}</th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('currentPrice')"
+                            >
+                                {{ t('dynamicMarket.admin.currentPrice') }} @if (statsSortField() === 'currentPrice') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('changePercent')"
+                            >
+                                {{ t('dynamicMarket.change') }} @if (statsSortField() === 'changePercent') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('allTimeBuys')"
+                            >
+                                {{ t('dynamicMarket.admin.allTimeBuys') }} @if (statsSortField() === 'allTimeBuys') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('allTimeSells')"
+                            >
+                                {{ t('dynamicMarket.admin.allTimeSells') }} @if (statsSortField() === 'allTimeSells') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('buyVolume')"
+                            >
+                                {{ t('dynamicMarket.admin.buyVolume') }} @if (statsSortField() === 'buyVolume') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th
+                                class="cursor-pointer p-2 text-right hover:text-indigo-500 dark:text-gray-300"
+                                (click)="sortStats('sellVolume')"
+                            >
+                                {{ t('dynamicMarket.admin.sellVolume') }} @if (statsSortField() === 'sellVolume') {
+                                <i [class]="statsSortDir() === 'asc' ? 'pi pi-sort-up' : 'pi pi-sort-down'"></i>
+                                }
+                            </th>
+                            <th class="p-2 text-right dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.currentStock') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (r of sortedStatResources(); track r.resourceId) {
+                        <tr class="border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
+                            <td class="p-2 dark:text-white">
+                                <div class="flex items-center gap-2">
+                                    <i [class]="r.icon"></i>
+                                    <div>
+                                        <div class="font-medium">{{ r.name }}</div>
+                                        <div class="text-xs text-gray-400">{{ r.slug }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2 text-right font-semibold dark:text-white">{{ r.currentPrice | number }}</td>
+                            <td class="p-2 text-right">
+                                <span
+                                    [class.dark:text-green-400]="r.changePercent > 0"
+                                    [class.dark:text-red-400]="r.changePercent < 0"
+                                    [class.text-gray-400]="r.changePercent === 0"
+                                    [class.text-green-600]="r.changePercent > 0"
+                                    [class.text-red-500]="r.changePercent < 0"
+                                >
+                                    {{ r.changePercent > 0 ? '+' : '' }}{{ r.changePercent | number: '1.1-1' }}%
+                                </span>
+                            </td>
+                            <td class="p-2 text-right text-green-700 dark:text-green-400">
+                                {{ r.allTimeBuys | number }}
+                            </td>
+                            <td class="p-2 text-right text-red-600 dark:text-red-400">{{ r.allTimeSells | number }}</td>
+                            <td class="p-2 text-right text-green-700 dark:text-green-400">
+                                {{ r.buyVolume | number }}
+                            </td>
+                            <td class="p-2 text-right text-red-600 dark:text-red-400">{{ r.sellVolume | number }}</td>
+                            <td class="p-2 text-right dark:text-white">
+                                @if (r.maxStock === null) {
+                                <span class="text-xs text-gray-400">{{ t('dynamicMarket.admin.unlimited') }}</span>
+                                } @else {
+                                <span
+                                    [class.font-semibold]="(r.currentStock ?? 0) === 0"
+                                    [class.text-red-500]="(r.currentStock ?? 0) === 0"
+                                >
+                                    {{ r.currentStock ?? 0 }} / {{ r.maxStock }}
+                                </span>
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </p-card>
+
+        } @else {
+        <p class="text-gray-500 dark:text-gray-400">{{ t('common.noData') }}</p>
+        }
+    </div>
+    }
+
+    <!-- Intervention Tab -->
+    @if (activeTab() === 'intervention') {
+    <div class="space-y-4">
+        <div>
+            <h2 class="text-lg font-semibold dark:text-white">{{ t('dynamicMarket.admin.intervention') }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.admin.interventionSubtitle') }}</p>
+        </div>
+
+        <!-- Org Inventory -->
+        <p-card [header]="t('dynamicMarket.admin.orgInventory')">
+            @if (marketFacade.adminOrgInventory().length === 0) {
+            <p class="text-sm text-gray-400">{{ t('dynamicMarket.admin.noOrgStock') }}</p>
+            } @else {
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b dark:border-gray-700">
+                            <th class="p-2 text-left dark:text-gray-300">{{ t('dynamicMarket.resource') }}</th>
+                            <th class="p-2 text-right dark:text-gray-300">{{ t('dynamicMarket.quantity') }}</th>
+                            <th class="p-2 text-right dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.currentPrice') }}
+                            </th>
+                            <th class="p-2 text-right dark:text-gray-300">{{ t('dynamicMarket.totalValue') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of marketFacade.adminOrgInventory(); track item.resourceId) {
+                        <tr class="border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
+                            <td class="p-2 dark:text-white">
+                                <div class="flex items-center gap-2">
+                                    <i [class]="item.resourceIcon"></i>
+                                    <div>
+                                        <div class="font-medium">{{ item.resourceName }}</div>
+                                        <div class="text-xs text-gray-400">{{ item.resourceSlug }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2 text-right font-semibold dark:text-white">{{ item.quantity | number }}</td>
+                            <td class="p-2 text-right dark:text-white">{{ item.currentPrice | number }}</td>
+                            <td class="p-2 text-right text-indigo-600 dark:text-indigo-400">
+                                {{ (item.quantity * item.currentPrice) | number }}
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </p-card>
+
+        <!-- Buy/Sell Controls per resource -->
+        <p-card [header]="t('dynamicMarket.admin.interventionBuy') + ' / ' + t('dynamicMarket.admin.interventionSell')">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b dark:border-gray-700">
+                            <th class="p-2 text-left dark:text-gray-300">{{ t('dynamicMarket.resource') }}</th>
+                            <th class="p-2 text-right dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.currentPrice') }}
+                            </th>
+                            <th class="p-2 text-right dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.currentStock') }}
+                            </th>
+                            <th class="p-2 text-center dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.interventionBuy') }}
+                            </th>
+                            <th class="p-2 text-center dark:text-gray-300">
+                                {{ t('dynamicMarket.admin.interventionSell') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (r of marketFacade.adminResources(); track r.id) { @if (r.isActive) {
+                        <tr class="border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
+                            <td class="p-2 dark:text-white">
+                                <div class="flex items-center gap-2">
+                                    <i [class]="r.icon"></i>
+                                    <div>
+                                        <div class="font-medium">{{ r.name }}</div>
+                                        <div class="text-xs text-gray-400">{{ r.slug }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2 text-right dark:text-white">{{ r.currentPrice | number }}</td>
+                            <td class="p-2 text-right dark:text-white">
+                                @if (r.maxStock === null) {
+                                <span class="text-xs text-gray-400">{{ t('dynamicMarket.admin.unlimited') }}</span>
+                                } @else {
+                                <span [class.text-red-500]="(r.currentStock ?? 0) === 0">
+                                    {{ r.currentStock ?? 0 }} / {{ r.maxStock }}
+                                </span>
+                                }
+                            </td>
+                            <td class="p-2">
+                                <div class="flex items-center justify-center gap-2">
+                                    <p-inputNumber
+                                        [(ngModel)]="interventionQty[r.slug]"
+                                        [max]="9999"
+                                        [min]="1"
+                                        [showButtons]="false"
+                                        style="width: 80px"
+                                    />
+                                    <p-button
+                                        (onClick)="marketFacade.adminInterventionBuy(r.slug, interventionQty[r.slug] || 1)"
+                                        [disabled]="marketFacade.interventionTrading()"
+                                        icon="pi pi-arrow-down"
+                                        pTooltip="{{ t('dynamicMarket.admin.interventionBuy') }}"
+                                        severity="success"
+                                        size="small"
+                                        tooltipPosition="top"
+                                    />
+                                </div>
+                            </td>
+                            <td class="p-2">
+                                <div class="flex items-center justify-center gap-2">
+                                    <p-inputNumber
+                                        [(ngModel)]="interventionSellQty[r.slug]"
+                                        [max]="9999"
+                                        [min]="1"
+                                        [showButtons]="false"
+                                        style="width: 80px"
+                                    />
+                                    <p-button
+                                        (onClick)="marketFacade.adminInterventionSell(r.slug, interventionSellQty[r.slug] || 1)"
+                                        [disabled]="marketFacade.interventionTrading()"
+                                        icon="pi pi-arrow-up"
+                                        pTooltip="{{ t('dynamicMarket.admin.interventionSell') }}"
+                                        severity="warn"
+                                        size="small"
+                                        tooltipPosition="top"
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                        } }
+                    </tbody>
+                </table>
+            </div>
+        </p-card>
+    </div>
     }
 
     <!-- Config Tab -->

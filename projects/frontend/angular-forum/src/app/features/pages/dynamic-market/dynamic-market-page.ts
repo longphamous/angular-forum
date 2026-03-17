@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
@@ -13,6 +13,7 @@ import { TooltipModule } from "primeng/tooltip";
 import type { MarketResource } from "../../../core/models/dynamic-market/dynamic-market";
 import { MARKET_GROUP_LABELS } from "../../../core/models/dynamic-market/dynamic-market";
 import { DynamicMarketFacade } from "../../../facade/dynamic-market/dynamic-market-facade";
+import { WalletFacade } from "../../../facade/wallet/wallet-facade";
 
 /** Fallback poll interval ms — fires only if scheduler is disabled */
 const POLL_INTERVAL = 60_000;
@@ -38,7 +39,13 @@ const POLL_INTERVAL = 60_000;
 })
 export class DynamicMarketPage implements OnInit, OnDestroy {
     readonly marketFacade = inject(DynamicMarketFacade);
+    readonly walletFacade = inject(WalletFacade);
     private readonly transloco = inject(TranslocoService);
+
+    /** Always shows the most up-to-date balance: trade result takes precedence over wallet load */
+    readonly currentBalance = computed(
+        () => this.marketFacade.lastTradeResult()?.newBalance ?? this.walletFacade.wallet()?.balance ?? null
+    );
 
     readonly showInventory = signal(false);
     readonly selectedResource = signal<MarketResource | null>(null);
@@ -53,6 +60,10 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
     private countdownTotalMs = 0;
 
     ngOnInit(): void {
+        // Clear stale trade result from a previous visit
+        this.marketFacade.lastTradeResult.set(null);
+
+        this.walletFacade.loadWallet();
         this.marketFacade.loadOverview();
         this.marketFacade.loadRecentEvents();
         this.marketFacade.loadInventory();

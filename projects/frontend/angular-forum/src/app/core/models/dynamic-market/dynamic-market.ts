@@ -18,6 +18,45 @@ export interface MarketResource {
     trend: number;
     priceHistory: number[];
     changePercent: number;
+    maxStock: number | null;
+    currentStock: number | null;
+    totalUnitsBought: number;
+    totalUnitsSold: number;
+}
+
+export interface ResourceStat {
+    resourceId: string;
+    slug: string;
+    name: string;
+    icon: string;
+    groupKey: string;
+    currentPrice: number;
+    basePrice: number;
+    changePercent: number;
+    allTimeBuys: number;
+    allTimeSells: number;
+    buyVolume: number;
+    sellVolume: number;
+    maxStock: number | null;
+    currentStock: number | null;
+    priceHistory: number[];
+}
+
+export interface MarketStats {
+    totalTransactions: number;
+    totalBuyVolume: number;
+    totalSellVolume: number;
+    uniqueTraders: number;
+    resources: ResourceStat[];
+}
+
+export interface AdminOrgInventoryItem {
+    resourceId: string;
+    resourceSlug: string;
+    resourceName: string;
+    resourceIcon: string;
+    quantity: number;
+    currentPrice: number;
 }
 
 export interface MarketGroup {

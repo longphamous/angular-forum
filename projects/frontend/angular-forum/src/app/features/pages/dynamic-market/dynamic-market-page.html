@@ -5,7 +5,21 @@
             <h1 class="text-2xl font-bold dark:text-white">{{ t('dynamicMarket.title') }}</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.subtitle') }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+            <!-- Wallet balance -->
+            @if (currentBalance() !== null) {
+            <div
+                class="flex items-center gap-1.5 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-1.5 dark:border-yellow-800 dark:bg-yellow-950"
+            >
+                <i class="pi pi-wallet text-yellow-500"></i>
+                <span class="font-mono text-sm font-bold text-yellow-700 dark:text-yellow-300"
+                    >{{ currentBalance() | number }}</span
+                >
+                <span class="text-xs text-yellow-600 dark:text-yellow-400">Coins</span>
+            </div>
+            } @else if (walletFacade.walletLoading()) {
+            <div class="h-8 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+            }
             <p-button
                 (onClick)="toggleInventory()"
                 [label]="t('dynamicMarket.inventory')"
@@ -72,18 +86,28 @@
     <!-- Trade Result Banner -->
     @if (marketFacade.lastTradeResult(); as result) {
     <div
-        class="mb-3 flex items-center gap-3 rounded-lg px-4 py-2"
+        class="mb-3 flex items-center justify-between gap-3 rounded-lg px-4 py-2"
         [class]="result.action === 'buy' ? 'bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900' : 'bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900'"
     >
-        <i
-            [class]="result.action === 'buy' ? 'pi pi-check-circle text-green-500' : 'pi pi-check-circle text-amber-500'"
-        ></i>
-        <span class="text-sm dark:text-white">
-            <strong>{{ result.action === 'buy' ? t('dynamicMarket.bought') : t('dynamicMarket.sold') }}</strong>
-            {{ result.quantity }}x {{ result.resourceSlug }} {{ t('dynamicMarket.for') }}
-            <strong>{{ result.totalPrice }}</strong> Coins ({{ result.pricePerUnit }} {{ t('dynamicMarket.perUnit') }})
-            — {{ t('dynamicMarket.newBalance') }}: <strong>{{ result.newBalance }}</strong> Coins
-        </span>
+        <div class="flex items-center gap-3">
+            <i
+                [class]="result.action === 'buy' ? 'pi pi-check-circle text-green-500' : 'pi pi-check-circle text-amber-500'"
+            ></i>
+            <span class="text-sm dark:text-white">
+                <strong>{{ result.action === 'buy' ? t('dynamicMarket.bought') : t('dynamicMarket.sold') }}</strong>
+                {{ result.quantity }}x {{ result.resourceSlug }} {{ t('dynamicMarket.for') }}
+                <strong>{{ result.totalPrice }}</strong> Coins ({{ result.pricePerUnit }} {{ t('dynamicMarket.perUnit')
+                }}) — {{ t('dynamicMarket.newBalance') }}: <strong>{{ result.newBalance | number }}</strong> Coins
+            </span>
+        </div>
+        <p-button
+            (onClick)="marketFacade.lastTradeResult.set(null)"
+            [rounded]="true"
+            [text]="true"
+            icon="pi pi-times"
+            severity="secondary"
+            size="small"
+        />
     </div>
     }
 

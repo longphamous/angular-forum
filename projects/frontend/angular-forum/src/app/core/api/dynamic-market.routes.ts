@@ -21,5 +21,10 @@ export const DYNAMIC_MARKET_ROUTES = {
     adminTriggerEvent: () => "/gamification/market/admin/trigger-event",
     scheduleNext: () => "/gamification/market/schedule/next",
     adminConfig: () => "/gamification/market/admin/config",
-    adminUpdateConfig: () => "/gamification/market/admin/config"
+    adminUpdateConfig: () => "/gamification/market/admin/config",
+    adminStats: () => "/gamification/market/admin/stats",
+    adminInterventionInventory: () => "/gamification/market/admin/intervention/inventory",
+    adminInterventionBuy: () => "/gamification/market/admin/intervention/buy",
+    adminInterventionSell: () => "/gamification/market/admin/intervention/sell",
+    adminFullReset: () => "/gamification/market/admin/full-reset"
 } as const;

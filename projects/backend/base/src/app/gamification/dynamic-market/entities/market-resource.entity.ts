@@ -73,6 +73,22 @@ export class MarketResourceEntity {
     @Column({ name: "sort_order", type: "int", default: 0 })
     sortOrder!: number;
 
+    /** Maximum total market stock (null = unlimited) */
+    @Column({ name: "max_stock", type: "int", nullable: true })
+    maxStock!: number | null;
+
+    /** Current available market stock (null = unlimited). Decremented on buy, incremented on sell. */
+    @Column({ name: "current_stock", type: "int", nullable: true })
+    currentStock!: number | null;
+
+    /** Cumulative total units ever bought across all time (never reset by price cycle) */
+    @Column({ name: "total_units_bought", type: "bigint", default: 0 })
+    totalUnitsBought!: number;
+
+    /** Cumulative total units ever sold across all time (never reset by price cycle) */
+    @Column({ name: "total_units_sold", type: "bigint", default: 0 })
+    totalUnitsSold!: number;
+
     @CreateDateColumn({ name: "created_at", type: "timestamptz" })
     createdAt!: Date;
 
