@@ -162,7 +162,7 @@ export class AdminCoins implements OnInit {
             return;
         }
         this.loadingUsers.set(true);
-        this.http.get<UserOption[]>(`${this.base}/users/search?q=${encodeURIComponent(query)}&limit=10`).subscribe({
+        this.http.get<UserOption[]>(`${this.base}/user/search?q=${encodeURIComponent(query)}&limit=10`).subscribe({
             next: (users) => {
                 this.userOptions.set(users);
                 this.loadingUsers.set(false);

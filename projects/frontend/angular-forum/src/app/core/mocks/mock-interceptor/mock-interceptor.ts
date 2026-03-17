@@ -604,6 +604,17 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(placeholder);
         }
 
+        // GET /api/user/search?q=...  (admin – search users)
+        if (method === "GET" && lowerUrl.match(/\/api\/user\/search/)) {
+            const q = (new URL(url, "http://localhost").searchParams.get("q") ?? "").toLowerCase();
+            const limit = parseInt(new URL(url, "http://localhost").searchParams.get("limit") ?? "10") || 10;
+            const results = Object.values(mockUserProfiles)
+                .filter((u) => u.username.toLowerCase().includes(q) || (u.displayName ?? "").toLowerCase().includes(q))
+                .slice(0, limit)
+                .map((u) => ({ id: u.id, username: u.username, displayName: u.displayName ?? u.username }));
+            return this.ok(results);
+        }
+
         // GET /api/user  (admin – list all users)
         if (method === "GET" && lowerUrl.match(/\/api\/user$/)) {
             return this.ok(Object.values(mockUserProfiles));

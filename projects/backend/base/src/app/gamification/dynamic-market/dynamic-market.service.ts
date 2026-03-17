@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CreditService } from "../../credit/credit.service";
+import { DEFAULT_SCHEDULE, MarketConfigEntity, MarketSchedule } from "./entities/market-config.entity";
 import { MarketEventEntity } from "./entities/market-event.entity";
 import { MarketEventLogEntity } from "./entities/market-event-log.entity";
 import { MarketResourceEntity } from "./entities/market-resource.entity";
@@ -17,6 +18,7 @@ export interface MarketResourceDto {
     name: string;
     description: string | null;
     icon: string;
+    imageUrl: string | null;
     groupKey: string;
     basePrice: number;
     minPrice: number;
@@ -85,6 +87,7 @@ export interface CreateMarketResourceDto {
     name: string;
     description?: string;
     icon?: string;
+    imageUrl?: string | null;
     groupKey: string;
     basePrice: number;
     minPrice: number;
@@ -99,6 +102,7 @@ export interface UpdateMarketResourceDto {
     name?: string;
     description?: string;
     icon?: string;
+    imageUrl?: string | null;
     groupKey?: string;
     basePrice?: number;
     minPrice?: number;
@@ -121,10 +125,11 @@ export interface CreateMarketEventDto {
 }
 
 export interface MarketConfigDto {
-    priceUpdateIntervalMinutes: number;
     eventChancePercent: number;
     demandDecayFactor: number;
     maxTradeQuantity: number;
+    schedule: MarketSchedule;
+    nextUpdateAt: string | null;
 }
 
 // ─── Default resources (anime/manga themed) ─────────────────────────────────
@@ -405,24 +410,66 @@ const DEFAULT_EVENTS: CreateMarketEventDto[] = [
     }
 ];
 
+// ─── Schedule Helper ─────────────────────────────────────────────────────────
+
+function computeNextUpdate(schedule: MarketSchedule): Date | null {
+    const now = new Date();
+    switch (schedule.type) {
+        case "disabled":
+            return null;
+        case "minutely": {
+            const ms = Math.max(1, schedule.minutelyInterval || 60) * 60 * 1000;
+            return new Date(now.getTime() + ms);
+        }
+        case "hourly": {
+            const minute = Math.max(0, Math.min(59, schedule.hourlyAtMinute ?? 0));
+            const next = new Date(now);
+            next.setSeconds(0, 0);
+            next.setMinutes(minute);
+            if (next <= now) next.setHours(next.getHours() + 1);
+            return next;
+        }
+        case "daily": {
+            const times = schedule.dailyTimes?.length ? schedule.dailyTimes : ["00:00"];
+            const candidates = times.map((t) => {
+                const [h, m] = t.split(":").map(Number);
+                const d = new Date(now);
+                d.setHours(h, m, 0, 0);
+                if (d <= now) d.setDate(d.getDate() + 1);
+                return d;
+            });
+            return candidates.reduce((a, b) => (a < b ? a : b));
+        }
+        case "weekly": {
+            const days = schedule.weeklyDays?.length ? schedule.weeklyDays : [1];
+            const [h, m] = (schedule.weeklyTime || "00:00").split(":").map(Number);
+            const candidates = days.map((day) => {
+                const d = new Date(now);
+                d.setHours(h, m, 0, 0);
+                const diff = (day - d.getDay() + 7) % 7;
+                d.setDate(d.getDate() + diff);
+                if (d <= now) d.setDate(d.getDate() + 7);
+                return d;
+            });
+            return candidates.reduce((a, b) => (a < b ? a : b));
+        }
+        default:
+            return null;
+    }
+}
+
 // ─── Service ─────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class DynamicMarketService implements OnModuleInit {
+export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(DynamicMarketService.name);
 
-    /** In-memory config (could be persisted later) */
-    private config: MarketConfigDto = {
-        priceUpdateIntervalMinutes: 60,
-        eventChancePercent: 20,
-        demandDecayFactor: 0.8,
-        maxTradeQuantity: 100
-    };
+    private configEntity: MarketConfigEntity | null = null;
 
     /** Previous prices for trend calculation */
     private previousPrices = new Map<string, number>();
 
-    private priceUpdateTimer: ReturnType<typeof setInterval> | null = null;
+    private updateTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(
         @InjectRepository(MarketResourceEntity)
@@ -435,6 +482,8 @@ export class DynamicMarketService implements OnModuleInit {
         private readonly txRepo: Repository<MarketTransactionEntity>,
         @InjectRepository(UserInventoryEntity)
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
+        @InjectRepository(MarketConfigEntity)
+        private readonly configRepo: Repository<MarketConfigEntity>,
         private readonly creditService: CreditService
     ) {}
 
@@ -444,17 +493,20 @@ export class DynamicMarketService implements OnModuleInit {
             if (count === 0) {
                 await this.seedDefaults();
             }
-            // Snapshot current prices for trend
             const resources = await this.resourceRepo.find();
             for (const r of resources) {
                 this.previousPrices.set(r.slug, r.currentPrice);
             }
-            // Start periodic price update
-            this.startPriceUpdateLoop();
+            this.configEntity = await this.getOrCreateConfigEntity();
+            await this.scheduleNextUpdate();
             this.logger.log(`Dynamic Market initialized with ${resources.length} resources.`);
         } catch (err) {
             this.logger.warn(`Dynamic Market init skipped: ${String(err)}`);
         }
+    }
+
+    onModuleDestroy(): void {
+        if (this.updateTimer) clearTimeout(this.updateTimer);
     }
 
     // ─── Public: Market Data ────────────────────────────────────────────────
@@ -658,6 +710,7 @@ export class DynamicMarketService implements OnModuleInit {
             name: dto.name,
             description: dto.description ?? null,
             icon: dto.icon ?? "pi pi-box",
+            imageUrl: dto.imageUrl ?? null,
             groupKey: dto.groupKey,
             basePrice: dto.basePrice,
             minPrice: dto.minPrice,
@@ -734,14 +787,32 @@ export class DynamicMarketService implements OnModuleInit {
     // ─── Admin: Config ──────────────────────────────────────────────────────
 
     getConfig(): MarketConfigDto {
-        return { ...this.config };
+        const e = this.configEntity;
+        return {
+            eventChancePercent: e?.eventChancePercent ?? 20,
+            demandDecayFactor: e?.demandDecayFactor ?? 0.8,
+            maxTradeQuantity: e?.maxTradeQuantity ?? 100,
+            schedule: e?.schedule ?? DEFAULT_SCHEDULE,
+            nextUpdateAt: e?.nextUpdateAt?.toISOString() ?? null
+        };
     }
 
-    updateConfig(partial: Partial<MarketConfigDto>): MarketConfigDto {
-        this.config = { ...this.config, ...partial };
-        // Restart the timer with new interval
-        this.startPriceUpdateLoop();
+    async updateConfig(partial: Partial<Omit<MarketConfigDto, "nextUpdateAt">>): Promise<MarketConfigDto> {
+        const entity = await this.getOrCreateConfigEntity();
+        if (partial.eventChancePercent !== undefined) entity.eventChancePercent = partial.eventChancePercent;
+        if (partial.demandDecayFactor !== undefined) entity.demandDecayFactor = partial.demandDecayFactor;
+        if (partial.maxTradeQuantity !== undefined) entity.maxTradeQuantity = partial.maxTradeQuantity;
+        if (partial.schedule !== undefined) entity.schedule = partial.schedule as MarketSchedule;
+        this.configEntity = await this.configRepo.save(entity);
+        await this.scheduleNextUpdate();
         return this.getConfig();
+    }
+
+    getNextUpdateAt(): { nextUpdateAt: string | null; scheduleType: string } {
+        return {
+            nextUpdateAt: this.configEntity?.nextUpdateAt?.toISOString() ?? null,
+            scheduleType: this.configEntity?.schedule?.type ?? "disabled"
+        };
     }
 
     // ─── Price Calculation Engine ───────────────────────────────────────────
@@ -790,8 +861,8 @@ export class DynamicMarketService implements OnModuleInit {
 
         // Apply demand decay and record price history snapshot
         for (const r of resources) {
-            r.unitsSold = Math.round(r.unitsSold * this.config.demandDecayFactor);
-            r.unitsBought = Math.round(r.unitsBought * this.config.demandDecayFactor);
+            r.unitsSold = Math.round(r.unitsSold * (this.configEntity?.demandDecayFactor ?? 0.8));
+            r.unitsBought = Math.round(r.unitsBought * (this.configEntity?.demandDecayFactor ?? 0.8));
             // Reset tiny values
             if (Math.abs(r.unitsSold) < 1) r.unitsSold = 0;
             if (Math.abs(r.unitsBought) < 1) r.unitsBought = 0;
@@ -811,8 +882,9 @@ export class DynamicMarketService implements OnModuleInit {
     private async executeRandomEvent(): Promise<MarketEventLogDto | null> {
         // Roll chance
         const roll = Math.random() * 100;
-        if (roll > this.config.eventChancePercent) {
-            this.logger.debug(`Event roll ${roll.toFixed(1)} > ${this.config.eventChancePercent}% – no event.`);
+        const eventChance = this.configEntity?.eventChancePercent ?? 20;
+        if (roll > eventChance) {
+            this.logger.debug(`Event roll ${roll.toFixed(1)} > ${eventChance}% – no event.`);
             return null;
         }
 
@@ -880,25 +952,57 @@ export class DynamicMarketService implements OnModuleInit {
 
     // ─── Timer ──────────────────────────────────────────────────────────────
 
-    private startPriceUpdateLoop(): void {
-        if (this.priceUpdateTimer) clearInterval(this.priceUpdateTimer);
-
-        const intervalMs = this.config.priceUpdateIntervalMinutes * 60 * 1000;
-        this.priceUpdateTimer = setInterval(() => {
+    private async scheduleNextUpdate(): Promise<void> {
+        if (this.updateTimer) {
+            clearTimeout(this.updateTimer);
+            this.updateTimer = null;
+        }
+        const entity = await this.getOrCreateConfigEntity();
+        const schedule = entity.schedule ?? DEFAULT_SCHEDULE;
+        const next = computeNextUpdate(schedule);
+        entity.nextUpdateAt = next;
+        this.configEntity = await this.configRepo.save(entity);
+        if (!next) return;
+        const delay = Math.max(1000, next.getTime() - Date.now());
+        this.updateTimer = setTimeout(() => {
             void this.runPriceUpdateCycle();
-        }, intervalMs);
+        }, delay);
     }
 
     private async runPriceUpdateCycle(): Promise<void> {
         try {
             await this.recalculatePrices();
             await this.executeRandomEvent();
+            this.logger.log("Market price update cycle completed.");
         } catch (err) {
             this.logger.error(`Price update cycle failed: ${String(err)}`);
+        } finally {
+            await this.scheduleNextUpdate();
         }
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
+
+    private async getOrCreateConfigEntity(): Promise<MarketConfigEntity> {
+        let entity = await this.configRepo.findOneBy({ id: 1 });
+        if (!entity) {
+            entity = this.configRepo.create({
+                id: 1,
+                eventChancePercent: 20,
+                demandDecayFactor: 0.8,
+                maxTradeQuantity: 100,
+                schedule: { ...DEFAULT_SCHEDULE },
+                nextUpdateAt: null
+            });
+            entity = await this.configRepo.save(entity);
+        }
+        if (!entity.schedule) {
+            entity.schedule = { ...DEFAULT_SCHEDULE };
+            entity = await this.configRepo.save(entity);
+        }
+        this.configEntity = entity;
+        return entity;
+    }
 
     private async seedDefaults(): Promise<void> {
         for (const dto of DEFAULT_RESOURCES) {
@@ -942,12 +1046,17 @@ export class DynamicMarketService implements OnModuleInit {
     }
 
     private async findOrCreateInventory(userId: string, resourceId: string): Promise<UserInventoryEntity> {
-        let inv = await this.inventoryRepo.findOneBy({ userId, resourceId });
-        if (!inv) {
-            inv = this.inventoryRepo.create({ userId, resourceId, quantity: 0 });
-            await this.inventoryRepo.save(inv);
-        }
-        return inv;
+        // INSERT ... ON CONFLICT DO NOTHING avoids a race condition where two concurrent
+        // requests both find no record and both attempt the same INSERT, which would
+        // violate the unique constraint on (user_id, resource_id).
+        await this.inventoryRepo
+            .createQueryBuilder()
+            .insert()
+            .into(UserInventoryEntity)
+            .values({ userId, resourceId, quantity: 0 })
+            .orIgnore()
+            .execute();
+        return this.inventoryRepo.findOneByOrFail({ userId, resourceId });
     }
 
     private clampPrice(resource: MarketResourceEntity, price: number): number {
@@ -958,8 +1067,8 @@ export class DynamicMarketService implements OnModuleInit {
         if (!Number.isInteger(quantity) || quantity <= 0) {
             throw new BadRequestException("Quantity must be a positive integer.");
         }
-        if (quantity > this.config.maxTradeQuantity) {
-            throw new BadRequestException(`Maximum trade quantity is ${this.config.maxTradeQuantity}.`);
+        if (quantity > (this.configEntity?.maxTradeQuantity ?? 100)) {
+            throw new BadRequestException(`Maximum trade quantity is ${this.configEntity?.maxTradeQuantity ?? 100}.`);
         }
     }
 
@@ -972,6 +1081,7 @@ export class DynamicMarketService implements OnModuleInit {
             name: r.name,
             description: r.description,
             icon: r.icon,
+            imageUrl: r.imageUrl,
             groupKey: r.groupKey,
             basePrice: r.basePrice,
             minPrice: r.minPrice,

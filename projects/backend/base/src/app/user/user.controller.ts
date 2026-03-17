@@ -103,6 +103,19 @@ export class UserController {
     // ─── Admin (admin role required) ──────────────────────────────────────────
 
     /**
+     * GET /user/search?q=<query>&limit=<n>
+     * Searches users by username or display name. Requires admin role.
+     */
+    @Roles("admin")
+    @Get("search")
+    searchUsers(
+        @Query("q") q = "",
+        @Query("limit") limit = "10"
+    ): Promise<{ id: string; username: string; displayName: string }[]> {
+        return this.userService.searchUsers(q, Math.min(Math.max(parseInt(limit) || 10, 1), 50));
+    }
+
+    /**
      * GET /user
      * Lists all user profiles. Requires admin role.
      */

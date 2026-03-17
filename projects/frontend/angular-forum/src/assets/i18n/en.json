@@ -1403,6 +1403,7 @@
     "range": "Range",
     "owned": "Owned",
     "trade": "Trade",
+    "nextUpdate": "Next price update",
     "admin": {
       "title": "Dynamic Market Management",
       "resources": "Resources",
@@ -1424,7 +1425,17 @@
       "updateInterval": "Price Update Interval",
       "eventChance": "Event Chance",
       "demandDecay": "Demand Decay Factor",
-      "maxTradeQty": "Max Trade Quantity"
+      "maxTradeQty": "Max Trade Quantity",
+      "nextUpdate": "Next update",
+      "generalSettings": "General Settings",
+      "schedule": "Price Update Schedule",
+      "scheduleType": "Schedule Type",
+      "minutelyInterval": "Every N minutes",
+      "hourlyAtMinute": "At minute of the hour",
+      "hourlyAtMinuteHint": "e.g. 0 = at :00, 30 = at :30",
+      "dailyTimes": "Times of day (HH:MM)",
+      "weeklyDays": "Days of week",
+      "weeklyTime": "Time of day"
     }
   }
 }

@@ -19,6 +19,7 @@ export const DYNAMIC_MARKET_ROUTES = {
     adminUpdateEvent: (id: string) => `/gamification/market/admin/events/${id}`,
     adminDeleteEvent: (id: string) => `/gamification/market/admin/events/${id}`,
     adminTriggerEvent: () => "/gamification/market/admin/trigger-event",
+    scheduleNext: () => "/gamification/market/schedule/next",
     adminConfig: () => "/gamification/market/admin/config",
     adminUpdateConfig: () => "/gamification/market/admin/config"
 } as const;

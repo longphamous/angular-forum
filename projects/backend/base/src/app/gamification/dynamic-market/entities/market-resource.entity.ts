@@ -19,6 +19,10 @@ export class MarketResourceEntity {
     @Column({ type: "varchar", length: 60, default: "pi pi-box" })
     icon!: string;
 
+    /** Optional image URL shown in the market table */
+    @Column({ name: "image_url", type: "varchar", length: 500, nullable: true })
+    imageUrl!: string | null;
+
     /** Category / group key – resources in the same group influence each other */
     @Column({ name: "group_key", type: "varchar", length: 60 })
     groupKey!: string;

@@ -14,8 +14,8 @@ import type { MarketResource } from "../../../core/models/dynamic-market/dynamic
 import { MARKET_GROUP_LABELS } from "../../../core/models/dynamic-market/dynamic-market";
 import { DynamicMarketFacade } from "../../../facade/dynamic-market/dynamic-market-facade";
 
-/** Auto-refresh interval in ms */
-const POLL_INTERVAL = 30_000;
+/** Fallback poll interval ms — fires only if scheduler is disabled */
+const POLL_INTERVAL = 60_000;
 
 @Component({
     selector: "app-dynamic-market-page",
@@ -42,25 +42,61 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
 
     readonly showInventory = signal(false);
     readonly selectedResource = signal<MarketResource | null>(null);
+    readonly countdown = signal<string>("");
+    readonly countdownPercent = signal<number>(100);
 
     buyQuantities: Record<string, number> = {};
     sellQuantities: Record<string, number> = {};
 
     private pollTimer: ReturnType<typeof setInterval> | null = null;
+    private countdownTimer: ReturnType<typeof setInterval> | null = null;
+    private countdownTotalMs = 0;
 
     ngOnInit(): void {
         this.marketFacade.loadOverview();
         this.marketFacade.loadRecentEvents();
         this.marketFacade.loadInventory();
+        this.marketFacade.loadNextUpdate();
 
-        // Auto-refresh prices
+        // Fallback poll
         this.pollTimer = setInterval(() => {
             this.marketFacade.loadOverview();
         }, POLL_INTERVAL);
+
+        // Countdown tick every second
+        this.countdownTimer = setInterval(() => this.tickCountdown(), 1000);
     }
 
     ngOnDestroy(): void {
         if (this.pollTimer) clearInterval(this.pollTimer);
+        if (this.countdownTimer) clearInterval(this.countdownTimer);
+    }
+
+    private tickCountdown(): void {
+        const next = this.marketFacade.nextUpdateAt();
+        if (!next) {
+            this.countdown.set("");
+            this.countdownPercent.set(100);
+            return;
+        }
+        const diff = next.getTime() - Date.now();
+        if (diff <= 0) {
+            this.countdown.set("…");
+            this.countdownPercent.set(0);
+            this.marketFacade.loadOverview();
+            this.marketFacade.loadNextUpdate();
+            return;
+        }
+        if (this.countdownTotalMs === 0) this.countdownTotalMs = diff;
+        const h = Math.floor(diff / 3_600_000);
+        const m = Math.floor((diff % 3_600_000) / 60_000);
+        const s = Math.floor((diff % 60_000) / 1_000);
+        this.countdown.set(
+            h > 0
+                ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+                : `${m}:${String(s).padStart(2, "0")}`
+        );
+        this.countdownPercent.set(Math.round((diff / this.countdownTotalMs) * 100));
     }
 
     toggleInventory(): void {

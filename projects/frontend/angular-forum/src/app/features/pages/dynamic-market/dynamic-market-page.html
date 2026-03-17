@@ -27,6 +27,29 @@
         </div>
     </div>
 
+    <!-- Countdown Timer Bar -->
+    @if (countdown()) {
+    <div
+        class="countdown-bar mb-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 dark:border-indigo-900 dark:bg-indigo-950"
+    >
+        <div class="mb-1 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="pi pi-clock text-indigo-500"></i>
+                <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300"
+                    >{{ t('dynamicMarket.nextUpdate') }}</span
+                >
+            </div>
+            <span class="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ countdown() }}</span>
+        </div>
+        <div class="h-1.5 overflow-hidden rounded-full bg-indigo-200 dark:bg-indigo-800">
+            <div
+                class="h-full rounded-full bg-indigo-500 transition-all duration-1000"
+                [style.width.%]="countdownPercent()"
+            ></div>
+        </div>
+    </div>
+    }
+
     <!-- Recent Events Ticker Bar -->
     @if (marketFacade.recentEvents().length > 0) {
     <div
@@ -171,15 +194,21 @@
                     Vol.
                     <p-sortIcon field="volatility" />
                 </th>
-                <th class="text-center" style="min-width: 200px">{{ t('dynamicMarket.trade') }}</th>
+                <th class="text-center" style="min-width: 290px; width: 290px">{{ t('dynamicMarket.trade') }}</th>
             </tr>
         </ng-template>
         <ng-template let-resource pTemplate="body">
             <tr (click)="selectResource(resource)" [class.selected-row]="selectedResource()?.slug === resource.slug">
-                <!-- Resource Name & Icon -->
-                <td>
+                <!-- Resource Name & Icon/Image -->
+                <td class="resource-name-cell">
                     <div class="flex items-center gap-2">
-                        <i [class]="resource.icon + ' text-lg'" style="width: 24px; text-align: center"></i>
+                        @if (resource.imageUrl) {
+                        <div class="resource-img-wrapper">
+                            <img class="resource-img" [alt]="resource.name" [src]="resource.imageUrl" />
+                        </div>
+                        } @else {
+                        <i [class]="resource.icon + ' text-lg'" style="width: 32px; text-align: center"></i>
+                        }
                         <div>
                             <div class="font-semibold dark:text-white">{{ resource.name }}</div>
                             <div class="text-xs text-gray-400">{{ resource.slug }}</div>
@@ -270,8 +299,8 @@
                 </td>
 
                 <!-- Trade Actions -->
-                <td class="text-center">
-                    <div class="flex items-center justify-center gap-1">
+                <td class="text-center" style="min-width: 290px; width: 290px">
+                    <div class="flex items-center justify-center gap-1" style="flex-wrap: nowrap">
                         @if (resource.canBuy) {
                         <p-inputNumber
                             [(ngModel)]="buyQuantities[resource.slug]"
@@ -295,11 +324,15 @@
                             severity="success"
                             size="small"
                         />
-                        } @if (resource.canSell && getInventoryQty(resource.slug) > 0) {
+                        }
+                        <!-- Always in DOM when canSell so width stays constant; hidden via CSS when user owns none -->
+                        @if (resource.canSell) {
                         <p-button
                             (onClick)="onSell(resource.slug); $event.stopPropagation()"
+                            [disabled]="getInventoryQty(resource.slug) === 0"
                             [loading]="marketFacade.trading()"
                             [rounded]="true"
+                            [style.visibility]="getInventoryQty(resource.slug) > 0 ? 'visible' : 'hidden'"
                             icon="pi pi-arrow-down"
                             pTooltip="{{ t('dynamicMarket.sell') }}"
                             severity="warn"

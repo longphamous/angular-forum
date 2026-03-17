@@ -158,6 +158,16 @@ export class UserService {
         return users.map((u) => toProfile(u));
     }
 
+    async searchUsers(query: string, limit: number): Promise<{ id: string; username: string; displayName: string }[]> {
+        const users = await this.userRepo
+            .createQueryBuilder("u")
+            .where("u.username ILIKE :q OR u.displayName ILIKE :q", { q: `%${query}%` })
+            .orderBy("u.username", "ASC")
+            .take(limit)
+            .getMany();
+        return users.map((u) => ({ id: u.id, username: u.username, displayName: u.displayName }));
+    }
+
     async adminCreateUser(dto: AdminCreateUserDto): Promise<UserProfile> {
         if (await this.userRepo.existsBy({ username: dto.username })) {
             throw new BadRequestException(`Username "${dto.username}" is already taken`);

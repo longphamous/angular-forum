@@ -178,6 +178,21 @@
                 <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="res-icon">Icon</label>
                 <input class="w-full" id="res-icon" [(ngModel)]="editingResource()!.icon" pInputText />
             </div>
+            <div class="md:col-span-2">
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="res-image">Bild-URL</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        class="w-full"
+                        id="res-image"
+                        [(ngModel)]="editingResource()!.imageUrl"
+                        pInputText
+                        placeholder="https://..."
+                    />
+                    @if (editingResource()!.imageUrl) {
+                    <img class="h-10 w-10 rounded object-cover" [src]="editingResource()!.imageUrl!" alt="Vorschau" />
+                    }
+                </div>
+            </div>
             <div class="flex items-end gap-3">
                 <label class="flex items-center gap-2 dark:text-gray-300" for="res-active">
                     <input id="res-active" [(ngModel)]="editingResource()!.isActive" type="checkbox" />
@@ -243,23 +258,29 @@
     @if (activeTab() === 'config') {
     <p-card [header]="t('dynamicMarket.admin.marketConfig')">
         @if (marketFacade.adminConfig(); as config) {
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+        <!-- Next update info -->
+        @if (marketFacade.nextUpdateAt()) {
+        <div
+            class="mb-4 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 dark:border-indigo-900 dark:bg-indigo-950"
+        >
+            <i class="pi pi-clock text-indigo-500"></i>
+            <span class="text-sm text-indigo-700 dark:text-indigo-300">
+                {{ t('dynamicMarket.admin.nextUpdate') }}:
+                <strong>{{ marketFacade.nextUpdateAt() | date:'medium' }}</strong>
+            </span>
+        </div>
+        }
+
+        <!-- General settings -->
+        <h3 class="mb-3 text-sm font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+            {{ t('dynamicMarket.admin.generalSettings') }}
+        </h3>
+        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-interval"
-                    >{{ t('dynamicMarket.admin.updateInterval') }}</label
-                >
-                <p-inputNumber
-                    class="w-full"
-                    id="cfg-interval"
-                    [(ngModel)]="configForm.priceUpdateIntervalMinutes"
-                    [min]="1"
-                    suffix=" min"
-                />
-            </div>
-            <div>
-                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-chance"
-                    >{{ t('dynamicMarket.admin.eventChance') }}</label
-                >
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-chance">
+                    {{ t('dynamicMarket.admin.eventChance') }}
+                </label>
                 <p-inputNumber
                     class="w-full"
                     id="cfg-chance"
@@ -270,9 +291,9 @@
                 />
             </div>
             <div>
-                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-decay"
-                    >{{ t('dynamicMarket.admin.demandDecay') }}</label
-                >
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-decay">
+                    {{ t('dynamicMarket.admin.demandDecay') }}
+                </label>
                 <p-inputNumber
                     class="w-full"
                     id="cfg-decay"
@@ -283,12 +304,130 @@
                 />
             </div>
             <div>
-                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-max-qty"
-                    >{{ t('dynamicMarket.admin.maxTradeQty') }}</label
-                >
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-max-qty">
+                    {{ t('dynamicMarket.admin.maxTradeQty') }}
+                </label>
                 <p-inputNumber class="w-full" id="cfg-max-qty" [(ngModel)]="configForm.maxTradeQuantity" [min]="1" />
             </div>
         </div>
+
+        <!-- Schedule settings -->
+        <h3 class="mb-3 text-sm font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+            {{ t('dynamicMarket.admin.schedule') }}
+        </h3>
+        <div class="mb-4">
+            <p class="mb-2 block text-sm font-medium dark:text-gray-300">{{ t('dynamicMarket.admin.scheduleType') }}</p>
+            <div class="flex flex-wrap gap-2">
+                @for (opt of scheduleTypeOptions; track opt.value) {
+                <p-button
+                    (onClick)="configForm.schedule.type = opt.value"
+                    [label]="opt.label"
+                    [outlined]="configForm.schedule.type !== opt.value"
+                    size="small"
+                />
+                }
+            </div>
+        </div>
+
+        <!-- Minutely sub-fields -->
+        @if (configForm.schedule.type === 'minutely') {
+        <div class="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <p class="mb-1 text-sm font-medium dark:text-gray-300">{{ t('dynamicMarket.admin.minutelyInterval') }}</p>
+            <div class="flex flex-wrap gap-2">
+                @for (min of minutelyOptions; track min) {
+                <p-button
+                    (onClick)="configForm.schedule.minutelyInterval = min"
+                    [label]="min + ' min'"
+                    [outlined]="configForm.schedule.minutelyInterval !== min"
+                    severity="secondary"
+                    size="small"
+                />
+                }
+            </div>
+        </div>
+        }
+
+        <!-- Hourly sub-fields -->
+        @if (configForm.schedule.type === 'hourly') {
+        <div class="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-hourly-min">
+                {{ t('dynamicMarket.admin.hourlyAtMinute') }}
+            </label>
+            <p-inputNumber
+                id="cfg-hourly-min"
+                [(ngModel)]="configForm.schedule.hourlyAtMinute"
+                [max]="59"
+                [min]="0"
+                style="width: 120px"
+                suffix=" min"
+            />
+            <p class="mt-1 text-xs text-gray-400">{{ t('dynamicMarket.admin.hourlyAtMinuteHint') }}</p>
+        </div>
+        }
+
+        <!-- Daily sub-fields -->
+        @if (configForm.schedule.type === 'daily') {
+        <div class="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <p class="mb-2 text-sm font-medium dark:text-gray-300">{{ t('dynamicMarket.admin.dailyTimes') }}</p>
+            <div class="flex flex-wrap items-center gap-2">
+                @for (time of configForm.schedule.dailyTimes; track $index) {
+                <div class="flex items-center gap-1">
+                    <input
+                        class="rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                        (ngModelChange)="configForm.schedule.dailyTimes[$index] = $event"
+                        [ngModel]="configForm.schedule.dailyTimes[$index]"
+                        type="time"
+                    />
+                    @if (configForm.schedule.dailyTimes.length > 1) {
+                    <p-button
+                        (onClick)="removeDailyTime($index)"
+                        [rounded]="true"
+                        [text]="true"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                    />
+                    }
+                </div>
+                }
+                <p-button
+                    (onClick)="addDailyTime()"
+                    [outlined]="true"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+        </div>
+        }
+
+        <!-- Weekly sub-fields -->
+        @if (configForm.schedule.type === 'weekly') {
+        <div class="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <p class="mb-2 text-sm font-medium dark:text-gray-300">{{ t('dynamicMarket.admin.weeklyDays') }}</p>
+            <div class="mb-3 flex flex-wrap gap-2">
+                @for (day of weekdayOptions; track day.value) {
+                <p-button
+                    (onClick)="toggleWeekday(day.value)"
+                    [label]="day.label"
+                    [outlined]="!configForm.schedule.weeklyDays.includes(day.value)"
+                    severity="secondary"
+                    size="small"
+                />
+                }
+            </div>
+            <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cfg-weekly-time"
+                >{{ t('dynamicMarket.admin.weeklyTime') }}</label
+            >
+            <input
+                class="rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                id="cfg-weekly-time"
+                [(ngModel)]="configForm.schedule.weeklyTime"
+                type="time"
+            />
+        </div>
+        }
+
         <div class="mt-4">
             <p-button (onClick)="onSaveConfig()" [label]="t('common.save')" icon="pi pi-check" />
         </div>

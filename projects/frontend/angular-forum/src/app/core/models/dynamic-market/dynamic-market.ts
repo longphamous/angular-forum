@@ -4,6 +4,7 @@ export interface MarketResource {
     name: string;
     description: string | null;
     icon: string;
+    imageUrl: string | null;
     groupKey: string;
     basePrice: number;
     minPrice: number;
@@ -64,11 +65,32 @@ export interface MarketTradeResult {
     newInventoryQuantity: number;
 }
 
+export type ScheduleType = "disabled" | "minutely" | "hourly" | "daily" | "weekly";
+
+export interface MarketSchedule {
+    type: ScheduleType;
+    minutelyInterval: number;
+    hourlyAtMinute: number;
+    dailyTimes: string[];
+    weeklyDays: number[];
+    weeklyTime: string;
+}
+
+export const DEFAULT_SCHEDULE: MarketSchedule = {
+    type: "minutely",
+    minutelyInterval: 60,
+    hourlyAtMinute: 0,
+    dailyTimes: ["08:00"],
+    weeklyDays: [1],
+    weeklyTime: "08:00"
+};
+
 export interface MarketConfig {
-    priceUpdateIntervalMinutes: number;
     eventChancePercent: number;
     demandDecayFactor: number;
     maxTradeQuantity: number;
+    schedule: MarketSchedule;
+    nextUpdateAt: string | null;
 }
 
 export type MarketModifierType = "set_max" | "set_min" | "multiply" | "add" | "set";

@@ -8,6 +8,7 @@ import {
     MarketEventLog,
     MarketGroup,
     MarketResource,
+    MarketSchedule,
     MarketTradeResult,
     UserInventoryItem
 } from "../../core/models/dynamic-market/dynamic-market";
@@ -109,6 +110,24 @@ export class DynamicMarketFacade {
 
     // ─── Admin methods ──────────────────────────────────────────────────────
 
+    readonly nextUpdateAt = signal<Date | null>(null);
+    readonly scheduleType = signal<string>("disabled");
+
+    loadNextUpdate(): void {
+        this.http
+            .get<{
+                nextUpdateAt: string | null;
+                scheduleType: string;
+            }>(`${this.base}${DYNAMIC_MARKET_ROUTES.scheduleNext()}`)
+            .subscribe({
+                next: (data) => {
+                    this.nextUpdateAt.set(data.nextUpdateAt ? new Date(data.nextUpdateAt) : null);
+                    this.scheduleType.set(data.scheduleType);
+                },
+                error: () => undefined
+            });
+    }
+
     readonly adminResources = signal<MarketResource[]>([]);
     readonly adminConfig = signal<MarketConfig | null>(null);
 
@@ -173,9 +192,13 @@ export class DynamicMarketFacade {
         });
     }
 
-    updateConfig(config: Partial<MarketConfig>): void {
+    updateConfig(config: Partial<Omit<MarketConfig, "nextUpdateAt">> & { schedule?: MarketSchedule }): void {
         this.http.put<MarketConfig>(`${this.base}${DYNAMIC_MARKET_ROUTES.adminUpdateConfig()}`, config).subscribe({
-            next: (c) => this.adminConfig.set(c),
+            next: (c) => {
+                this.adminConfig.set(c);
+                this.nextUpdateAt.set(c.nextUpdateAt ? new Date(c.nextUpdateAt) : null);
+                this.scheduleType.set(c.schedule?.type ?? "disabled");
+            },
             error: () => undefined
         });
     }

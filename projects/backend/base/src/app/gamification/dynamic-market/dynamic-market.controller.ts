@@ -38,6 +38,12 @@ export class DynamicMarketController {
         return this.marketService.getPriceHistory(slug, limit ? parseInt(limit, 10) : 20);
     }
 
+    @Public()
+    @Get("schedule/next")
+    getNextUpdate() {
+        return this.marketService.getNextUpdateAt();
+    }
+
     // ─── Authenticated: Trading ─────────────────────────────────────────────
 
     @Post("buy")
@@ -151,10 +157,10 @@ export class DynamicMarketController {
     adminUpdateConfig(
         @Body()
         dto: Partial<{
-            priceUpdateIntervalMinutes: number;
             eventChancePercent: number;
             demandDecayFactor: number;
             maxTradeQuantity: number;
+            schedule: import("./entities/market-config.entity").MarketSchedule;
         }>
     ) {
         return this.marketService.updateConfig(dto);

@@ -1403,6 +1403,7 @@
     "range": "Bereich",
     "owned": "Besitz",
     "trade": "Handeln",
+    "nextUpdate": "Nächste Preisaktualisierung",
     "admin": {
       "title": "Dynamischer Markt – Verwaltung",
       "resources": "Ressourcen",
@@ -1424,7 +1425,17 @@
       "updateInterval": "Preis-Update-Intervall",
       "eventChance": "Event-Wahrscheinlichkeit",
       "demandDecay": "Nachfrage-Abklingfaktor",
-      "maxTradeQty": "Max. Handelsmenge"
+      "maxTradeQty": "Max. Handelsmenge",
+      "nextUpdate": "Nächste Aktualisierung",
+      "generalSettings": "Allgemeine Einstellungen",
+      "schedule": "Preis-Aktualisierungs-Zeitplan",
+      "scheduleType": "Zeitplan-Typ",
+      "minutelyInterval": "Alle N Minuten",
+      "hourlyAtMinute": "Zur Minute der Stunde",
+      "hourlyAtMinuteHint": "z.B. 0 = zur vollen Stunde, 30 = zur halben Stunde",
+      "dailyTimes": "Tageszeiten (HH:MM)",
+      "weeklyDays": "Wochentage",
+      "weeklyTime": "Uhrzeit"
     }
   }
 }

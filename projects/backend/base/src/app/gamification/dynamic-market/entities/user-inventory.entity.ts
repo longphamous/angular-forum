@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
-@Entity("user_inventory")
+@Entity("market_user_inventory")
 @Unique(["userId", "resourceId"])
 export class UserInventoryEntity {
     @PrimaryGeneratedColumn("uuid")
