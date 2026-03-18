@@ -1,0 +1,36 @@
+export class CreateAnimeDto {
+    title?: string;
+    titleEnglish?: string;
+    titleJapanese?: string;
+    titleSynonym?: string;
+    picture?: string;
+    synopsis?: string;
+    background?: string;
+    type?: string;
+    status?: string;
+    nsfw?: boolean;
+    episode?: number;
+    episodeDuration?: number;
+    season?: string;
+    seasonYear?: number;
+    broadcastDay?: string;
+    broadcastTime?: string;
+    source?: string;
+    rating?: string;
+    mean?: number;
+    rank?: number;
+    popularity?: number;
+    member?: number;
+    voter?: number;
+    startDay?: number;
+    startMonth?: number;
+    startYear?: number;
+    endDay?: number;
+    endMonth?: number;
+    endYear?: number;
+    userWatching?: number;
+    userCompleted?: number;
+    userOnHold?: number;
+    userDropped?: number;
+    userPlanned?: number;
+}

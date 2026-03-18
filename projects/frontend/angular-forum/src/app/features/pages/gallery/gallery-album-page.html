@@ -1,0 +1,395 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <div class="mx-auto max-w-7xl">
+        @if (loading()) {
+        <div>
+            <p-skeleton height="2rem" styleClass="mb-2" width="200px" />
+            <p-skeleton height="1rem" styleClass="mb-6" width="350px" />
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                <p-skeleton height="180px" />
+                }
+            </div>
+        </div>
+        } @if (!loading() && album()) {
+        <!-- Album header -->
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <div class="mb-1 flex items-center gap-2">
+                    <p-button (onClick)="goBack()" [text]="true" icon="pi pi-arrow-left" size="small" />
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ album()!.title }}</h1>
+                </div>
+                @if (album()!.description) {
+                <p class="text-surface-500 mt-1 ml-10 text-sm">{{ album()!.description }}</p>
+                }
+                <div class="mt-2 ml-10 flex flex-wrap items-center gap-3">
+                    @if (album()!.category) {
+                    <span class="bg-surface-100 dark:bg-surface-700 rounded-full px-3 py-1 text-xs"
+                        >{{ album()!.category }}</span
+                    >
+                    } @for (tag of album()!.tags; track tag) {
+                    <span class="text-primary text-xs">#{{ tag }}</span>
+                    }
+                </div>
+            </div>
+            <div class="ml-10 flex items-center gap-2 sm:ml-0">
+                @if (album()!.media.length > 1) {
+                <p-button
+                    (onClick)="openSlideshow(0)"
+                    [label]="t('gallery.slideshow')"
+                    [outlined]="true"
+                    icon="pi pi-play"
+                    severity="secondary"
+                />
+                } @if (album()!.isOwner || isAdmin()) {
+                <p-button (onClick)="openAddMediaDialog()" [label]="t('gallery.addMedia')" icon="pi pi-plus" />
+                }
+            </div>
+        </div>
+
+        <!-- Media grid -->
+        @if (album()!.media.length === 0) {
+        <div class="text-surface-400 flex flex-col items-center justify-center py-20">
+            <i class="pi pi-images mb-4 text-6xl"></i>
+            <p class="text-lg">{{ t("gallery.noMedia") }}</p>
+            @if (album()!.isOwner || isAdmin()) {
+            <p-button
+                (onClick)="openAddMediaDialog()"
+                [label]="t('gallery.addMedia')"
+                icon="pi pi-plus"
+                styleClass="mt-4"
+            />
+            }
+        </div>
+        } @if (album()!.media.length > 0) {
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            @for (media of album()!.media; track media.id; let i = $index) {
+            <div
+                class="group bg-surface-100 dark:bg-surface-700 relative aspect-square cursor-pointer overflow-hidden rounded-lg"
+                (click)="openMedia(media)"
+                (keydown.enter)="openMedia(media)"
+                role="button"
+                tabindex="0"
+            >
+                <!-- Image -->
+                @if (media.type === 'image') {
+                <img
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    [alt]="media.title ?? ''"
+                    [src]="media.url"
+                />
+                }
+                <!-- Video thumbnail -->
+                @if (media.type === 'video') {
+                <div class="bg-surface-800 flex h-full items-center justify-center">
+                    <i class="pi pi-play-circle text-5xl text-white"></i>
+                </div>
+                }
+                <!-- YouTube thumbnail -->
+                @if (media.type === 'youtube' && media.youtubeId) {
+                <img
+                    class="h-full w-full object-cover"
+                    [alt]="media.title ?? ''"
+                    [src]="'https://img.youtube.com/vi/' + media.youtubeId + '/hqdefault.jpg'"
+                />
+                <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <i class="pi pi-youtube text-4xl text-red-500"></i>
+                </div>
+                }
+
+                <!-- Overlay on hover -->
+                <div
+                    class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/40 p-2 opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                    @if (media.title) {
+                    <p class="m-0 line-clamp-2 text-center text-xs font-semibold text-white">{{ media.title }}</p>
+                    }
+                    <div class="flex items-center gap-3 text-xs text-white">
+                        @if (album()!.allowComments) {
+                        <span><i class="pi pi-comment mr-1"></i>{{ media.commentCount }}</span>
+                        } @if (album()!.allowRatings && media.averageRating > 0) {
+                        <span><i class="pi pi-star-fill mr-1 text-yellow-400"></i>{{ media.averageRating }}</span>
+                        } @if (media.latitude && media.longitude) {
+                        <span><i class="pi pi-map-marker text-red-400"></i></span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Delete button -->
+                @if (media.isOwner || isAdmin()) {
+                <button
+                    class="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-none bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                    (click)="deleteMedia(media.id, $event)"
+                    type="button"
+                >
+                    <i class="pi pi-trash" style="font-size: 10px"></i>
+                </button>
+                }
+            </div>
+            }
+        </div>
+        } }
+    </div>
+
+    <!-- Slideshow (Galleria) -->
+    <p-galleria
+        (activeIndexChange)="slideshowIndex.set($event)"
+        (visibleChange)="slideshowVisible.set($event)"
+        [activeIndex]="slideshowIndex()"
+        [autoPlay]="false"
+        [circular]="true"
+        [fullScreen]="true"
+        [numVisible]="5"
+        [showItemNavigators]="true"
+        [showThumbnails]="true"
+        [value]="galleriaImages()"
+        [visible]="slideshowVisible()"
+    >
+        <ng-template let-item pTemplate="item">
+            <img class="max-h-screen max-w-full object-contain" [alt]="item.alt" [src]="item.itemImageSrc" />
+        </ng-template>
+        <ng-template let-item pTemplate="thumbnail">
+            <img class="h-16 w-20 object-cover" [alt]="item.alt" [src]="item.thumbnailImageSrc" />
+        </ng-template>
+    </p-galleria>
+
+    <!-- Media viewer dialog -->
+    <p-dialog
+        (visibleChange)="!$event && closeViewer()"
+        [closable]="true"
+        [draggable]="false"
+        [modal]="true"
+        [style]="{ width: '900px', maxWidth: '96vw' }"
+        [visible]="selectedMedia() !== null"
+    >
+        @if (selectedMedia(); as media) {
+        <div class="flex flex-col gap-4 lg:flex-row">
+            <!-- Media display -->
+            <div class="min-w-0 flex-1">
+                @if (media.type === 'image') {
+                <img
+                    class="max-h-[60vh] w-full rounded-lg object-contain"
+                    [alt]="media.title ?? ''"
+                    [src]="media.url"
+                />
+                } @if (media.type === 'youtube' && media.youtubeId) {
+                <div class="relative w-full" style="padding-top: 56.25%">
+                    <iframe
+                        class="absolute inset-0 h-full w-full rounded-lg"
+                        [src]="youtubeEmbedUrl(media.youtubeId)"
+                        allowfullscreen
+                        frameborder="0"
+                    ></iframe>
+                </div>
+                } @if (media.type === 'video') {
+                <video class="max-h-[60vh] w-full rounded-lg" [src]="media.url" controls></video>
+                }
+
+                <!-- Media info -->
+                @if (media.title) {
+                <h3 class="text-surface-900 dark:text-surface-0 mt-3 mb-1 text-lg font-semibold">{{ media.title }}</h3>
+                } @if (media.description) {
+                <p class="text-surface-500 mb-3 text-sm">{{ media.description }}</p>
+                }
+
+                <!-- Metadata -->
+                <div class="text-surface-400 mt-2 flex flex-wrap gap-4 text-xs">
+                    @if (media.width && media.height) {
+                    <span><i class="pi pi-expand mr-1"></i>{{ media.width }}×{{ media.height }}</span>
+                    } @if (media.fileSize) {
+                    <span><i class="pi pi-file mr-1"></i>{{ formatFileSize(media.fileSize) }}</span>
+                    } @if (media.takenAt) {
+                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(media.takenAt) }}</span>
+                    } @if (media.latitude && media.longitude) {
+                    <button
+                        class="text-primary flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-xs hover:underline"
+                        (click)="openMapsLink(media.latitude!, media.longitude!)"
+                        type="button"
+                    >
+                        <i class="pi pi-map-marker"></i>
+                        {{ t("gallery.viewOnMap") }}
+                    </button>
+                    }
+                </div>
+
+                <!-- Rating -->
+                @if (album()?.allowRatings) {
+                <div class="mt-4 flex items-center gap-3">
+                    <span class="text-surface-500 text-sm">{{ t("gallery.rate") }}</span>
+                    <p-rating (ngModelChange)="rateMedia($event)" [ngModel]="media.userRating ?? 0" [stars]="5" />
+                    @if (media.averageRating > 0) {
+                    <span class="text-surface-400 text-sm"> Ø {{ media.averageRating }} </span>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Comments sidebar -->
+            @if (album()?.allowComments) {
+            <div class="flex flex-col gap-3 lg:w-72">
+                <h4 class="text-surface-900 dark:text-surface-0 m-0 text-sm font-semibold">
+                    {{ t("gallery.comments") }} ({{ comments().length }})
+                </h4>
+
+                <div class="flex max-h-72 flex-1 flex-col gap-3 overflow-y-auto">
+                    @if (commentsLoading()) { @for (i of [1,2,3]; track i) {
+                    <div class="flex gap-2">
+                        <p-skeleton shape="circle" size="2rem" />
+                        <div class="flex-1">
+                            <p-skeleton height="0.75rem" styleClass="mb-1" width="60%" />
+                            <p-skeleton height="0.65rem" width="90%" />
+                        </div>
+                    </div>
+                    } } @if (!commentsLoading() && comments().length === 0) {
+                    <p class="text-surface-400 py-4 text-center text-sm">{{ t("gallery.noComments") }}</p>
+                    } @for (comment of comments(); track comment.id) {
+                    <div class="group flex gap-2">
+                        <div
+                            class="bg-primary flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                        >
+                            {{ comment.authorName.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-surface-700 dark:text-surface-300 text-xs font-semibold"
+                                    >{{ comment.authorName }}</span
+                                >
+                                @if (comment.authorId === currentUserId() || isAdmin()) {
+                                <button
+                                    class="text-surface-400 cursor-pointer border-none bg-transparent p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500"
+                                    (click)="deleteComment(comment.id)"
+                                    type="button"
+                                >
+                                    <i class="pi pi-times text-xs"></i>
+                                </button>
+                                }
+                            </div>
+                            <p class="text-surface-600 dark:text-surface-300 m-0 mt-0.5 text-xs">
+                                {{ comment.content }}
+                            </p>
+                            <p class="text-surface-400 m-0 mt-0.5 text-xs">{{ formatDate(comment.createdAt) }}</p>
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Add comment -->
+                <div class="border-surface-200 dark:border-surface-700 flex flex-col gap-2 border-t pt-3">
+                    <textarea
+                        class="w-full text-sm"
+                        (ngModelChange)="newComment.set($event)"
+                        [ngModel]="newComment()"
+                        [placeholder]="t('gallery.commentPlaceholder')"
+                        pTextarea
+                        rows="2"
+                    ></textarea>
+                    <p-button
+                        (onClick)="submitComment()"
+                        [disabled]="!newComment().trim()"
+                        [label]="t('gallery.postComment')"
+                        [loading]="submittingComment()"
+                        icon="pi pi-send"
+                        size="small"
+                    />
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </p-dialog>
+
+    <!-- Add Media dialog -->
+    <p-dialog
+        (visibleChange)="addMediaDialogVisible.set($event)"
+        [draggable]="false"
+        [header]="t('gallery.addMedia')"
+        [modal]="true"
+        [style]="{ width: '500px' }"
+        [visible]="addMediaDialogVisible()"
+    >
+        <div class="flex flex-col gap-4 pt-2">
+            <!-- Type selection -->
+            <div class="flex gap-2">
+                @for (opt of mediaTypeOptions; track opt.value) {
+                <p-button
+                    (onClick)="onMediaTypeChange(opt.value)"
+                    [label]="t(opt.label)"
+                    [outlined]="newMediaType() !== opt.value"
+                    size="small"
+                />
+                }
+            </div>
+
+            <!-- URL / YouTube ID -->
+            @if (newMediaType() === 'youtube') {
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="new-media-youtube-id">{{ t("gallery.youtubeId") }} *</label>
+                <input
+                    id="new-media-youtube-id"
+                    (ngModelChange)="newMediaYoutubeId.set($event)"
+                    [ngModel]="newMediaYoutubeId()"
+                    pInputText
+                    placeholder="dQw4w9WgXcQ"
+                    type="text"
+                />
+            </div>
+            } @else {
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="new-media-url">{{ t("gallery.mediaUrl") }} *</label>
+                <input
+                    id="new-media-url"
+                    (ngModelChange)="newMediaUrl.set($event)"
+                    [ngModel]="newMediaUrl()"
+                    [placeholder]="t('gallery.mediaUrlPlaceholder')"
+                    pInputText
+                    type="text"
+                />
+            </div>
+            }
+
+            <!-- Title -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="new-media-title">{{ t("gallery.mediaTitle") }}</label>
+                <input
+                    id="new-media-title"
+                    (ngModelChange)="newMediaTitle.set($event)"
+                    [ngModel]="newMediaTitle()"
+                    [placeholder]="t('gallery.mediaTitlePlaceholder')"
+                    pInputText
+                    type="text"
+                />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="new-media-description">{{ t("common.description") }}</label>
+                <textarea
+                    id="new-media-description"
+                    (ngModelChange)="newMediaDescription.set($event)"
+                    [ngModel]="newMediaDescription()"
+                    [placeholder]="t('gallery.mediaDescriptionPlaceholder')"
+                    pTextarea
+                    rows="2"
+                ></textarea>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+                <p-button
+                    (onClick)="addMediaDialogVisible.set(false)"
+                    [label]="t('common.cancel')"
+                    [outlined]="true"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="addMedia()"
+                    [label]="t('gallery.add')"
+                    [loading]="savingMedia()"
+                    icon="pi pi-check"
+                />
+            </div>
+        </ng-template>
+    </p-dialog>
+</ng-container>

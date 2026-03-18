@@ -1,0 +1,373 @@
+<div class="mx-auto max-w-5xl" *transloco="let t">
+    <!-- Back -->
+    <div class="mb-4">
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+    </div>
+
+    @if (facade.detailLoading()) {
+    <!-- Skeleton -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="md:col-span-1">
+            <p-skeleton borderRadius="8px" height="22rem" width="100%" />
+            <p-skeleton class="mt-4" height="3rem" />
+        </div>
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <p-skeleton height="2.5rem" width="70%" />
+            <p-skeleton height="1.5rem" width="40%" />
+            <p-skeleton height="8rem" />
+            <div class="grid grid-cols-2 gap-3">
+                @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+                <p-skeleton height="3rem" />
+                }
+            </div>
+        </div>
+    </div>
+    } @else if (anime()) {
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column: cover + list panel -->
+        <div class="flex flex-col gap-4 md:col-span-1">
+            @if (anime()!.picture) {
+            <img
+                class="w-full rounded-lg object-cover shadow-md"
+                [alt]="anime()!.title"
+                [src]="anime()!.picture"
+                style="aspect-ratio: 2/3"
+            />
+            } @else {
+            <div
+                class="bg-surface-100 dark:bg-surface-700 flex w-full items-center justify-center rounded-lg"
+                style="aspect-ratio: 2/3"
+            >
+                <i class="pi pi-image text-surface-300 text-6xl"></i>
+            </div>
+            }
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-2 text-center text-sm">
+                @if (anime()!.rank) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.rank') }}</div>
+                    <div class="font-bold">#{{ anime()!.rank }}</div>
+                </div>
+                } @if (anime()!.popularity) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.popularity') }}</div>
+                    <div class="font-bold">#{{ anime()!.popularity }}</div>
+                </div>
+                } @if (anime()!.member) {
+                <div class="bg-surface-50 dark:bg-surface-800 col-span-2 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.detail.members') }}</div>
+                    <div class="font-bold">{{ anime()!.member!.toLocaleString() }}</div>
+                </div>
+                }
+            </div>
+
+            <!-- Add to list panel -->
+            <p-panel
+                [collapsed]="!listEntry()"
+                [header]="listEntry() ? t('anime.detail.myListActive') : t('anime.detail.addToList')"
+                [toggleable]="true"
+            >
+                <form class="flex flex-col gap-3" (ngSubmit)="saveEntry()" [formGroup]="listForm">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-surface-500 text-xs font-medium" for="listStatus">
+                            {{ t('anime.detail.statusLabel') }}
+                        </label>
+                        <p-select
+                            [options]="statusOptions"
+                            [placeholder]="t('anime.detail.statusPlaceholder')"
+                            formControlName="status"
+                            inputId="listStatus"
+                            optionLabel="label"
+                            optionValue="value"
+                            styleClass="w-full"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-surface-500 text-xs font-medium" for="listScore">
+                            {{ t('anime.detail.scoreLabel') }}
+                        </label>
+                        <p-rating
+                            [stars]="10"
+                            formControlName="score"
+                            inputId="listScore"
+                            styleClass="text-yellow-400"
+                        />
+                        @if (listForm.value.score) {
+                        <span class="text-surface-400 text-xs"> {{ listForm.value.score }}/10 </span>
+                        }
+                    </div>
+                    @if (anime()!.episode && anime()!.episode! > 1) {
+                    <div class="flex flex-col gap-1">
+                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes">
+                            {{ t('anime.detail.episodesLabel') }}
+                        </label>
+                        <p-inputnumber
+                            [max]="anime()!.episode ?? 9999"
+                            [min]="0"
+                            [useGrouping]="false"
+                            formControlName="episodesWatched"
+                            inputId="listEpisodes"
+                            styleClass="w-full"
+                        />
+                    </div>
+                    }
+                    <div class="flex flex-col gap-1">
+                        <label class="text-surface-500 text-xs font-medium" for="listReview">
+                            {{ t('anime.detail.reviewLabel') }}
+                            <span class="font-normal">{{ t('anime.detail.reviewOptional') }}</span>
+                        </label>
+                        <textarea
+                            class="w-full text-sm"
+                            id="listReview"
+                            [autoResize]="true"
+                            [placeholder]="t('anime.detail.reviewPlaceholder')"
+                            formControlName="review"
+                            pTextarea
+                            rows="3"
+                        ></textarea>
+                    </div>
+
+                    @if (saveSuccess()) {
+                    <p-message class="w-full" severity="success">{{ t('anime.detail.saved') }}</p-message>
+                    } @if (saveError()) {
+                    <p-message class="w-full" severity="error"> {{ saveError() }} </p-message>
+                    }
+
+                    <div class="flex gap-2">
+                        <p-button
+                            class="flex-1"
+                            [disabled]="listForm.invalid"
+                            [icon]="listEntry() ? 'pi pi-check' : 'pi pi-plus'"
+                            [label]="listEntry() ? t('anime.detail.update') : t('anime.detail.add')"
+                            [loading]="saving()"
+                            type="submit"
+                        />
+                        @if (listEntry()) {
+                        <p-button
+                            (onClick)="removeEntry()"
+                            [loading]="removing()"
+                            [outlined]="true"
+                            [pTooltip]="t('anime.detail.removeFromList')"
+                            icon="pi pi-trash"
+                            severity="danger"
+                        />
+                        }
+                    </div>
+                </form>
+            </p-panel>
+        </div>
+
+        <!-- Right column: info -->
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <!-- Title + score -->
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl leading-tight font-bold">
+                    {{ anime()!.titleEnglish || anime()!.title }}
+                </h1>
+                @if ( anime()!.titleEnglish && anime()!.title && anime()!.title !== anime()!.titleEnglish ) {
+                <p class="text-surface-500 mt-1 text-sm">{{ anime()!.title }}</p>
+                } @if (anime()!.titleJapanese) {
+                <p class="text-surface-400 text-sm">{{ anime()!.titleJapanese }}</p>
+                }
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    @if (anime()!.mean) {
+                    <div class="flex items-center gap-1.5 rounded-full bg-yellow-50 px-3 py-1 dark:bg-yellow-400/10">
+                        <i class="pi pi-star-fill text-sm text-yellow-400"></i>
+                        <span class="text-lg font-bold" [class]="scoreClass()"> {{ anime()!.mean!.toFixed(2) }} </span>
+                        @if (anime()!.voter) {
+                        <span class="text-surface-400 text-xs"> ({{ anime()!.voter!.toLocaleString() }}) </span>
+                        }
+                    </div>
+                    } @if (anime()!.type) {
+                    <p-tag [value]="anime()!.type!" severity="info" styleClass="text-xs" />
+                    } @if (anime()!.status) {
+                    <p-tag [severity]="statusTagSeverity()" [value]="anime()!.status!" styleClass="text-xs" />
+                    } @if (listEntry()) {
+                    <p-tag [severity]="listStatusSeverity()" [value]="listStatusLabel()" styleClass="text-xs" />
+                    }
+                </div>
+                @if (anime()!.genres?.length) {
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                    @for (genre of anime()!.genres!; track genre) {
+                    <span
+                        class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        >{{ genre }}</span
+                    >
+                    }
+                </div>
+                } @if (anime()!.studios?.length) {
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                    @for (studio of anime()!.studios!; track studio.id) {
+                    <span
+                        class="border-surface-300 dark:border-surface-600 text-surface-600 dark:text-surface-300 rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                        >{{ studio.name }}</span
+                    >
+                    }
+                </div>
+                }
+            </div>
+
+            <p-divider styleClass="my-0" />
+
+            <!-- Synopsis -->
+            @if (anime()!.synopsis) {
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-2 text-sm font-semibold tracking-wide uppercase">
+                    {{ t('anime.detail.synopsis') }}
+                </h3>
+                <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed">
+                    {{ showFullSynopsis() ? anime()!.synopsis : truncatedSynopsis() }} @if (anime()!.synopsis!.length >
+                    400) {
+                    <button
+                        class="text-primary ml-1 cursor-pointer border-none bg-transparent text-sm font-medium"
+                        (click)="showFullSynopsis.set(!showFullSynopsis())"
+                    >
+                        {{ showFullSynopsis() ? t('anime.detail.showLess') : t('anime.detail.showMore') }}
+                    </button>
+                    }
+                </p>
+            </div>
+            }
+
+            <!-- Info grid -->
+            <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+                @if (anime()!.episode) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.episodes') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.episode }}</div>
+                </div>
+                } @if (anime()!.episodeDuration) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.duration') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">
+                        {{ anime()!.episodeDuration }} Min.
+                    </div>
+                </div>
+                } @if (anime()!.source) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.source') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.source }}</div>
+                </div>
+                } @if (anime()!.rating) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.rating') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.rating }}</div>
+                </div>
+                } @if (anime()!.season || anime()!.seasonYear) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.season') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium capitalize">
+                        {{ anime()!.season }} {{ anime()!.seasonYear }}
+                    </div>
+                </div>
+                } @if (anime()!.startYear) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.start') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">
+                        {{ formatDate( anime()!.startYear, anime()!.startMonth, anime()!.startDay ) }}
+                    </div>
+                </div>
+                } @if (anime()!.endYear) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.end') }}</div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">
+                        {{ formatDate( anime()!.endYear, anime()!.endMonth, anime()!.endDay ) }}
+                    </div>
+                </div>
+                } @if (anime()!.broadcastDay) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.detail.info.broadcast') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">
+                        {{ anime()!.broadcastDay }} {{ anime()!.broadcastTime }}
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Related Anime -->
+            @if (anime()!.relatedAnime?.length) {
+            <p-divider styleClass="my-0" />
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-semibold tracking-wide uppercase">
+                    {{ t('anime.detail.relatedAnime') }}
+                </h3>
+                <div class="flex flex-col gap-2">
+                    @for (related of anime()!.relatedAnime!; track related.animeId) {
+                    <a
+                        class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
+                        [routerLink]="['/anime', related.animeId]"
+                    >
+                        <div class="group relative h-12 w-8 flex-shrink-0">
+                            @if (related.picture) {
+                            <img
+                                class="h-12 w-8 rounded object-cover"
+                                [alt]="related.titleEnglish || related.title"
+                                [src]="related.picture"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                            >
+                                <img
+                                    class="w-full rounded-lg object-cover shadow-xl"
+                                    [alt]="related.titleEnglish || related.title"
+                                    [src]="related.picture"
+                                    style="aspect-ratio: 2/3"
+                                />
+                            </div>
+                            } @else {
+                            <div
+                                class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                            >
+                                <i class="pi pi-image text-surface-400 text-xs"></i>
+                            </div>
+                            }
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
+                                {{ related.titleEnglish || related.title }}
+                            </div>
+                            <div class="text-surface-400 text-xs">{{ related.relation }}</div>
+                        </div>
+                        <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                    </a>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+    } @else {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
+        <p class="text-surface-500">{{ t('anime.detail.notFound') }}</p>
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            styleClass="mt-4"
+        />
+    </div>
+    }
+</div>

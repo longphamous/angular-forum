@@ -1,65 +1,41 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable, signal, WritableSignal } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { Observable } from "rxjs";
 
+import { FORUM_ROUTES } from "../../core/api/forum.routes";
+import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Post } from "../../core/models/forum/post";
 import { Thread } from "../../core/models/forum/thread";
 
-interface ThreadResponse {
-    thread: Thread;
-}
-
 interface ReplyRequest {
-    authorId: string;
     content: string;
-    replyToPostId?: string;
-}
-
-interface ReplyResponse {
-    post: Post;
 }
 
 @Injectable({ providedIn: "root" })
 export class ThreadFacade {
+    readonly currentThread: ReturnType<WritableSignal<Thread | null>["asReadonly"]>;
+
     private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly _currentThread: WritableSignal<Thread | null> = signal<Thread | null>(null);
 
-    private _currentThread: WritableSignal<Thread | null> = signal<Thread | null>(null);
-
-    private readonly currentThread = this._currentThread.asReadonly();
+    constructor() {
+        this.currentThread = this._currentThread.asReadonly();
+    }
 
     loadThread(threadId: string): void {
-        this.http.get<ThreadResponse>(`/thread/${threadId}`).subscribe({
-            next: (res) => {
-                this._currentThread.set(res.thread);
+        this.http.get<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.detail(threadId)}`).subscribe({
+            next: (thread) => {
+                this._currentThread.set(thread);
             },
             error: (err) => {
                 console.error("Fehler beim Laden des Threads", err);
-                // Hier ggf. Toast / Error State setzen
             }
         });
     }
 
-    postReply(threadId: string, content: string, authorId: string, replyToPostId?: string): Observable<ReplyResponse> {
-        const payload: ReplyRequest = {
-            content,
-            authorId,
-            replyToPostId
-        };
-        return this.http.post<ReplyResponse>(`/thread/${threadId}/reply`, payload).pipe(
-            tap((res) => {
-                const current = this._currentThread();
-                if (current) {
-                    // Update Zustand immutabel
-                    const updatedPosts = [...current.posts, res.post];
-                    const updatedThread: Thread = {
-                        ...current,
-                        posts: updatedPosts,
-                        replyCount: updatedPosts.length - 1,
-                        lastPostAt: res.post.createdAt
-                    };
-                    this._currentThread.set(updatedThread);
-                }
-            })
-        );
+    postReply(threadId: string, content: string): Observable<Post> {
+        const payload: ReplyRequest = { content };
+        return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, payload);
     }
 }

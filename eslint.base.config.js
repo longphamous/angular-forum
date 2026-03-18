@@ -40,7 +40,7 @@ module.exports = tseslint.config(
                     style: "kebab-case"
                 }
             ],
-            "@typescript-eslint/member-ordering": ["error"],
+            "@typescript-eslint/member-ordering": "off",
             "@typescript-eslint/no-unused-expressions": "off",
             "@typescript-eslint/no-inferrable-types": "off",
             "@typescript-eslint/no-unused-vars": [

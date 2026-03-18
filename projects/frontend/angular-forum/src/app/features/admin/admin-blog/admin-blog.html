@@ -1,0 +1,314 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <!-- Header -->
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t("blog.admin.title") }}</h1>
+        </div>
+        <div class="flex gap-2">
+            <p-button
+                (onClick)="loadData()"
+                [outlined]="true"
+                [title]="t('common.loading')"
+                icon="pi pi-refresh"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="setTab('posts')"
+                [label]="t('blog.writePost')"
+                icon="pi pi-pencil"
+                routerLink="/blog/write"
+            />
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4">
+            <div class="text-surface-500 text-xs font-medium tracking-wide uppercase">
+                {{ t("blog.admin.totalPosts") }}
+            </div>
+            <div class="text-surface-900 dark:text-surface-0 mt-1 text-2xl font-bold">{{ posts().length }}</div>
+        </div>
+        <div class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4">
+            <div class="text-xs font-medium tracking-wide text-green-500 uppercase">
+                {{ t("blog.admin.published") }}
+            </div>
+            <div class="mt-1 text-2xl font-bold text-green-500">{{ totalPublished() }}</div>
+        </div>
+        <div class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4">
+            <div class="text-xs font-medium tracking-wide text-yellow-500 uppercase">{{ t("blog.admin.drafts") }}</div>
+            <div class="mt-1 text-2xl font-bold text-yellow-500">{{ totalDrafts() }}</div>
+        </div>
+        <div class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 rounded-xl border p-4">
+            <div class="text-surface-500 text-xs font-medium tracking-wide uppercase">
+                {{ t("blog.admin.archived") }}
+            </div>
+            <div class="text-surface-900 dark:text-surface-0 mt-1 text-2xl font-bold">{{ totalArchived() }}</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-surface-100 dark:bg-surface-800 mb-4 flex w-fit gap-1 rounded-xl p-1">
+        <button
+            class="cursor-pointer rounded-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+            (click)="setTab('posts')"
+            [class.bg-surface-0]="activeTab() === 'posts'"
+            [class.bg-transparent]="activeTab() !== 'posts'"
+            [class.dark:bg-surface-700]="activeTab() === 'posts'"
+            [class.dark:text-surface-0]="activeTab() === 'posts'"
+            [class.shadow-sm]="activeTab() === 'posts'"
+            [class.text-surface-500]="activeTab() !== 'posts'"
+            [class.text-surface-900]="activeTab() === 'posts'"
+            type="button"
+        >
+            {{ t("blog.admin.allPosts") }}
+        </button>
+        <button
+            class="cursor-pointer rounded-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+            (click)="setTab('categories')"
+            [class.bg-surface-0]="activeTab() === 'categories'"
+            [class.bg-transparent]="activeTab() !== 'categories'"
+            [class.dark:bg-surface-700]="activeTab() === 'categories'"
+            [class.dark:text-surface-0]="activeTab() === 'categories'"
+            [class.shadow-sm]="activeTab() === 'categories'"
+            [class.text-surface-500]="activeTab() !== 'categories'"
+            [class.text-surface-900]="activeTab() === 'categories'"
+            type="button"
+        >
+            {{ t("blog.admin.categories") }}
+        </button>
+    </div>
+
+    <!-- Posts tab -->
+    @if (activeTab() === 'posts') {
+    <div
+        class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+    >
+        <p-table
+            [loading]="loading()"
+            [paginator]="true"
+            [rowHover]="true"
+            [rows]="15"
+            [value]="posts()"
+            sortMode="single"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="title">{{ t("common.name") }} <p-sortIcon field="title" /></th>
+                    <th pSortableColumn="authorName">{{ t("blog.admin.author") }} <p-sortIcon field="authorName" /></th>
+                    <th pSortableColumn="type">{{ t("blog.typeLabel") }} <p-sortIcon field="type" /></th>
+                    <th pSortableColumn="status">{{ t("blog.statusLabel") }} <p-sortIcon field="status" /></th>
+                    <th class="text-center" pSortableColumn="viewCount">
+                        {{ t("blog.views") }} <p-sortIcon field="viewCount" />
+                    </th>
+                    <th class="text-center" pSortableColumn="commentCount">
+                        {{ t("blog.comments") }} <p-sortIcon field="commentCount" />
+                    </th>
+                    <th pSortableColumn="publishedAt">{{ t("blog.postedOn") }} <p-sortIcon field="publishedAt" /></th>
+                    <th class="text-center">{{ t("common.actions") }}</th>
+                </tr>
+            </ng-template>
+            <ng-template let-post pTemplate="body">
+                <tr>
+                    <td>
+                        <div class="max-w-xs truncate font-medium">{{ post.title }}</div>
+                        @if (post.categoryName) {
+                        <div class="text-surface-400 text-xs">{{ post.categoryName }}</div>
+                        }
+                    </td>
+                    <td>{{ post.authorName }}</td>
+                    <td>
+                        <p-tag
+                            [severity]="typeSeverity(post.type)"
+                            [value]="t('blog.types.' + post.type)"
+                            styleClass="text-xs"
+                        />
+                    </td>
+                    <td>
+                        <p-tag
+                            [severity]="statusSeverity(post.status)"
+                            [value]="t('blog.status.' + post.status)"
+                            styleClass="text-xs"
+                        />
+                    </td>
+                    <td class="text-center text-sm">{{ post.viewCount }}</td>
+                    <td class="text-center text-sm">{{ post.commentCount }}</td>
+                    <td class="text-surface-500 text-sm">{{ formatDate(post.publishedAt) }}</td>
+                    <td>
+                        <div class="flex items-center justify-center gap-1">
+                            <p-button
+                                (onClick)="viewPost(post)"
+                                [text]="true"
+                                [title]="t('common.actions')"
+                                icon="pi pi-eye"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="editPost(post)"
+                                [text]="true"
+                                icon="pi pi-pencil"
+                                severity="secondary"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="deletePost(post)"
+                                [text]="true"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="8">{{ t("blog.admin.noPosts") }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    }
+
+    <!-- Categories tab -->
+    @if (activeTab() === 'categories') {
+    <div class="mb-3 flex justify-end">
+        <p-button (onClick)="openCreateCategory()" [label]="t('blog.admin.createCategory')" icon="pi pi-plus" />
+    </div>
+    <div
+        class="bg-surface-0 dark:bg-surface-800 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+    >
+        <p-table [rowHover]="true" [value]="categories()" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>{{ t("blog.admin.categoryName") }}</th>
+                    <th>{{ t("blog.admin.categorySlug") }}</th>
+                    <th>{{ t("common.description") }}</th>
+                    <th>{{ t("blog.admin.categoryColor") }}</th>
+                    <th class="text-center">{{ t("blog.admin.totalPosts") }}</th>
+                    <th class="text-center">{{ t("common.actions") }}</th>
+                </tr>
+            </ng-template>
+            <ng-template let-cat pTemplate="body">
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="h-3 w-3 flex-shrink-0 rounded-full"
+                                [style.background-color]="cat.color ?? '#6b7280'"
+                            ></span>
+                            <span class="font-medium">{{ cat.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-surface-400 font-mono text-sm">{{ cat.slug }}</td>
+                    <td class="text-surface-500 max-w-xs truncate text-sm">{{ cat.description || "-" }}</td>
+                    <td><span class="font-mono text-sm">{{ cat.color || "-" }}</span></td>
+                    <td class="text-center text-sm">{{ cat.postCount }}</td>
+                    <td>
+                        <div class="flex items-center justify-center gap-1">
+                            <p-button
+                                (onClick)="openEditCategory(cat)"
+                                [text]="true"
+                                icon="pi pi-pencil"
+                                severity="secondary"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="deleteCategory(cat)"
+                                [text]="true"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="6">{{ t("blog.admin.noCategories") }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    }
+
+    <!-- Category dialog -->
+    <p-dialog
+        (onHide)="categoryDialogVisible.set(false)"
+        [draggable]="false"
+        [header]="editingCategoryId() ? t('blog.admin.editCategory') : t('blog.admin.createCategory')"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+        [visible]="categoryDialogVisible()"
+    >
+        <div class="flex flex-col gap-4 py-2">
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="cat-name">{{ t("blog.admin.categoryName") }} *</label>
+                <input
+                    id="cat-name"
+                    (ngModelChange)="autoSlug($event)"
+                    [ngModel]="categoryForm().name"
+                    [placeholder]="t('blog.admin.categoryName')"
+                    pInputText
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="cat-slug">{{ t("blog.admin.categorySlug") }} *</label>
+                <input
+                    id="cat-slug"
+                    (ngModelChange)="setCategorySlug($event)"
+                    [ngModel]="categoryForm().slug"
+                    pInputText
+                    placeholder="z.B. community-news"
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="cat-description">{{ t("common.description") }}</label>
+                <textarea
+                    id="cat-description"
+                    (ngModelChange)="setCategoryDescription($event)"
+                    [ngModel]="categoryForm().description"
+                    pTextarea
+                    rows="2"
+                ></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="cat-color-text">{{ t("blog.admin.categoryColor") }}</label>
+                <div class="flex items-center gap-3">
+                    <input
+                        class="border-surface-300 h-9 w-12 cursor-pointer rounded border p-0.5"
+                        (ngModelChange)="setCategoryColor($event)"
+                        [ngModel]="categoryForm().color"
+                        type="color"
+                    />
+                    <input
+                        class="flex-1 font-mono text-sm"
+                        id="cat-color-text"
+                        (ngModelChange)="setCategoryColor($event)"
+                        [ngModel]="categoryForm().color"
+                        pInputText
+                        placeholder="#3B82F6"
+                    />
+                </div>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button
+                (onClick)="categoryDialogVisible.set(false)"
+                [label]="t('common.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="saveCategory()"
+                [label]="t('common.save')"
+                [loading]="savingCategory()"
+                icon="pi pi-check"
+            />
+        </ng-template>
+    </p-dialog>
+</ng-container>

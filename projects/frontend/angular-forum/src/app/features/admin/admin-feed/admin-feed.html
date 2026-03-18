@@ -1,0 +1,156 @@
+<div *transloco="let t">
+    <div class="mb-4 flex items-center justify-between">
+        <h2 class="m-0 text-xl font-semibold">{{ t('adminFeed.title') }}</h2>
+        <p-button (onClick)="openAddDialog()" [label]="t('adminFeed.addFeatured')" icon="pi pi-plus" />
+    </div>
+
+    @if (error()) {
+    <p-message [text]="error()!" severity="error" styleClass="mb-4 w-full" />
+    } @if (successMsg()) {
+    <p-message [text]="successMsg()!" severity="success" styleClass="mb-4 w-full" />
+    }
+
+    <p-table [loading]="loading()" [rowHover]="true" [value]="featured()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem">{{ t('adminFeed.table.position') }}</th>
+                <th>{{ t('adminFeed.table.title') }}</th>
+                <th>{{ t('adminFeed.table.forum') }}</th>
+                <th style="width: 8rem">{{ t('adminFeed.table.active') }}</th>
+                <th style="width: 8rem">{{ t('adminFeed.table.actions') }}</th>
+            </tr>
+        </ng-template>
+
+        <ng-template let-item pTemplate="body">
+            <tr>
+                <td>
+                    <p-inputNumber
+                        (ngModelChange)="updatePosition(item, $event)"
+                        [max]="99"
+                        [min]="0"
+                        [ngModel]="item.position"
+                        [showButtons]="false"
+                        inputStyleClass="w-14 text-center text-sm"
+                    />
+                </td>
+                <td>
+                    <span class="font-medium">{{ item.title }}</span>
+                </td>
+                <td>
+                    <p-tag [value]="item.forumName" severity="secondary" />
+                </td>
+                <td>
+                    <p-button
+                        (onClick)="toggleActive(item)"
+                        [icon]="item.isActive ? 'pi pi-eye' : 'pi pi-eye-slash'"
+                        [pTooltip]="item.isActive ? t('adminFeed.deactivate') : t('adminFeed.activate')"
+                        [severity]="item.isActive ? 'success' : 'secondary'"
+                        [text]="true"
+                    />
+                </td>
+                <td>
+                    <p-button
+                        (onClick)="confirmRemove(item)"
+                        [pTooltip]="t('common.delete')"
+                        [text]="true"
+                        icon="pi pi-trash"
+                        severity="danger"
+                    />
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-surface-400 py-6 text-center" colspan="5">{{ t('adminFeed.empty') }}</td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+            @for (s of [1, 2, 3]; track s) {
+            <tr>
+                <td><p-skeleton height="1.5rem" width="3rem" /></td>
+                <td><p-skeleton height="1rem" width="80%" /></td>
+                <td><p-skeleton height="1rem" width="60%" /></td>
+                <td><p-skeleton height="1rem" width="4rem" /></td>
+                <td><p-skeleton height="1rem" width="4rem" /></td>
+            </tr>
+            }
+        </ng-template>
+    </p-table>
+
+    <!-- Add Featured Dialog -->
+    <p-dialog
+        (visibleChange)="dialogVisible.set($event)"
+        [draggable]="false"
+        [header]="t('adminFeed.dialog.title')"
+        [modal]="true"
+        [style]="{ width: '560px' }"
+        [visible]="dialogVisible()"
+    >
+        <div class="flex flex-col gap-4">
+            <div class="flex gap-2">
+                <input
+                    class="p-inputtext flex-1"
+                    (keydown.enter)="onSearch()"
+                    (ngModelChange)="searchQuery.set($event)"
+                    [ngModel]="searchQuery()"
+                    [placeholder]="t('adminFeed.dialog.searchPlaceholder')"
+                    pInputText
+                />
+                <p-button
+                    (onClick)="onSearch()"
+                    [label]="t('common.search')"
+                    [loading]="searching()"
+                    icon="pi pi-search"
+                />
+            </div>
+
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium whitespace-nowrap" for="featured-position"
+                    >{{ t('adminFeed.dialog.position') }}</label
+                >
+                <p-inputNumber
+                    (ngModelChange)="selectedPosition.set($event)"
+                    [max]="99"
+                    [min]="0"
+                    [ngModel]="selectedPosition()"
+                    [showButtons]="true"
+                    inputId="featured-position"
+                    inputStyleClass="w-20 text-center"
+                />
+            </div>
+
+            @if (searchResults().length > 0) {
+            <p-table [rowHover]="true" [value]="searchResults()" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>{{ t('adminFeed.dialog.thread') }}</th>
+                        <th>{{ t('adminFeed.table.forum') }}</th>
+                        <th style="width: 6rem"></th>
+                    </tr>
+                </ng-template>
+                <ng-template let-result pTemplate="body">
+                    <tr>
+                        <td class="text-sm">{{ result.title }}</td>
+                        <td><p-tag [value]="result.forumName" severity="secondary" /></td>
+                        <td>
+                            <p-button
+                                (onClick)="addThread(result)"
+                                [label]="t('adminFeed.dialog.add')"
+                                [loading]="saving()"
+                                severity="success"
+                                size="small"
+                            />
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            } @else if (!searching() && searchQuery().length > 1) {
+            <p class="text-surface-400 py-2 text-center text-sm">{{ t('adminFeed.dialog.noResults') }}</p>
+            }
+        </div>
+    </p-dialog>
+
+    <p-confirmDialog />
+</div>

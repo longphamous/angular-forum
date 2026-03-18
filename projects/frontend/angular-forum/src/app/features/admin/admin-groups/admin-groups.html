@@ -1,0 +1,223 @@
+<ng-container *transloco="let t">
+    <div class="card">
+        <!-- Header -->
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
+                    {{ t('adminGroups.title') }}
+                </h2>
+                <p class="text-surface-500 mt-1 text-sm">{{ t('adminGroups.subtitle') }}</p>
+            </div>
+            <p-button (onClick)="openCreateDialog()" [label]="t('adminGroups.newGroup')" icon="pi pi-plus" />
+        </div>
+
+        <!-- Skeleton -->
+        @if (facade.groupsLoading()) {
+        <div class="flex flex-col gap-2">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+            <p-skeleton height="3rem" />
+            }
+        </div>
+        } @else if (facade.groupsError()) {
+        <p-message class="w-full" severity="error">{{ facade.groupsError() }}</p-message>
+        } @else {
+        <p-table [value]="facade.groups()" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>{{ t('common.name') }}</th>
+                    <th>{{ t('common.description') }}</th>
+                    <th class="text-center">{{ t('adminGroups.table.users') }}</th>
+                    <th class="text-center">{{ t('common.type') }}</th>
+                    <th class="text-right">{{ t('common.actions') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template let-group pTemplate="body">
+                <tr>
+                    <td class="font-semibold">{{ group.name }}</td>
+                    <td class="text-surface-500 text-sm">{{ group.description || '–' }}</td>
+                    <td class="text-center">
+                        <span class="font-mono text-sm">{{ group.userCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        @if (group.isSystem) {
+                        <p-tag [value]="t('adminGroups.table.system')" severity="secondary" styleClass="text-xs" />
+                        } @else {
+                        <p-tag [value]="t('adminGroups.table.custom')" severity="info" styleClass="text-xs" />
+                        }
+                    </td>
+                    <td class="text-right">
+                        <p-button
+                            (onClick)="openUsersDialog(group)"
+                            [pTooltip]="t('adminGroups.manageUsersTooltip')"
+                            [text]="true"
+                            icon="pi pi-users"
+                            severity="secondary"
+                            size="small"
+                        />
+                        <p-button
+                            (onClick)="openEditDialog(group)"
+                            [pTooltip]="t('common.edit')"
+                            [text]="true"
+                            icon="pi pi-pencil"
+                            severity="secondary"
+                            size="small"
+                        />
+                        @if (!group.isSystem) {
+                        <p-button
+                            (onClick)="openDeleteDialog(group)"
+                            [pTooltip]="t('common.delete')"
+                            [text]="true"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            size="small"
+                        />
+                        }
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="5">{{ t('adminGroups.table.noGroups') }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        }
+    </div>
+
+    <!-- Group create/edit dialog -->
+    <p-dialog
+        (visibleChange)="showGroupDialog.set($any($event))"
+        [header]="editingGroup() ? t('adminGroups.editDialog.header') : t('adminGroups.createDialog.header')"
+        [modal]="true"
+        [style]="{ width: '32rem' }"
+        [visible]="showGroupDialog()"
+    >
+        <form class="flex flex-col gap-4 pt-2" (ngSubmit)="saveGroup()" [formGroup]="groupForm">
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-500 text-sm font-medium" for="groupName"
+                    >{{ t('adminGroups.createDialog.nameLabel') }} *</label
+                >
+                <input
+                    class="w-full"
+                    id="groupName"
+                    [placeholder]="t('adminGroups.createDialog.namePlaceholder')"
+                    formControlName="name"
+                    pInputText
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-500 text-sm font-medium" for="groupDesc"
+                    >{{ t('adminGroups.createDialog.descLabel') }}</label
+                >
+                <textarea
+                    class="w-full text-sm"
+                    id="groupDesc"
+                    [autoResize]="true"
+                    [placeholder]="t('adminGroups.createDialog.descPlaceholder')"
+                    formControlName="description"
+                    pTextarea
+                    rows="2"
+                ></textarea>
+            </div>
+            @if (groupError()) {
+            <p-message class="w-full" severity="error">{{ groupError() }}</p-message>
+            }
+        </form>
+        <ng-template pTemplate="footer">
+            <p-button
+                (onClick)="showGroupDialog.set(false)"
+                [label]="t('common.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="saveGroup()"
+                [disabled]="groupForm.invalid"
+                [label]="editingGroup() ? t('common.save') : t('common.create')"
+                [loading]="groupSaving()"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Delete confirmation dialog -->
+    <p-dialog
+        (visibleChange)="showDeleteDialog.set($any($event))"
+        [header]="t('adminGroups.deleteDialog.header')"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+        [visible]="showDeleteDialog()"
+    >
+        <p
+            class="text-surface-700 dark:text-surface-200 m-0"
+            [innerHTML]="t('adminGroups.deleteDialog.confirm', { name: deletingGroup()?.name })"
+        ></p>
+        <p class="text-surface-700 dark:text-surface-200 m-0 text-sm">{{ t('common.irreversible') }}</p>
+        <ng-template pTemplate="footer">
+            <p-button
+                (onClick)="showDeleteDialog.set(false)"
+                [label]="t('common.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="confirmDelete()"
+                [label]="t('adminGroups.deleteDialog.submit')"
+                [loading]="deleteLoading()"
+                icon="pi pi-trash"
+                severity="danger"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Manage users dialog -->
+    <p-dialog
+        (visibleChange)="showUsersDialog.set($any($event))"
+        [header]="'Benutzer in Gruppe: ' + (managingGroup()?.name ?? '')"
+        [modal]="true"
+        [style]="{ width: '40rem' }"
+        [visible]="showUsersDialog()"
+    >
+        @if (usersLoading() || adminFacade.usersLoading()) {
+        <div class="flex flex-col gap-2 py-4">
+            @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="2.5rem" />
+            }
+        </div>
+        } @else {
+        <div class="max-h-80 overflow-y-auto">
+            <p class="text-surface-500 mb-3 text-sm">{{ t('adminGroups.usersDialog.hint') }}</p>
+            @for (user of adminFacade.users(); track user.id) {
+            <div
+                class="hover:bg-surface-50 dark:hover:bg-surface-800/50 flex cursor-pointer items-center gap-3 rounded p-2"
+                (click)="toggleUser(user)"
+                (keydown.enter)="toggleUser(user)"
+                (keydown.space)="toggleUser(user)"
+                [attr.aria-checked]="isUserSelected(user.id)"
+                role="checkbox"
+                tabindex="0"
+            >
+                <p-checkbox (ngModelChange)="toggleUser(user)" [binary]="true" [ngModel]="isUserSelected(user.id)" />
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-semibold">{{ user.displayName }}</div>
+                    <div class="text-surface-400 text-xs">{{ user.username }} · {{ user.role }}</div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+        <ng-template pTemplate="footer">
+            <p-button
+                (onClick)="showUsersDialog.set(false)"
+                [label]="t('common.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="saveGroupUsers()"
+                [label]="t('common.save')"
+                [loading]="usersSaving()"
+                icon="pi pi-check"
+            />
+        </ng-template>
+    </p-dialog>
+</ng-container>

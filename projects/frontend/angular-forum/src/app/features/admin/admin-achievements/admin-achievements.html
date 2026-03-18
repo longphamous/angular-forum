@@ -1,0 +1,276 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="m-0 text-2xl font-bold">{{ t('adminAchievements.title') }}</h2>
+                <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminAchievements.subtitle') }}</p>
+            </div>
+            <p-button (onClick)="openCreate()" [label]="t('adminAchievements.createAchievement')" icon="pi pi-plus" />
+        </div>
+    </div>
+
+    @if (error()) {
+    <p-message [text]="error()!" severity="error" styleClass="w-full" />
+    } @if (successMsg()) {
+    <p-message [text]="successMsg()!" severity="success" styleClass="w-full" />
+    }
+
+    <!-- Table -->
+    <div class="card">
+        @if (loading()) {
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3,4,5]; track $index) {
+            <p-skeleton height="3rem" />
+            }
+        </div>
+        } @else {
+        <p-table [sortField]="'rarity'" [sortOrder]="1" [value]="achievements()" styleClass="p-datatable-sm">
+            <ng-template #header>
+                <tr>
+                    <th class="w-10"></th>
+                    <th pSortableColumn="name">{{ t('common.name') }} <p-sortIcon field="name" /></th>
+                    <th>{{ t('common.description') }}</th>
+                    <th class="w-28" pSortableColumn="rarity">
+                        {{ t('adminAchievements.table.rarity') }} <p-sortIcon field="rarity" />
+                    </th>
+                    <th>{{ t('adminAchievements.table.trigger') }}</th>
+                    <th class="w-20 text-center">{{ t('common.active') }}</th>
+                    <th class="w-24 text-right">{{ t('common.actions') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-a>
+                <tr>
+                    <td>
+                        <div
+                            class="bg-surface-100 dark:bg-surface-800 flex h-8 w-8 items-center justify-center rounded-full"
+                        >
+                            <i class="text-primary text-sm" [class]="a.icon"></i>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="font-medium">{{ a.name }}</span>
+                        <br />
+                        <code class="text-surface-400 text-xs">{{ a.key }}</code>
+                    </td>
+                    <td class="text-surface-500 text-sm">{{ a.description ?? '—' }}</td>
+                    <td>
+                        <p-tag
+                            [severity]="raritySeverity(a.rarity)"
+                            [value]="rarityLabel(a.rarity)"
+                            styleClass="text-xs"
+                        />
+                    </td>
+                    <td class="text-sm">
+                        <span class="text-surface-600 dark:text-surface-400"
+                            >{{ triggerTypeLabel(a.triggerType) }}</span
+                        >
+                        <span class="text-surface-400 mx-1">≥</span>
+                        <span class="font-semibold">{{ a.triggerValue }}</span>
+                    </td>
+                    <td class="text-center">
+                        @if (a.isActive) {
+                        <i class="pi pi-check-circle text-green-500"></i>
+                        } @else {
+                        <i class="pi pi-times-circle text-surface-300"></i>
+                        }
+                    </td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-1">
+                            <p-button
+                                (onClick)="openEdit(a)"
+                                [pTooltip]="t('common.edit')"
+                                [text]="true"
+                                icon="pi pi-pencil"
+                                severity="secondary"
+                                size="small"
+                                tooltipPosition="left"
+                            />
+                            <p-button
+                                (onClick)="confirmDelete(a)"
+                                [pTooltip]="t('common.delete')"
+                                [text]="true"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
+                                tooltipPosition="left"
+                            />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td class="text-surface-400 py-8 text-center" colspan="7">
+                        <i class="pi pi-trophy mb-2 block text-3xl"></i>
+                        {{ t('adminAchievements.table.noAchievements') }}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+        }
+    </div>
+
+    <!-- Confirm Dialog -->
+    <p-confirmDialog />
+</div>
+
+<!-- Create / Edit Dialog -->
+<p-dialog
+    [(visible)]="dialogVisible"
+    [closable]="!saving()"
+    [header]="editingId() ? t('adminAchievements.dialog.editHeader') : t('adminAchievements.dialog.createHeader')"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    *transloco="let t"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Name -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-name"
+                    >{{ t('adminAchievements.dialog.name') }} <span class="text-red-500">*</span></label
+                >
+                <input
+                    class="w-full"
+                    id="ach-name"
+                    (ngModelChange)="updateForm({ name: $event })"
+                    [ngModel]="form().name"
+                    pInputText
+                    placeholder="z.B. Erster Schritt"
+                />
+            </div>
+            <!-- Key -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-key"
+                    >{{ t('adminAchievements.dialog.key') }} <span class="text-red-500">*</span></label
+                >
+                <input
+                    class="w-full"
+                    id="ach-key"
+                    (ngModelChange)="updateForm({ key: $event })"
+                    [disabled]="!!editingId()"
+                    [ngModel]="form().key"
+                    pInputText
+                    placeholder="z.B. first_post"
+                />
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="ach-description"
+                >{{ t('adminAchievements.dialog.description') }}</label
+            >
+            <textarea
+                class="w-full"
+                id="ach-description"
+                (ngModelChange)="updateForm({ description: $event })"
+                [ngModel]="form().description"
+                [placeholder]="t('adminAchievements.dialog.descriptionPlaceholder')"
+                pTextarea
+                rows="2"
+            ></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Icon -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-icon"
+                    >{{ t('adminAchievements.dialog.icon') }} <span class="text-red-500">*</span></label
+                >
+                <div class="flex items-center gap-2">
+                    <i class="text-primary w-6 shrink-0 text-xl" [class]="form().icon"></i>
+                    <input
+                        class="flex-1"
+                        id="ach-icon"
+                        (ngModelChange)="updateForm({ icon: $event })"
+                        [ngModel]="form().icon"
+                        pInputText
+                        placeholder="pi pi-star"
+                    />
+                </div>
+            </div>
+            <!-- Rarity -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-rarity">{{ t('adminAchievements.dialog.rarity') }}</label>
+                <p-select
+                    (ngModelChange)="updateForm({ rarity: $event })"
+                    [ngModel]="form().rarity"
+                    [options]="rarityOptions"
+                    appendTo="body"
+                    inputId="ach-rarity"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Trigger Type -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-triggerType"
+                    >{{ t('adminAchievements.dialog.triggerType') }}</label
+                >
+                <p-select
+                    (ngModelChange)="updateForm({ triggerType: $event })"
+                    [ngModel]="form().triggerType"
+                    [options]="triggerTypeOptions"
+                    appendTo="body"
+                    inputId="ach-triggerType"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                />
+            </div>
+            <!-- Trigger Value -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-triggerValue"
+                    >{{ t('adminAchievements.dialog.triggerValue') }}</label
+                >
+                <p-inputnumber
+                    (ngModelChange)="updateForm({ triggerValue: $event })"
+                    [max]="99999"
+                    [min]="1"
+                    [ngModel]="form().triggerValue"
+                    [showButtons]="true"
+                    buttonLayout="horizontal"
+                    decrementButtonIcon="pi pi-minus"
+                    incrementButtonIcon="pi pi-plus"
+                    inputId="ach-triggerValue"
+                    inputStyleClass="w-16 text-center"
+                    styleClass="w-full"
+                />
+            </div>
+        </div>
+
+        <!-- Active -->
+        <div class="flex items-center gap-2">
+            <p-checkbox
+                (ngModelChange)="updateForm({ isActive: $event })"
+                [binary]="true"
+                [ngModel]="form().isActive"
+                inputId="isActive"
+            />
+            <label class="text-sm" for="isActive">{{ t('adminAchievements.dialog.isActiveLabel') }}</label>
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <p-button
+            (onClick)="dialogVisible.set(false)"
+            [disabled]="saving()"
+            [label]="t('common.cancel')"
+            [text]="true"
+            severity="secondary"
+        />
+        <p-button
+            (onClick)="saveAchievement()"
+            [disabled]="!form().key || !form().name || !form().icon"
+            [label]="editingId() ? t('adminAchievements.dialog.submit') : t('common.create')"
+            [loading]="saving()"
+            icon="pi pi-check"
+        />
+    </ng-template>
+</p-dialog>

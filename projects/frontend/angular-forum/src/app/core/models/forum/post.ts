@@ -1,12 +1,38 @@
-import { UserSummary } from "../user/user-summary";
-
 export interface Post {
     id: string;
     threadId: string;
-    author: UserSummary;
+    authorId: string;
+    authorName: string;
+    authorRole: string;
+    authorPostCount: number;
+    authorAvatarUrl?: string;
+    authorSignature?: string;
+    authorLevel: number;
+    authorLevelName: string;
+    authorBalance?: number;
     content: string;
-    createdAt: string;
-    editedAt?: string;
+    isFirstPost: boolean;
+    isBestAnswer: boolean;
     isEdited: boolean;
-    replyToPostId?: string;
+    editedAt?: string;
+    editCount: number;
+    editReason?: string;
+    editHistory?: PostEditHistoryEntry[];
+    reactionCount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PostEditHistoryEntry {
+    content: string;
+    editedBy: string;
+    editedAt: string;
+    reason: string | null;
+}
+
+export interface PaginatedPosts {
+    data: Post[];
+    total: number;
+    page: number;
+    limit: number;
 }

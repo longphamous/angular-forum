@@ -1,11 +1,16 @@
-import { ThreadSummary } from "./thread";
-
 export interface Forum {
     id: string;
-    title: string;
-    description?: string;
     categoryId: string;
+    name: string;
+    slug: string;
+    description?: string;
+    position: number;
+    isLocked: boolean;
+    isPrivate: boolean;
     threadCount: number;
     postCount: number;
-    latestThread?: ThreadSummary;
+    lastPostAt?: string;
+    lastPostByUserId?: string;
+    createdAt: string;
+    updatedAt: string;
 }

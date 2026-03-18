@@ -1,0 +1,897 @@
+<div class="flex flex-col gap-4" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="mb-4 flex items-start gap-3">
+            <p-button
+                (onClick)="navHistory.back('/forum')"
+                [label]="navHistory.backLabel()"
+                [text]="true"
+                icon="pi pi-arrow-left"
+            />
+
+            <div class="flex-1">
+                @if (facade.loading() && !facade.currentThread()) {
+                <p-skeleton height="2rem" styleClass="mb-2 w-2/3" />
+                <p-skeleton height="1rem" styleClass="w-1/2" />
+                } @else if (facade.currentThread()) {
+                <div class="flex flex-wrap items-center gap-2">
+                    <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                        {{ facade.currentThread()!.title }}
+                    </h1>
+                    @if (facade.currentThread()!.isPinned) {
+                    <p-tag [value]="t('threadDetail.pinned')" severity="warn" />
+                    } @if (facade.currentThread()!.isSticky) {
+                    <p-tag [value]="t('threadDetail.sticky')" severity="info" />
+                    } @if (facade.currentThread()!.isLocked) {
+                    <p-tag [value]="t('threadDetail.locked')" severity="danger" />
+                    }
+                </div>
+                <div class="text-surface-500 mt-2 flex flex-wrap gap-4 text-sm">
+                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(facade.currentThread()!.createdAt) }}</span>
+                    <span
+                        ><i class="pi pi-eye mr-1"></i>{{ facade.currentThread()!.viewCount }} {{
+                        t('threadDetail.views') }}</span
+                    >
+                    <span
+                        ><i class="pi pi-comments mr-1"></i>{{ facade.currentThread()!.replyCount }} {{
+                        t('threadDetail.replies') }}</span
+                    >
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Moderator Actions -->
+    @if (authFacade.isModerator() && facade.currentThread()) {
+    <div class="card flex flex-wrap items-center gap-2 py-3">
+        <span class="text-surface-500 mr-2 text-sm font-semibold"><i class="pi pi-shield mr-1"></i>{{ t('threadDetail.moderation.label') }}</span>
+
+        <p-button
+            (onClick)="togglePin()"
+            [label]="facade.currentThread()!.isPinned ? t('threadDetail.moderation.unpin') : t('threadDetail.moderation.pin')"
+            [icon]="facade.currentThread()!.isPinned ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"
+            [outlined]="true"
+            size="small"
+            [severity]="facade.currentThread()!.isPinned ? 'warn' : 'secondary'"
+        />
+        <p-button
+            (onClick)="toggleSticky()"
+            [label]="facade.currentThread()!.isSticky ? t('threadDetail.moderation.unsticky') : t('threadDetail.moderation.sticky')"
+            [icon]="facade.currentThread()!.isSticky ? 'pi pi-star-fill' : 'pi pi-star'"
+            [outlined]="true"
+            size="small"
+            [severity]="facade.currentThread()!.isSticky ? 'info' : 'secondary'"
+        />
+        <p-button
+            (onClick)="toggleLock()"
+            [label]="facade.currentThread()!.isLocked ? t('threadDetail.moderation.unlock') : t('threadDetail.moderation.lock')"
+            [icon]="facade.currentThread()!.isLocked ? 'pi pi-lock-open' : 'pi pi-lock'"
+            [outlined]="true"
+            size="small"
+            [severity]="facade.currentThread()!.isLocked ? 'success' : 'danger'"
+        />
+        <p-button
+            (onClick)="openMoveDialog()"
+            [label]="t('threadDetail.moderation.move')"
+            icon="pi pi-arrow-right-arrow-left"
+            [outlined]="true"
+            size="small"
+            severity="secondary"
+        />
+        <p-button
+            (onClick)="confirmDelete()"
+            [label]="t('threadDetail.moderation.delete')"
+            icon="pi pi-trash"
+            [outlined]="true"
+            size="small"
+            severity="danger"
+        />
+    </div>
+    }
+
+    <!-- Move Thread Dialog -->
+    <p-dialog [header]="t('threadDetail.moderation.moveDialog.header')" [(visible)]="moveDialogVisible" [modal]="true" [style]="{ width: '28rem' }">
+        <div class="flex flex-col gap-3">
+            <label class="text-sm font-medium">{{ t('threadDetail.moderation.moveDialog.selectForum') }}</label>
+            <select
+                class="border-surface-300 dark:border-surface-600 dark:bg-surface-800 w-full rounded-md border p-2"
+                [(ngModel)]="moveTargetForumId"
+            >
+                @for (forum of availableForums(); track forum.id) {
+                <option [value]="forum.id" [disabled]="forum.id === facade.currentThread()?.forumId">
+                    {{ forum.name }} @if (forum.id === facade.currentThread()?.forumId) { {{ t('threadDetail.moderation.moveDialog.current') }} }
+                </option>
+                }
+            </select>
+        </div>
+        <ng-template #footer>
+            <p-button label="Abbrechen" (onClick)="moveDialogVisible.set(false)" [text]="true" severity="secondary" />
+            <p-button
+                label="Verschieben"
+                icon="pi pi-arrow-right-arrow-left"
+                (onClick)="moveThread()"
+                [disabled]="!moveTargetForumId || moveTargetForumId === facade.currentThread()?.forumId"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <p-dialog [header]="t('threadDetail.moderation.deleteDialog.header')" [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '24rem' }">
+        <p class="text-surface-600 dark:text-surface-400">
+            {{ t('threadDetail.moderation.deleteDialog.message', { title: facade.currentThread()?.title }) }}
+        </p>
+        <ng-template #footer>
+            <p-button
+                label="Abbrechen"
+                (onClick)="deleteDialogVisible.set(false)"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button label="Löschen" icon="pi pi-trash" (onClick)="deleteThread()" severity="danger" />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Poll Edit Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.poll.editDialog.header')"
+        [(visible)]="pollEditDialogVisible"
+        [modal]="true"
+        [style]="{ width: '36rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-5">
+            <!-- Question -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('threadDetail.poll.editDialog.question') }}</label>
+                <input [(ngModel)]="pollEditQuestion" pInputText type="text" />
+            </div>
+
+            <!-- Settings -->
+            <div class="flex flex-col gap-3">
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadDetail.poll.editDialog.settings') }}</div>
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditIsAnonymous" [binary]="true" inputId="pe-anon" />
+                    <label class="text-sm" for="pe-anon">{{ t('threadDetail.poll.editDialog.anonymousVoting') }}</label>
+                </div>
+                @if (!pollEditIsAnonymous) {
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditShowVoterNames" [binary]="true" inputId="pe-voters" />
+                    <label class="text-sm" for="pe-voters">{{ t('threadDetail.poll.editDialog.showVoters') }}</label>
+                </div>
+                }
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditAllowVoteChange" [binary]="true" inputId="pe-change" />
+                    <label class="text-sm" for="pe-change">{{ t('threadDetail.poll.editDialog.allowVoteChange') }}</label>
+                </div>
+                @if (pollEditAllowVoteChange) {
+                <div class="flex flex-col gap-1 pl-7">
+                    <label class="text-surface-400 text-xs" for="pe-deadline">{{ t('threadDetail.poll.editDialog.changeDeadline') }}</label>
+                    <input
+                        class="w-full max-w-xs"
+                        id="pe-deadline"
+                        [(ngModel)]="pollEditVoteChangeDeadline"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+                }
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditIsClosed" [binary]="true" inputId="pe-closed" />
+                    <label class="text-sm" for="pe-closed">{{ t('threadDetail.poll.editDialog.pollClosed') }}</label>
+                </div>
+                @if (!pollEditIsClosed) {
+                <div class="flex flex-col gap-1 pl-7">
+                    <label class="text-surface-400 text-xs" for="pe-closes">{{ t('threadDetail.poll.editDialog.closesAt') }}</label>
+                    <input
+                        class="w-full max-w-xs"
+                        id="pe-closes"
+                        [(ngModel)]="pollEditClosesAt"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+                }
+            </div>
+
+            <!-- New options -->
+            <div class="flex flex-col gap-3">
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadDetail.poll.editDialog.addOptionsHeader') }}</div>
+                @for (opt of pollEditNewOptions; track $index) {
+                <div
+                    class="border-surface-200 dark:border-surface-700 flex items-start gap-2 rounded-lg border p-3"
+                >
+                    <div class="flex flex-1 flex-col gap-2">
+                        <input
+                            [ngModel]="opt.text"
+                            (ngModelChange)="pollEditNewOptions[$index] = { text: $event, imageUrl: opt.imageUrl }"
+                            pInputText
+                            [placeholder]="t('threadDetail.poll.editDialog.newOptionPlaceholder', { index: $index + 1 })"
+                            type="text"
+                        />
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-image text-surface-400 text-xs"></i>
+                            <input
+                                class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
+                                [ngModel]="opt.imageUrl"
+                                (ngModelChange)="pollEditNewOptions[$index] = { text: opt.text, imageUrl: $event }"
+                                [placeholder]="t('threadDetail.poll.editDialog.imageUrlPlaceholder')"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                    @if (pollEditNewOptions.length > 1) {
+                    <p-button
+                        (onClick)="removePollEditOption($index)"
+                        [text]="true"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                    />
+                    }
+                </div>
+                }
+                <p-button
+                    (onClick)="addPollEditOption()"
+                    [text]="true"
+                    icon="pi pi-plus"
+                    [label]="t('threadDetail.poll.editDialog.addOption')"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+        </div>
+        <ng-template #footer>
+            <p-button
+                label="Abbrechen"
+                (onClick)="pollEditDialogVisible.set(false)"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                label="Speichern"
+                icon="pi pi-check"
+                (onClick)="submitPollEdit()"
+                [loading]="pollEditSubmitting"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Edit Post Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.editDialog.header')"
+        [(visible)]="editDialogVisible"
+        [modal]="true"
+        [style]="{ width: '50rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-4">
+            <p-editor [(ngModel)]="editContent" [style]="{ height: '250px' }" />
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-500 text-xs font-medium">{{ t('threadDetail.editDialog.reasonLabel') }}</label>
+                <input
+                    [(ngModel)]="editReason"
+                    pInputText
+                    [placeholder]="t('threadDetail.editDialog.reasonPlaceholder')"
+                    type="text"
+                />
+            </div>
+        </div>
+        <ng-template #footer>
+            <p-button
+                label="Abbrechen"
+                (onClick)="editDialogVisible.set(false)"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                label="Speichern"
+                icon="pi pi-check"
+                (onClick)="submitEdit()"
+                [loading]="editSubmitting"
+                [disabled]="!editContent.trim()"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Edit History Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.historyDialog.header')"
+        [(visible)]="historyDialogVisible"
+        [modal]="true"
+        [style]="{ width: '40rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-3">
+            @for (entry of editHistory(); track $index) {
+            <div class="border-surface-200 dark:border-surface-700 rounded-lg border p-3">
+                <div class="text-surface-500 mb-2 flex items-center gap-2 text-xs">
+                    <i class="pi pi-clock"></i>
+                    <span>{{ formatDate(entry.editedAt) }}</span>
+                    @if (entry.reason) {
+                    <span class="text-surface-400">— {{ entry.reason }}</span>
+                    }
+                </div>
+                <div class="text-surface-600 dark:text-surface-400 post-content max-h-40 overflow-y-auto text-sm" [innerHTML]="entry.content"></div>
+            </div>
+            } @empty {
+            <p class="text-surface-400 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
+            }
+        </div>
+    </p-dialog>
+
+    <!-- Error -->
+    @if (facade.error()) {
+    <p-message [text]="facade.error()!" severity="error" styleClass="w-full" />
+    }
+
+    <!-- Poll -->
+    @if (facade.currentPoll()) { @let poll = facade.currentPoll()!; @let hasImages = pollHasImages();
+    <div class="card">
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="flex items-center gap-2 text-lg font-semibold">
+                <i class="pi pi-chart-bar"></i>{{ poll.question }}
+                @if (poll.isAnonymous) {
+                <span
+                    class="bg-surface-100 dark:bg-surface-700 text-surface-500 rounded-full px-2 py-0.5 text-[10px] font-normal"
+                    ><i class="pi pi-eye-slash mr-1"></i>{{ t('threadDetail.poll.anonymous') }}</span
+                >
+                }
+            </h3>
+            @if (canEditPoll()) {
+            <p-button
+                (onClick)="openPollEditDialog()"
+                icon="pi pi-pencil"
+                [label]="t('threadDetail.poll.editBtn')"
+                [text]="true"
+                severity="secondary"
+                size="small"
+            />
+            }
+        </div>
+
+        @if (hasImages) {
+        <!-- ═══ Candidate-style grid layout (with images) ═══ -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            @for (option of poll.options; track option.index) {
+            <div
+                class="border-surface-200 dark:border-surface-700 group relative flex flex-col items-center overflow-hidden rounded-xl border transition-all"
+                [class.border-primary]="poll.myVote === option.index"
+                [class.ring-2]="poll.myVote === option.index"
+                [class.ring-primary/30]="poll.myVote === option.index"
+                [class.shadow-md]="poll.myVote === option.index"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.hover:border-primary/50]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.hover:shadow-sm]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.opacity-60]="poll.myVote !== null && poll.myVote !== option.index"
+                (click)="votePoll(option.index)"
+            >
+                <!-- Image -->
+                <div class="relative w-full pt-[100%]">
+                    @if (option.imageUrl) {
+                    <img
+                        class="absolute inset-0 h-full w-full object-cover"
+                        [alt]="option.text"
+                        [src]="option.imageUrl"
+                    />
+                    } @else {
+                    <div
+                        class="bg-surface-100 dark:bg-surface-800 absolute inset-0 flex items-center justify-center text-3xl font-bold"
+                    >
+                        {{ option.text.charAt(0).toUpperCase() }}
+                    </div>
+                    }
+                    <!-- Vote check overlay -->
+                    @if (poll.myVote === option.index) {
+                    <div class="bg-primary absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full">
+                        <i class="pi pi-check text-xs text-white"></i>
+                    </div>
+                    }
+                </div>
+
+                <!-- Info -->
+                <div class="flex w-full flex-col gap-1.5 p-3">
+                    <span class="text-surface-900 dark:text-surface-0 truncate text-sm font-semibold">
+                        {{ option.text }}
+                    </span>
+                    <!-- Progress bar -->
+                    <div class="bg-surface-100 dark:bg-surface-700 h-1.5 w-full overflow-hidden rounded-full">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            [class.bg-primary]="poll.myVote === option.index"
+                            [class.bg-surface-300]="poll.myVote !== option.index"
+                            [class.dark:bg-surface-500]="poll.myVote !== option.index"
+                            [style.width.%]="option.percentage"
+                        ></div>
+                    </div>
+                    <div class="text-surface-500 flex items-center justify-between text-xs">
+                        <span>{{ option.percentage }}%</span>
+                        <span>{{ option.votes }}</span>
+                    </div>
+                    <!-- Voter avatars -->
+                    @if (option.voters && option.voters.length > 0) {
+                    <div class="mt-1 flex -space-x-1.5">
+                        @for (voter of option.voters.slice(0, 5); track voter.userId) {
+                        @if (voter.avatarUrl) {
+                        <img
+                            class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
+                            [alt]="voter.username"
+                            [src]="voter.avatarUrl"
+                            [pTooltip]="voter.username"
+                        />
+                        } @else {
+                        <div
+                            class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                            [pTooltip]="voter.username"
+                        >
+                            {{ voter.username.charAt(0).toUpperCase() }}
+                        </div>
+                        }
+                        }
+                        @if (option.voters.length > 5) {
+                        <div
+                            class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
+                        >
+                            +{{ option.voters.length - 5 }}
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <!-- ═══ Classic list layout (text-only, no images) ═══ -->
+        <div class="flex flex-col gap-2">
+            @for (option of poll.options; track option.index) {
+            <div
+                class="border-surface-200 dark:border-surface-700 relative overflow-hidden rounded-lg border p-3 transition-colors"
+                [class.border-primary]="poll.myVote === option.index"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.cursor-not-allowed]="poll.isClosed || poll.myVote !== null"
+                (click)="votePoll(option.index)"
+            >
+                <div
+                    class="bg-primary/10 absolute top-0 left-0 h-full transition-all"
+                    [style.width.%]="option.percentage"
+                ></div>
+                <div class="relative flex items-center justify-between">
+                    <span class="text-sm font-medium">
+                        @if (poll.myVote === option.index) {
+                        <i class="pi pi-check-circle text-primary mr-1"></i>
+                        }
+                        {{ option.text }}
+                    </span>
+                    <div class="flex items-center gap-2">
+                        @if (option.voters && option.voters.length > 0) {
+                        <div class="flex -space-x-1.5">
+                            @for (voter of option.voters.slice(0, 3); track voter.userId) {
+                            @if (voter.avatarUrl) {
+                            <img
+                                class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
+                                [alt]="voter.username"
+                                [src]="voter.avatarUrl"
+                                [pTooltip]="voter.username"
+                            />
+                            } @else {
+                            <div
+                                class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                                [pTooltip]="voter.username"
+                            >
+                                {{ voter.username.charAt(0).toUpperCase() }}
+                            </div>
+                            }
+                            }
+                            @if (option.voters.length > 3) {
+                            <div
+                                class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
+                            >
+                                +{{ option.voters.length - 3 }}
+                            </div>
+                            }
+                        </div>
+                        }
+                        <span class="text-surface-500 text-xs">{{ option.votes }} ({{ option.percentage }}%)</span>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <div class="text-surface-400 mt-4 flex items-center gap-3 text-xs">
+            <span><i class="pi pi-users mr-1"></i>{{ poll.totalVotes }} {{ t('threadDetail.poll.votes') }}</span>
+            @if (poll.isClosed) {
+            <span class="text-orange-500"><i class="pi pi-lock mr-1"></i>{{ t('threadDetail.poll.closed') }}</span>
+            } @else if (poll.myVote === null) {
+            <span class="text-primary"><i class="pi pi-info-circle mr-1"></i>{{ t('threadDetail.poll.clickToVote') }}</span>
+            } @else if (poll.myVote !== null && poll.canChangeVote) {
+            <span class="text-green-500"><i class="pi pi-check mr-1"></i>{{ t('threadDetail.poll.voted') }}</span>
+            <span class="text-primary text-xs">— {{ t('threadDetail.poll.changeVoteHint') }}</span>
+            } @else {
+            <span class="text-green-500"><i class="pi pi-check mr-1"></i>{{ t('threadDetail.poll.voted') }}</span>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Posts -->
+    @if (facade.loading() && facade.posts().length === 0) {
+    <div class="flex flex-col gap-3">
+        @for (_ of [1, 2, 3]; track $index) {
+        <div class="card overflow-hidden p-0">
+            <div class="flex">
+                <!-- Sidebar skeleton -->
+                <div
+                    class="bg-surface-50 dark:bg-surface-800/60 hidden w-44 shrink-0 flex-col items-center gap-3 px-4 py-6 sm:flex"
+                >
+                    <p-skeleton shape="circle" size="4.5rem" />
+                    <p-skeleton height="0.85rem" styleClass="w-3/4" />
+                    <p-skeleton height="1.4rem" styleClass="w-2/3 rounded-full" />
+                    <div class="mt-2 flex w-full flex-col gap-2">
+                        <p-skeleton height="1.75rem" styleClass="w-full rounded-lg" />
+                        <p-skeleton height="1.75rem" styleClass="w-full rounded-lg" />
+                    </div>
+                </div>
+                <!-- Content skeleton -->
+                <div class="flex-1 p-5">
+                    <div class="mb-4 flex items-center gap-3 sm:hidden">
+                        <p-skeleton shape="circle" size="2rem" />
+                        <p-skeleton height="0.85rem" styleClass="w-1/3" />
+                    </div>
+                    <p-skeleton height="0.75rem" styleClass="mb-4 w-1/4" />
+                    <p-skeleton height="5rem" />
+                    <p-skeleton height="0.75rem" styleClass="mt-4 w-1/3" />
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else { @for (post of facade.posts(); track post.id) {
+    <div
+        class="card overflow-hidden p-0"
+        [class.border-l-4]="post.isFirstPost"
+        [class.border-primary-400]="post.isFirstPost"
+        [class.dark:border-primary-500]="post.isFirstPost"
+        [class.dark:ring-green-600]="post.isBestAnswer"
+        [class.ring-2]="post.isBestAnswer"
+        [class.ring-green-400]="post.isBestAnswer"
+    >
+        <!-- Best-answer banner -->
+        @if (post.isBestAnswer) {
+        <div
+            class="flex items-center gap-2 bg-green-50 px-5 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/20 dark:text-green-400"
+        >
+            <i class="pi pi-check-circle"></i>
+            {{ t('threadDetail.bestAnswer') }}
+        </div>
+        }
+        <!-- Inner layout -->
+        <div class="flex">
+            <!-- ── Author Panel ──────────────────────────────────────────── -->
+            <div class="bg-surface-50 dark:bg-surface-800/60 hidden w-44 shrink-0 flex-col sm:flex">
+                <!-- Avatar + Name + Badges -->
+                <div class="relative flex flex-col items-center overflow-hidden px-4 pt-6 pb-4">
+                    <!-- Gradient backdrop -->
+                    <div
+                        class="from-primary-100/90 dark:from-primary-900/40 absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent dark:to-transparent"
+                    ></div>
+
+                    <!-- OP crown indicator -->
+                    @if (isOpPost(post)) {
+                    <div
+                        class="absolute top-2.5 right-3 flex items-center gap-1 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm dark:bg-amber-500/80"
+                    >
+                        <i class="pi pi-star-fill text-[9px]"></i> OP
+                    </div>
+                    }
+
+                    <!-- Avatar -->
+                    <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]">
+                        <div class="relative inline-block">
+                            @if (post.authorAvatarUrl) {
+                            <img
+                                class="hover:ring-primary/60 dark:ring-surface-700 h-[72px] w-[72px] rounded-full object-cover shadow-md ring-2 ring-white transition-all"
+                                [alt]="post.authorName"
+                                [src]="post.authorAvatarUrl"
+                            />
+                            } @else {
+                            <div
+                                class="from-primary-400 to-primary-600 hover:ring-primary/60 dark:from-primary-500 dark:to-primary-700 dark:ring-surface-700 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-gradient-to-br text-2xl font-bold text-white shadow-md ring-2 ring-white transition-all"
+                            >
+                                {{ post.authorName.charAt(0).toUpperCase() }}
+                            </div>
+                            }
+                            <div class="absolute -right-0.5 -bottom-0.5">
+                                <online-indicator [userId]="post.authorId" size="md" />
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Name -->
+                    <a
+                        class="text-surface-900 dark:text-surface-0 relative z-10 mt-2.5 max-w-full truncate text-center text-sm leading-tight font-bold no-underline hover:underline"
+                        [routerLink]="['/users', post.authorId]"
+                        >{{ post.authorName }}</a
+                    >
+
+                    <!-- Role badge -->
+                    <div class="mt-2">
+                        <p-tag
+                            [severity]="authorRoleSeverity(post.authorRole)"
+                            [value]="post.authorRole"
+                            styleClass="text-xs"
+                        />
+                    </div>
+                </div>
+
+                <!-- Gradient divider -->
+                <div
+                    class="via-surface-300 dark:via-surface-600/70 mx-4 h-px bg-gradient-to-r from-transparent to-transparent"
+                ></div>
+
+                <!-- Stats -->
+                <div class="flex flex-col gap-2 px-3 py-4">
+                    <!-- Level -->
+                    <div class="flex justify-center">
+                        <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
+                    </div>
+
+                    <!-- Post count -->
+                    <div class="bg-surface-100 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-2.5 py-1.5">
+                        <i class="pi pi-comments text-surface-400 dark:text-surface-500 text-xs"></i>
+                        <span class="text-surface-700 dark:text-surface-200 text-xs font-semibold"
+                            >{{ post.authorPostCount }}</span
+                        >
+                        <span class="text-surface-400 dark:text-surface-500 ml-auto text-[10px] tracking-wide uppercase"
+                            >{{ t('threadDetail.posts') }}</span
+                        >
+                    </div>
+
+                    <!-- Balance -->
+                    @if (post.authorBalance !== undefined) {
+                    <div class="flex items-center gap-2 rounded-lg bg-amber-50 px-2.5 py-1.5 dark:bg-amber-900/20">
+                        <i class="pi pi-wallet text-xs text-amber-500"></i>
+                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400"
+                            >{{ post.authorBalance }}</span
+                        >
+                        <span
+                            class="ml-auto text-[10px] tracking-wide text-amber-400/70 uppercase dark:text-amber-500/60"
+                            >Credits</span
+                        >
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- ── Post content ──────────────────────────────────────────── -->
+            <div class="min-w-0 flex-1 p-5">
+                <!-- Mobile author row -->
+                <div class="mb-3 flex items-center justify-between gap-3 sm:hidden">
+                    <a class="flex items-center gap-2 no-underline" [routerLink]="['/users', post.authorId]">
+                        <div class="relative inline-block">
+                            <div
+                                class="from-primary-400 to-primary-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white"
+                            >
+                                {{ post.authorName.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="absolute -right-0.5 -bottom-0.5">
+                                <online-indicator [userId]="post.authorId" size="sm" />
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                                >{{ post.authorName }}</span
+                            >
+                            <p-tag
+                                [severity]="authorRoleSeverity(post.authorRole)"
+                                [value]="post.authorRole"
+                                styleClass="text-[10px]"
+                            />
+                        </div>
+                    </a>
+                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
+                </div>
+
+                <!-- Desktop date + meta -->
+                <div class="mb-3 hidden items-center justify-between sm:flex">
+                    <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
+                    <div class="flex items-center gap-2">
+                        @if (post.isFirstPost) {
+                        <p-tag [value]="t('threadDetail.firstPost')" severity="info" styleClass="text-xs" />
+                        } @if (post.isEdited) {
+                        <span class="text-surface-400 text-xs italic">
+                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                            @if (post.editReason) { — {{ post.editReason }} }
+                            @if (post.editHistory && post.editHistory.length > 0) {
+                            <button
+                                class="text-primary ml-1 cursor-pointer border-none bg-transparent text-xs underline"
+                                (click)="openHistoryDialog(post)"
+                                type="button"
+                            >
+                                {{ t('threadDetail.editedTimes', { count: post.editCount }) }}
+                            </button>
+                            }
+                        </span>
+                        } @if (post.reactionCount > 0) {
+                        <span class="text-surface-500 text-sm">
+                            <i class="pi pi-heart mr-1 text-red-400"></i>{{ post.reactionCount }}
+                        </span>
+                        }
+                    </div>
+                </div>
+
+                <p-divider styleClass="my-3" />
+
+                <div class="post-content" [innerHTML]="post.content"></div>
+
+                <!-- Post actions -->
+                <div class="mt-4 flex items-center gap-1">
+                    <button
+                        (click)="toggleReact(post); $event.stopPropagation()"
+                        [class]="'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-red-50 dark:hover:bg-red-900/10 ' + (hasReacted(post.id) ? 'text-red-500' : 'text-surface-400 dark:text-surface-500 hover:text-red-400')"
+                        type="button"
+                    >
+                        <i
+                            class="pi text-sm"
+                            [class.pi-heart-fill]="hasReacted(post.id)"
+                            [class.pi-heart]="!hasReacted(post.id)"
+                        ></i>
+                        <span>{{ adjustedReactionCount(post) }}</span>
+                    </button>
+
+                    <button
+                        class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                        (click)="quotePost(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.quoteTooltip')"
+                    >
+                        <i class="pi pi-reply text-sm"></i>
+                        <span>{{ t('threadDetail.quote') }}</span>
+                    </button>
+
+                    @if (canEditPost(post)) {
+                    <button
+                        class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                        (click)="openEditDialog(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.editTooltip')"
+                    >
+                        <i class="pi pi-pencil text-sm"></i>
+                        <span>{{ t('threadDetail.editBtn') }}</span>
+                    </button>
+                    }
+
+                    <button
+                        class="text-surface-400 dark:text-surface-500 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-orange-900/10"
+                        (click)="openReport(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.reportTooltip')"
+                    >
+                        <i class="pi pi-flag text-sm"></i>
+                        <span>{{ t('threadDetail.report') }}</span>
+                    </button>
+
+                    <!-- Best-answer toggle: only for thread author on non-first posts -->
+                    @if (isThreadAuthor() && !post.isFirstPost) {
+                    <button
+                        (click)="markBestAnswer(post); $event.stopPropagation()"
+                        [class]="'ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ' + (post.isBestAnswer ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40' : 'text-surface-400 dark:text-surface-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/10')"
+                        [pTooltip]="post.isBestAnswer ? t('threadDetail.unmarkBestAnswerTooltip') : t('threadDetail.markBestAnswerTooltip')"
+                        type="button"
+                    >
+                        <i
+                            class="pi text-sm"
+                            [class.pi-check-circle]="post.isBestAnswer"
+                            [class.pi-circle]="!post.isBestAnswer"
+                        ></i>
+                        <span
+                            >{{ post.isBestAnswer ? t('threadDetail.unmarkBestAnswer') :
+                            t('threadDetail.markBestAnswer') }}</span
+                        >
+                    </button>
+                    }
+                </div>
+
+                @if (post.authorSignature) {
+                <div class="border-surface-200 dark:border-surface-700 mt-4 border-t pt-3">
+                    <p class="text-surface-400 dark:text-surface-500 text-xs whitespace-pre-line italic">
+                        {{ post.authorSignature }}
+                    </p>
+                </div>
+                }
+            </div>
+            <!-- end post content -->
+        </div>
+        <!-- end inner layout flex -->
+    </div>
+    <!-- end card -->
+    } @if (facade.postTotal() > pageSize) {
+    <p-paginator (onPageChange)="onPostsPageChange($event)" [rows]="pageSize" [totalRecords]="facade.postTotal()" />
+    } }
+
+    <!-- Real-time new post banner -->
+    @if (newPostHint()) {
+    <div class="border-primary bg-primary/10 flex items-center justify-between rounded-lg border p-3">
+        <span class="text-sm">
+            <i class="pi pi-bolt mr-1"></i>
+            {{ t('threadDetail.newPostHint', { author: newPostHint()!.authorName }) }}
+        </span>
+        <p-button (onClick)="loadNewPosts()" [label]="t('threadDetail.newPostShow')" [text]="true" size="small" icon="pi pi-refresh" />
+    </div>
+    }
+
+    <!-- Reply form -->
+    @if (!facade.currentThread()?.isLocked) {
+    <div class="card" id="reply-section">
+        <h2 class="mb-4 text-lg font-semibold">{{ t('threadDetail.replyHeader') }}</h2>
+
+        @if (replyError) {
+        <p-message [text]="replyError" severity="error" styleClass="mb-3 w-full" />
+        }
+
+        <p-editor
+            [(ngModel)]="replyContent"
+            [placeholder]="t('threadDetail.replyPlaceholder')"
+            [readonly]="submittingReply"
+            [style]="{ height: '200px' }"
+        />
+
+        <div class="mt-3 flex justify-end">
+            <p-button
+                (onClick)="submitReply()"
+                [disabled]="!replyContent.trim()"
+                [label]="t('threadDetail.replySend')"
+                [loading]="submittingReply"
+                icon="pi pi-send"
+            />
+        </div>
+    </div>
+    } @else {
+    <div class="card text-surface-500 py-6 text-center">
+        <i class="pi pi-lock mr-2"></i>{{ t('threadDetail.lockedMessage') }}
+    </div>
+    }
+</div>
+
+<!-- Report dialog -->
+<ng-container *transloco="let t">
+    <p-dialog
+        (visibleChange)="reportVisible.set($event)"
+        [draggable]="false"
+        [header]="t('threadDetail.reportDialog.header')"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+        [visible]="reportVisible()"
+    >
+        @if (reportSuccess()) {
+        <p-message [text]="t('threadDetail.reportDialog.success')" severity="success" styleClass="w-full mb-3" />
+        } @else {
+        <p class="text-surface-600 dark:text-surface-400 mb-4 text-sm">
+            {{ t('threadDetail.reportDialog.description') }}
+        </p>
+        <textarea
+            class="w-full"
+            [(ngModel)]="reportReason"
+            [autoResize]="false"
+            [placeholder]="t('threadDetail.reportDialog.placeholder')"
+            pTextarea
+            rows="4"
+        ></textarea>
+        }
+        <ng-template #footer>
+            @if (reportSuccess()) {
+            <p-button (onClick)="reportVisible.set(false); reportSuccess.set(false)" [label]="t('common.close')" />
+            } @else {
+            <p-button
+                (onClick)="reportVisible.set(false)"
+                [label]="t('common.cancel')"
+                [outlined]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="submitReport()"
+                [disabled]="!reportReason.trim()"
+                [label]="t('threadDetail.reportDialog.submit')"
+                icon="pi pi-flag"
+                severity="warn"
+            />
+            }
+        </ng-template>
+    </p-dialog>
+</ng-container>

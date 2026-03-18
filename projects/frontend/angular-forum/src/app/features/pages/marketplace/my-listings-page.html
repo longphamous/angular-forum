@@ -1,0 +1,213 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <p-confirmDialog />
+
+    <!-- Header -->
+    <div class="card">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <div class="mb-2">
+                    <p-button [text]="true" icon="pi pi-arrow-left" routerLink="/marketplace" severity="secondary" />
+                </div>
+                <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                    <i class="pi pi-list text-primary"></i>
+                    Meine Marktplatz-Aktivität
+                </h1>
+                <p class="text-surface-500 mt-1 text-sm">Verwalte deine Inserate und gesendeten Angebote</p>
+            </div>
+            <p-button icon="pi pi-plus" label="Inserat erstellen" routerLink="/marketplace/create" />
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
+        <p-tablist>
+            <p-tab value="0">
+                <i class="pi pi-tag mr-2"></i>
+                Meine Inserate @if (facade.myListings().length > 0) {
+                <span class="bg-primary ml-1 rounded-full px-2 py-0.5 text-xs text-white"
+                    >{{ facade.myListings().length }}</span
+                >
+                }
+            </p-tab>
+            <p-tab value="1">
+                <i class="pi pi-send mr-2"></i>
+                Gesendete Angebote @if (facade.myOffers().length > 0) {
+                <span class="bg-primary ml-1 rounded-full px-2 py-0.5 text-xs text-white"
+                    >{{ facade.myOffers().length }}</span
+                >
+                }
+            </p-tab>
+        </p-tablist>
+
+        <!-- My Listings tab -->
+        <p-tabpanel value="0">
+            <div class="mt-4">
+                @if (facade.loading()) {
+                <div class="flex flex-col gap-3">
+                    @for (_ of [1, 2, 3]; track $index) {
+                    <div class="card flex items-center gap-4">
+                        <p-skeleton height="60px" styleClass="rounded-lg shrink-0" width="80px" />
+                        <div class="flex-1">
+                            <p-skeleton height="1.1rem" styleClass="mb-2 w-1/2" />
+                            <p-skeleton height="0.85rem" styleClass="w-1/3" />
+                        </div>
+                        <p-skeleton height="2rem" width="70px" />
+                    </div>
+                    }
+                </div>
+                } @else if (facade.myListings().length === 0) {
+                <div class="card flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-tag text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+                    <h3 class="text-surface-700 dark:text-surface-300 mb-1 text-lg font-semibold">
+                        Noch keine Inserate
+                    </h3>
+                    <p class="text-surface-500 mb-4 text-sm">Erstelle dein erstes Inserat und biete etwas an!</p>
+                    <p-button icon="pi pi-plus" label="Inserat erstellen" routerLink="/marketplace/create" />
+                </div>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    @for (listing of facade.myListings(); track listing.id) {
+                    <div
+                        class="card border-surface-200 dark:border-surface-700 flex flex-col gap-4 border sm:flex-row sm:items-center"
+                    >
+                        <!-- Image placeholder -->
+                        <div
+                            class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br"
+                        >
+                            @if (listing.images.length) {
+                            <img class="h-full w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
+                            } @else {
+                            <i class="pi pi-shopping-bag text-surface-300 text-xl"></i>
+                            }
+                        </div>
+
+                        <!-- Info -->
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-1 flex flex-wrap items-center gap-2">
+                                <h3 class="text-surface-900 dark:text-surface-0 truncate font-semibold">
+                                    {{ listing.title }}
+                                </h3>
+                                <p-tag
+                                    [severity]="statusSeverity(listing.status)"
+                                    [value]="statusLabel(listing.status)"
+                                    styleClass="text-xs"
+                                />
+                            </div>
+                            <div class="text-surface-500 flex flex-wrap gap-3 text-xs">
+                                <span class="text-primary font-medium"
+                                    >{{ formatPrice(listing.price, listing.currency) }}</span
+                                >
+                                <span>{{ typeLabel(listing.type) }}</span>
+                                <span>{{ listing.categoryName }}</span>
+                                <span><i class="pi pi-comment mr-1"></i>{{ listing.commentCount }}</span>
+                                <span><i class="pi pi-send mr-1"></i>{{ listing.offerCount }} Angebote</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex shrink-0 gap-2">
+                            <p-button
+                                [pTooltip]="'Ansehen'"
+                                [routerLink]="['/marketplace', listing.id]"
+                                [text]="true"
+                                icon="pi pi-eye"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="confirmDelete(listing.id)"
+                                [pTooltip]="'Löschen'"
+                                [text]="true"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                size="small"
+                            />
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- Sent offers tab -->
+        <p-tabpanel value="1">
+            <div class="mt-4">
+                @if (facade.myOffers().length === 0) {
+                <div class="card flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-send text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+                    <h3 class="text-surface-700 dark:text-surface-300 mb-1 text-lg font-semibold">
+                        Keine Angebote gesendet
+                    </h3>
+                    <p class="text-surface-500 text-sm">Stöbere im Marktplatz und sende dein erstes Angebot!</p>
+                    <p-button
+                        icon="pi pi-shopping-cart"
+                        label="Zum Marktplatz"
+                        routerLink="/marketplace"
+                        styleClass="mt-4"
+                    />
+                </div>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    @for (offer of facade.myOffers(); track offer.id) {
+                    <div
+                        class="card border-surface-200 dark:border-surface-700 flex flex-col gap-4 border sm:flex-row sm:items-center"
+                    >
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-1 flex flex-wrap items-center gap-2">
+                                <span class="text-surface-900 dark:text-surface-0 font-semibold">
+                                    Angebot für Inserat
+                                </span>
+                                <p-tag
+                                    [severity]="offerStatusSeverity(offer.status)"
+                                    [value]="offerStatusLabel(offer.status)"
+                                    styleClass="text-xs"
+                                />
+                            </div>
+                            <div class="text-surface-500 flex flex-wrap gap-3 text-xs">
+                                @if (offer.amount !== null) {
+                                <span class="text-primary font-medium">
+                                    {{ offer.amount | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE' }}
+                                </span>
+                                } @else {
+                                <span>Kein Preis angegeben</span>
+                                }
+                                <span class="truncate italic">{{ offer.message }}</span>
+                            </div>
+                            @if (offer.status === 'countered' && offer.counterMessage) {
+                            <div class="bg-info-50 dark:bg-info-900/20 mt-2 rounded-lg px-3 py-2 text-xs">
+                                <span class="font-medium">Gegenangebot: </span>
+                                @if (offer.counterAmount !== null) {
+                                <span class="text-primary font-bold"
+                                    >{{ offer.counterAmount | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE' }}</span
+                                >
+                                } – {{ offer.counterMessage }}
+                            </div>
+                            }
+                        </div>
+                        <div class="flex shrink-0 gap-2">
+                            <p-button
+                                [pTooltip]="'Inserat ansehen'"
+                                [routerLink]="['/marketplace', offer.listingId]"
+                                [text]="true"
+                                icon="pi pi-eye"
+                                size="small"
+                            />
+                            @if (offer.status === 'pending') {
+                            <p-button
+                                (onClick)="withdrawOffer(offer.listingId, offer.id)"
+                                [outlined]="true"
+                                icon="pi pi-times"
+                                label="Zurückziehen"
+                                severity="secondary"
+                                size="small"
+                            />
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </p-tabpanel>
+    </p-tabs>
+</div>

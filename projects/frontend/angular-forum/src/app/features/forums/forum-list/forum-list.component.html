@@ -1,150 +1,111 @@
-<div class="card">
-    <div class="mb-4 text-xl font-semibold">{{ "forum" | transloco }}</div>
-    <p-menubar [model]="nestedMenuItems">
-        <ng-template #end>
-            <p-iconfield>
-                <p-inputicon class="pi pi-search" />
-                <input pInputText placeholder="Search" type="text" />
-            </p-iconfield>
-        </ng-template>
-    </p-menubar>
-</div>
+<div class="flex flex-col gap-6" *transloco="let t">
+    <app-teaser-slideshow />
 
-<div class="card">
-    <div class="text-xl font-semibold">{{ "forum.list" | transloco }}</div>
-    <p-dataview [layout]="layout" [value]="products">
-        <ng-template #header>
-            <div class="flex justify-end">
-                <p-select-button [(ngModel)]="layout" [allowEmpty]="false" [options]="options">
-                    <ng-template #item let-option>
-                        <i class="pi" [ngClass]="{ 'pi-bars': option === 'list', 'pi-table': option === 'grid' }"></i>
-                    </ng-template>
-                </p-select-button>
+    <div class="card">
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="flex items-center gap-2 text-2xl font-bold">{{ t("forum.title") }} <admin-quicklink route="/admin/forum" /></h1>
+            <p-button [label]="t('forum.newForum')" icon="pi pi-plus" severity="secondary" />
+        </div>
+
+        @if (facade.error()) {
+            <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
+        }
+
+        @if (facade.loading()) {
+            <div class="flex flex-col gap-4">
+                @for (_ of [1, 2, 3]; track $index) {
+                    <div class="card border-surface-200 dark:border-surface-700 rounded border">
+                        <p-skeleton height="2rem" styleClass="mb-3 w-1/3" />
+                        <p-skeleton height="1rem" styleClass="mb-4 w-1/2" />
+                        @for (__ of [1, 2]; track $index) {
+                            <p-skeleton height="3.5rem" styleClass="mb-2" />
+                        }
+                    </div>
+                }
             </div>
-        </ng-template>
+        } @else {
+            @for (category of facade.categories(); track category.id) {
+                <div class="mb-6">
+                    <div class="bg-primary-500 dark:bg-primary-700 mb-1 rounded-t px-4 py-3">
+                        <span class="text-lg font-semibold text-white">{{ category.name }}</span>
+                        @if (category.description) {
+                            <p class="text-primary-100 mt-0.5 text-sm">{{ category.description }}</p>
+                        }
+                    </div>
 
-        <ng-template #list let-items>
-            <div class="flex flex-col">
-                <div *ngFor="let item of items; let i = index">
-                    <div
-                        class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center"
-                        [ngClass]="{ 'border-surface border-t': i !== 0 }"
-                    >
-                        <div class="relative md:w-40">
-                            <img
-                                class="mx-auto block w-full rounded xl:block"
-                                [alt]="item.name"
-                                src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}"
-                            />
-                            <div class="rounded-border absolute bg-black/70" [style]="{ left: '4px', top: '4px' }">
-                                <p-tag [severity]="getSeverity(item)" [value]="item.inventoryStatus"></p-tag>
-                            </div>
-                        </div>
-                        <div class="flex flex-1 flex-col justify-between gap-6 md:flex-row md:items-center">
-                            <div class="flex flex-row items-start justify-between gap-2 md:flex-col">
-                                <div>
-                                    <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{
-                                        item.category
-                                    }}</span>
-                                    <div class="mt-2 text-lg font-medium">{{ item.name }}</div>
-                                </div>
-                                <div class="bg-surface-100 p-1" style="border-radius: 30px">
-                                    <div
-                                        class="bg-surface-0 flex items-center justify-center gap-2 px-2 py-1"
-                                        style="
-                                            border-radius: 30px;
-                                            box-shadow:
-                                                0px 1px 2px 0px rgba(0, 0, 0, 0.04),
-                                                0px 1px 2px 0px rgba(0, 0, 0, 0.06);
-                                        "
-                                    >
-                                        <span class="text-surface-900 text-sm font-medium">{{ item.rating }}</span>
-                                        <i class="pi pi-star-fill text-yellow-500"></i>
+                    <div class="border-surface-200 dark:border-surface-700 rounded-b border border-t-0">
+                        @if (!category.forums || category.forums.length === 0) {
+                            <div class="text-surface-500 px-4 py-6 text-center text-sm">{{ t("forum.noForums") }}</div>
+                        } @else {
+                            @for (forum of category.forums; track forum.id; let last = $last) {
+                                <a
+                                    class="hover:bg-surface-50 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-4 px-4 py-4 no-underline transition-colors"
+                                    [class.border-b]="!last"
+                                    [class.border-surface-200]="!last"
+                                    [class.dark:border-surface-700]="!last"
+                                    [routerLink]="['/forum/forums', forum.id]"
+                                >
+                                    <div class="flex-shrink-0">
+                                        <i
+                                            class="pi text-primary-500 text-2xl"
+                                            [class.pi-comments]="!forum.isLocked"
+                                            [class.pi-lock]="forum.isLocked"
+                                        ></i>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-8 md:items-end">
-                                <span class="text-xl font-semibold">$ {{ item.price }}</span>
-                                <div class="flex flex-row-reverse gap-2 md:flex-row">
-                                    <p-button [outlined]="true" icon="pi pi-heart" styleClass="h-full"></p-button>
-                                    <p-button
-                                        [disabled]="item.inventoryStatus === 'OUTOFSTOCK'"
-                                        icon="pi pi-shopping-cart"
-                                        label="Buy Now"
-                                        styleClass="flex-auto md:flex-initial whitespace-nowrap"
-                                    ></p-button>
-                                </div>
-                            </div>
-                        </div>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-surface-900 dark:text-surface-0 font-semibold">{{
+                                                forum.name
+                                            }}</span>
+                                            @if (forum.isLocked) {
+                                                <p-tag [value]="t('forum.locked')" severity="danger" />
+                                            }
+                                            @if (forum.isPrivate) {
+                                                <p-tag [value]="t('forum.private')" severity="warn" />
+                                            }
+                                        </div>
+                                        @if (forum.description) {
+                                            <p class="text-surface-500 dark:text-surface-400 mt-0.5 truncate text-sm">
+                                                {{ forum.description }}
+                                            </p>
+                                        }
+                                    </div>
+
+                                    <div class="flex shrink-0 items-center gap-8 text-right">
+                                        <div class="hidden sm:block">
+                                            <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                                {{ forum.threadCount }}
+                                            </div>
+                                            <div class="text-surface-500 text-xs">{{ t("forum.threads") }}</div>
+                                        </div>
+                                        <div class="hidden sm:block">
+                                            <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                                {{ forum.postCount }}
+                                            </div>
+                                            <div class="text-surface-500 text-xs">{{ t("forum.posts") }}</div>
+                                        </div>
+                                        <div class="hidden md:block">
+                                            @if (forum.lastPostAt) {
+                                                <div class="text-surface-500 text-xs">
+                                                    {{ forum.lastPostAt | date: "dd.MM.yy HH:mm" }}
+                                                </div>
+                                            } @else {
+                                                <div class="text-surface-400 text-xs">—</div>
+                                            }
+                                            <div class="text-surface-400 text-xs">{{ t("forum.lastPost") }}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        }
                     </div>
                 </div>
-            </div>
-        </ng-template>
+            }
 
-        <ng-template #grid let-items>
-            <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-12 p-2 sm:col-span-6 lg:col-span-4" *ngFor="let item of items; let i = index">
-                    <div
-                        class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 flex flex-col rounded border p-6"
-                    >
-                        <div class="relative w-full shadow-sm">
-                            <img
-                                class="w-full rounded"
-                                [alt]="item.name"
-                                src="https://primefaces.org/cdn/primevue/images/product/{{ item.image }}"
-                            />
-                            <div
-                                class="rounded-border absolute bg-black/70"
-                                [style]="{
-                                    left: '4px',
-                                    top: '4px'
-                                }"
-                            >
-                                <p-tag [severity]="getSeverity(item)" [value]="item.inventoryStatus"></p-tag>
-                            </div>
-                        </div>
-                        <div class="pt-12">
-                            <div class="flex flex-row items-start justify-between gap-2">
-                                <div>
-                                    <span class="text-surface-500 dark:text-surface-400 text-sm font-medium">{{
-                                        item.category
-                                    }}</span>
-                                    <div class="mt-1 text-lg font-medium">
-                                        {{ item.name }}
-                                    </div>
-                                </div>
-                                <div class="bg-surface-100 p-1" style="border-radius: 30px">
-                                    <div
-                                        class="bg-surface-0 flex items-center justify-center gap-2 px-2 py-1"
-                                        style="
-                                            border-radius: 30px;
-                                            box-shadow:
-                                                0px 1px 2px 0px rgba(0, 0, 0, 0.04),
-                                                0px 1px 2px 0px rgba(0, 0, 0, 0.06);
-                                        "
-                                    >
-                                        <span class="text-surface-900 text-xs font-medium">{{ item.rating }}</span>
-                                        <i class="pi pi-star-fill text-yellow-500"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-6 flex flex-col gap-6">
-                                <span class="text-2xl font-semibold">$ {{ item.price }}</span>
-                                <div class="flex gap-2">
-                                    <p-button
-                                        class="flex-auto whitespace-nowrap"
-                                        [disabled]="item.inventoryStatus === 'OUTOFSTOCK'"
-                                        icon="pi pi-shopping-cart"
-                                        label="Buy Now"
-                                        styleClass="w-full"
-                                    ></p-button>
-                                    <p-button [outlined]="true" icon="pi pi-heart" styleClass="h-full"></p-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-    </p-dataview>
+            @if (facade.categories().length === 0) {
+                <div class="card text-surface-500 py-12 text-center">{{ t("forum.noCategories") }}</div>
+            }
+        }
+    </div>
 </div>

@@ -2,8 +2,12 @@ import { Forum } from "./forum";
 
 export interface ForumCategory {
     id: string;
-    title: string;
+    name: string;
+    slug: string;
     description?: string;
-    order: number;
-    subforums?: Forum[];
+    position: number;
+    isActive: boolean;
+    forums?: Forum[];
+    createdAt: string;
+    updatedAt: string;
 }

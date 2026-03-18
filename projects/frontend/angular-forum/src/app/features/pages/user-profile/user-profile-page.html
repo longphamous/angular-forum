@@ -1,0 +1,861 @@
+<div class="mx-auto max-w-5xl" *transloco="let t">
+    @if (loading()) {
+    <!-- Skeleton -->
+    <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border">
+        <p-skeleton height="280px" styleClass="!rounded-b-none" width="100%" />
+        <div class="p-6">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
+                <p-skeleton shape="circle" size="7rem" styleClass="-mt-16" />
+                <div class="flex flex-1 flex-col gap-3">
+                    <p-skeleton height="2rem" width="50%" />
+                    <p-skeleton height="1rem" width="30%" />
+                    <p-skeleton height="1rem" width="70%" />
+                    <div class="flex gap-6">
+                        <p-skeleton height="1rem" width="6rem" />
+                        <p-skeleton height="1rem" width="6rem" />
+                        <p-skeleton height="1rem" width="6rem" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    } @else { @let p = profile(); @if (p) {
+    <!-- ── Cover Photo ────────────────────────────────────────────────── -->
+    <div
+        class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+    >
+        <div class="profile-cover">
+            @if (p.coverUrl) {
+            <img class="cover-image" [alt]="p.displayName" [src]="p.coverUrl" />
+            } @else {
+            <div class="cover-gradient"></div>
+            } @if (isOwnProfile()) {
+            <button class="cover-edit-btn" (click)="coverEditing.set(true)" type="button">
+                <i class="pi pi-camera"></i>
+                <span>{{ t('userProfile.changeCover') }}</span>
+            </button>
+            }
+        </div>
+
+        <!-- ── Avatar + Info Section ──────────────────────────────────── -->
+        <div class="px-6 pb-6">
+            <!-- Avatar overlapping cover -->
+            <div class="profile-avatar-wrapper">
+                @if (p.avatarUrl) {
+                <img class="profile-avatar" [alt]="p.displayName" [src]="p.avatarUrl" />
+                } @else {
+                <div class="profile-avatar-fallback">{{ initial(p) }}</div>
+                }
+                <div class="absolute -right-1 bottom-2">
+                    <online-indicator [userId]="p.id" size="lg" />
+                </div>
+            </div>
+
+            <!-- Name, username, role -->
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ p.displayName }}</h1>
+                <span class="text-surface-500 text-base">&#64;{{ p.username }}</span>
+                <p-tag [severity]="roleSeverity(p.role)" [value]="roleLabel(p.role)" />
+            </div>
+
+            <!-- Bio -->
+            @if (p.bio) {
+            <p class="text-surface-700 dark:text-surface-300 mt-2 mb-0 text-sm leading-relaxed">{{ p.bio }}</p>
+            }
+
+            <!-- Meta row -->
+            <div class="mt-3 flex flex-wrap gap-5 text-sm">
+                @if (p.location) {
+                <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
+                    <i class="pi pi-map-marker text-xs"></i>
+                    {{ p.location }}
+                </span>
+                } @if (p.website) {
+                <a
+                    class="text-primary flex items-center gap-1.5 text-sm no-underline hover:underline"
+                    [href]="p.website"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >
+                    <i class="pi pi-globe text-xs"></i>
+                    {{ p.website }}
+                </a>
+                }
+
+                <!-- Social Media Links -->
+                @if (p.socialLinks?.['twitter']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://x.com/' + p.socialLinks!['twitter']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-twitter text-xs"></i>{{ p.socialLinks!['twitter'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['discord']) {
+                <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5 text-sm">
+                    <i class="pi pi-discord text-xs"></i>{{ p.socialLinks!['discord'] }}
+                </span>
+                }
+                @if (p.socialLinks?.['youtube']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://youtube.com/' + p.socialLinks!['youtube']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-youtube text-xs"></i>{{ p.socialLinks!['youtube'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['twitch']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://twitch.tv/' + p.socialLinks!['twitch']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-twitch text-xs"></i>{{ p.socialLinks!['twitch'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['instagram']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://instagram.com/' + p.socialLinks!['instagram']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-instagram text-xs"></i>{{ p.socialLinks!['instagram'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['github']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://github.com/' + p.socialLinks!['github']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-github text-xs"></i>{{ p.socialLinks!['github'] }}
+                </a>
+                }
+
+                <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
+                    <i class="pi pi-calendar text-xs"></i>
+                    {{ t('userProfile.memberSince') }} {{ formatDate(p.createdAt) }}
+                </span>
+            </div>
+
+            <!-- Stats + Action row -->
+            <div class="mt-4 flex flex-wrap items-center gap-4">
+                <div class="flex gap-1">
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">{{ p.postCount }}</div>
+                        <div class="profile-stat-label">{{ t('userProfile.posts') }}</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">{{ profileStats()?.followerCount ?? 0 }}</div>
+                        <div class="profile-stat-label">{{ t('chronik.followers') }}</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">{{ profileStats()?.followingCount ?? 0 }}</div>
+                        <div class="profile-stat-label">{{ t('chronik.following') }}</div>
+                    </div>
+                </div>
+
+                <div class="ml-auto flex items-center gap-2">
+                    @if (isOwnProfile()) {
+                    <p-button
+                        [label]="t('userProfile.editProfile')"
+                        [outlined]="true"
+                        icon="pi pi-pencil"
+                        routerLink="/profile"
+                        severity="secondary"
+                        size="small"
+                    />
+                    } @else {
+                    <p-button
+                        (onClick)="toggleFollow()"
+                        [icon]="profileStats()?.isFollowing ? 'pi pi-user-minus' : 'pi pi-user-plus'"
+                        [label]="profileStats()?.isFollowing ? t('chronik.unfollow') : t('chronik.follow')"
+                        [outlined]="profileStats()?.isFollowing ?? false"
+                        size="small"
+                    />
+                    <!-- Friend action buttons -->
+                    @let fs = friendStatus(); @if (fs) { @if (fs.status === 'none') {
+                    <p-button
+                        (onClick)="sendFriendRequest()"
+                        [label]="t('friends.addFriend')"
+                        icon="pi pi-user-plus"
+                        size="small"
+                    />
+                    } @else if (fs.status === 'pending_sent') {
+                    <p-button
+                        (onClick)="cancelFriendRequest()"
+                        [label]="t('friends.requestSent')"
+                        [outlined]="true"
+                        icon="pi pi-clock"
+                        severity="secondary"
+                        size="small"
+                    />
+                    } @else if (fs.status === 'pending_received') {
+                    <p-button
+                        (onClick)="acceptFriendRequest()"
+                        [label]="t('friends.accept')"
+                        icon="pi pi-check"
+                        severity="success"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="declineFriendRequest()"
+                        [label]="t('friends.decline')"
+                        [outlined]="true"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                    />
+                    } @else if (fs.status === 'friends') {
+                    <p-tag [value]="t('friends.isFriend')" icon="pi pi-check-circle" severity="success" />
+                    <p-button
+                        (onClick)="removeFriend()"
+                        [label]="t('friends.removeFriend')"
+                        [outlined]="true"
+                        icon="pi pi-user-minus"
+                        severity="danger"
+                        size="small"
+                    />
+                    } } }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Two-column layout: Sidebar + Feed ──────────────────────────── -->
+    <div class="profile-content mt-5">
+        <!-- ── Sidebar ────────────────────────────────────────────────── -->
+        <div class="profile-sidebar">
+            <!-- About card -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">
+                    <i class="pi pi-user"></i>
+                    {{ t('userProfile.about') }}
+                </h3>
+                <div class="flex flex-col gap-3 text-sm">
+                    @if (p.gender) {
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-user text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.gender') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium"
+                            >{{ genderLabel(p.gender) }}</span
+                        >
+                    </div>
+                    } @if (p.birthday) {
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-gift text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.birthday') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium"
+                            >{{ formatDate(p.birthday, 'full') }}</span
+                        >
+                    </div>
+                    } @if (p.location) {
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-map-marker text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.location') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium">{{ p.location }}</span>
+                    </div>
+                    } @if (p.website) {
+                    <div class="flex items-start gap-2">
+                        <i class="pi pi-globe text-surface-400 mt-0.5 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.website') }}</span>
+                        <a
+                            class="text-primary min-w-0 truncate font-medium no-underline hover:underline"
+                            [href]="p.website"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            >{{ p.website }}</a
+                        >
+                    </div>
+                    } @if (!p.gender && !p.birthday && !p.location && !p.website) {
+                    <p class="text-surface-400 text-xs">{{ t('userProfile.noInfo') }}</p>
+                    }
+
+                    <p-divider styleClass="my-2" />
+
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-calendar text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.member') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium"
+                            >{{ formatDate(p.createdAt) }}</span
+                        >
+                    </div>
+                    @if (p.lastLoginAt) {
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-clock text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.lastActive') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium"
+                            >{{ formatDate(p.lastLoginAt) }}</span
+                        >
+                    </div>
+                    }
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-comments text-surface-400 w-4 text-xs"></i>
+                        <span class="text-surface-500 w-20 shrink-0">{{ t('userProfile.posts') }}</span>
+                        <span class="text-surface-800 dark:text-surface-200 font-medium">{{ p.postCount }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level / XP card -->
+            @if (p.level) {
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">
+                    <i class="pi pi-star text-yellow-500"></i>
+                    Level &amp; XP
+                </h3>
+                <level-progress
+                    [level]="p.level"
+                    [levelName]="p.levelName"
+                    [xp]="p.xp"
+                    [xpProgressPercent]="p.xpProgressPercent"
+                    [xpToNextLevel]="p.xpToNextLevel"
+                />
+            </div>
+            }
+
+            <!-- Achievements card -->
+            @if (achievements().length > 0) {
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">
+                    <i class="pi pi-trophy text-yellow-500"></i>
+                    {{ t('userProfile.achievements') }}
+                    <span class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium"
+                        >{{ achievements().length }}</span
+                    >
+                </h3>
+                <div class="grid grid-cols-3 gap-2">
+                    @for (a of achievements(); track a.id) {
+                    <achievement-badge [achievement]="a" />
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Anime list card -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">
+                    <i class="pi pi-list"></i>
+                    {{ t('userProfile.animeListTitle') }}
+                </h3>
+                <p class="text-surface-500 mt-0 mb-3 text-sm">
+                    {{ t('userProfile.animeListDesc', { name: p.displayName }) }}
+                </p>
+                <p-button
+                    [label]="t('userProfile.animeListBtn', { name: p.displayName })"
+                    [outlined]="true"
+                    [routerLink]="['/users', p.id, 'anime-list']"
+                    icon="pi pi-list"
+                    severity="secondary"
+                    size="small"
+                    styleClass="w-full"
+                />
+            </div>
+        </div>
+
+        <!-- ── Main Feed ──────────────────────────────────────────────── -->
+        <div class="profile-feed">
+            <!-- Composer (own profile only) -->
+            @if (isOwnProfile()) {
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
+            >
+                <h3 class="text-surface-500 mb-3 text-sm font-semibold">{{ t('chronik.whatMovesYou') }}</h3>
+
+                <!-- Type selector -->
+                <div class="mb-3 flex gap-2">
+                    <p-button
+                        (onClick)="formType.set('text')"
+                        [label]="t('chronik.type.text')"
+                        [outlined]="formType() !== 'text'"
+                        icon="pi pi-align-left"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="formType.set('image')"
+                        [label]="t('chronik.type.image')"
+                        [outlined]="formType() !== 'image'"
+                        icon="pi pi-image"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="formType.set('link')"
+                        [label]="t('chronik.type.link')"
+                        [outlined]="formType() !== 'link'"
+                        icon="pi pi-link"
+                        size="small"
+                    />
+                </div>
+
+                <!-- Content textarea -->
+                <textarea
+                    class="w-full"
+                    [(ngModel)]="formContent"
+                    [disabled]="saving()"
+                    [placeholder]="t('chronik.whatMovesYou')"
+                    pTextarea
+                    rows="3"
+                ></textarea>
+
+                <!-- Image URL -->
+                @if (formType() === 'image') {
+                <div class="mt-3">
+                    <label
+                        class="text-surface-600 dark:text-surface-400 mb-1 block text-sm"
+                        for="profile-chronik-image-url"
+                    >
+                        {{ t('chronik.imageUrl') }}
+                    </label>
+                    <input
+                        class="w-full"
+                        id="profile-chronik-image-url"
+                        [(ngModel)]="formImageUrl"
+                        [disabled]="saving()"
+                        [placeholder]="t('chronik.imageUrl')"
+                        pInputText
+                        type="url"
+                    />
+                </div>
+                }
+
+                <!-- Link fields -->
+                @if (formType() === 'link') {
+                <div class="mt-3 flex flex-col gap-2">
+                    <div>
+                        <label
+                            class="text-surface-600 dark:text-surface-400 mb-1 block text-sm"
+                            for="profile-chronik-link-url"
+                        >
+                            {{ t('chronik.linkUrl') }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="profile-chronik-link-url"
+                            [(ngModel)]="formLinkUrl"
+                            [disabled]="saving()"
+                            [placeholder]="t('chronik.linkUrl')"
+                            pInputText
+                            type="url"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-surface-600 dark:text-surface-400 mb-1 block text-sm"
+                            for="profile-chronik-link-title"
+                        >
+                            {{ t('chronik.linkTitle') }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="profile-chronik-link-title"
+                            [(ngModel)]="formLinkTitle"
+                            [disabled]="saving()"
+                            [placeholder]="t('chronik.linkTitle')"
+                            pInputText
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-surface-600 dark:text-surface-400 mb-1 block text-sm"
+                            for="profile-chronik-link-desc"
+                        >
+                            {{ t('chronik.linkDescription') }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="profile-chronik-link-desc"
+                            [(ngModel)]="formLinkDescription"
+                            [disabled]="saving()"
+                            [placeholder]="t('chronik.linkDescription')"
+                            pInputText
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-surface-600 dark:text-surface-400 mb-1 block text-sm"
+                            for="profile-chronik-link-img"
+                        >
+                            {{ t('chronik.linkPreview') }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="profile-chronik-link-img"
+                            [(ngModel)]="formLinkImageUrl"
+                            [disabled]="saving()"
+                            [placeholder]="t('chronik.imageUrl')"
+                            pInputText
+                            type="url"
+                        />
+                    </div>
+                </div>
+                }
+
+                <!-- Visibility + Submit -->
+                <div class="mt-3 flex items-center justify-between gap-2">
+                    <p-select
+                        (ngModelChange)="formVisibility.set($event)"
+                        [ngModel]="formVisibility()"
+                        [options]="visibilityOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-40"
+                    />
+                    <p-button
+                        (onClick)="submitEntry()"
+                        [disabled]="!formContent.trim()"
+                        [label]="t('chronik.post')"
+                        [loading]="saving()"
+                        icon="pi pi-send"
+                    />
+                </div>
+            </div>
+            }
+
+            <!-- Loading skeletons -->
+            @if (chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) { @for (i of [1,2,3];
+            track i) {
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col gap-3 rounded-xl border p-4"
+            >
+                <div class="flex items-center gap-3">
+                    <p-skeleton shape="circle" size="2.5rem" />
+                    <div class="flex flex-col gap-1">
+                        <p-skeleton height="0.875rem" width="8rem" />
+                        <p-skeleton height="0.75rem" width="5rem" />
+                    </div>
+                </div>
+                <p-skeleton height="4rem" width="100%" />
+                <div class="flex gap-4">
+                    <p-skeleton height="1.5rem" width="4rem" />
+                    <p-skeleton height="1.5rem" width="4rem" />
+                </div>
+            </div>
+            } }
+
+            <!-- Empty state -->
+            @if (!chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
+            >
+                <i class="pi pi-history text-surface-300 text-5xl"></i>
+                <p class="text-surface-500 text-sm">{{ t('chronik.noEntries') }}</p>
+            </div>
+            }
+
+            <!-- Entry list -->
+            @for (entry of chronikFacade.profileEntries(); track entry.id) {
+            <div
+                class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col gap-0 overflow-hidden rounded-xl border"
+            >
+                <!-- Entry Header -->
+                <div class="flex items-start justify-between p-4 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            @if (entry.authorAvatar) {
+                            <img
+                                class="h-10 w-10 rounded-full object-cover"
+                                [alt]="entry.authorDisplayName"
+                                [src]="entry.authorAvatar"
+                            />
+                            } @else {
+                            <p-avatar
+                                [label]="getAvatarLabel(entry.authorDisplayName)"
+                                shape="circle"
+                                styleClass="bg-primary-100 text-primary font-bold"
+                            />
+                            }
+                            <div class="absolute -right-0.5 -bottom-0.5">
+                                <online-indicator [userId]="entry.authorId" size="sm" />
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-surface-900 dark:text-surface-0 m-0 leading-tight font-semibold">
+                                {{ entry.authorDisplayName }}
+                            </p>
+                            <div class="text-surface-400 flex items-center gap-2 text-xs">
+                                <span>&#64;{{ entry.authorUsername }}</span>
+                                <span>&bull;</span>
+                                <span>{{ entry.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visibility badge + delete -->
+                    <div class="flex items-center gap-2">
+                        <p-tag
+                            [icon]="visibilityIcon(entry.visibility)"
+                            [value]="entry.visibility"
+                            severity="secondary"
+                        />
+                        @if (entry.canDelete) {
+                        <p-button
+                            (onClick)="deleteEntry(entry)"
+                            [pTooltip]="t('chronik.delete')"
+                            [text]="true"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            size="small"
+                        />
+                        }
+                    </div>
+                </div>
+
+                <!-- Entry Content -->
+                <div class="px-4 pb-3">
+                    <pre
+                        class="text-surface-800 dark:text-surface-100 m-0 font-sans text-sm leading-relaxed whitespace-pre-wrap"
+                    >
+{{ entry.content }}</pre
+                    >
+                </div>
+
+                <!-- Image -->
+                @if (entry.imageUrl) {
+                <div class="px-4 pb-3">
+                    <img class="max-h-80 w-full rounded-lg object-cover" [alt]="entry.content" [src]="entry.imageUrl" />
+                </div>
+                }
+
+                <!-- Link card -->
+                @if (entry.linkUrl) {
+                <div class="mx-4 mb-3">
+                    <a
+                        class="border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 block overflow-hidden rounded-xl border transition-colors"
+                        [href]="entry.linkUrl"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                    >
+                        @if (entry.linkImageUrl) {
+                        <img
+                            class="h-40 w-full object-cover"
+                            [alt]="entry.linkTitle ?? ''"
+                            [src]="entry.linkImageUrl"
+                        />
+                        }
+                        <div class="p-3">
+                            @if (entry.linkDomain) {
+                            <p class="text-surface-400 mb-0.5 text-xs tracking-wide uppercase">
+                                {{ entry.linkDomain }}
+                            </p>
+                            } @if (entry.linkTitle) {
+                            <p class="text-surface-900 dark:text-surface-0 m-0 font-semibold">{{ entry.linkTitle }}</p>
+                            } @if (entry.linkDescription) {
+                            <p class="text-surface-500 m-0 mt-0.5 text-sm">{{ entry.linkDescription }}</p>
+                            }
+                        </div>
+                    </a>
+                </div>
+                }
+
+                <!-- Entry Footer -->
+                <div class="border-surface-100 dark:border-surface-800 flex items-center gap-1 border-t px-4 py-2">
+                    <p-button
+                        (onClick)="toggleLike(entry)"
+                        [icon]="entry.isLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                        [label]="entry.likeCount > 0 ? entry.likeCount.toString() : ''"
+                        [pTooltip]="entry.isLiked ? t('chronik.unlike') : t('chronik.like')"
+                        [severity]="entry.isLiked ? 'danger' : 'secondary'"
+                        [text]="true"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="toggleComments(entry.id)"
+                        [label]="entry.commentCount > 0 ? entry.commentCount.toString() : ''"
+                        [pTooltip]="t('chronik.comments')"
+                        [text]="true"
+                        icon="pi pi-comment"
+                        severity="secondary"
+                        size="small"
+                    />
+                </div>
+
+                <!-- Comments Section -->
+                @if (isCommentsExpanded(entry.id)) {
+                <div class="border-surface-100 dark:border-surface-800 border-t px-4 py-3">
+                    <!-- Comment list -->
+                    <div class="flex flex-col gap-3">
+                        @for (comment of getComments(entry.id); track comment.id) {
+                        <div class="flex items-start gap-2">
+                            @if (comment.authorAvatar) {
+                            <img
+                                class="h-8 w-8 shrink-0 rounded-full object-cover"
+                                [alt]="comment.authorDisplayName"
+                                [src]="comment.authorAvatar"
+                            />
+                            } @else {
+                            <p-avatar
+                                [label]="getAvatarLabel(comment.authorDisplayName)"
+                                shape="circle"
+                                size="normal"
+                                styleClass="shrink-0 bg-primary-100 text-primary font-bold text-xs"
+                            />
+                            }
+                            <div class="flex-1">
+                                <div class="bg-surface-50 dark:bg-surface-800 inline-block rounded-xl px-3 py-2">
+                                    <p class="text-surface-900 dark:text-surface-0 m-0 text-xs font-semibold">
+                                        {{ comment.authorDisplayName }}
+                                    </p>
+                                    <p class="text-surface-700 dark:text-surface-200 m-0 mt-0.5 text-sm">
+                                        {{ comment.content }}
+                                    </p>
+                                </div>
+                                <div class="mt-1 flex items-center gap-3 px-1">
+                                    <span class="text-surface-400 text-xs"
+                                        >{{ comment.createdAt | date: 'dd.MM HH:mm' }}</span
+                                    >
+                                    <button
+                                        class="text-primary text-xs font-semibold hover:underline"
+                                        (click)="toggleCommentLike(comment.id, entry.id)"
+                                        type="button"
+                                    >
+                                        {{ comment.isLiked ? t('chronik.unlike') : t('chronik.like') }} @if
+                                        (comment.likeCount > 0) {
+                                        <span class="ml-1">({{ comment.likeCount }})</span>
+                                        }
+                                    </button>
+                                    <button
+                                        class="text-surface-500 text-xs font-semibold hover:underline"
+                                        (click)="setReplyingTo(entry.id, comment.id)"
+                                        type="button"
+                                    >
+                                        {{ t('chronik.reply') }}
+                                    </button>
+                                    @if (comment.canDelete) {
+                                    <button
+                                        class="text-xs font-semibold text-red-400 hover:underline"
+                                        (click)="deleteComment(comment.id, entry.id)"
+                                        type="button"
+                                    >
+                                        {{ t('chronik.delete') }}
+                                    </button>
+                                    }
+                                </div>
+
+                                <!-- Reply form -->
+                                @if (getReplyingTo(entry.id) === comment.id) {
+                                <div class="mt-2 flex items-center gap-2">
+                                    <textarea
+                                        class="flex-1 text-sm"
+                                        (ngModelChange)="setNewComment(entry.id + '-' + comment.id, $event)"
+                                        [ngModel]="getNewComment(entry.id + '-' + comment.id)"
+                                        [placeholder]="t('chronik.writeComment')"
+                                        pTextarea
+                                        rows="2"
+                                    ></textarea>
+                                    <p-button
+                                        (onClick)="submitComment(entry.id, comment.id)"
+                                        [pTooltip]="t('chronik.submit')"
+                                        icon="pi pi-send"
+                                        size="small"
+                                    />
+                                </div>
+                                }
+
+                                <!-- Nested replies -->
+                                @if (comment.replies && comment.replies.length > 0) {
+                                <div class="mt-2 flex flex-col gap-2 pl-4">
+                                    @for (reply of comment.replies; track reply.id) {
+                                    <div class="flex items-start gap-2">
+                                        @if (reply.authorAvatar) {
+                                        <img
+                                            class="h-6 w-6 shrink-0 rounded-full object-cover"
+                                            [alt]="reply.authorDisplayName"
+                                            [src]="reply.authorAvatar"
+                                        />
+                                        } @else {
+                                        <p-avatar
+                                            [label]="getAvatarLabel(reply.authorDisplayName)"
+                                            shape="circle"
+                                            size="normal"
+                                            styleClass="shrink-0 bg-primary-50 text-primary text-xs"
+                                        />
+                                        }
+                                        <div class="flex-1">
+                                            <div
+                                                class="bg-surface-50 dark:bg-surface-800 inline-block rounded-xl px-3 py-2"
+                                            >
+                                                <p
+                                                    class="text-surface-900 dark:text-surface-0 m-0 text-xs font-semibold"
+                                                >
+                                                    {{ reply.authorDisplayName }}
+                                                </p>
+                                                <p class="text-surface-700 dark:text-surface-200 m-0 mt-0.5 text-sm">
+                                                    {{ reply.content }}
+                                                </p>
+                                            </div>
+                                            <div class="mt-1 flex items-center gap-3 px-1">
+                                                <span class="text-surface-400 text-xs"
+                                                    >{{ reply.createdAt | date: 'dd.MM HH:mm' }}</span
+                                                >
+                                                <button
+                                                    class="text-primary text-xs font-semibold hover:underline"
+                                                    (click)="toggleCommentLike(reply.id, entry.id)"
+                                                    type="button"
+                                                >
+                                                    {{ reply.isLiked ? t('chronik.unlike') : t('chronik.like') }} @if
+                                                    (reply.likeCount > 0) {
+                                                    <span class="ml-1">({{ reply.likeCount }})</span>
+                                                    }
+                                                </button>
+                                                @if (reply.canDelete) {
+                                                <button
+                                                    class="text-xs font-semibold text-red-400 hover:underline"
+                                                    (click)="deleteComment(reply.id, entry.id)"
+                                                    type="button"
+                                                >
+                                                    {{ t('chronik.delete') }}
+                                                </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- New comment input -->
+                    <div class="mt-3 flex items-center gap-2">
+                        <textarea
+                            class="flex-1 text-sm"
+                            (ngModelChange)="setNewComment(entry.id, $event)"
+                            [ngModel]="getNewComment(entry.id)"
+                            [placeholder]="t('chronik.writeComment')"
+                            pTextarea
+                            rows="2"
+                        ></textarea>
+                        <p-button
+                            (onClick)="submitComment(entry.id)"
+                            [pTooltip]="t('chronik.submit')"
+                            icon="pi pi-send"
+                            size="small"
+                        />
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Load more -->
+            @if (chronikFacade.profileTotal() > chronikFacade.profileEntries().length) {
+            <div class="flex justify-center py-2">
+                <p-button
+                    (onClick)="loadMoreChronik()"
+                    [label]="t('chronik.loadMore')"
+                    [loading]="chronikFacade.profileLoading()"
+                    [text]="true"
+                    icon="pi pi-chevron-down"
+                />
+            </div>
+            }
+        </div>
+    </div>
+
+    } @else {
+    <div class="flex flex-col items-center justify-center py-24 text-center">
+        <i class="pi pi-user-minus text-surface-300 mb-4 text-6xl"></i>
+        <p class="text-surface-500 text-lg">{{ t('userProfile.notFound') }}</p>
+    </div>
+    } }
+</div>
+
+<!-- Cover Edit Dialog -->
+<p-dialog [(visible)]="coverEditing" [modal]="true" header="Titelbild ändern">
+    <div class="flex flex-col gap-3">
+        <label class="text-sm font-medium" for="cover-url-input">Bild-URL</label>
+        <input class="w-full" id="cover-url-input" [(ngModel)]="coverUrlDraft" pInputText placeholder="https://..." />
+        @if (coverUrlDraft) {
+        <img class="h-32 w-full rounded-lg object-cover" [src]="coverUrlDraft" alt="Vorschau" />
+        }
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button (onClick)="coverEditing.set(false)" [text]="true" label="Abbrechen" severity="secondary" />
+        <p-button (onClick)="saveCover()" icon="pi pi-check" label="Speichern" />
+    </ng-template>
+</p-dialog>

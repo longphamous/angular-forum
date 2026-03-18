@@ -1,0 +1,272 @@
+<p-toast />
+<p-confirmDialog />
+
+<div *transloco="let t">
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                <i class="pi pi-shopping-bag text-primary"></i>
+                {{ t('adminShop.title') }}
+            </h1>
+            <p class="text-surface-500 mt-1 text-sm">{{ t('adminShop.subtitle') }}</p>
+        </div>
+        <p-button (click)="openCreate()" [label]="t('adminShop.createBtn')" icon="pi pi-plus" />
+    </div>
+
+    @if (loading()) {
+    <div class="flex flex-col gap-3">
+        @for (_ of [1,2,3,4]; track $index) {
+        <p-skeleton height="3rem" />
+        }
+    </div>
+    } @else {
+    <p-table [paginator]="items().length > 10" [rows]="10" [value]="items()" dataKey="id" styleClass="p-datatable-sm">
+        <ng-template #header>
+            <tr>
+                <th style="width: 5rem">{{ t('adminShop.table.preview') }}</th>
+                <th>{{ t('adminShop.table.name') }}</th>
+                <th style="width: 8rem">{{ t('adminShop.table.category') }}</th>
+                <th class="text-right" style="width: 7rem">{{ t('adminShop.table.price') }}</th>
+                <th class="text-right" style="width: 6rem">{{ t('adminShop.table.stock') }}</th>
+                <th class="text-center" style="width: 5rem">{{ t('adminShop.table.active') }}</th>
+                <th class="text-center" style="width: 5rem">{{ t('adminShop.table.order') }}</th>
+                <th class="text-right" style="width: 8rem">{{ t('common.actions') }}</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-item>
+            <tr>
+                <td>
+                    @if (item.imageUrl) {
+                    <img class="h-10 w-10 rounded-lg object-cover" [alt]="item.name" [src]="item.imageUrl" />
+                    } @else {
+                    <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                        <i [class]="'text-primary ' + (item.icon || 'pi pi-star')"></i>
+                    </div>
+                    }
+                </td>
+                <td>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ item.name }}</div>
+                    @if (item.description) {
+                    <div class="text-surface-400 max-w-xs truncate text-xs">{{ item.description }}</div>
+                    }
+                </td>
+                <td>
+                    @if (item.category) {
+                    <p-tag [value]="item.category" severity="info" styleClass="text-xs" />
+                    } @else {
+                    <span class="text-surface-400 text-xs">—</span>
+                    }
+                </td>
+                <td class="text-right">
+                    <span class="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{{ item.price }}</span>
+                    <span class="text-surface-400 ml-1 text-xs">{{ t('wallet.currency') }}</span>
+                </td>
+                <td class="text-right text-sm">
+                    @if (item.stock !== null) {
+                    <p-tag
+                        [severity]="item.stock > 5 ? 'success' : item.stock > 0 ? 'warn' : 'danger'"
+                        [value]="'' + item.stock"
+                        styleClass="text-xs"
+                    />
+                    } @else {
+                    <span class="text-surface-400 text-xs">∞</span>
+                    }
+                </td>
+                <td class="text-center">
+                    <i
+                        class="pi text-base"
+                        [class.pi-check-circle]="item.isActive"
+                        [class.pi-times-circle]="!item.isActive"
+                        [class.text-green-500]="item.isActive"
+                        [class.text-red-400]="!item.isActive"
+                    ></i>
+                </td>
+                <td class="text-surface-500 text-center text-sm">{{ item.sortOrder }}</td>
+                <td>
+                    <div class="flex justify-end gap-1">
+                        <p-button
+                            (click)="openEdit(item)"
+                            [pTooltip]="t('common.edit')"
+                            icon="pi pi-pencil"
+                            severity="secondary"
+                            size="small"
+                        />
+                        <p-button
+                            (click)="confirmDelete(item)"
+                            [pTooltip]="t('common.delete')"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            size="small"
+                        />
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+            <tr>
+                <td class="text-surface-400 py-8 text-center" colspan="8">{{ t('adminShop.empty') }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+    }
+
+    <!-- Create / Edit Dialog -->
+    <p-dialog
+        [(visible)]="dialogVisible"
+        [closable]="true"
+        [draggable]="false"
+        [header]="editingId ? t('adminShop.editTitle') : t('adminShop.createTitle')"
+        [modal]="true"
+        [style]="{ width: '36rem' }"
+    >
+        <div class="flex flex-col gap-4">
+            <!-- Name -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-name"
+                    >{{ t('adminShop.form.name') }} *</label
+                >
+                <input
+                    class="w-full"
+                    id="shop-name"
+                    [(ngModel)]="form.name"
+                    [placeholder]="t('adminShop.form.namePlaceholder')"
+                    pInputText
+                />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-description"
+                    >{{ t('adminShop.form.description') }}</label
+                >
+                <textarea
+                    class="w-full"
+                    id="shop-description"
+                    [(ngModel)]="form.description"
+                    [autoResize]="true"
+                    [placeholder]="t('adminShop.form.descriptionPlaceholder')"
+                    pTextarea
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Price -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-price"
+                        >{{ t('adminShop.form.price') }} *</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="form.price"
+                        [min]="1"
+                        [showButtons]="true"
+                        inputId="shop-price"
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <!-- Sort order -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-sortOrder"
+                        >{{ t('adminShop.form.sortOrder') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="form.sortOrder"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="shop-sortOrder"
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <!-- Stock -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-stock"
+                        >{{ t('adminShop.form.stock') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="form.stock"
+                        [min]="0"
+                        [placeholder]="t('adminShop.form.stockUnlimited')"
+                        [showButtons]="true"
+                        inputId="shop-stock"
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <!-- Max per user -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-maxPerUser"
+                        >{{ t('adminShop.form.maxPerUser') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="form.maxPerUser"
+                        [min]="1"
+                        [placeholder]="t('adminShop.form.maxPerUserUnlimited')"
+                        [showButtons]="true"
+                        inputId="shop-maxPerUser"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Category -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-category"
+                    >{{ t('adminShop.form.category') }}</label
+                >
+                <input
+                    class="w-full"
+                    id="shop-category"
+                    [(ngModel)]="form.category"
+                    [placeholder]="t('adminShop.form.categoryPlaceholder')"
+                    pInputText
+                />
+            </div>
+
+            <!-- Image URL -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-imageUrl"
+                    >{{ t('adminShop.form.imageUrl') }}</label
+                >
+                <input
+                    class="w-full"
+                    id="shop-imageUrl"
+                    [(ngModel)]="form.imageUrl"
+                    [placeholder]="t('adminShop.form.imageUrlPlaceholder')"
+                    pInputText
+                />
+            </div>
+
+            <!-- Icon -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="shop-icon"
+                    >{{ t('adminShop.form.icon') }}</label
+                >
+                <input class="w-full" id="shop-icon" [(ngModel)]="form.icon" pInputText placeholder="pi pi-star" />
+                <div class="text-surface-400 text-xs">{{ t('adminShop.form.iconHint') }}</div>
+            </div>
+
+            <!-- Active -->
+            <div class="flex items-center gap-2">
+                <p-checkbox [(ngModel)]="form.isActive" [binary]="true" inputId="isActiveChk" />
+                <label class="text-surface-700 dark:text-surface-300 cursor-pointer text-sm" for="isActiveChk"
+                    >{{ t('adminShop.form.isActive') }}</label
+                >
+            </div>
+        </div>
+
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button (click)="dialogVisible = false" [label]="t('common.cancel')" severity="secondary" />
+                <p-button
+                    (click)="save()"
+                    [disabled]="!form.name || form.price < 1"
+                    [label]="t('common.save')"
+                    [loading]="saving()"
+                    icon="pi pi-check"
+                />
+            </div>
+        </ng-template>
+    </p-dialog>
+</div>

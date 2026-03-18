@@ -1,28 +1,215 @@
-<p-fluid>
+<p-fluid *transloco="let t">
     <div class="card">
-        <div class="text-xl font-semibold">{{ "thread.create" | transloco }}</div>
+        <div class="mb-6 flex items-center gap-3">
+            <p-button (onClick)="cancel()" [text]="true" icon="pi pi-arrow-left" />
+            <h1 class="text-xl font-semibold">{{ t('threadCreate.title') }}</h1>
+        </div>
 
-        <div class="mt-8 flex">
+        @if (error) {
+        <p-message [text]="error" severity="error" styleClass="mb-4 w-full" />
+        }
+
+        <div class="flex">
             <div class="card flex w-full flex-col gap-6">
-                <div class="text-xl font-semibold">{{ "thread.information" | transloco }}</div>
+                <div class="text-lg font-semibold">{{ t('threadCreate.info') }}</div>
                 <p-divider />
                 <div class="flex w-full flex-wrap gap-2">
-                    <label for="firstname2">{{ "thread.title" | transloco }}</label>
-                    <input id="firstname2" pInputText type="text" />
+                    <label class="w-full font-medium" for="thread-title">{{ t('threadCreate.titleLabel') }}</label>
+                    <input
+                        class="w-full"
+                        id="thread-title"
+                        [(ngModel)]="title"
+                        [disabled]="submitting"
+                        [placeholder]="t('threadCreate.titlePlaceholder')"
+                        pInputText
+                        type="text"
+                    />
                 </div>
+                <div class="flex w-full flex-col gap-2">
+                    <label class="font-medium" for="thread-tags">
+                        {{ t('threadCreate.tagsLabel') }}
+                        <span class="text-surface-400 text-sm font-normal">{{ t('threadCreate.tagsHint') }}</span>
+                    </label>
+                    <div
+                        class="border-surface-300 dark:border-surface-600 focus-within:border-primary dark:bg-surface-900 flex flex-wrap items-center gap-2 rounded-md border bg-white px-3 py-2"
+                    >
+                        @for (tag of tags; track tag) {
+                        <p-chip (onRemove)="removeTag(tag)" [label]="tag" [removable]="true" />
+                        }
+                        <input
+                            class="min-w-24 flex-1 border-none bg-transparent text-sm outline-none"
+                            id="thread-tags"
+                            (keydown)="addTag($event)"
+                            [(ngModel)]="tagInput"
+                            [disabled]="submitting"
+                            [placeholder]="t('threadCreate.tagsPlaceholder')"
+                            type="text"
+                        />
+                    </div>
+                    <span class="text-surface-400 text-xs">{{ tags.length }} {{ t('threadCreate.tagsCount') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Poll Section -->
+        <div class="mt-8 flex">
+            <div class="card flex w-full flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-lg font-semibold">
+                        <i class="pi pi-chart-bar mr-2"></i>{{ t('threadCreate.poll.title') }}
+                    </div>
+                    <p-toggleSwitch [(ngModel)]="pollEnabled" />
+                </div>
+
+                @if (pollEnabled()) {
+                <p-divider />
+                <div class="flex w-full flex-col gap-2">
+                    <label class="font-medium" for="poll-question">{{ t('threadCreate.poll.question') }}</label>
+                    <input
+                        class="w-full"
+                        id="poll-question"
+                        [(ngModel)]="pollQuestion"
+                        [disabled]="submitting"
+                        pInputText
+                        [placeholder]="t('threadCreate.poll.questionPlaceholder')"
+                        type="text"
+                    />
+                </div>
+                <div class="flex w-full flex-col gap-4">
+                    <label class="font-medium">{{ t('threadCreate.poll.options') }}</label>
+                    @for (option of pollOptions; track trackByIndex($index)) {
+                    <div
+                        class="border-surface-200 dark:border-surface-700 flex items-start gap-3 rounded-lg border p-3"
+                    >
+                        <!-- Image preview / placeholder -->
+                        <div class="flex shrink-0 flex-col items-center gap-1.5">
+                            @if (option.imageUrl) {
+                            <img
+                                class="border-surface-200 dark:border-surface-600 h-12 w-12 rounded-full border-2 object-cover"
+                                [alt]="option.text || 'Option ' + ($index + 1)"
+                                [src]="option.imageUrl"
+                            />
+                            } @else {
+                            <div
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-400 flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold"
+                            >
+                                {{ $index + 1 }}
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Text + Image URL inputs -->
+                        <div class="flex flex-1 flex-col gap-2">
+                            <input
+                                [disabled]="submitting"
+                                [ngModel]="option.text"
+                                (ngModelChange)="updatePollOptionText($index, $event)"
+                                pInputText
+                                [placeholder]="t('threadCreate.poll.optionPlaceholder', { index: $index + 1 })"
+                                type="text"
+                            />
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-image text-surface-400 text-xs"></i>
+                                <input
+                                    class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
+                                    [disabled]="submitting"
+                                    [ngModel]="option.imageUrl"
+                                    (ngModelChange)="updatePollOptionImage($index, $event)"
+                                    [placeholder]="t('threadCreate.poll.imageUrlPlaceholder')"
+                                    type="text"
+                                />
+                            </div>
+                        </div>
+
+                        @if (pollOptions.length > 2) {
+                        <p-button
+                            (onClick)="removePollOption($index)"
+                            [text]="true"
+                            icon="pi pi-times"
+                            severity="danger"
+                            size="small"
+                        />
+                        }
+                    </div>
+                    }
+                    @if (pollOptions.length < 10) {
+                    <p-button
+                        (onClick)="addPollOption()"
+                        [text]="true"
+                        icon="pi pi-plus"
+                        [label]="t('threadCreate.poll.addOption')"
+                        severity="secondary"
+                        size="small"
+                    />
+                    }
+                </div>
+                <p-divider />
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadCreate.poll.settings') }}</div>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollMultipleChoice" [binary]="true" inputId="poll-multi" />
+                        <label class="text-sm" for="poll-multi">{{ t('threadCreate.poll.multipleChoice') }}</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollIsAnonymous" [binary]="true" inputId="poll-anon" />
+                        <label class="text-sm" for="poll-anon">{{ t('threadCreate.poll.anonymous') }}</label>
+                    </div>
+                    @if (!pollIsAnonymous) {
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollShowVoterNames" [binary]="true" inputId="poll-voters" />
+                        <label class="text-sm" for="poll-voters">{{ t('threadCreate.poll.showVoters') }}</label>
+                    </div>
+                    }
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollAllowVoteChange" [binary]="true" inputId="poll-vote-change" />
+                        <label class="text-sm" for="poll-vote-change">{{ t('threadCreate.poll.allowVoteChange') }}</label>
+                    </div>
+                    @if (pollAllowVoteChange) {
+                    <div class="flex flex-col gap-1 pl-7">
+                        <label class="text-surface-400 text-xs" for="poll-vote-deadline"
+                            >{{ t('threadCreate.poll.voteChangeDeadline') }}</label
+                        >
+                        <input
+                            class="w-full max-w-xs"
+                            id="poll-vote-deadline"
+                            [(ngModel)]="pollVoteChangeDeadline"
+                            [disabled]="submitting"
+                            pInputText
+                            type="datetime-local"
+                        />
+                    </div>
+                    }
+                </div>
+                }
             </div>
         </div>
 
         <div class="mt-8 flex">
             <div class="card flex w-full flex-col gap-6">
-                <div class="text-xl font-semibold">{{ "thread.description" | transloco }}</div>
+                <div class="text-lg font-semibold">{{ t('threadCreate.contentLabel') }}</div>
                 <p-divider />
                 <div class="flex w-full flex-wrap">
-                    <p-editor class="w-full" [(ngModel)]="text" [style]="{ height: '320px' }" />
+                    <p-editor
+                        class="w-full"
+                        [(ngModel)]="content"
+                        [readonly]="submitting"
+                        [style]="{ height: '320px' }"
+                    />
                 </div>
-                <div class="flex justify-center gap-2">
-                    <p-button [label]="'preview' | transloco" severity="contrast" />
-                    <p-button [label]="'submit' | transloco" />
+                <div class="flex justify-end gap-2">
+                    <p-button
+                        (onClick)="cancel()"
+                        [disabled]="submitting"
+                        [label]="t('common.cancel')"
+                        [outlined]="true"
+                        severity="secondary"
+                    />
+                    <p-button
+                        (onClick)="submit()"
+                        [label]="t('threadCreate.submit')"
+                        [loading]="submitting"
+                        icon="pi pi-check"
+                    />
                 </div>
             </div>
         </div>

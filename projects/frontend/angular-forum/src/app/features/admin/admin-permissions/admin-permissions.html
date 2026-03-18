@@ -1,0 +1,127 @@
+<div class="card" *transloco="let t">
+    <!-- Header -->
+    <div class="mb-5">
+        <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('adminPermissions.title') }}</h2>
+        <p class="text-surface-500 mt-1 text-sm">{{ t('adminPermissions.subtitle') }}</p>
+    </div>
+
+    <!-- Skeleton -->
+    @if (facade.pagePermissionsLoading()) {
+    <div class="flex flex-col gap-2">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <p-skeleton height="3rem" />
+        }
+    </div>
+    } @else { @for (group of groupedPermissions(); track group.category) {
+    <div class="mb-4">
+        <!-- Category Header (clickable to collapse) -->
+        <button
+            class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 mb-2 flex w-full cursor-pointer items-center gap-3 rounded-lg border-none px-4 py-3 transition-colors"
+            (click)="toggleCategory(group.category)"
+            type="button"
+        >
+            <i [class]="categoryIcon(group.category) + ' text-lg text-primary'"></i>
+            <span class="text-surface-900 dark:text-surface-0 text-base font-bold">{{ group.category }}</span>
+            <p-tag [value]="group.permissions.length + ''" severity="secondary" styleClass="text-xs" />
+            <i
+                class="pi text-surface-400 ml-auto"
+                [class.pi-chevron-down]="!isCategoryCollapsed(group.category)"
+                [class.pi-chevron-right]="isCategoryCollapsed(group.category)"
+            ></i>
+        </button>
+
+        <!-- Permissions in this category -->
+        @if (!isCategoryCollapsed(group.category)) {
+        <div class="flex flex-col gap-1 pl-2">
+            @for (perm of group.permissions; track perm.id) {
+            <div
+                class="border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 flex items-center gap-3 rounded-lg border px-4 py-3"
+            >
+                <div class="min-w-0 flex-1">
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ perm.name }}</div>
+                    <code class="text-surface-400 text-xs">{{ perm.route }}</code>
+                </div>
+                <div class="flex shrink-0 flex-wrap gap-1">
+                    @if (!perm.groups?.length) {
+                    <span class="text-surface-400 text-xs">–</span>
+                    } @else { @for (g of perm.groups; track g.id) {
+                    <p-tag [value]="g.name" severity="secondary" styleClass="text-xs" />
+                    } }
+                </div>
+                <p-button
+                    (onClick)="openEditDialog(perm)"
+                    [text]="true"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+            }
+        </div>
+        }
+    </div>
+    } }
+</div>
+
+<!-- Edit groups dialog -->
+<p-dialog
+    (visibleChange)="showEditDialog.set($any($event))"
+    [header]="'Gruppen: ' + (editingPermission()?.name ?? '')"
+    [modal]="true"
+    [style]="{ width: '38rem' }"
+    [visible]="showEditDialog()"
+    *transloco="let t"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-3 py-2">
+            <i class="pi pi-link text-surface-400 text-sm"></i>
+            <code class="text-surface-600 dark:text-surface-300 text-sm">{{ editingPermission()?.route }}</code>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <span class="text-surface-500 text-sm font-medium"
+                >{{ t('adminPermissions.editDialog.allowedGroups') }}</span
+            >
+            <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-2 rounded-lg border p-3">
+                @for (group of groupOptions(); track group.id) {
+                <label
+                    [class]="'hover:bg-surface-50 dark:hover:bg-surface-800/60 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ' + (isGroupSelected(group.id) ? 'bg-primary-50 dark:bg-primary-900/20' : '')"
+                    [for]="'perm-group-' + group.id"
+                >
+                    <p-checkbox
+                        (ngModelChange)="toggleGroup(group.id)"
+                        [binary]="true"
+                        [inputId]="'perm-group-' + group.id"
+                        [ngModel]="isGroupSelected(group.id)"
+                    />
+                    <div class="min-w-0">
+                        <div class="text-sm font-medium">{{ group.name }}</div>
+                        @if (group.description) {
+                        <div class="text-surface-400 truncate text-xs">{{ group.description }}</div>
+                        }
+                    </div>
+                </label>
+                }
+            </div>
+            @if (!editingGroupIds().length) {
+            <p class="text-warn-500 m-0 text-xs">
+                <i class="pi pi-exclamation-triangle mr-1"></i>
+                {{ t('adminPermissions.editDialog.noGroupWarning') }}
+            </p>
+            }
+        </div>
+
+        @if (saveError()) {
+        <p-message class="w-full" severity="error">{{ saveError() }}</p-message>
+        }
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button
+            (onClick)="showEditDialog.set(false)"
+            [label]="t('common.cancel')"
+            [text]="true"
+            severity="secondary"
+        />
+        <p-button (onClick)="savePermission()" [label]="t('common.save')" [loading]="saving()" icon="pi pi-check" />
+    </ng-template>
+</p-dialog>

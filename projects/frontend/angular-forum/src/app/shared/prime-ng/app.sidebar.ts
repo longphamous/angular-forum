@@ -1,4 +1,4 @@
-import { Component, ElementRef } from "@angular/core";
+import { Component } from "@angular/core";
 
 import { AppMenu } from "./app.menu";
 
@@ -10,6 +10,4 @@ import { AppMenu } from "./app.menu";
         <app-menu></app-menu>
     </div>`
 })
-export class AppSidebar {
-    constructor(public el: ElementRef) {}
-}
+export class AppSidebar {}

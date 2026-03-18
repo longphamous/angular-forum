@@ -1,0 +1,279 @@
+<p-toast />
+
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Back button -->
+    <div>
+        <p-button
+            (onClick)="navHistory.back('/links')"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+    </div>
+
+    <!-- Header -->
+    <div class="card">
+        <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+            <i class="pi pi-plus-circle text-primary"></i>
+            {{ t("links.submit.title") }}
+        </h1>
+        <p class="text-surface-500 mt-1 text-sm">{{ t("links.submit.pending") }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Form column -->
+        <div class="flex flex-col gap-4 lg:col-span-2">
+            <!-- Basic info card -->
+            <div class="card">
+                <h2 class="text-surface-700 dark:text-surface-200 mb-4 font-semibold">Grundlegende Informationen</h2>
+                <div class="flex flex-col gap-4">
+                    <!-- Title -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-title">
+                            {{ t("links.submit.title") }} <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            class="w-full"
+                            id="link-title"
+                            [(ngModel)]="formTitle"
+                            [disabled]="saving()"
+                            [placeholder]="t('links.submit.title') + '...'"
+                            pInputText
+                            type="text"
+                        />
+                    </div>
+
+                    <!-- URL -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-url">
+                            {{ t("links.submit.url") }} <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            class="w-full"
+                            id="link-url"
+                            [(ngModel)]="formUrl"
+                            [disabled]="saving()"
+                            pInputText
+                            placeholder="https://..."
+                            type="url"
+                        />
+                    </div>
+
+                    <!-- Category -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-category">
+                            {{ t("links.submit.category") }} <span class="text-red-500">*</span>
+                        </label>
+                        @if (facade.categories().length === 0) {
+                        <p-skeleton height="2.5rem" styleClass="w-full" />
+                        } @else {
+                        <p-select
+                            id="link-category"
+                            [(ngModel)]="formCategoryId"
+                            [options]="facade.categories()"
+                            [placeholder]="t('links.submit.category')"
+                            optionLabel="name"
+                            optionValue="id"
+                            styleClass="w-full"
+                        />
+                        }
+                    </div>
+
+                    <!-- Description -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-desc">
+                            {{ t("links.submit.description") }}
+                        </label>
+                        <textarea
+                            class="w-full"
+                            id="link-desc"
+                            [(ngModel)]="formDescription"
+                            [disabled]="saving()"
+                            [placeholder]="t('links.submit.description') + '...'"
+                            pTextarea
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Excerpt -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-excerpt">
+                            {{ t("links.submit.excerpt") }}
+                        </label>
+                        <textarea
+                            class="w-full"
+                            id="link-excerpt"
+                            [(ngModel)]="formExcerpt"
+                            [disabled]="saving()"
+                            [placeholder]="t('links.submit.excerpt') + '...'"
+                            pTextarea
+                            rows="2"
+                        ></textarea>
+                    </div>
+
+                    <!-- Preview image URL -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-preview">
+                            {{ t("links.submit.previewImage") }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="link-preview"
+                            [(ngModel)]="formPreviewImageUrl"
+                            [disabled]="saving()"
+                            pInputText
+                            placeholder="https://..."
+                            type="url"
+                        />
+                        @if (formPreviewImageUrl) {
+                        <div class="mt-1 overflow-hidden rounded-lg">
+                            <img class="h-32 w-full object-cover" [src]="formPreviewImageUrl" alt="Vorschau" />
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags card -->
+            <div class="card">
+                <h2 class="text-surface-700 dark:text-surface-200 mb-4 font-semibold">{{ t("links.submit.tags") }}</h2>
+                <div class="flex flex-col gap-3">
+                    <div class="flex gap-2">
+                        <input
+                            class="flex-1"
+                            (keydown)="onTagKeydown($event)"
+                            [(ngModel)]="formTagInput"
+                            [disabled]="saving()"
+                            [placeholder]="t('links.submit.addTag') + '...'"
+                            pInputText
+                            type="text"
+                        />
+                        <p-button
+                            (onClick)="addTag()"
+                            [label]="t('links.submit.addTag')"
+                            icon="pi pi-plus"
+                            severity="secondary"
+                        />
+                    </div>
+                    @if (formTags.length > 0) {
+                    <div class="flex flex-wrap gap-2">
+                        @for (tag of formTags; track tag) {
+                        <p-chip (onRemove)="removeTag(tag)" [label]="'#' + tag" [removable]="true" />
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Contact & location card -->
+            <div class="card">
+                <h2 class="text-surface-700 dark:text-surface-200 mb-4 font-semibold">
+                    Kontakt & Standort <span class="text-surface-400 text-sm font-normal">(optional)</span>
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <!-- Address -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-address">
+                            {{ t("links.submit.address") }}
+                        </label>
+                        <input
+                            class="w-full"
+                            id="link-address"
+                            [(ngModel)]="formAddress"
+                            [disabled]="saving()"
+                            pInputText
+                            placeholder="Straße, PLZ Ort..."
+                            type="text"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <!-- Email -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-email">
+                                {{ t("links.submit.contact.email") }}
+                            </label>
+                            <input
+                                class="w-full"
+                                id="link-email"
+                                [(ngModel)]="formContactEmail"
+                                [disabled]="saving()"
+                                pInputText
+                                placeholder="kontakt@beispiel.de"
+                                type="email"
+                            />
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-phone">
+                                {{ t("links.submit.contact.phone") }}
+                            </label>
+                            <input
+                                class="w-full"
+                                id="link-phone"
+                                [(ngModel)]="formContactPhone"
+                                [disabled]="saving()"
+                                pInputText
+                                placeholder="+49 ..."
+                                type="tel"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div class="flex justify-end gap-3">
+                <p-button (onClick)="navHistory.back('/links')" [text]="true" label="Abbrechen" severity="secondary" />
+                <p-button
+                    (onClick)="submit()"
+                    [disabled]="!formTitle.trim() || !formUrl.trim() || !formCategoryId || saving()"
+                    [label]="t('links.submit.submitBtn')"
+                    [loading]="saving()"
+                    icon="pi pi-send"
+                />
+            </div>
+        </div>
+
+        <!-- Info sidebar -->
+        <div class="flex flex-col gap-4">
+            <div class="card border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
+                <div class="flex items-start gap-3">
+                    <i class="pi pi-info-circle mt-0.5 text-lg text-blue-500"></i>
+                    <div>
+                        <h3 class="mb-2 font-semibold text-blue-800 dark:text-blue-200">Hinweis</h3>
+                        <p class="text-sm leading-relaxed text-blue-700 dark:text-blue-300">
+                            {{ t("links.submit.pending") }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="text-surface-700 dark:text-surface-200 mb-3 font-semibold">Pflichtfelder</h3>
+                <ul class="text-surface-500 flex flex-col gap-1.5 text-sm">
+                    <li class="flex items-center gap-2">
+                        <i
+                            [class]="formTitle.trim() ? 'pi pi-check text-green-500' : 'pi pi-circle text-surface-300'"
+                        ></i>
+                        Titel
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i
+                            [class]="formUrl.trim() ? 'pi pi-check text-green-500' : 'pi pi-circle text-surface-300'"
+                        ></i>
+                        URL
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i
+                            [class]="formCategoryId ? 'pi pi-check text-green-500' : 'pi pi-circle text-surface-300'"
+                        ></i>
+                        Kategorie
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

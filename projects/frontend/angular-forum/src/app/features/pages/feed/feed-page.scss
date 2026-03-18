@@ -1,0 +1,384 @@
+// ── Featured Carousel ─────────────────────────────────────────────────────────
+
+.featured-carousel {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--p-surface-300) transparent;
+
+    &::-webkit-scrollbar {
+        height: 4px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--p-surface-300);
+        border-radius: 2px;
+    }
+}
+
+.featured-card {
+    position: relative;
+    flex: 0 0 280px;
+    height: 160px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+    &:focus {
+        outline: 2px solid var(--p-primary-color);
+        outline-offset: 2px;
+    }
+
+    @media (min-width: 640px) {
+        flex: 0 0 300px;
+        height: 180px;
+    }
+
+    @media (min-width: 1024px) {
+        flex: 0 0 340px;
+    }
+}
+
+.featured-card__bg {
+    position: absolute;
+    inset: 0;
+}
+
+.featured-bg-0 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.featured-bg-1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.featured-bg-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.featured-bg-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.featured-bg-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.featured-bg-5 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+
+.featured-card__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.featured-card__forum {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    width: fit-content;
+    margin-bottom: 0.5rem;
+}
+
+.featured-card__title {
+    margin: 0 0 auto;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.featured-card__tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.featured-tag {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    border-radius: 999px;
+}
+
+.featured-card__stats {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+
+    i {
+        font-size: 0.65rem;
+        margin-right: 0.2rem;
+    }
+}
+
+.featured-card__time {
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.featured-card-skeleton {
+    flex: 0 0 280px;
+    height: 160px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    scroll-snap-align: start;
+
+    @media (min-width: 640px) {
+        flex: 0 0 300px;
+        height: 180px;
+    }
+}
+
+// ── Sort Tabs ─────────────────────────────────────────────────────────────────
+
+.sort-tabs {
+    display: flex;
+    gap: 0.2rem;
+    background: var(--p-surface-800);
+    border-radius: 0.625rem;
+    padding: 0.25rem;
+    border: 1px solid var(--p-surface-700);
+}
+
+.sort-tab {
+    padding: 0.4rem 1.1rem;
+    border-radius: 0.4rem;
+    border: none;
+    background: transparent;
+    color: var(--p-surface-300);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover:not(.sort-tab--active) {
+        background: var(--p-surface-700);
+        color: var(--p-surface-100);
+    }
+
+    &--active {
+        background: var(--p-surface-500) !important;
+        color: #fff !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+}
+
+// ── Feed List ─────────────────────────────────────────────────────────────────
+
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.feed-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--p-content-background);
+    border: 1px solid var(--p-surface-200);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    min-height: 7rem;
+
+    .dark & {
+        border-color: var(--p-surface-700);
+    }
+
+    &:hover {
+        border-color: var(--p-primary-color);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    }
+
+    &:focus {
+        outline: 2px solid var(--p-primary-color);
+        outline-offset: 2px;
+    }
+
+    &--skeleton {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+}
+
+// ── Vote column ───────────────────────────────────────────────────────────────
+
+.feed-card__vote {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 2.5rem;
+    padding-top: 0.2rem;
+    flex-shrink: 0;
+
+    i {
+        font-size: 1.1rem;
+    }
+}
+
+.feed-card__score-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--p-text-color);
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+
+.feed-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.feed-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.feed-card__forum {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--p-primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.feed-card__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--p-text-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.feed-card__excerpt {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--p-text-muted-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.feed-card__tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.feed-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.15rem;
+}
+
+.feed-card__stat {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--p-text-muted-color);
+
+    i {
+        font-size: 0.72rem;
+    }
+}
+
+// ── Media column ──────────────────────────────────────────────────────────────
+
+.feed-card__media {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+}
+
+.feed-card__preview-img {
+    width: 5.5rem;
+    height: 5.5rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid var(--p-surface-200);
+
+    .dark & {
+        border-color: var(--p-surface-700);
+    }
+
+    @media (min-width: 640px) {
+        width: 7rem;
+        height: 6rem;
+    }
+}
+
+.feed-card__avatar-wrap {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+}
+
+.feed-card__avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+
+    &--placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--p-primary-color);
+        color: var(--p-primary-contrast-color);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+}
+
+// ── Sentinel / End ────────────────────────────────────────────────────────────
+
+.feed-sentinel {
+    height: 1px;
+}
+
+.feed-end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--p-text-muted-color);
+}

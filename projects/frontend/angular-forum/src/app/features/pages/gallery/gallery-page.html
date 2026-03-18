@@ -1,0 +1,309 @@
+<ng-container *transloco="let t">
+    <p-toast />
+
+    <div class="mx-auto max-w-7xl">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                    <i class="pi pi-images text-primary"></i>
+                    {{ t("gallery.title") }}
+                    <admin-quicklink route="/admin/gallery" />
+                </h1>
+                <p class="text-surface-500 mt-1 text-sm">{{ t("gallery.subtitle") }}</p>
+            </div>
+            <p-button (onClick)="openCreateDialog()" [label]="t('gallery.createAlbum')" icon="pi pi-plus" />
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-5 flex flex-wrap items-center gap-3">
+            <span class="p-input-icon-left min-w-48 flex-1">
+                <i class="pi pi-search"></i>
+                <input
+                    class="w-full"
+                    (ngModelChange)="searchQuery.set($event)"
+                    [ngModel]="searchQuery()"
+                    [placeholder]="t('gallery.searchPlaceholder')"
+                    pInputText
+                    type="text"
+                />
+            </span>
+            @if (categories().length > 0) {
+            <div class="flex flex-wrap gap-2">
+                <p-button
+                    (onClick)="selectedCategory.set(null)"
+                    [label]="t('gallery.allCategories')"
+                    [outlined]="selectedCategory() !== null"
+                    size="small"
+                />
+                @for (cat of categories(); track cat) {
+                <p-button
+                    (onClick)="selectedCategory.set(cat)"
+                    [label]="cat"
+                    [outlined]="selectedCategory() !== cat"
+                    size="small"
+                />
+                }
+            </div>
+            }
+        </div>
+
+        <!-- Loading -->
+        @if (loading()) {
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @for (i of [1,2,3,4,5,6,7,8]; track i) {
+            <div class="border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border">
+                <p-skeleton height="200px" styleClass="rounded-none" />
+                <div class="p-4">
+                    <p-skeleton height="1.2rem" styleClass="mb-2" width="70%" />
+                    <p-skeleton height="0.9rem" width="50%" />
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Albums grid -->
+        @if (!loading() && filteredAlbums().length > 0) {
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @for (album of filteredAlbums(); track album.id) {
+            <div
+                class="group border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 cursor-pointer overflow-hidden rounded-xl border transition-shadow duration-200 hover:shadow-lg"
+                (click)="openAlbum(album)"
+                (keydown.enter)="openAlbum(album)"
+                role="button"
+                tabindex="0"
+            >
+                <!-- Cover image -->
+                <div class="bg-surface-100 dark:bg-surface-700 relative h-48 overflow-hidden">
+                    @if (album.coverUrl) {
+                    <img
+                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        [alt]="album.title"
+                        [src]="album.coverUrl"
+                    />
+                    } @else {
+                    <div class="flex h-full items-center justify-center">
+                        <i class="pi pi-images text-surface-300 dark:text-surface-600 text-5xl"></i>
+                    </div>
+                    }
+                    <!-- Access badge -->
+                    <div class="absolute top-2 left-2">
+                        <p-tag
+                            [icon]="'pi ' + accessIcon(album.accessLevel)"
+                            [severity]="accessSeverity(album.accessLevel)"
+                            [value]="t('gallery.access.' + album.accessLevel)"
+                            styleClass="text-xs"
+                        />
+                    </div>
+                    <!-- Watermark badge -->
+                    @if (album.watermarkEnabled) {
+                    <div class="absolute top-2 right-2">
+                        <span class="rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
+                            <i class="pi pi-shield mr-1"></i>{{ t("gallery.watermark") }}
+                        </span>
+                    </div>
+                    }
+                    <!-- Delete button (owner/admin) -->
+                    @if (album.isOwner || isAdmin()) {
+                    <button
+                        class="absolute right-2 bottom-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-none bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                        (click)="deleteAlbum(album, $event)"
+                        type="button"
+                    >
+                        <i class="pi pi-trash text-xs"></i>
+                    </button>
+                    }
+                </div>
+
+                <!-- Info -->
+                <div class="p-4">
+                    <h3 class="text-surface-900 dark:text-surface-0 mb-1 truncate text-base font-semibold">
+                        {{ album.title }}
+                    </h3>
+                    @if (album.description) {
+                    <p class="text-surface-500 mb-2 line-clamp-2 text-sm">{{ album.description }}</p>
+                    }
+                    <div class="text-surface-400 flex items-center justify-between text-xs">
+                        <span><i class="pi pi-image mr-1"></i>{{ album.mediaCount }} {{ t("gallery.media") }}</span>
+                        @if (album.category) {
+                        <span class="bg-surface-100 dark:bg-surface-700 rounded-full px-2 py-0.5"
+                            >{{ album.category }}</span
+                        >
+                        }
+                    </div>
+                    @if (album.tags.length > 0) {
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        @for (tag of album.tags.slice(0, 3); track tag) {
+                        <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs"
+                            >#{{ tag }}</span
+                        >
+                        } @if (album.tags.length > 3) {
+                        <span class="text-surface-400 text-xs">+{{ album.tags.length - 3 }}</span>
+                        }
+                    </div>
+                    }
+                    <div class="mt-3 flex items-center gap-2">
+                        @if (album.ownerAvatar) {
+                        <img
+                            class="h-5 w-5 rounded-full object-cover"
+                            [alt]="album.ownerName"
+                            [src]="album.ownerAvatar"
+                        />
+                        } @else {
+                        <div
+                            class="bg-primary flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                        >
+                            {{ album.ownerName.charAt(0).toUpperCase() }}
+                        </div>
+                        }
+                        <span class="text-surface-500 truncate text-xs">{{ album.ownerName }}</span>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Empty -->
+        @if (!loading() && filteredAlbums().length === 0) {
+        <div class="text-surface-400 flex flex-col items-center justify-center py-20">
+            <i class="pi pi-images mb-4 text-6xl"></i>
+            <p class="mb-2 text-lg font-medium">{{ t("gallery.empty") }}</p>
+            <p class="text-sm">{{ t("gallery.emptyHint") }}</p>
+        </div>
+        }
+    </div>
+
+    <!-- Create album dialog -->
+    <p-dialog
+        (visibleChange)="createDialogVisible.set($event)"
+        [draggable]="false"
+        [header]="t('gallery.createAlbum')"
+        [modal]="true"
+        [style]="{ width: '560px' }"
+        [visible]="createDialogVisible()"
+    >
+        <div class="flex flex-col gap-4 pt-2">
+            <!-- Title -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="album-title">{{ t("gallery.albumTitle") }} *</label>
+                <input
+                    id="album-title"
+                    (ngModelChange)="setAlbumTitle($event)"
+                    [ngModel]="newAlbum().title"
+                    [placeholder]="t('gallery.albumTitlePlaceholder')"
+                    pInputText
+                    type="text"
+                />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="album-description">{{ t("common.description") }}</label>
+                <textarea
+                    id="album-description"
+                    (ngModelChange)="setAlbumDescription($event)"
+                    [ngModel]="newAlbum().description"
+                    [placeholder]="t('gallery.albumDescriptionPlaceholder')"
+                    pTextarea
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <!-- Category + Access -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium" for="album-category">{{ t("gallery.category") }}</label>
+                    <input
+                        id="album-category"
+                        (ngModelChange)="setAlbumCategory($event)"
+                        [ngModel]="newAlbum().category"
+                        [placeholder]="t('gallery.categoryPlaceholder')"
+                        pInputText
+                        type="text"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium" for="album-access-level">{{ t("gallery.accessLevel") }}</label>
+                    <p-select
+                        (ngModelChange)="onAccessLevelChange($event)"
+                        [ngModel]="newAlbum().accessLevel"
+                        [options]="accessOptions"
+                        inputId="album-access-level"
+                        optionLabel="label"
+                        optionValue="value"
+                    >
+                        <ng-template let-item pTemplate="selectedItem"> {{ t(item.label) }} </ng-template>
+                        <ng-template let-item pTemplate="item"> {{ t(item.label) }} </ng-template>
+                    </p-select>
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="flex flex-col gap-1">
+                <span class="text-sm font-medium">{{ t("gallery.tags") }}</span>
+                <div class="flex gap-2">
+                    <input
+                        class="flex-1"
+                        (keydown.enter)="addTag()"
+                        (ngModelChange)="tagInput.set($event)"
+                        [ngModel]="tagInput()"
+                        [placeholder]="t('gallery.tagPlaceholder')"
+                        pInputText
+                        type="text"
+                    />
+                    <p-button (onClick)="addTag()" [outlined]="true" icon="pi pi-plus" size="small" />
+                </div>
+                @if (newAlbum().tags.length > 0) {
+                <div class="mt-1 flex flex-wrap gap-2">
+                    @for (tag of newAlbum().tags; track tag) {
+                    <p-chip (onRemove)="removeTag(tag)" [label]="'#' + tag" [removable]="true" />
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Toggles -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex items-center gap-2">
+                    <p-toggleswitch
+                        (ngModelChange)="setWatermarkEnabled($event)"
+                        [ngModel]="newAlbum().watermarkEnabled"
+                    />
+                    <span class="text-sm">{{ t("gallery.watermarkEnabled") }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p-toggleswitch (ngModelChange)="setAllowComments($event)" [ngModel]="newAlbum().allowComments" />
+                    <span class="text-sm">{{ t("gallery.allowComments") }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p-toggleswitch (ngModelChange)="setAllowRatings($event)" [ngModel]="newAlbum().allowRatings" />
+                    <span class="text-sm">{{ t("gallery.allowRatings") }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p-toggleswitch (ngModelChange)="setAllowDownload($event)" [ngModel]="newAlbum().allowDownload" />
+                    <span class="text-sm">{{ t("gallery.allowDownload") }}</span>
+                </div>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+                <p-button
+                    (onClick)="createDialogVisible.set(false)"
+                    [label]="t('common.cancel')"
+                    [outlined]="true"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="createAlbum()"
+                    [disabled]="!newAlbum().title.trim()"
+                    [label]="t('gallery.createAlbum')"
+                    [loading]="saving()"
+                    icon="pi pi-check"
+                />
+            </div>
+        </ng-template>
+    </p-dialog>
+</ng-container>

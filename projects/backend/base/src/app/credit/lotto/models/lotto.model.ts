@@ -15,16 +15,20 @@ export interface DrawScheduleConfig {
      * when there is no class-1 winner.  Value 0–100, default 50.
      */
     rolloverPercentage: number;
+    /** Cost per ticket in virtual credits */
+    ticketCost: number;
 }
 
 export interface LottoTicket {
     id: string;
     userId: string;
-    numbers: number[];
+    /** Array of fields, each containing 6 numbers. Max 12 fields per ticket. */
+    fields: number[][];
     superNumber: number;
     drawId: string;
     purchasedAt: string;
     cost: number;
+    repeatWeeks?: number;
 }
 
 export interface LottoDraw {
@@ -34,6 +38,7 @@ export interface LottoDraw {
     superNumber: number;
     jackpot: number;
     status: "pending" | "drawn";
+    totalTickets?: number;
 }
 
 export type LottoPrizeClass =
@@ -48,10 +53,9 @@ export type LottoPrizeClass =
     | "class9"
     | "no_win";
 
-export interface LottoResult {
-    ticketId: string;
-    userId: string;
-    drawId: string;
+export interface LottoFieldResult {
+    fieldIndex: number;
+    numbers: number[];
     matchedNumbers: number[];
     matchedCount: number;
     superNumberMatched: boolean;
@@ -59,9 +63,92 @@ export interface LottoResult {
     prizeAmount: number;
 }
 
+export interface LottoResult {
+    ticketId: string;
+    userId: string;
+    drawId: string;
+    /** Best result across all fields (for backward compat / summary). */
+    matchedNumbers: number[];
+    matchedCount: number;
+    superNumberMatched: boolean;
+    prizeClass: LottoPrizeClass;
+    prizeAmount: number;
+    /** Per-field breakdown. */
+    fieldResults: LottoFieldResult[];
+}
+
 export interface DrawResult {
     draw: LottoDraw;
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface NumberFrequencyEntry {
+    number: number;
+    count: number;
+}
+
+export interface LottoStats {
+    totalDraws: number;
+    totalTicketsSold: number;
+    totalPrizePaid: number;
+    biggestJackpot: number;
+    lastDraw: LottoDraw | null;
+    nextDraw: LottoDraw | null;
+    hotNumbers: number[];
+    coldNumbers: number[];
+    numberFrequency: NumberFrequencyEntry[];
+}
+
+export type SpecialDrawTicketMode = "all_current" | "separate";
+export type SpecialDrawPrizeMode = "standard" | "custom_jackpot" | "single_class";
+
+export interface SpecialDraw {
+    id: string;
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+    status: "pending" | "drawn";
+    winningNumbers?: number[];
+    superNumber?: number;
+    totalTickets?: number;
+    createdAt: string;
+}
+
+export interface CreateSpecialDrawDto {
+    name: string;
+    drawDate: string;
+    ticketMode: SpecialDrawTicketMode;
+    prizeMode: SpecialDrawPrizeMode;
+    customJackpot?: number;
+    singlePrizeClass?: LottoPrizeClass;
+    singlePrizeAmount?: number;
+    ticketCost?: number;
+}
+
+export interface SpecialDrawResult {
+    draw: SpecialDraw;
+    totalTickets: number;
+    winners: LottoResult[];
+    totalPrizesPaid: number;
+}
+
+export interface DrawHistoryEntry {
+    id: string;
+    type: "regular" | "special";
+    name?: string;
+    drawDate: string;
+    winningNumbers: number[];
+    superNumber: number;
+    jackpot: number;
+    totalTickets: number;
+    totalWinners: number;
+    totalPrizesPaid: number;
+    winnersByClass: { prizeClass: LottoPrizeClass; count: number; amount: number }[];
 }

@@ -1,0 +1,66 @@
+<div class="bg-surface-50 dark:bg-surface-950 flex min-h-screen items-center justify-center px-4" *transloco="let t">
+    <div class="w-full max-w-md">
+        <div class="surface-card rounded-2xl p-8 shadow-lg">
+            <div class="mb-8 text-center">
+                <h1 class="text-surface-900 dark:text-surface-0 mb-2 text-3xl font-bold">{{ t('login.title') }}</h1>
+                <p class="text-surface-500">{{ t('login.subtitle') }}</p>
+            </div>
+
+            @if (errorMessage()) {
+            <p-message [text]="errorMessage()!" severity="error" styleClass="w-full mb-4" />
+            }
+
+            <form class="flex flex-col gap-4" (ngSubmit)="onSubmit()">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="username"
+                        >{{ t('login.username') }}</label
+                    >
+                    <input
+                        class="w-full"
+                        id="username"
+                        [(ngModel)]="username"
+                        [placeholder]="t('login.usernamePlaceholder')"
+                        autocomplete="username"
+                        name="username"
+                        pInputText
+                        required
+                        type="text"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium" for="password"
+                        >{{ t('login.password') }}</label
+                    >
+                    <p-password
+                        [(ngModel)]="password"
+                        [feedback]="false"
+                        [placeholder]="t('login.passwordPlaceholder')"
+                        [toggleMask]="true"
+                        autocomplete="current-password"
+                        inputId="password"
+                        inputStyleClass="w-full"
+                        name="password"
+                        required
+                        styleClass="w-full"
+                    />
+                </div>
+
+                <p-button
+                    [disabled]="!username || !password"
+                    [label]="t('login.submit')"
+                    [loading]="loading()"
+                    styleClass="w-full mt-2"
+                    type="submit"
+                />
+            </form>
+
+            <div class="text-surface-500 mt-6 text-center">
+                {{ t('login.noAccount') }}
+                <a class="text-primary ml-1 font-medium hover:underline" routerLink="/register"
+                    >{{ t('login.registerLink') }}</a
+                >
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,656 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Back button -->
+    <div>
+        <p-button
+            (onClick)="navHistory.back('/marketplace')"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+    </div>
+
+    @if (facade.loading() && !facade.currentListing()) {
+    <!-- Skeleton -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="flex flex-col gap-4 lg:col-span-2">
+            <div class="card">
+                <p-skeleton height="280px" styleClass="w-full rounded-lg mb-4" />
+                <p-skeleton height="2rem" styleClass="w-3/4 mb-2" />
+                <p-skeleton height="1.2rem" styleClass="w-1/2 mb-4" />
+                <p-skeleton height="5rem" styleClass="w-full" />
+            </div>
+        </div>
+        <div class="card">
+            <p-skeleton height="1.5rem" styleClass="w-1/2 mb-3" />
+            <p-skeleton height="1rem" styleClass="w-full mb-2" />
+            <p-skeleton height="1rem" styleClass="w-full mb-2" />
+            <p-skeleton height="2.5rem" styleClass="w-full mt-4" />
+        </div>
+    </div>
+    } @else { @if (facade.currentListing(); as listing) {
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Main column -->
+        <div class="flex flex-col gap-4 lg:col-span-2">
+            <!-- Listing header card -->
+            <div class="card">
+                <!-- Image gallery -->
+                @if (listing.images.length) {
+                <div class="mb-4 overflow-hidden rounded-xl">
+                    <img class="h-72 w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
+                </div>
+                } @else {
+                <div
+                    class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 mb-4 flex h-48 items-center justify-center rounded-xl bg-gradient-to-br"
+                >
+                    <i class="pi pi-shopping-bag text-surface-300 dark:text-surface-600 text-6xl"></i>
+                </div>
+                }
+
+                <!-- Title & badges -->
+                <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+                    <div class="flex-1">
+                        <div class="mb-2 flex flex-wrap gap-2">
+                            <p-tag [severity]="typeSeverity(listing.type)" [value]="typeLabel(listing.type)" />
+                            <p-tag [severity]="statusSeverity(listing.status)" [value]="statusLabel(listing.status)" />
+                            <span
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-3 py-1 text-xs font-medium"
+                            >
+                                {{ listing.categoryName }}
+                            </span>
+                        </div>
+                        <h1 class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ listing.title }}</h1>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-primary text-3xl font-bold">
+                            {{ formatPrice(listing.price, listing.currency) }}
+                        </div>
+                        <div class="text-surface-400 mt-1 text-xs">
+                            <i class="pi pi-eye mr-1"></i>{{ listing.viewCount }} Aufrufe
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div
+                    class="border-surface-100 dark:border-surface-700 text-surface-500 mb-4 flex flex-wrap gap-4 border-t pt-3 text-sm"
+                >
+                    <span><i class="pi pi-comment mr-1"></i>{{ listing.commentCount }} Kommentare</span>
+                    <span><i class="pi pi-send mr-1"></i>{{ listing.offerCount }} Angebote</span>
+                    @if (listing.expiresAt) {
+                    <span><i class="pi pi-clock mr-1"></i>Läuft ab: {{ formatDate(listing.expiresAt) }}</span>
+                    }
+                    <span><i class="pi pi-calendar mr-1"></i>{{ formatDate(listing.createdAt) }}</span>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="text-surface-700 dark:text-surface-300 mb-2 font-semibold">Beschreibung</h3>
+                    <div
+                        class="text-surface-600 dark:text-surface-300 prose prose-sm dark:prose-invert max-w-none leading-relaxed"
+                        [innerHTML]="listing.description"
+                    ></div>
+                </div>
+
+                <!-- Tags -->
+                @if (listing.tags.length) {
+                <div class="mt-4">
+                    <div class="flex flex-wrap gap-2">
+                        @for (tag of listing.tags; track tag) {
+                        <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-3 py-1 text-sm"
+                            >#{{ tag }}</span
+                        >
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Offers section (owner view) -->
+            @if (isOwner && facade.offers().length > 0) {
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-send text-primary mr-2"></i>Eingegangene Angebote ({{ facade.offers().length }})
+                </h2>
+                <div class="flex flex-col gap-3">
+                    @for (offer of facade.offers(); track offer.id) {
+                    <div class="border-surface-200 dark:border-surface-700 rounded-xl border p-4">
+                        <div class="mb-3 flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <p-avatar
+                                    [label]="offer.senderName.charAt(0).toUpperCase()"
+                                    shape="circle"
+                                    styleClass="bg-primary text-white"
+                                />
+                                <div>
+                                    <div class="text-surface-900 dark:text-surface-0 font-semibold">
+                                        {{ offer.senderName }}
+                                    </div>
+                                    <div class="text-surface-400 text-xs">{{ formatDate(offer.createdAt) }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if (offer.amount !== null) {
+                                <span class="text-primary text-xl font-bold">
+                                    {{ offer.amount | currency: (facade.currentListing()?.currency ?? 'EUR') : 'symbol'
+                                    : '1.2-2' : 'de-DE' }}
+                                </span>
+                                }
+                                <p-tag
+                                    [severity]="offerStatusSeverity(offer.status)"
+                                    [value]="offerStatusLabel(offer.status)"
+                                />
+                            </div>
+                        </div>
+                        <p class="text-surface-600 dark:text-surface-300 mb-3 text-sm">{{ offer.message }}</p>
+                        @if (offer.counterAmount !== null || offer.counterMessage) {
+                        <div class="bg-surface-50 dark:bg-surface-800 mb-3 rounded-lg p-3 text-sm">
+                            <span class="text-surface-500 font-medium">Gegenangebot: </span>
+                            @if (offer.counterAmount !== null) {
+                            <span class="text-primary font-bold"
+                                >{{ offer.counterAmount | currency: 'EUR' : 'symbol' : '1.2-2' : 'de-DE' }}</span
+                            >
+                            } @if (offer.counterMessage) {
+                            <p class="text-surface-600 dark:text-surface-300 mt-1">{{ offer.counterMessage }}</p>
+                            }
+                        </div>
+                        } @if (offer.status === 'pending') {
+                        <div class="flex flex-wrap gap-2">
+                            <p-button
+                                (onClick)="acceptOffer(offer)"
+                                icon="pi pi-check"
+                                label="Akzeptieren"
+                                severity="success"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="rejectOffer(offer)"
+                                [outlined]="true"
+                                icon="pi pi-times"
+                                label="Ablehnen"
+                                severity="danger"
+                                size="small"
+                            />
+                            <p-button
+                                (onClick)="openCounter(offer)"
+                                [outlined]="true"
+                                icon="pi pi-reply"
+                                label="Gegenangebot"
+                                severity="info"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Comments section -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-comments text-primary mr-2"></i>Kommentare ({{ listing.commentCount }})
+                </h2>
+
+                <!-- Comment list -->
+                @if (facade.comments().length === 0) {
+                <div class="text-surface-400 py-6 text-center text-sm">
+                    <i class="pi pi-comment mb-2 block text-3xl"></i>
+                    Noch keine Kommentare. Sei der Erste!
+                </div>
+                }
+                <div class="mb-4 flex flex-col gap-3">
+                    @for (comment of facade.comments(); track comment.id) {
+                    <div class="flex gap-3">
+                        <p-avatar
+                            [label]="comment.authorName.charAt(0).toUpperCase()"
+                            shape="circle"
+                            styleClass="bg-primary text-white shrink-0"
+                        />
+                        <div class="min-w-0 flex-1">
+                            <div class="bg-surface-50 dark:bg-surface-800 rounded-xl px-4 py-3">
+                                <div class="mb-1 flex items-center justify-between gap-2">
+                                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                                        >{{ comment.authorName }}</span
+                                    >
+                                    <span class="text-surface-400 text-xs">{{ formatDate(comment.createdAt) }}</span>
+                                </div>
+                                <p class="text-surface-700 dark:text-surface-300 text-sm">{{ comment.content }}</p>
+                            </div>
+                            <div class="mt-1 flex gap-3 px-2 text-xs">
+                                <button
+                                    class="text-surface-400 hover:text-primary cursor-pointer transition-colors"
+                                    (click)="setReplyTo(comment.id)"
+                                    type="button"
+                                >
+                                    Antworten
+                                </button>
+                                @if (comment.authorId === currentUserId) {
+                                <button
+                                    class="cursor-pointer text-red-400 transition-colors hover:text-red-600"
+                                    (click)="deleteComment(comment.id)"
+                                    type="button"
+                                >
+                                    Löschen
+                                </button>
+                                }
+                            </div>
+                            <!-- Replies -->
+                            @if (comment.replies?.length) {
+                            <div class="mt-2 flex flex-col gap-2 pl-4">
+                                @for (reply of comment.replies; track reply.id) {
+                                <div class="flex gap-2">
+                                    <p-avatar
+                                        [label]="reply.authorName.charAt(0).toUpperCase()"
+                                        shape="circle"
+                                        styleClass="bg-primary/70 text-white shrink-0 !w-8 !h-8 !text-xs"
+                                    />
+                                    <div class="min-w-0 flex-1">
+                                        <div class="bg-surface-50 dark:bg-surface-800 rounded-xl px-3 py-2">
+                                            <div class="mb-1 flex items-center justify-between">
+                                                <span class="text-surface-900 dark:text-surface-0 text-xs font-semibold"
+                                                    >{{ reply.authorName }}</span
+                                                >
+                                                <span class="text-surface-400 text-xs"
+                                                    >{{ formatDate(reply.createdAt) }}</span
+                                                >
+                                            </div>
+                                            <p class="text-surface-700 dark:text-surface-300 text-xs">
+                                                {{ reply.content }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Add comment form -->
+                @if (replyToId) {
+                <div
+                    class="bg-primary-50 dark:bg-primary-900/20 mb-2 flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                >
+                    <span class="text-primary">Antwort auf Kommentar</span>
+                    <button class="text-surface-400 hover:text-primary" (click)="setReplyTo(null)" type="button">
+                        <i class="pi pi-times text-xs"></i>
+                    </button>
+                </div>
+                }
+                <div class="flex gap-3">
+                    <p-avatar label="M" shape="circle" styleClass="bg-primary text-white shrink-0" />
+                    <div class="flex flex-1 gap-2">
+                        <textarea
+                            class="flex-1"
+                            [(ngModel)]="newComment"
+                            [autoResize]="true"
+                            placeholder="Kommentar schreiben..."
+                            pTextarea
+                            rows="2"
+                        ></textarea>
+                        <p-button
+                            (onClick)="submitComment()"
+                            [disabled]="!newComment.trim()"
+                            [loading]="submittingComment"
+                            icon="pi pi-send"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ratings section -->
+            @if (facade.ratings().length > 0) {
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+                    <i class="pi pi-star text-primary mr-2"></i>Bewertungen ({{ facade.ratings().length }})
+                </h2>
+                <div class="flex flex-col gap-3">
+                    @for (rating of facade.ratings(); track rating.id) {
+                    <div class="border-surface-100 dark:border-surface-700 rounded-xl border p-4">
+                        <div class="mb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <p-avatar
+                                    [label]="rating.raterName.charAt(0).toUpperCase()"
+                                    shape="circle"
+                                    styleClass="bg-primary text-white"
+                                />
+                                <span class="text-surface-900 dark:text-surface-0 font-medium"
+                                    >{{ rating.raterName }}</span
+                                >
+                            </div>
+                            <p-rating [ngModel]="rating.score" [readonly]="true" />
+                        </div>
+                        @if (rating.text) {
+                        <p class="text-surface-600 dark:text-surface-300 text-sm">{{ rating.text }}</p>
+                        }
+                        <div class="text-surface-400 mt-2 text-xs">{{ formatDate(rating.createdAt) }}</div>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="flex flex-col gap-4">
+            <!-- Author card -->
+            <div class="card">
+                <h3 class="text-surface-700 dark:text-surface-300 mb-4 font-semibold">Anbieter</h3>
+                <div class="flex items-center gap-3">
+                    <p-avatar
+                        [label]="listing.authorName.charAt(0).toUpperCase()"
+                        shape="circle"
+                        size="large"
+                        styleClass="bg-primary text-white"
+                    />
+                    <div>
+                        <div class="text-surface-900 dark:text-surface-0 font-semibold">{{ listing.authorName }}</div>
+                        <div class="text-surface-400 text-xs">Mitglied seit {{ formatDate(listing.createdAt) }}</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p-button
+                        [fluid]="true"
+                        [outlined]="true"
+                        [routerLink]="['/users', listing.authorId]"
+                        icon="pi pi-user"
+                        label="Profil ansehen"
+                    />
+                </div>
+            </div>
+
+            <!-- Action card -->
+            <div class="card">
+                @if (!isOwner && listing.status === 'active') {
+                <div class="flex flex-col gap-2">
+                    <p-button
+                        (onClick)="offerVisible.set(true)"
+                        [fluid]="true"
+                        icon="pi pi-send"
+                        label="Angebot senden"
+                    />
+                    <p-button
+                        (onClick)="reportVisible.set(true)"
+                        [fluid]="true"
+                        [text]="true"
+                        icon="pi pi-flag"
+                        label="Melden"
+                        severity="secondary"
+                    />
+                </div>
+                } @if (isOwner) {
+                <div class="flex flex-col gap-2">
+                    @if (listing.status === 'active') {
+                    <p-button
+                        (onClick)="closeListing()"
+                        [fluid]="true"
+                        [outlined]="true"
+                        icon="pi pi-lock"
+                        label="Inserat schließen"
+                        severity="warn"
+                    />
+                    }
+                    <p-button
+                        [fluid]="true"
+                        [outlined]="true"
+                        icon="pi pi-pencil"
+                        label="Inserat bearbeiten"
+                        severity="secondary"
+                    />
+                </div>
+                }
+
+                <!-- My sent offer -->
+                @if (!isOwner) { @for (offer of facade.offers(); track offer.id) { @if (offer.senderId ===
+                currentUserId) {
+                <div class="border-surface-100 dark:border-surface-700 mt-3 rounded-lg border p-3 text-sm">
+                    <div class="mb-1 flex items-center justify-between">
+                        <span class="font-medium">Mein Angebot</span>
+                        <p-tag
+                            [severity]="offerStatusSeverity(offer.status)"
+                            [value]="offerStatusLabel(offer.status)"
+                            styleClass="text-xs"
+                        />
+                    </div>
+                    @if (offer.amount !== null) {
+                    <div class="text-primary font-bold">
+                        {{ offer.amount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}
+                    </div>
+                    } @if (offer.status === 'pending') {
+                    <p-button
+                        (onClick)="withdrawOffer(offer)"
+                        [text]="true"
+                        icon="pi pi-times"
+                        label="Zurückziehen"
+                        severity="secondary"
+                        size="small"
+                    />
+                    } @if (offer.status === 'countered' && offer.counterMessage) {
+                    <div class="bg-info-50 mt-2 rounded p-2">
+                        <span class="text-xs font-medium">Gegenangebot: </span>
+                        @if (offer.counterAmount !== null) {
+                        <span class="font-bold"
+                            >{{ offer.counterAmount | currency: listing.currency : 'symbol' : '1.2-2' : 'de-DE' }}</span
+                        >
+                        }
+                        <p class="mt-1 text-xs">{{ offer.counterMessage }}</p>
+                    </div>
+                    }
+                </div>
+                } } }
+            </div>
+
+            <!-- Rate button (if accepted offer) -->
+            @for (offer of facade.offers(); track offer.id) { @if (offer.status === 'accepted' && !isOwner &&
+            offer.senderId === currentUserId) {
+            <div class="card">
+                <h3 class="text-surface-700 dark:text-surface-300 mb-2 font-semibold">Transaktion abgeschlossen</h3>
+                <p class="text-surface-500 mb-3 text-sm">Bewerte deine Erfahrung mit dem Anbieter.</p>
+                <p-button
+                    (onClick)="openRatingDialog(offer.id, listing.authorId)"
+                    [fluid]="true"
+                    icon="pi pi-star"
+                    label="Bewertung abgeben"
+                />
+            </div>
+            } }
+        </div>
+    </div>
+    } @else if (!facade.loading()) {
+    <div class="card flex flex-col items-center py-12 text-center">
+        <i class="pi pi-exclamation-circle text-surface-300 mb-4 text-5xl"></i>
+        <h3 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">Inserat nicht gefunden</h3>
+        <p-button
+            (onClick)="navHistory.back('/marketplace')"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            styleClass="mt-4"
+        />
+    </div>
+    } }
+</div>
+
+<!-- Offer dialog -->
+<p-dialog
+    (visibleChange)="offerVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    [visible]="offerVisible()"
+    *transloco="let t"
+    header="Angebot senden"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        @if (offerError) {
+        <p-message [text]="offerError" severity="error" />
+        }
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="offerAmountInput">Angebotspreis (optional)</label>
+            <p-inputnumber
+                [(ngModel)]="offerAmount"
+                [maxFractionDigits]="2"
+                [minFractionDigits]="2"
+                currency="EUR"
+                inputId="offerAmountInput"
+                locale="de-DE"
+                mode="currency"
+                placeholder="Preis eingeben..."
+            />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="offerMessage">Nachricht <span class="text-red-400">*</span></label>
+            <textarea
+                id="offerMessage"
+                [(ngModel)]="offerMessage"
+                placeholder="Beschreibe dein Angebot..."
+                pTextarea
+                rows="4"
+            ></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button (onClick)="offerVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+            <p-button
+                (onClick)="submitOffer()"
+                [disabled]="!offerMessage.trim()"
+                [loading]="submittingOffer"
+                icon="pi pi-send"
+                label="Angebot senden"
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Counter offer dialog -->
+<p-dialog
+    (visibleChange)="counterVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    [visible]="counterVisible()"
+    *transloco="let t"
+    header="Gegenangebot machen"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="counterAmountInput">Gegenpreis (optional)</label>
+            <p-inputnumber
+                [(ngModel)]="counterAmount"
+                [maxFractionDigits]="2"
+                [minFractionDigits]="2"
+                currency="EUR"
+                inputId="counterAmountInput"
+                locale="de-DE"
+                mode="currency"
+                placeholder="Preis eingeben..."
+            />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="counterMessage"
+                >Nachricht <span class="text-red-400">*</span></label
+            >
+            <textarea
+                id="counterMessage"
+                [(ngModel)]="counterMessage"
+                placeholder="Erkläre dein Gegenangebot..."
+                pTextarea
+                rows="3"
+            ></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button (onClick)="counterVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+            <p-button
+                (onClick)="submitCounter()"
+                [disabled]="!counterMessage.trim()"
+                icon="pi pi-reply"
+                label="Gegenangebot senden"
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Report dialog -->
+<p-dialog
+    (visibleChange)="reportVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '440px' }"
+    [visible]="reportVisible()"
+    *transloco="let t"
+    header="Inserat melden"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        @if (reportSuccess()) {
+        <p-message severity="success" text="Vielen Dank! Das Inserat wurde gemeldet." />
+        } @else {
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="reportReason">Grund <span class="text-red-400">*</span></label>
+            <textarea
+                id="reportReason"
+                [(ngModel)]="reportReason"
+                placeholder="Bitte beschreibe den Meldegrund..."
+                pTextarea
+                rows="4"
+            ></textarea>
+        </div>
+        }
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            @if (!reportSuccess()) {
+            <p-button (onClick)="reportVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+            <p-button
+                (onClick)="submitReport()"
+                [disabled]="!reportReason.trim()"
+                icon="pi pi-flag"
+                label="Melden"
+                severity="warn"
+            />
+            } @else {
+            <p-button (onClick)="reportVisible.set(false)" label="Schließen" />
+            }
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Rating dialog -->
+<p-dialog
+    (visibleChange)="ratingVisible.set($event)"
+    [draggable]="false"
+    [modal]="true"
+    [style]="{ width: '440px' }"
+    [visible]="ratingVisible()"
+    *transloco="let t"
+    header="Bewertung abgeben"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="ratingScore">Bewertung</label>
+            <p-rating [(ngModel)]="ratingScore" inputId="ratingScore" />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="ratingText">Kommentar (optional)</label>
+            <textarea
+                id="ratingText"
+                [(ngModel)]="ratingText"
+                placeholder="Deine Erfahrung..."
+                pTextarea
+                rows="3"
+            ></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button (onClick)="ratingVisible.set(false)" [outlined]="true" label="Abbrechen" severity="secondary" />
+            <p-button (onClick)="submitRating()" icon="pi pi-star" label="Bewertung abgeben" />
+        </div>
+    </ng-template>
+</p-dialog>

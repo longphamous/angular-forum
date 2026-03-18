@@ -46,6 +46,12 @@
       },
       "configurations": {
         "production": {
+          "fileReplacements": [
+            {
+              "replace": "projects/frontend/angular-forum/src/environments/environment.ts",
+              "with": "projects/frontend/angular-forum/src/environments/environment.production.ts"
+            }
+          ],
           "budgets": [
             {
               "type": "initial",
@@ -64,6 +70,17 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "mock": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "projects/frontend/angular-forum/src/environments/environment.ts",
+              "with": "projects/frontend/angular-forum/src/environments/environment.mock.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production",
@@ -77,7 +94,13 @@
         },
         "development": {
           "buildTarget": "angular-forum:build:development",
-          "port": 4201
+          "port": 4201,
+          "proxyConfig": "projects/frontend/angular-forum/proxy.conf.json"
+        },
+        "mock": {
+          "buildTarget": "angular-forum:build:mock",
+          "port": 4201,
+          "proxyConfig": "projects/frontend/angular-forum/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

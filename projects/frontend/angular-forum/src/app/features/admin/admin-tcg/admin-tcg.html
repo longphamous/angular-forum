@@ -1,0 +1,724 @@
+<div class="p-4" *transloco="let t">
+    <p-confirmDialog />
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="text-2xl font-bold dark:text-white">{{ t('adminTcg.title') }}</h1>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
+        <p-tablist>
+            <p-tab value="cards"> <i class="pi pi-id-card mr-2"></i>{{ t('adminTcg.tabs.cards') }} </p-tab>
+            <p-tab value="boosters"> <i class="pi pi-box mr-2"></i>{{ t('adminTcg.tabs.boosters') }} </p-tab>
+        </p-tablist>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 1: Karten (Cards)                                              -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="cards">
+            <div class="pt-4">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="text-lg font-semibold dark:text-white">{{ t('adminTcg.tabs.cards') }}</h2>
+                    <p-button
+                        (onClick)="onNewCard()"
+                        [label]="t('adminTcg.card.create')"
+                        icon="pi pi-plus"
+                        severity="success"
+                        size="small"
+                    />
+                </div>
+
+                @if (tcgFacade.adminLoading() && tcgFacade.adminCards().length === 0) {
+                <p-skeleton height="20rem" />
+                } @else {
+                <p-table
+                    [rowHover]="true"
+                    [scrollable]="true"
+                    [value]="tcgFacade.adminCards()"
+                    styleClass="p-datatable-sm p-datatable-striped"
+                >
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ t('adminTcg.card.name') }}</th>
+                            <th>{{ t('adminTcg.card.series') }}</th>
+                            <th>{{ t('adminTcg.card.rarity') }}</th>
+                            <th>{{ t('adminTcg.card.element') }}</th>
+                            <th class="text-center">ATK/DEF/HP</th>
+                            <th class="text-center">{{ t('adminTcg.card.active') }}</th>
+                            <th class="text-center">{{ t('common.actions') }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-card pTemplate="body">
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    @if (card.imageUrl) {
+                                    <img class="h-8 w-8 rounded object-cover" [alt]="card.name" [src]="card.imageUrl" />
+                                    }
+                                    <span class="font-medium dark:text-white">{{ card.name }}</span>
+                                </div>
+                            </td>
+                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ card.series }}</td>
+                            <td>
+                                <p-tag
+                                    [severity]="getRaritySeverity(card.rarity)"
+                                    [value]="t('tcg.rarity.' + card.rarity)"
+                                />
+                            </td>
+                            <td>
+                                @let elemInfo = getElementInfo(card.element); @if (elemInfo) {
+                                <div class="flex items-center gap-1">
+                                    <i [class]="elemInfo.icon" [style.color]="elemInfo.color"></i>
+                                    <span class="text-sm">{{ elemInfo.label }}</span>
+                                </div>
+                                } @else {
+                                <span class="text-gray-300 dark:text-gray-600">-</span>
+                                }
+                            </td>
+                            <td class="text-center font-mono text-sm">
+                                <span class="text-red-500">{{ card.attack }}</span> /
+                                <span class="text-blue-500">{{ card.defense }}</span> /
+                                <span class="text-green-500">{{ card.hp }}</span>
+                            </td>
+                            <td class="text-center">
+                                @if (card.isActive) {
+                                <i class="pi pi-check-circle text-green-500"></i>
+                                } @else {
+                                <i class="pi pi-times-circle text-red-400"></i>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <p-button
+                                        (onClick)="onEditCard(card)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-pencil"
+                                        pTooltip="{{ t('adminTcg.card.edit') }}"
+                                        severity="info"
+                                        size="small"
+                                    />
+                                    <p-button
+                                        (onClick)="onDeleteCard(card, $event)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-trash"
+                                        pTooltip="{{ t('adminTcg.card.delete') }}"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td class="text-center text-gray-500" colspan="7">{{ t('common.noData') }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                }
+            </div>
+        </p-tabpanel>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 2: Booster Packs                                               -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <p-tabpanel value="boosters">
+            <div class="pt-4">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold dark:text-white">{{ t('adminTcg.tabs.boosters') }}</h2>
+                    <p-button
+                        (onClick)="onNewBooster()"
+                        [label]="t('adminTcg.booster.create')"
+                        icon="pi pi-plus"
+                        severity="success"
+                        size="small"
+                    />
+                </div>
+
+                @if (tcgFacade.adminLoading() && tcgFacade.adminBoosters().length === 0) {
+                <p-skeleton height="20rem" />
+                } @else {
+                <p-table
+                    [rowHover]="true"
+                    [scrollable]="true"
+                    [value]="tcgFacade.adminBoosters()"
+                    styleClass="p-datatable-sm p-datatable-striped"
+                >
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ t('adminTcg.booster.name') }}</th>
+                            <th>{{ t('adminTcg.booster.series') }}</th>
+                            <th class="text-right">{{ t('adminTcg.booster.price') }}</th>
+                            <th class="text-center">{{ t('adminTcg.booster.cardsPerPack') }}</th>
+                            <th>{{ t('adminTcg.booster.guaranteedRarity') }}</th>
+                            <th class="text-center">{{ t('adminTcg.booster.active') }}</th>
+                            <th class="text-center">{{ t('common.actions') }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-booster pTemplate="body">
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    @if (booster.imageUrl) {
+                                    <img
+                                        class="h-8 w-8 rounded object-cover"
+                                        [alt]="booster.name"
+                                        [src]="booster.imageUrl"
+                                    />
+                                    }
+                                    <span class="font-medium dark:text-white">{{ booster.name }}</span>
+                                </div>
+                            </td>
+                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ booster.series }}</td>
+                            <td class="text-right font-mono">{{ booster.price }} C</td>
+                            <td class="text-center font-mono">{{ booster.cardsPerPack }}</td>
+                            <td>
+                                @if (booster.guaranteedRarity) {
+                                <p-tag
+                                    [severity]="getRaritySeverity(booster.guaranteedRarity)"
+                                    [value]="t('tcg.rarity.' + booster.guaranteedRarity)"
+                                />
+                                } @else {
+                                <span class="text-gray-300 dark:text-gray-600">-</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (booster.isActive) {
+                                <i class="pi pi-check-circle text-green-500"></i>
+                                } @else {
+                                <i class="pi pi-times-circle text-red-400"></i>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <p-button
+                                        (onClick)="onManageBoosterCards(booster)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-list"
+                                        pTooltip="{{ t('adminTcg.booster.manageCards') }}"
+                                        severity="help"
+                                        size="small"
+                                    />
+                                    <p-button
+                                        (onClick)="onEditBooster(booster)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-pencil"
+                                        pTooltip="{{ t('adminTcg.booster.edit') }}"
+                                        severity="info"
+                                        size="small"
+                                    />
+                                    <p-button
+                                        (onClick)="onDeleteBooster(booster, $event)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-trash"
+                                        pTooltip="{{ t('adminTcg.booster.delete') }}"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td class="text-center text-gray-500" colspan="7">{{ t('common.noData') }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+                <!-- Booster Card Management Section -->
+                @let managed = getManagedBooster(); @if (managed) {
+                <div
+                    class="mt-6 rounded-xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-950"
+                >
+                    <div class="mb-3 flex items-center justify-between">
+                        <h3 class="font-semibold dark:text-white">
+                            <i class="pi pi-list mr-2 text-purple-500"></i>
+                            {{ t('adminTcg.booster.manageCards') }}: {{ managed.name }}
+                        </h3>
+                        <p-button
+                            (onClick)="onCloseManageCards()"
+                            [rounded]="true"
+                            [text]="true"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            size="small"
+                        />
+                    </div>
+
+                    <!-- Add card to booster -->
+                    <div class="mb-4 flex flex-wrap items-end gap-3">
+                        <div>
+                            <label
+                                class="mb-1 block text-sm text-gray-600 dark:text-gray-400"
+                                for="addBoosterCardSelect"
+                            >
+                                {{ t('adminTcg.booster.addCard') }}
+                            </label>
+                            <p-select
+                                [(ngModel)]="addCardId"
+                                [options]="getAvailableCardsForBooster()"
+                                [placeholder]="t('tcg.marketplace.selectCard')"
+                                inputId="addBoosterCardSelect"
+                                optionLabel="label"
+                                optionValue="value"
+                                styleClass="w-64"
+                            />
+                        </div>
+                        <div>
+                            <label
+                                class="mb-1 block text-sm text-gray-600 dark:text-gray-400"
+                                for="addBoosterWeightInput"
+                            >
+                                {{ t('adminTcg.booster.dropWeight') }}
+                            </label>
+                            <p-inputNumber
+                                [(ngModel)]="addCardWeight"
+                                [min]="1"
+                                [showButtons]="true"
+                                inputId="addBoosterWeightInput"
+                                size="small"
+                            />
+                        </div>
+                        <p-button
+                            (onClick)="onAddCardToBooster()"
+                            [disabled]="!addCardId()"
+                            [label]="t('adminTcg.booster.addCard')"
+                            [loading]="tcgFacade.adminSaving()"
+                            icon="pi pi-plus"
+                            severity="success"
+                            size="small"
+                        />
+                    </div>
+
+                    <!-- Cards in booster table -->
+                    @if (managed.cards.length === 0) {
+                    <p class="text-sm text-gray-400 dark:text-gray-500">{{ t('adminTcg.booster.noCards') }}</p>
+                    } @else {
+                    <p-table [value]="managed.cards" styleClass="p-datatable-sm">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>{{ t('adminTcg.booster.cardName') }}</th>
+                                <th>{{ t('adminTcg.booster.cardRarity') }}</th>
+                                <th class="text-right">{{ t('adminTcg.booster.dropWeight') }}</th>
+                                <th class="text-center">{{ t('common.actions') }}</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-bc pTemplate="body">
+                            <tr>
+                                <td class="font-medium dark:text-white">{{ bc.cardName }}</td>
+                                <td>
+                                    <p-tag
+                                        [severity]="getRaritySeverity(bc.cardRarity)"
+                                        [value]="t('tcg.rarity.' + bc.cardRarity)"
+                                    />
+                                </td>
+                                <td class="text-right">
+                                    @if (editingBoosterCardId() === bc.cardId) {
+                                    <div class="flex items-center justify-end gap-2">
+                                        <p-inputNumber
+                                            [(ngModel)]="editingBoosterCardWeight"
+                                            [min]="1"
+                                            [showButtons]="true"
+                                            inputId="editWeightInput"
+                                            inputStyleClass="w-20"
+                                            size="small"
+                                        />
+                                        <p-button
+                                            (onClick)="onSaveBoosterCardWeight()"
+                                            [rounded]="true"
+                                            [text]="true"
+                                            icon="pi pi-check"
+                                            severity="success"
+                                            size="small"
+                                        />
+                                        <p-button
+                                            (onClick)="onCancelEditWeight()"
+                                            [rounded]="true"
+                                            [text]="true"
+                                            icon="pi pi-times"
+                                            severity="secondary"
+                                            size="small"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <button
+                                        class="cursor-pointer border-none bg-transparent font-mono hover:text-blue-500"
+                                        (click)="onEditBoosterCardWeight(bc.cardId, bc.dropWeight)"
+                                        type="button"
+                                    >
+                                        {{ bc.dropWeight }}
+                                    </button>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <p-button
+                                        (onClick)="onRemoveCardFromBooster(bc.cardId)"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        icon="pi pi-trash"
+                                        pTooltip="{{ t('adminTcg.booster.removeCard') }}"
+                                        severity="danger"
+                                        size="small"
+                                    />
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    }
+                </div>
+                } }
+            </div>
+        </p-tabpanel>
+    </p-tabs>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- Card Dialog                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <p-dialog
+        [(visible)]="showCardDialog"
+        [closable]="true"
+        [draggable]="false"
+        [header]="editingCardId() ? t('adminTcg.card.edit') : t('adminTcg.card.create')"
+        [modal]="true"
+        [style]="{ width: '600px', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-4">
+            <!-- Name -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardName">
+                    {{ t('adminTcg.card.name') }} *
+                </label>
+                <input class="w-full" id="cardName" [(ngModel)]="cardForm.name" pInputText type="text" />
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardDescription">
+                    {{ t('adminTcg.card.description') }}
+                </label>
+                <textarea
+                    class="w-full"
+                    id="cardDescription"
+                    [(ngModel)]="cardForm.description"
+                    pInputTextarea
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <!-- Image URL -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardImageUrl">
+                    {{ t('adminTcg.card.imageUrl') }}
+                </label>
+                <input class="w-full" id="cardImageUrl" [(ngModel)]="cardForm.imageUrl" pInputText type="text" />
+            </div>
+
+            <!-- Rarity + Series -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardRarity">
+                        {{ t('adminTcg.card.rarity') }} *
+                    </label>
+                    <p-select
+                        [(ngModel)]="cardForm.rarity"
+                        [options]="rarityOptions"
+                        inputId="cardRarity"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardSeries">
+                        {{ t('adminTcg.card.series') }} *
+                    </label>
+                    <input class="w-full" id="cardSeries" [(ngModel)]="cardForm.series" pInputText type="text" />
+                </div>
+            </div>
+
+            <!-- Element -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardElement">
+                    {{ t('adminTcg.card.element') }}
+                </label>
+                <p-select
+                    [(ngModel)]="cardForm.element"
+                    [options]="elementOptions"
+                    inputId="cardElement"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                />
+            </div>
+
+            <!-- Stats: ATK / DEF / HP -->
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardAttack">
+                        {{ t('adminTcg.card.attack') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="cardForm.attack"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="cardAttack"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardDefense">
+                        {{ t('adminTcg.card.defense') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="cardForm.defense"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="cardDefense"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardHp">
+                        {{ t('adminTcg.card.hp') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="cardForm.hp"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="cardHp"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Artist Credit -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardArtist">
+                    {{ t('adminTcg.card.artistCredit') }}
+                </label>
+                <input class="w-full" id="cardArtist" [(ngModel)]="cardForm.artistCredit" pInputText type="text" />
+            </div>
+
+            <!-- Flavor Text -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardFlavor">
+                    {{ t('adminTcg.card.flavorText') }}
+                </label>
+                <textarea
+                    class="w-full"
+                    id="cardFlavor"
+                    [(ngModel)]="cardForm.flavorText"
+                    pInputTextarea
+                    rows="2"
+                ></textarea>
+            </div>
+
+            <!-- Sort Order -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="cardSortOrder">
+                    {{ t('adminTcg.card.sortOrder') }}
+                </label>
+                <p-inputNumber
+                    [(ngModel)]="cardForm.sortOrder"
+                    [min]="0"
+                    [showButtons]="true"
+                    inputId="cardSortOrder"
+                />
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+                <p-button
+                    (onClick)="showCardDialog.set(false)"
+                    [label]="t('adminTcg.cancel')"
+                    [text]="true"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="onSaveCard()"
+                    [disabled]="!cardForm.name || !cardForm.series"
+                    [label]="t('adminTcg.save')"
+                    [loading]="tcgFacade.adminSaving()"
+                    icon="pi pi-check"
+                    severity="success"
+                />
+            </div>
+        </div>
+    </p-dialog>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- Booster Dialog                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <p-dialog
+        [(visible)]="showBoosterDialog"
+        [closable]="true"
+        [draggable]="false"
+        [header]="editingBoosterId() ? t('adminTcg.booster.edit') : t('adminTcg.booster.create')"
+        [modal]="true"
+        [style]="{ width: '600px', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-4">
+            <!-- Name -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterName">
+                    {{ t('adminTcg.booster.name') }} *
+                </label>
+                <input class="w-full" id="boosterName" [(ngModel)]="boosterForm.name" pInputText type="text" />
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterDescription">
+                    {{ t('adminTcg.booster.description') }}
+                </label>
+                <textarea
+                    class="w-full"
+                    id="boosterDescription"
+                    [(ngModel)]="boosterForm.description"
+                    pInputTextarea
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <!-- Image URL -->
+            <div>
+                <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterImageUrl">
+                    {{ t('adminTcg.booster.imageUrl') }}
+                </label>
+                <input class="w-full" id="boosterImageUrl" [(ngModel)]="boosterForm.imageUrl" pInputText type="text" />
+            </div>
+
+            <!-- Price + Cards per Pack -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterPrice">
+                        {{ t('adminTcg.booster.price') }} *
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="boosterForm.price"
+                        [min]="1"
+                        [showButtons]="true"
+                        inputId="boosterPrice"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterCardsPerPack">
+                        {{ t('adminTcg.booster.cardsPerPack') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="boosterForm.cardsPerPack"
+                        [min]="1"
+                        [showButtons]="true"
+                        inputId="boosterCardsPerPack"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Guaranteed Rarity + Series -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterGuaranteedRarity">
+                        {{ t('adminTcg.booster.guaranteedRarity') }}
+                    </label>
+                    <p-select
+                        [(ngModel)]="boosterForm.guaranteedRarity"
+                        [options]="guaranteedRarityOptions"
+                        inputId="boosterGuaranteedRarity"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterSeries">
+                        {{ t('adminTcg.booster.series') }} *
+                    </label>
+                    <input class="w-full" id="boosterSeries" [(ngModel)]="boosterForm.series" pInputText type="text" />
+                </div>
+            </div>
+
+            <!-- Available From / Until -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterAvailableFrom">
+                        {{ t('adminTcg.booster.availableFrom') }}
+                    </label>
+                    <input
+                        class="w-full"
+                        id="boosterAvailableFrom"
+                        [(ngModel)]="boosterForm.availableFrom"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterAvailableUntil">
+                        {{ t('adminTcg.booster.availableUntil') }}
+                    </label>
+                    <input
+                        class="w-full"
+                        id="boosterAvailableUntil"
+                        [(ngModel)]="boosterForm.availableUntil"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+            </div>
+
+            <!-- Max Purchases + Sort Order -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterMaxPurchases">
+                        {{ t('adminTcg.booster.maxPurchases') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="boosterForm.maxPurchasesPerUser"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="boosterMaxPurchases"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium dark:text-gray-300" for="boosterSortOrder">
+                        {{ t('adminTcg.booster.sortOrder') }}
+                    </label>
+                    <p-inputNumber
+                        [(ngModel)]="boosterForm.sortOrder"
+                        [min]="0"
+                        [showButtons]="true"
+                        inputId="boosterSortOrder"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+                <p-button
+                    (onClick)="showBoosterDialog.set(false)"
+                    [label]="t('adminTcg.cancel')"
+                    [text]="true"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="onSaveBooster()"
+                    [disabled]="!boosterForm.name || !boosterForm.series"
+                    [label]="t('adminTcg.save')"
+                    [loading]="tcgFacade.adminSaving()"
+                    icon="pi pi-check"
+                    severity="success"
+                />
+            </div>
+        </div>
+    </p-dialog>
+</div>

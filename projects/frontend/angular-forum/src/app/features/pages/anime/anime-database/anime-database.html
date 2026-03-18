@@ -1,225 +1,198 @@
-<div class="card">
-    <div class="mb-4 text-xl font-semibold">Filtering</div>
+<div class="card" *transloco="let t">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h2 class="m-0 text-2xl font-bold">{{ t('anime.database.title') }}</h2>
+            @if (facade.total() > 0) {
+            <p class="text-surface-500 mt-1 mb-0">
+                {{ t('anime.database.entries', { count: facade.total().toLocaleString() }) }}
+            </p>
+            }
+        </div>
+        <p-button
+            (onClick)="toggleNewest()"
+            [label]="showNewest ? t('anime.database.showAll') : t('anime.database.showNewest')"
+            [outlined]="!showNewest"
+            [severity]="showNewest ? 'success' : 'secondary'"
+            icon="pi pi-star"
+        />
+    </div>
+
+    @if (facade.error()) {
+    <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
+    }
+
     <p-table
-        [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
-        [loading]="loading"
+        (onLazyLoad)="onLazyLoad($event)"
+        [first]="tableFirst"
+        [lazy]="true"
+        [loading]="facade.loading()"
         [paginator]="true"
         [rowHover]="true"
-        [rows]="10"
-        [showGridlines]="true"
-        [value]="customers1"
-        #dt1
+        [rows]="pageSize"
+        [scrollable]="true"
+        [showGridlines]="false"
+        [totalRecords]="facade.total()"
+        [value]="facade.animeList()"
         dataKey="id"
-        responsiveLayout="scroll"
+        styleClass="p-datatable-sm"
     >
-        <ng-template #caption>
-            <div class="flex-column flex items-center justify-between sm:flex-row">
-                <button
-                    class="p-button-outlined mb-2"
-                    (click)="clear(dt1)"
-                    icon="pi pi-filter-slash"
-                    label="Clear"
-                    pButton
-                ></button>
-                <p-iconfield class="ml-auto" iconPosition="left">
-                    <p-inputicon>
-                        <i class="pi pi-search"></i>
-                    </p-inputicon>
-                    <input (input)="onGlobalFilter(dt1, $event)" pInputText placeholder="Search keyword" type="text" />
-                </p-iconfield>
-            </div>
-        </ng-template>
         <ng-template #header>
             <tr>
-                <th style="min-width: 12rem">
-                    <div class="flex items-center justify-between">
-                        Name
-                        <p-columnFilter
-                            display="menu"
-                            field="name"
-                            placeholder="Search by name"
-                            type="text"
-                        ></p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 12rem">
-                    <div class="flex items-center justify-between">
-                        Country
-                        <p-columnFilter
-                            display="menu"
-                            field="country.name"
-                            placeholder="Search by country"
-                            type="text"
-                        ></p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 14rem">
-                    <div class="flex items-center justify-between">
-                        Agent
-                        <p-columnFilter
-                            [showAddButton]="false"
-                            [showMatchModes]="false"
-                            [showOperator]="false"
-                            display="menu"
-                            field="representative"
-                            matchMode="in"
-                        >
-                            <ng-template #header>
-                                <div class="px-3 pt-3 pb-0">
-                                    <span class="font-bold">Agent Picker</span>
-                                </div>
-                            </ng-template>
-                            <ng-template #filter let-filter="filterCallback" let-value>
-                                <p-multiselect
-                                    (onChange)="filter($event.value)"
-                                    [ngModel]="value"
-                                    [options]="representatives"
-                                    optionLabel="name"
-                                    placeholder="Any"
-                                    styleClass="w-full"
-                                >
-                                    <ng-template #item let-option>
-                                        <div class="flex w-44 items-center gap-2">
-                                            <img
-                                                [alt]="option.label"
-                                                src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}"
-                                                width="32"
-                                            />
-                                            <span>{{ option.name }}</span>
-                                        </div>
-                                    </ng-template>
-                                </p-multiselect>
-                            </ng-template>
-                        </p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 10rem">
-                    <div class="flex items-center justify-between">
-                        Date
-                        <p-columnFilter
-                            display="menu"
-                            field="date"
-                            placeholder="mm/dd/yyyy"
-                            type="date"
-                        ></p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 10rem">
-                    <div class="flex items-center justify-between">
-                        Balance
-                        <p-columnFilter currency="USD" display="menu" field="balance" type="numeric"></p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 12rem">
-                    <div class="flex items-center justify-between">
-                        Status
-                        <p-columnFilter display="menu" field="status" matchMode="equals">
-                            <ng-template #filter let-filter="filterCallback" let-value>
-                                <p-select
-                                    (onChange)="filter($event.value)"
-                                    [ngModel]="value"
-                                    [options]="statuses"
-                                    [style]="{ 'min-width': '12rem' }"
-                                    placeholder="Any"
-                                >
-                                    <ng-template #item let-option>
-                                        <span [class]="'customer-badge status-' + option.value"
-                                            >{{ option.label }}</span
-                                        >
-                                    </ng-template>
-                                </p-select>
-                            </ng-template>
-                        </p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 12rem">
-                    <div class="flex items-center justify-between">
-                        Activity
-                        <p-columnFilter
-                            [showAddButton]="false"
-                            [showMatchModes]="false"
-                            [showOperator]="false"
-                            display="menu"
-                            field="activity"
-                            matchMode="between"
-                        >
-                            <ng-template #filter let-filter="filterCallback">
-                                <p-slider
-                                    (onSlideEnd)="filter($event.values)"
-                                    [ngModel]="activityValues"
-                                    [range]="true"
-                                    [style]="{ 'min-width': '12rem' }"
-                                    styleClass="m-3"
-                                ></p-slider>
-                                <div class="flex items-center justify-between px-2">
-                                    <span>{{ activityValues[0] }}</span>
-                                    <span>{{ activityValues[1] }}</span>
-                                </div>
-                            </ng-template>
-                        </p-columnFilter>
-                    </div>
-                </th>
-                <th style="min-width: 8rem">
-                    <div class="flex items-center justify-between">
-                        Verified
-                        <p-columnFilter display="menu" field="verified" type="boolean"></p-columnFilter>
-                    </div>
-                </th>
+                <th class="text-surface-400 text-center" style="width: 3.5rem">#</th>
+                <th style="min-width: 22rem">{{ t('anime.topList.table.anime') }}</th>
+                <th style="width: 6.5rem">{{ t('anime.topList.table.type') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('anime.topList.table.episodes') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('anime.topList.table.score') }}</th>
+                <th style="min-width: 11rem">{{ t('anime.topList.table.status') }}</th>
+                <th style="width: 8rem">{{ t('anime.topList.table.start') }}</th>
+                <th style="width: 8rem">{{ t('anime.topList.table.end') }}</th>
+                <th style="min-width: 8rem">{{ t('anime.topList.table.season') }}</th>
+                <th style="width: 6rem">{{ t('anime.topList.table.rating') }}</th>
             </tr>
         </ng-template>
-        <ng-template #body let-customer>
-            <tr>
-                <td>{{ customer.name }}</td>
+
+        <ng-template #body let-anime>
+            <tr class="cursor-pointer" (click)="navigateToDetail(anime.id)">
+                <!-- Rank -->
+                <td class="text-surface-400 text-center text-sm">{{ anime.rank ?? '—' }}</td>
+
+                <!-- Picture + Title -->
                 <td>
-                    <div class="flex items-center gap-2">
-                        <img
-                            [class]="'flag flag-' + customer.country.code"
-                            src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png"
-                            width="30"
-                        />
-                        <span>{{ customer.country.name }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="group relative flex-shrink-0">
+                            @if (anime.picture) {
+                            <img
+                                class="anime-thumbnail rounded object-cover"
+                                [alt]="anime.title"
+                                [src]="anime.picture"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-40 group-hover:block"
+                            >
+                                <img
+                                    class="w-full rounded-lg object-cover shadow-xl"
+                                    [alt]="anime.title"
+                                    [src]="anime.picture"
+                                    style="aspect-ratio: 2/3"
+                                />
+                            </div>
+                            } @else {
+                            <div class="anime-thumbnail bg-surface-200 dark:bg-surface-700 rounded"></div>
+                            }
+                        </div>
+                        <div class="min-w-0">
+                            <div
+                                class="truncate text-sm font-semibold"
+                                [pTooltip]="anime.titleEnglish || anime.title"
+                                tooltipPosition="top"
+                            >
+                                {{ anime.titleEnglish || anime.title || '—' }}
+                            </div>
+                            @if (anime.titleEnglish && anime.title && anime.title !== anime.titleEnglish) {
+                            <div class="text-surface-400 mt-0.5 truncate text-xs">{{ anime.title }}</div>
+                            } @if (anime.genres?.length) {
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                @for (genre of anime.genres!.slice(0, 3); track genre) {
+                                <span
+                                    class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
+                                    >{{ genre }}</span
+                                >
+                                } @if (anime.genres!.length > 3) {
+                                <span class="text-surface-400 text-xs" [pTooltip]="anime.genres!.slice(3).join(', ')"
+                                    >+{{ anime.genres!.length - 3 }}</span
+                                >
+                                }
+                            </div>
+                            }
+                        </div>
                     </div>
                 </td>
+
+                <!-- Type -->
                 <td>
-                    <div class="flex items-center gap-2">
-                        <img
-                            [alt]="customer.representative.name"
-                            src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ customer.representative.image }}"
-                            style="vertical-align: middle"
-                            width="32"
-                        />
-                        <span class="image-text">{{ customer.representative.name }}</span>
-                    </div>
+                    @if (anime.type) {
+                    <p-tag [severity]="getTypeSeverity(anime.type)" [value]="anime.type" styleClass="text-xs" />
+                    } @else {
+                    <span class="text-surface-400">—</span>
+                    }
                 </td>
-                <td>{{ customer.date | date: 'MM/dd/yyyy' }}</td>
-                <td>{{ customer.balance | currency: 'USD' : 'symbol' }}</td>
+
+                <!-- Episodes -->
+                <td class="text-center text-sm">
+                    @if (anime.episode) { {{ anime.episode }} } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Score -->
+                <td class="text-center text-sm font-semibold">
+                    @if (anime.mean) {
+                    <span [class]="getScoreClass(anime.mean)">{{ anime.mean.toFixed(2) }}</span>
+                    } @else {
+                    <span class="text-surface-400">N/A</span>
+                    }
+                </td>
+
+                <!-- Status -->
                 <td>
+                    @if (anime.status) {
                     <p-tag
-                        [severity]="getSeverity(customer.status.toLowerCase())"
-                        [value]="customer.status.toLowerCase()"
-                        styleClass="dark:bg-surface-900!"
+                        [severity]="getStatusSeverity(anime.status)"
+                        [value]="anime.status"
+                        styleClass="text-xs whitespace-nowrap"
                     />
+                    } @else {
+                    <span class="text-surface-400">—</span>
+                    }
                 </td>
-                <td>
-                    <p-progressbar [showValue]="false" [style]="{ height: '0.5rem' }" [value]="customer.activity" />
+
+                <!-- Start Date -->
+                <td class="text-surface-500 text-sm">
+                    {{ formatDate(anime.startYear, anime.startMonth, anime.startDay) }}
                 </td>
-                <td class="text-center">
-                    <p-tag
-                        [severity]="getSeverity(customer.status.toLowerCase())"
-                        [value]="customer.status.toLowerCase()"
-                        styleClass="dark:bg-surface-900!"
-                    />
-                </td>
+
+                <!-- End Date -->
+                <td class="text-surface-500 text-sm">{{ formatDate(anime.endYear, anime.endMonth, anime.endDay) }}</td>
+
+                <!-- Season -->
+                <td class="text-surface-500 text-sm">{{ formatSeason(anime.season, anime.seasonYear) }}</td>
+
+                <!-- Rating -->
+                <td class="text-surface-400 text-xs">{{ anime.rating || '—' }}</td>
             </tr>
         </ng-template>
+
         <ng-template #emptymessage>
             <tr>
-                <td colspan="8">No customers found.</td>
+                <td colspan="10">
+                    <div class="text-surface-400 flex flex-col items-center justify-center py-12">
+                        <i class="pi pi-inbox mb-3 text-5xl"></i>
+                        <span class="text-lg">{{ t('anime.database.noAnime') }}</span>
+                    </div>
+                </td>
             </tr>
         </ng-template>
+
         <ng-template #loadingbody>
             <tr>
-                <td colspan="8">Loading customers data. Please wait.</td>
+                <td><p-skeleton height="1.25rem" /></td>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <p-skeleton height="3.5rem" styleClass="rounded flex-shrink-0" width="2.5rem" />
+                        <div class="flex-1">
+                            <p-skeleton height="0.875rem" styleClass="mb-2" />
+                            <p-skeleton height="0.75rem" width="60%" />
+                        </div>
+                    </div>
+                </td>
+                <td><p-skeleton height="1.5rem" width="3.5rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2.5rem" /></td>
+                <td><p-skeleton height="1.5rem" width="6rem" /></td>
+                <td><p-skeleton height="1.25rem" width="4.5rem" /></td>
+                <td><p-skeleton height="1.25rem" width="4.5rem" /></td>
+                <td><p-skeleton height="1.25rem" width="5rem" /></td>
+                <td><p-skeleton height="1.25rem" width="3.5rem" /></td>
             </tr>
         </ng-template>
     </p-table>

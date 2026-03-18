@@ -108,3 +108,78 @@
         }
     }
 }
+
+/* ─── Mobile-first responsive overrides ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+    /* Reduce main container padding on mobile */
+    .layout-main-container {
+        padding: 5rem 0.75rem 0 0.75rem;
+    }
+
+    /* Reduce page-level padding */
+    .p-4 {
+        padding: 0.75rem !important;
+    }
+
+    /* Make all PrimeNG tables horizontally scrollable */
+    .p-datatable-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* PrimeNG card reduce padding */
+    .p-card-body {
+        padding: 0.75rem !important;
+    }
+
+    /* PrimeNG dialog full width on mobile */
+    .p-dialog {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 0.5rem !important;
+    }
+
+    .p-dialog-content {
+        padding: 0.75rem !important;
+    }
+
+    /* PrimeNG tabs - smaller text on mobile */
+    .p-tablist .p-tab {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Reduce heading sizes on mobile */
+    h1 {
+        font-size: 1.35rem !important;
+    }
+
+    h2 {
+        font-size: 1.15rem !important;
+    }
+
+    /* Fix flex headers that don't wrap */
+    .flex.items-center.justify-between {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Topbar adjustments */
+    .layout-topbar {
+        padding: 0 0.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Even tighter on very small screens */
+    .layout-main-container {
+        padding: 4.5rem 0.5rem 0 0.5rem;
+    }
+
+    /* Stack buttons that are side by side */
+    .flex.gap-3,
+    .flex.gap-2 {
+        flex-wrap: wrap;
+    }
+}
