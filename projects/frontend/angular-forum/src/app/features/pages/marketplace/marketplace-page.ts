@@ -13,11 +13,13 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { ListingType, MarketListing } from "../../../core/models/marketplace/marketplace";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     selector: "marketplace-page",
     standalone: true,
     imports: [
+        AdminQuicklink,
         RouterModule,
         FormsModule,
         TranslocoModule,

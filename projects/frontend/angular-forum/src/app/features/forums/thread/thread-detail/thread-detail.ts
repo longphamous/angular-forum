@@ -3,10 +3,12 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { MessageModule } from "primeng/message";
+import { InputTextModule } from "primeng/inputtext";
 import { PaginatorModule, PaginatorState } from "primeng/paginator";
 import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
@@ -16,7 +18,7 @@ import { TooltipModule } from "primeng/tooltip";
 import { Subscription } from "rxjs";
 
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
-import { Post } from "../../../../core/models/forum/post";
+import { Post, PostEditHistoryEntry } from "../../../../core/models/forum/post";
 import { PushThreadNewPost } from "../../../../core/models/push/push-events";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { PushService } from "../../../../core/services/push.service";
@@ -29,9 +31,11 @@ import { OnlineIndicator } from "../../../../shared/components/online-indicator/
     imports: [
         FormsModule,
         ButtonModule,
+        CheckboxModule,
         DialogModule,
         DividerModule,
         EditorModule,
+        InputTextModule,
         LevelBadge,
         OnlineIndicator,
         MessageModule,
@@ -67,9 +71,28 @@ export class ThreadDetail implements OnInit, OnDestroy {
     readonly newPostHint = signal<PushThreadNewPost | null>(null);
     readonly moveDialogVisible = signal(false);
     readonly deleteDialogVisible = signal(false);
+    readonly editDialogVisible = signal(false);
+    readonly historyDialogVisible = signal(false);
     readonly availableForums = signal<{ id: string; name: string }[]>([]);
+    readonly editHistory = signal<PostEditHistoryEntry[]>([]);
     moveTargetForumId = "";
     reportReason = "";
+    editPostId = "";
+    editContent = "";
+    editReason = "";
+    editSubmitting = false;
+
+    // Poll edit
+    readonly pollEditDialogVisible = signal(false);
+    pollEditNewOptions: { text: string; imageUrl: string }[] = [];
+    pollEditQuestion = "";
+    pollEditIsAnonymous = false;
+    pollEditShowVoterNames = false;
+    pollEditAllowVoteChange = true;
+    pollEditVoteChangeDeadline = "";
+    pollEditClosesAt = "";
+    pollEditIsClosed = false;
+    pollEditSubmitting = false;
 
     private threadId = "";
     private currentPage = 1;
@@ -250,15 +273,125 @@ export class ThreadDetail implements OnInit, OnDestroy {
 
     // ── Poll ──────────────────────────────────────────────────────────────────
 
+    pollHasImages(): boolean {
+        const poll = this.facade.currentPoll();
+        return !!poll && poll.options.some((o) => !!o.imageUrl);
+    }
+
     votePoll(optionIndex: number): void {
         const poll = this.facade.currentPoll();
-        if (!poll || poll.isClosed || poll.myVote !== null) return;
+        if (!poll || poll.isClosed) return;
+        // Allow vote if: hasn't voted yet, OR can change vote
+        if (poll.myVote !== null && !poll.canChangeVote) return;
+        if (poll.myVote === optionIndex) return; // same option
         this.facade.votePoll(this.threadId, optionIndex).subscribe({
             next: () => {
                 this.facade.loadPoll(this.threadId);
                 this.cd.markForCheck();
             }
         });
+    }
+
+    // ── Poll editing ─────────────────────────────────────────────────────────
+
+    canEditPoll(): boolean {
+        const poll = this.facade.currentPoll();
+        const user = this.authFacade.currentUser();
+        if (!poll || !user) return false;
+        return user.id === poll.authorId || user.role === "admin" || user.role === "moderator";
+    }
+
+    openPollEditDialog(): void {
+        const poll = this.facade.currentPoll();
+        if (!poll) return;
+        this.pollEditQuestion = poll.question;
+        this.pollEditIsAnonymous = poll.isAnonymous;
+        this.pollEditShowVoterNames = poll.showVoterNames;
+        this.pollEditAllowVoteChange = poll.allowVoteChange;
+        this.pollEditVoteChangeDeadline = poll.voteChangeDeadline?.slice(0, 16) ?? "";
+        this.pollEditClosesAt = poll.closesAt?.slice(0, 16) ?? "";
+        this.pollEditIsClosed = poll.isClosed;
+        this.pollEditNewOptions = [{ text: "", imageUrl: "" }];
+        this.pollEditDialogVisible.set(true);
+    }
+
+    addPollEditOption(): void {
+        this.pollEditNewOptions = [...this.pollEditNewOptions, { text: "", imageUrl: "" }];
+    }
+
+    removePollEditOption(index: number): void {
+        this.pollEditNewOptions = this.pollEditNewOptions.filter((_, i) => i !== index);
+    }
+
+    submitPollEdit(): void {
+        const validNew = this.pollEditNewOptions
+            .filter((o) => o.text.trim())
+            .map((o) => ({ text: o.text.trim(), ...(o.imageUrl.trim() ? { imageUrl: o.imageUrl.trim() } : {}) }));
+
+        const payload: Record<string, unknown> = {
+            question: this.pollEditQuestion.trim(),
+            isAnonymous: this.pollEditIsAnonymous,
+            showVoterNames: this.pollEditShowVoterNames,
+            allowVoteChange: this.pollEditAllowVoteChange,
+            voteChangeDeadline: this.pollEditVoteChangeDeadline || null,
+            closesAt: this.pollEditClosesAt || null,
+            isClosed: this.pollEditIsClosed
+        };
+
+        if (validNew.length > 0) {
+            payload["addOptions"] = validNew;
+        }
+
+        this.pollEditSubmitting = true;
+        this.facade.updatePoll(this.threadId, payload).subscribe({
+            next: () => {
+                this.pollEditDialogVisible.set(false);
+                this.pollEditSubmitting = false;
+                this.facade.loadPoll(this.threadId);
+                this.cd.markForCheck();
+            },
+            error: () => {
+                this.pollEditSubmitting = false;
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    // ── Post editing ──────────────────────────────────────────────────────────
+
+    canEditPost(post: Post): boolean {
+        const user = this.authFacade.currentUser();
+        if (!user) return false;
+        return user.id === post.authorId || user.role === "admin" || user.role === "moderator";
+    }
+
+    openEditDialog(post: Post): void {
+        this.editPostId = post.id;
+        this.editContent = post.content;
+        this.editReason = "";
+        this.editDialogVisible.set(true);
+    }
+
+    submitEdit(): void {
+        if (!this.editContent.trim()) return;
+        this.editSubmitting = true;
+        this.facade.updatePost(this.editPostId, this.editContent, this.editReason || undefined).subscribe({
+            next: () => {
+                this.editDialogVisible.set(false);
+                this.editSubmitting = false;
+                this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
+                this.cd.markForCheck();
+            },
+            error: () => {
+                this.editSubmitting = false;
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    openHistoryDialog(post: Post): void {
+        this.editHistory.set(post.editHistory ?? []);
+        this.historyDialogVisible.set(true);
     }
 
     // ── Moderation ─────────────────────────────────────────────────────────────

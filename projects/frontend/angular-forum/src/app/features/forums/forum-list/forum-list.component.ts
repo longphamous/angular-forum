@@ -9,10 +9,12 @@ import { TagModule } from "primeng/tag";
 
 import { TeaserSlideshowComponent } from "../../../core/components/teaser-slideshow/teaser-slideshow";
 import { ForumFacade } from "../../../facade/forum/forum-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     selector: "forum-list",
     imports: [
+        AdminQuicklink,
         RouterModule,
         ButtonModule,
         TagModule,

@@ -19,10 +19,12 @@ import { SHOP_ROUTES } from "../../../core/api/shop.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { ShopItem } from "../../../core/models/shop/shop";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AdminQuicklink,
         BadgeModule,
         ButtonModule,
         CardModule,
@@ -50,6 +52,7 @@ import { WalletFacade } from "../../../facade/wallet/wallet-facade";
                     <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
                         <i class="pi pi-shopping-bag text-primary"></i>
                         {{ t("shop.title") }}
+                        <admin-quicklink route="/admin/shop" />
                     </h1>
                     <p class="text-surface-500 mt-1 text-sm">{{ t("shop.subtitle") }}</p>
                 </div>

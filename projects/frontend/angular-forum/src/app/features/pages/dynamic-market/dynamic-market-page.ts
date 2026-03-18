@@ -14,6 +14,7 @@ import type { MarketResource } from "../../../core/models/dynamic-market/dynamic
 import { MARKET_GROUP_LABELS } from "../../../core/models/dynamic-market/dynamic-market";
 import { DynamicMarketFacade } from "../../../facade/dynamic-market/dynamic-market-facade";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 /** Fallback poll interval ms — fires only if scheduler is disabled */
 const POLL_INTERVAL = 60_000;
@@ -22,6 +23,7 @@ const POLL_INTERVAL = 60_000;
     selector: "app-dynamic-market-page",
     standalone: true,
     imports: [
+        AdminQuicklink,
         CommonModule,
         FormsModule,
         TranslocoModule,

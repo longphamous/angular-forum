@@ -101,9 +101,18 @@ export interface PostDto {
     isEdited: boolean;
     editedAt?: string;
     editCount: number;
+    editReason?: string;
+    editHistory?: PostEditHistoryEntry[];
     reactionCount: number;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface PostEditHistoryEntry {
+    content: string;
+    editedBy: string;
+    editedAt: string;
+    reason: string | null;
 }
 
 // ─── Reaction ─────────────────────────────────────────────────────────────────
@@ -121,12 +130,18 @@ export interface ReactionDto {
 export interface PollDto {
     id: string;
     threadId: string;
+    authorId: string;
     question: string;
     options: PollOptionDto[];
     totalVotes: number;
     isMultipleChoice: boolean;
+    isAnonymous: boolean;
+    showVoterNames: boolean;
     isClosed: boolean;
     closesAt: string | null;
+    allowVoteChange: boolean;
+    canChangeVote: boolean;
+    voteChangeDeadline: string | null;
     myVote: number | null;
     createdAt: string;
 }
@@ -134,6 +149,14 @@ export interface PollDto {
 export interface PollOptionDto {
     index: number;
     text: string;
+    imageUrl?: string;
     votes: number;
     percentage: number;
+    voters?: PollVoterDto[];
+}
+
+export interface PollVoterDto {
+    userId: string;
+    username: string;
+    avatarUrl?: string;
 }

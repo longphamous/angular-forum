@@ -51,8 +51,15 @@ export class ThreadCreate implements OnInit {
     // Poll
     readonly pollEnabled = signal(false);
     pollQuestion = "";
-    pollOptions: string[] = ["", ""];
+    pollOptions: { text: string; imageUrl: string }[] = [
+        { text: "", imageUrl: "" },
+        { text: "", imageUrl: "" }
+    ];
     pollMultipleChoice = false;
+    pollIsAnonymous = false;
+    pollShowVoterNames = false;
+    pollAllowVoteChange = true;
+    pollVoteChangeDeadline = "";
 
     private forumId = "";
 
@@ -69,9 +76,11 @@ export class ThreadCreate implements OnInit {
         }
 
         // Validate poll if enabled
-        const validOptions = this.pollOptions.map((o) => o.trim()).filter((o) => o.length > 0);
+        const validOptions = this.pollOptions
+            .filter((o) => o.text.trim().length > 0)
+            .map((o) => ({ text: o.text.trim(), ...(o.imageUrl.trim() ? { imageUrl: o.imageUrl.trim() } : {}) }));
         if (this.pollEnabled() && (!this.pollQuestion.trim() || validOptions.length < 2)) {
-            this.error = "Umfrage benötigt eine Frage und mindestens 2 Optionen.";
+            this.error = this.translocoService.translate("threadCreate.poll.validationError");
             return;
         }
 
@@ -83,7 +92,11 @@ export class ThreadCreate implements OnInit {
                 ? {
                       question: this.pollQuestion.trim(),
                       options: validOptions,
-                      isMultipleChoice: this.pollMultipleChoice
+                      isMultipleChoice: this.pollMultipleChoice,
+                      isAnonymous: this.pollIsAnonymous,
+                      showVoterNames: this.pollShowVoterNames,
+                      allowVoteChange: this.pollAllowVoteChange,
+                      ...(this.pollVoteChangeDeadline ? { voteChangeDeadline: this.pollVoteChangeDeadline } : {})
                   }
                 : undefined;
 
@@ -121,7 +134,7 @@ export class ThreadCreate implements OnInit {
 
     addPollOption(): void {
         if (this.pollOptions.length < 10) {
-            this.pollOptions = [...this.pollOptions, ""];
+            this.pollOptions = [...this.pollOptions, { text: "", imageUrl: "" }];
         }
     }
 
@@ -135,7 +148,11 @@ export class ThreadCreate implements OnInit {
         return index;
     }
 
-    updatePollOption(index: number, value: string): void {
-        this.pollOptions = this.pollOptions.map((o, i) => (i === index ? value : o));
+    updatePollOptionText(index: number, value: string): void {
+        this.pollOptions = this.pollOptions.map((o, i) => (i === index ? { ...o, text: value } : o));
+    }
+
+    updatePollOptionImage(index: number, value: string): void {
+        this.pollOptions = this.pollOptions.map((o, i) => (i === index ? { ...o, imageUrl: value } : o));
     }
 }

@@ -19,6 +19,7 @@ import { ELEMENT_CONFIG, RARITY_CONFIG } from "../../../core/models/tcg/tcg";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { TcgFacade } from "../../../facade/tcg/tcg-facade";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 type OwnershipFilter = "all" | "owned" | "notOwned";
 
@@ -31,6 +32,7 @@ interface SelectOption<T> {
     selector: "app-tcg-page",
     standalone: true,
     imports: [
+        AdminQuicklink,
         CommonModule,
         FormsModule,
         TranslocoModule,

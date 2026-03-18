@@ -76,6 +76,29 @@ export class ThreadController {
     }
 
     /**
+     * PATCH /forum/threads/:id/poll
+     * Updates poll settings or adds options. Author or mod/admin only.
+     */
+    @Patch("threads/:id/poll")
+    updatePoll(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body()
+        body: {
+            question?: string;
+            addOptions?: { text: string; imageUrl?: string }[];
+            isAnonymous?: boolean;
+            showVoterNames?: boolean;
+            allowVoteChange?: boolean;
+            voteChangeDeadline?: string | null;
+            closesAt?: string | null;
+            isClosed?: boolean;
+        },
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PollDto> {
+        return this.threadService.updatePoll(id, user.userId, user.role, body);
+    }
+
+    /**
      * POST /forum/threads/:id/poll/vote
      * Casts a vote on a thread's poll. Requires authentication.
      */

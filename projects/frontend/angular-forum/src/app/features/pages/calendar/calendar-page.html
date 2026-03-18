@@ -8,6 +8,7 @@
             <h1 class="text-surface-900 dark:text-surface-0 min-w-[12rem] text-center text-xl font-bold">
                 {{ periodLabel() }}
             </h1>
+            <admin-quicklink route="/admin/calendar" />
             <p-button (click)="next()" [rounded]="true" icon="pi pi-chevron-right" severity="secondary" size="small" />
             <p-button (click)="goToToday()" [label]="t('calendar.today')" severity="secondary" size="small" />
         </div>

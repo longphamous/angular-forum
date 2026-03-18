@@ -46,6 +46,13 @@ export class ForumPostEntity {
     @Column({ name: "reaction_count", default: 0 })
     reactionCount!: number;
 
+    @Column({ name: "edit_reason", type: "varchar", length: 300, nullable: true })
+    editReason!: string | null;
+
+    /** Array of { content, editedBy, editedAt, reason } snapshots before each edit. */
+    @Column({ name: "edit_history", type: "jsonb", default: [] })
+    editHistory!: { content: string; editedBy: string; editedAt: string; reason: string | null }[];
+
     @Column({ name: "is_best_answer", default: false })
     isBestAnswer!: boolean;
 

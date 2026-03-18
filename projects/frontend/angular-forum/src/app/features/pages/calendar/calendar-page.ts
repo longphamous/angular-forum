@@ -35,6 +35,7 @@ import {
     RespondPayload
 } from "../../../core/models/calendar/calendar";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 const WEEKDAY_KEYS = [
     "calendar.week.mo",
@@ -88,6 +89,7 @@ function defaultForm(): EventFormData {
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AdminQuicklink,
         BadgeModule,
         ButtonModule,
         CheckboxModule,

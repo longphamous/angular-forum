@@ -37,7 +37,9 @@
     "saved": "Gespeichert",
     "created": "Erstellt",
     "deleted": "Gelöscht",
-    "more": "Mehr"
+    "more": "Mehr",
+    "reset": "Zurücksetzen",
+    "adminSettings": "Einstellungen"
   },
   "nav": {
     "profile": "Profil",
@@ -163,8 +165,12 @@
     "firstPost": "Erster Beitrag",
     "op": "OP",
     "edited": "bearbeitet",
+    "editedTimes": "({{count}}x bearbeitet)",
+    "editBtn": "Bearbeiten",
+    "editTooltip": "Bearbeiten",
     "quote": "Zitieren",
     "quoteTooltip": "Diesen Beitrag zitieren",
+    "quotePrefix": "{{author}} schrieb:",
     "report": "Melden",
     "reportTooltip": "Diesen Beitrag melden",
     "bestAnswer": "Beste Antwort",
@@ -177,12 +183,67 @@
     "replyPlaceholder": "Deine Antwort...",
     "replySend": "Antwort senden",
     "lockedMessage": "Dieser Thread ist gesperrt. Keine weiteren Antworten möglich.",
+    "newPostHint": "{{author}} hat eine neue Antwort geschrieben.",
+    "newPostShow": "Anzeigen",
     "reportDialog": {
       "header": "Beitrag melden",
       "description": "Bitte schildere kurz, warum du diesen Beitrag meldest.",
       "placeholder": "Grund der Meldung (z.B. Spam, unangemessener Inhalt…)",
       "success": "Danke! Der Beitrag wurde gemeldet.",
       "submit": "Melden"
+    },
+    "editDialog": {
+      "header": "Beitrag bearbeiten",
+      "reasonLabel": "Bearbeitungsgrund (optional)",
+      "reasonPlaceholder": "z.B. Tippfehler korrigiert, Link aktualisiert..."
+    },
+    "historyDialog": {
+      "header": "Bearbeitungsverlauf",
+      "empty": "Kein Verlauf vorhanden."
+    },
+    "moderation": {
+      "label": "Moderation:",
+      "pin": "Pinnen",
+      "unpin": "Entpinnen",
+      "sticky": "Wichtig",
+      "unsticky": "Nicht mehr wichtig",
+      "lock": "Sperren",
+      "unlock": "Entsperren",
+      "move": "Verschieben",
+      "delete": "Löschen",
+      "moveDialog": {
+        "header": "Thread verschieben",
+        "selectForum": "Zielforum auswählen:",
+        "current": "(aktuell)"
+      },
+      "deleteDialog": {
+        "header": "Thread löschen",
+        "message": "Möchtest du den Thread \"{{title}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+      }
+    },
+    "poll": {
+      "anonymous": "Anonym",
+      "votes": "Stimmen",
+      "closed": "Geschlossen",
+      "clickToVote": "Klicke um abzustimmen",
+      "voted": "Abgestimmt",
+      "changeVoteHint": "Klicke auf eine andere Option um deine Stimme zu ändern",
+      "editBtn": "Bearbeiten",
+      "editDialog": {
+        "header": "Umfrage bearbeiten",
+        "question": "Frage",
+        "settings": "Einstellungen",
+        "anonymousVoting": "Anonyme Abstimmung",
+        "showVoters": "Zeige wer abgestimmt hat",
+        "allowVoteChange": "Stimmänderung erlauben",
+        "changeDeadline": "Änderbar bis (optional)",
+        "pollClosed": "Umfrage geschlossen",
+        "closesAt": "Schließt automatisch am (optional)",
+        "addOptionsHeader": "Neue Optionen hinzufügen",
+        "newOptionPlaceholder": "Neue Option {{index}}",
+        "imageUrlPlaceholder": "Bild-URL (optional)",
+        "addOption": "Weitere Option"
+      }
     }
   },
   "threadCreate": {
@@ -198,7 +259,23 @@
     "cancel": "Abbrechen",
     "submit": "Thread erstellen",
     "createError": "Fehler beim Erstellen des Threads.",
-    "requiredFields": "Titel und Inhalt sind erforderlich."
+    "requiredFields": "Titel und Inhalt sind erforderlich.",
+    "poll": {
+      "title": "Umfrage",
+      "question": "Frage",
+      "questionPlaceholder": "z.B. Was ist euer liebstes Anime-Genre?",
+      "options": "Antwortmöglichkeiten",
+      "optionPlaceholder": "Option {{index}}",
+      "imageUrlPlaceholder": "Bild-URL (optional, z.B. https://...)",
+      "addOption": "Option hinzufügen",
+      "settings": "Einstellungen",
+      "multipleChoice": "Mehrfachauswahl erlauben",
+      "anonymous": "Anonyme Abstimmung",
+      "showVoters": "Zeige wer abgestimmt hat",
+      "allowVoteChange": "Stimmänderung erlauben",
+      "voteChangeDeadline": "Stimmänderung möglich bis (optional)",
+      "validationError": "Umfrage benötigt eine Frage und mindestens 2 Optionen."
+    }
   },
   "adminOverview": {
     "title": "Admin Übersicht",

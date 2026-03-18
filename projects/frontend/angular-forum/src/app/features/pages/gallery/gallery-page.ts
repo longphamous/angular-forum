@@ -20,10 +20,12 @@ import { GALLERY_ROUTES } from "../../../core/api/gallery.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { AlbumAccess, CreateAlbumPayload, GalleryAlbum } from "../../../core/models/gallery/gallery";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AdminQuicklink,
         ButtonModule,
         CardModule,
         ChipModule,

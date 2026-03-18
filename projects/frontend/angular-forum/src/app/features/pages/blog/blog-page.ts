@@ -18,11 +18,13 @@ import { BLOG_ROUTES } from "../../../core/api/blog.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { BlogCategory, BlogPost, BlogType } from "../../../core/models/blog/blog";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     selector: "app-blog-page",
     imports: [
+        AdminQuicklink,
         ButtonModule,
         ChipModule,
         FormsModule,

@@ -12,7 +12,14 @@ import { ForumEntity } from "../entities/forum.entity";
 import { ForumPollEntity } from "../entities/poll.entity";
 import { ForumPostEntity } from "../entities/post.entity";
 import { ForumThreadEntity } from "../entities/thread.entity";
-import { PaginatedResult, PollDto, PollOptionDto, ThreadDetailDto, ThreadDto } from "../models/forum.model";
+import {
+    PaginatedResult,
+    PollDto,
+    PollOptionDto,
+    PollVoterDto,
+    ThreadDetailDto,
+    ThreadDto
+} from "../models/forum.model";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -167,11 +174,16 @@ export class ThreadService {
         if (dto.poll && dto.poll.question && dto.poll.options.length >= 2) {
             const poll = this.pollRepo.create({
                 threadId: thread.id,
+                authorId: authorId,
                 question: dto.poll.question,
                 options: dto.poll.options,
                 votes: {},
                 voterMap: {},
                 isMultipleChoice: dto.poll.isMultipleChoice ?? false,
+                isAnonymous: dto.poll.isAnonymous ?? false,
+                showVoterNames: dto.poll.showVoterNames ?? false,
+                allowVoteChange: dto.poll.allowVoteChange ?? true,
+                voteChangeDeadline: dto.poll.voteChangeDeadline ? new Date(dto.poll.voteChangeDeadline) : null,
                 closesAt: dto.poll.closesAt ? new Date(dto.poll.closesAt) : null
             });
             await this.pollRepo.save(poll);
@@ -265,25 +277,64 @@ export class ThreadService {
         const totalVotes = Object.values(poll.votes).reduce((sum, n) => sum + n, 0);
         const myVote = userId && poll.voterMap[userId] !== undefined ? poll.voterMap[userId] : null;
 
-        const options: PollOptionDto[] = poll.options.map((text, index) => {
+        // Resolve voter names if showVoterNames is enabled and poll is not anonymous
+        let votersByOption = new Map<number, PollVoterDto[]>();
+        if (poll.showVoterNames && !poll.isAnonymous) {
+            const voterEntries = Object.entries(poll.voterMap);
+            if (voterEntries.length > 0) {
+                const userIds = voterEntries.map(([uid]) => uid);
+                const users = await this.userRepo.find({
+                    where: { id: In(userIds) },
+                    select: ["id", "username", "displayName", "avatarUrl"]
+                });
+                const userMap = new Map(users.map((u) => [u.id, u]));
+
+                for (const [uid, optIdx] of voterEntries) {
+                    const user = userMap.get(uid);
+                    if (!user) continue;
+                    const list = votersByOption.get(optIdx) ?? [];
+                    list.push({ userId: uid, username: user.displayName, avatarUrl: user.avatarUrl });
+                    votersByOption.set(optIdx, list);
+                }
+            }
+        }
+
+        const options: PollOptionDto[] = poll.options.map((opt, index) => {
             const votes = poll.votes[String(index)] ?? 0;
+            const text = typeof opt === "string" ? opt : opt.text;
+            const imageUrl = typeof opt === "string" ? undefined : opt.imageUrl;
             return {
                 index,
                 text,
+                imageUrl,
                 votes,
-                percentage: totalVotes > 0 ? Math.round((votes / totalVotes) * 1000) / 10 : 0
+                percentage: totalVotes > 0 ? Math.round((votes / totalVotes) * 1000) / 10 : 0,
+                ...(votersByOption.has(index) ? { voters: votersByOption.get(index) } : {})
             };
         });
+
+        const isClosed = poll.isClosed || (poll.closesAt !== null && poll.closesAt < new Date());
+        const canChangeVote =
+            !isClosed &&
+            poll.allowVoteChange &&
+            myVote !== null &&
+            (poll.voteChangeDeadline === null || poll.voteChangeDeadline > new Date());
 
         return {
             id: poll.id,
             threadId: poll.threadId,
+            authorId: poll.authorId,
             question: poll.question,
             options,
             totalVotes,
             isMultipleChoice: poll.isMultipleChoice,
-            isClosed: poll.isClosed || (poll.closesAt !== null && poll.closesAt < new Date()),
+            isAnonymous: poll.isAnonymous,
+            showVoterNames: poll.showVoterNames,
+            isClosed,
             closesAt: poll.closesAt?.toISOString() ?? null,
+            allowVoteChange: poll.allowVoteChange,
+            canChangeVote,
+            voteChangeDeadline: poll.voteChangeDeadline?.toISOString() ?? null,
             myVote,
             createdAt: poll.createdAt.toISOString()
         };
@@ -301,14 +352,72 @@ export class ThreadService {
             throw new BadRequestException("Invalid option index");
         }
 
-        if (poll.voterMap[userId] !== undefined) {
-            throw new BadRequestException("You have already voted");
+        const existingVote = poll.voterMap[userId];
+        if (existingVote !== undefined) {
+            // User already voted — check if they can change
+            if (!poll.allowVoteChange) {
+                throw new BadRequestException("Vote changes are not allowed for this poll");
+            }
+            if (poll.voteChangeDeadline && poll.voteChangeDeadline < new Date()) {
+                throw new BadRequestException("The deadline for changing votes has passed");
+            }
+            if (existingVote === optionIndex) {
+                throw new BadRequestException("You already voted for this option");
+            }
+
+            // Remove old vote
+            const oldKey = String(existingVote);
+            poll.votes[oldKey] = Math.max(0, (poll.votes[oldKey] ?? 1) - 1);
         }
 
-        // Record vote
+        // Record new vote
         poll.voterMap[userId] = optionIndex;
         const key = String(optionIndex);
         poll.votes[key] = (poll.votes[key] ?? 0) + 1;
+
+        await this.pollRepo.save(poll);
+        return (await this.getPoll(threadId, userId))!;
+    }
+
+    async updatePoll(
+        threadId: string,
+        userId: string,
+        userRole: UserRole,
+        dto: {
+            question?: string;
+            addOptions?: { text: string; imageUrl?: string }[];
+            isAnonymous?: boolean;
+            showVoterNames?: boolean;
+            allowVoteChange?: boolean;
+            voteChangeDeadline?: string | null;
+            closesAt?: string | null;
+            isClosed?: boolean;
+        }
+    ): Promise<PollDto> {
+        const poll = await this.pollRepo.findOneBy({ threadId });
+        if (!poll) throw new NotFoundException("Poll not found");
+
+        const isMod = userRole === "admin" || userRole === "moderator";
+        if (poll.authorId !== userId && !isMod) {
+            throw new ForbiddenException("Only the poll author or moderators can edit this poll");
+        }
+
+        if (dto.question !== undefined) poll.question = dto.question;
+        if (dto.isAnonymous !== undefined) poll.isAnonymous = dto.isAnonymous;
+        if (dto.showVoterNames !== undefined) poll.showVoterNames = dto.showVoterNames;
+        if (dto.allowVoteChange !== undefined) poll.allowVoteChange = dto.allowVoteChange;
+        if (dto.voteChangeDeadline !== undefined) {
+            poll.voteChangeDeadline = dto.voteChangeDeadline ? new Date(dto.voteChangeDeadline) : null;
+        }
+        if (dto.closesAt !== undefined) {
+            poll.closesAt = dto.closesAt ? new Date(dto.closesAt) : null;
+        }
+        if (dto.isClosed !== undefined) poll.isClosed = dto.isClosed;
+
+        // Add new options (appended — existing votes stay intact)
+        if (dto.addOptions && dto.addOptions.length > 0) {
+            poll.options = [...poll.options, ...dto.addOptions];
+        }
 
         await this.pollRepo.save(poll);
         return (await this.getPoll(threadId, userId))!;

@@ -52,7 +52,7 @@ export class PostController {
 
     /**
      * PATCH /forum/posts/:id
-     * Updates a post's content. Author only.
+     * Updates a post's content. Author, moderators, and admins may edit.
      */
     @Patch("posts/:id")
     update(
@@ -60,7 +60,7 @@ export class PostController {
         @Body() dto: UpdatePostDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<PostDto> {
-        return this.postService.update(id, dto, user.userId);
+        return this.postService.update(id, dto, user.userId, user.role);
     }
 
     /**

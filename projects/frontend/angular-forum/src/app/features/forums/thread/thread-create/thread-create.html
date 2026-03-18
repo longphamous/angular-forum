@@ -56,7 +56,7 @@
             <div class="card flex w-full flex-col gap-6">
                 <div class="flex items-center justify-between">
                     <div class="text-lg font-semibold">
-                        <i class="pi pi-chart-bar mr-2"></i>Umfrage
+                        <i class="pi pi-chart-bar mr-2"></i>{{ t('threadCreate.poll.title') }}
                     </div>
                     <p-toggleSwitch [(ngModel)]="pollEnabled" />
                 </div>
@@ -64,31 +64,63 @@
                 @if (pollEnabled()) {
                 <p-divider />
                 <div class="flex w-full flex-col gap-2">
-                    <label class="font-medium" for="poll-question">Frage</label>
+                    <label class="font-medium" for="poll-question">{{ t('threadCreate.poll.question') }}</label>
                     <input
                         class="w-full"
                         id="poll-question"
                         [(ngModel)]="pollQuestion"
                         [disabled]="submitting"
                         pInputText
-                        placeholder="z.B. Was ist euer liebstes Anime-Genre?"
+                        [placeholder]="t('threadCreate.poll.questionPlaceholder')"
                         type="text"
                     />
                 </div>
-                <div class="flex w-full flex-col gap-3">
-                    <label class="font-medium">Antwortmöglichkeiten</label>
+                <div class="flex w-full flex-col gap-4">
+                    <label class="font-medium">{{ t('threadCreate.poll.options') }}</label>
                     @for (option of pollOptions; track trackByIndex($index)) {
-                    <div class="flex items-center gap-2">
-                        <span class="text-surface-400 w-6 text-center text-sm">{{ $index + 1 }}.</span>
-                        <input
-                            class="flex-1"
-                            [disabled]="submitting"
-                            [ngModel]="option"
-                            (ngModelChange)="updatePollOption($index, $event)"
-                            pInputText
-                            [placeholder]="'Option ' + ($index + 1)"
-                            type="text"
-                        />
+                    <div
+                        class="border-surface-200 dark:border-surface-700 flex items-start gap-3 rounded-lg border p-3"
+                    >
+                        <!-- Image preview / placeholder -->
+                        <div class="flex shrink-0 flex-col items-center gap-1.5">
+                            @if (option.imageUrl) {
+                            <img
+                                class="border-surface-200 dark:border-surface-600 h-12 w-12 rounded-full border-2 object-cover"
+                                [alt]="option.text || 'Option ' + ($index + 1)"
+                                [src]="option.imageUrl"
+                            />
+                            } @else {
+                            <div
+                                class="bg-surface-100 dark:bg-surface-700 text-surface-400 flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold"
+                            >
+                                {{ $index + 1 }}
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Text + Image URL inputs -->
+                        <div class="flex flex-1 flex-col gap-2">
+                            <input
+                                [disabled]="submitting"
+                                [ngModel]="option.text"
+                                (ngModelChange)="updatePollOptionText($index, $event)"
+                                pInputText
+                                [placeholder]="t('threadCreate.poll.optionPlaceholder', { index: $index + 1 })"
+                                type="text"
+                            />
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-image text-surface-400 text-xs"></i>
+                                <input
+                                    class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
+                                    [disabled]="submitting"
+                                    [ngModel]="option.imageUrl"
+                                    (ngModelChange)="updatePollOptionImage($index, $event)"
+                                    [placeholder]="t('threadCreate.poll.imageUrlPlaceholder')"
+                                    type="text"
+                                />
+                            </div>
+                        </div>
+
                         @if (pollOptions.length > 2) {
                         <p-button
                             (onClick)="removePollOption($index)"
@@ -105,15 +137,48 @@
                         (onClick)="addPollOption()"
                         [text]="true"
                         icon="pi pi-plus"
-                        label="Option hinzufügen"
+                        [label]="t('threadCreate.poll.addOption')"
                         severity="secondary"
                         size="small"
                     />
                     }
                 </div>
-                <div class="flex items-center gap-2">
-                    <p-checkbox [(ngModel)]="pollMultipleChoice" [binary]="true" inputId="poll-multi" />
-                    <label class="text-sm" for="poll-multi">Mehrfachauswahl erlauben</label>
+                <p-divider />
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadCreate.poll.settings') }}</div>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollMultipleChoice" [binary]="true" inputId="poll-multi" />
+                        <label class="text-sm" for="poll-multi">{{ t('threadCreate.poll.multipleChoice') }}</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollIsAnonymous" [binary]="true" inputId="poll-anon" />
+                        <label class="text-sm" for="poll-anon">{{ t('threadCreate.poll.anonymous') }}</label>
+                    </div>
+                    @if (!pollIsAnonymous) {
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollShowVoterNames" [binary]="true" inputId="poll-voters" />
+                        <label class="text-sm" for="poll-voters">{{ t('threadCreate.poll.showVoters') }}</label>
+                    </div>
+                    }
+                    <div class="flex items-center gap-2">
+                        <p-checkbox [(ngModel)]="pollAllowVoteChange" [binary]="true" inputId="poll-vote-change" />
+                        <label class="text-sm" for="poll-vote-change">{{ t('threadCreate.poll.allowVoteChange') }}</label>
+                    </div>
+                    @if (pollAllowVoteChange) {
+                    <div class="flex flex-col gap-1 pl-7">
+                        <label class="text-surface-400 text-xs" for="poll-vote-deadline"
+                            >{{ t('threadCreate.poll.voteChangeDeadline') }}</label
+                        >
+                        <input
+                            class="w-full max-w-xs"
+                            id="poll-vote-deadline"
+                            [(ngModel)]="pollVoteChangeDeadline"
+                            [disabled]="submitting"
+                            pInputText
+                            type="datetime-local"
+                        />
+                    </div>
+                    }
                 </div>
                 }
             </div>

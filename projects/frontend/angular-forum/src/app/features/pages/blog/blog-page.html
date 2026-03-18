@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl font-bold">{{ t("blog.title") }}</h1>
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 flex items-center gap-2 text-3xl font-bold">{{ t("blog.title") }} <admin-quicklink route="/admin/blog" /></h1>
                 <p class="text-surface-500 mt-1 text-sm">{{ t("blog.subtitle") }}</p>
             </div>
             <p-button (onClick)="writePost()" [label]="t('blog.writePost')" icon="pi pi-pencil" />

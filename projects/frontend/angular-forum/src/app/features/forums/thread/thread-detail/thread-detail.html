@@ -45,11 +45,11 @@
     <!-- Moderator Actions -->
     @if (authFacade.isModerator() && facade.currentThread()) {
     <div class="card flex flex-wrap items-center gap-2 py-3">
-        <span class="text-surface-500 mr-2 text-sm font-semibold"><i class="pi pi-shield mr-1"></i>Moderation:</span>
+        <span class="text-surface-500 mr-2 text-sm font-semibold"><i class="pi pi-shield mr-1"></i>{{ t('threadDetail.moderation.label') }}</span>
 
         <p-button
             (onClick)="togglePin()"
-            [label]="facade.currentThread()!.isPinned ? 'Entpinnen' : 'Pinnen'"
+            [label]="facade.currentThread()!.isPinned ? t('threadDetail.moderation.unpin') : t('threadDetail.moderation.pin')"
             [icon]="facade.currentThread()!.isPinned ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"
             [outlined]="true"
             size="small"
@@ -57,7 +57,7 @@
         />
         <p-button
             (onClick)="toggleSticky()"
-            [label]="facade.currentThread()!.isSticky ? 'Nicht mehr wichtig' : 'Wichtig'"
+            [label]="facade.currentThread()!.isSticky ? t('threadDetail.moderation.unsticky') : t('threadDetail.moderation.sticky')"
             [icon]="facade.currentThread()!.isSticky ? 'pi pi-star-fill' : 'pi pi-star'"
             [outlined]="true"
             size="small"
@@ -65,7 +65,7 @@
         />
         <p-button
             (onClick)="toggleLock()"
-            [label]="facade.currentThread()!.isLocked ? 'Entsperren' : 'Sperren'"
+            [label]="facade.currentThread()!.isLocked ? t('threadDetail.moderation.unlock') : t('threadDetail.moderation.lock')"
             [icon]="facade.currentThread()!.isLocked ? 'pi pi-lock-open' : 'pi pi-lock'"
             [outlined]="true"
             size="small"
@@ -73,7 +73,7 @@
         />
         <p-button
             (onClick)="openMoveDialog()"
-            label="Verschieben"
+            [label]="t('threadDetail.moderation.move')"
             icon="pi pi-arrow-right-arrow-left"
             [outlined]="true"
             size="small"
@@ -81,7 +81,7 @@
         />
         <p-button
             (onClick)="confirmDelete()"
-            label="Löschen"
+            [label]="t('threadDetail.moderation.delete')"
             icon="pi pi-trash"
             [outlined]="true"
             size="small"
@@ -91,16 +91,16 @@
     }
 
     <!-- Move Thread Dialog -->
-    <p-dialog header="Thread verschieben" [(visible)]="moveDialogVisible" [modal]="true" [style]="{ width: '28rem' }">
+    <p-dialog [header]="t('threadDetail.moderation.moveDialog.header')" [(visible)]="moveDialogVisible" [modal]="true" [style]="{ width: '28rem' }">
         <div class="flex flex-col gap-3">
-            <label class="text-sm font-medium">Zielforum auswählen:</label>
+            <label class="text-sm font-medium">{{ t('threadDetail.moderation.moveDialog.selectForum') }}</label>
             <select
                 class="border-surface-300 dark:border-surface-600 dark:bg-surface-800 w-full rounded-md border p-2"
                 [(ngModel)]="moveTargetForumId"
             >
                 @for (forum of availableForums(); track forum.id) {
                 <option [value]="forum.id" [disabled]="forum.id === facade.currentThread()?.forumId">
-                    {{ forum.name }} @if (forum.id === facade.currentThread()?.forumId) { (aktuell) }
+                    {{ forum.name }} @if (forum.id === facade.currentThread()?.forumId) { {{ t('threadDetail.moderation.moveDialog.current') }} }
                 </option>
                 }
             </select>
@@ -117,10 +117,9 @@
     </p-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <p-dialog header="Thread löschen" [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '24rem' }">
+    <p-dialog [header]="t('threadDetail.moderation.deleteDialog.header')" [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '24rem' }">
         <p class="text-surface-600 dark:text-surface-400">
-            Möchtest du den Thread <strong>"{{ facade.currentThread()?.title }}"</strong> wirklich löschen? Diese Aktion
-            kann nicht rückgängig gemacht werden.
+            {{ t('threadDetail.moderation.deleteDialog.message', { title: facade.currentThread()?.title }) }}
         </p>
         <ng-template #footer>
             <p-button
@@ -133,24 +132,321 @@
         </ng-template>
     </p-dialog>
 
+    <!-- Poll Edit Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.poll.editDialog.header')"
+        [(visible)]="pollEditDialogVisible"
+        [modal]="true"
+        [style]="{ width: '36rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-5">
+            <!-- Question -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">{{ t('threadDetail.poll.editDialog.question') }}</label>
+                <input [(ngModel)]="pollEditQuestion" pInputText type="text" />
+            </div>
+
+            <!-- Settings -->
+            <div class="flex flex-col gap-3">
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadDetail.poll.editDialog.settings') }}</div>
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditIsAnonymous" [binary]="true" inputId="pe-anon" />
+                    <label class="text-sm" for="pe-anon">{{ t('threadDetail.poll.editDialog.anonymousVoting') }}</label>
+                </div>
+                @if (!pollEditIsAnonymous) {
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditShowVoterNames" [binary]="true" inputId="pe-voters" />
+                    <label class="text-sm" for="pe-voters">{{ t('threadDetail.poll.editDialog.showVoters') }}</label>
+                </div>
+                }
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditAllowVoteChange" [binary]="true" inputId="pe-change" />
+                    <label class="text-sm" for="pe-change">{{ t('threadDetail.poll.editDialog.allowVoteChange') }}</label>
+                </div>
+                @if (pollEditAllowVoteChange) {
+                <div class="flex flex-col gap-1 pl-7">
+                    <label class="text-surface-400 text-xs" for="pe-deadline">{{ t('threadDetail.poll.editDialog.changeDeadline') }}</label>
+                    <input
+                        class="w-full max-w-xs"
+                        id="pe-deadline"
+                        [(ngModel)]="pollEditVoteChangeDeadline"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+                }
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollEditIsClosed" [binary]="true" inputId="pe-closed" />
+                    <label class="text-sm" for="pe-closed">{{ t('threadDetail.poll.editDialog.pollClosed') }}</label>
+                </div>
+                @if (!pollEditIsClosed) {
+                <div class="flex flex-col gap-1 pl-7">
+                    <label class="text-surface-400 text-xs" for="pe-closes">{{ t('threadDetail.poll.editDialog.closesAt') }}</label>
+                    <input
+                        class="w-full max-w-xs"
+                        id="pe-closes"
+                        [(ngModel)]="pollEditClosesAt"
+                        pInputText
+                        type="datetime-local"
+                    />
+                </div>
+                }
+            </div>
+
+            <!-- New options -->
+            <div class="flex flex-col gap-3">
+                <div class="text-surface-500 text-sm font-medium">{{ t('threadDetail.poll.editDialog.addOptionsHeader') }}</div>
+                @for (opt of pollEditNewOptions; track $index) {
+                <div
+                    class="border-surface-200 dark:border-surface-700 flex items-start gap-2 rounded-lg border p-3"
+                >
+                    <div class="flex flex-1 flex-col gap-2">
+                        <input
+                            [ngModel]="opt.text"
+                            (ngModelChange)="pollEditNewOptions[$index] = { text: $event, imageUrl: opt.imageUrl }"
+                            pInputText
+                            [placeholder]="t('threadDetail.poll.editDialog.newOptionPlaceholder', { index: $index + 1 })"
+                            type="text"
+                        />
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-image text-surface-400 text-xs"></i>
+                            <input
+                                class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
+                                [ngModel]="opt.imageUrl"
+                                (ngModelChange)="pollEditNewOptions[$index] = { text: opt.text, imageUrl: $event }"
+                                [placeholder]="t('threadDetail.poll.editDialog.imageUrlPlaceholder')"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                    @if (pollEditNewOptions.length > 1) {
+                    <p-button
+                        (onClick)="removePollEditOption($index)"
+                        [text]="true"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                    />
+                    }
+                </div>
+                }
+                <p-button
+                    (onClick)="addPollEditOption()"
+                    [text]="true"
+                    icon="pi pi-plus"
+                    [label]="t('threadDetail.poll.editDialog.addOption')"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+        </div>
+        <ng-template #footer>
+            <p-button
+                label="Abbrechen"
+                (onClick)="pollEditDialogVisible.set(false)"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                label="Speichern"
+                icon="pi pi-check"
+                (onClick)="submitPollEdit()"
+                [loading]="pollEditSubmitting"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Edit Post Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.editDialog.header')"
+        [(visible)]="editDialogVisible"
+        [modal]="true"
+        [style]="{ width: '50rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-4">
+            <p-editor [(ngModel)]="editContent" [style]="{ height: '250px' }" />
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-500 text-xs font-medium">{{ t('threadDetail.editDialog.reasonLabel') }}</label>
+                <input
+                    [(ngModel)]="editReason"
+                    pInputText
+                    [placeholder]="t('threadDetail.editDialog.reasonPlaceholder')"
+                    type="text"
+                />
+            </div>
+        </div>
+        <ng-template #footer>
+            <p-button
+                label="Abbrechen"
+                (onClick)="editDialogVisible.set(false)"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                label="Speichern"
+                icon="pi pi-check"
+                (onClick)="submitEdit()"
+                [loading]="editSubmitting"
+                [disabled]="!editContent.trim()"
+            />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Edit History Dialog -->
+    <p-dialog
+        [header]="t('threadDetail.historyDialog.header')"
+        [(visible)]="historyDialogVisible"
+        [modal]="true"
+        [style]="{ width: '40rem', maxWidth: '95vw' }"
+    >
+        <div class="flex flex-col gap-3">
+            @for (entry of editHistory(); track $index) {
+            <div class="border-surface-200 dark:border-surface-700 rounded-lg border p-3">
+                <div class="text-surface-500 mb-2 flex items-center gap-2 text-xs">
+                    <i class="pi pi-clock"></i>
+                    <span>{{ formatDate(entry.editedAt) }}</span>
+                    @if (entry.reason) {
+                    <span class="text-surface-400">— {{ entry.reason }}</span>
+                    }
+                </div>
+                <div class="text-surface-600 dark:text-surface-400 post-content max-h-40 overflow-y-auto text-sm" [innerHTML]="entry.content"></div>
+            </div>
+            } @empty {
+            <p class="text-surface-400 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
+            }
+        </div>
+    </p-dialog>
+
     <!-- Error -->
     @if (facade.error()) {
     <p-message [text]="facade.error()!" severity="error" styleClass="w-full" />
     }
 
     <!-- Poll -->
-    @if (facade.currentPoll()) {
+    @if (facade.currentPoll()) { @let poll = facade.currentPoll()!; @let hasImages = pollHasImages();
     <div class="card">
-        <h3 class="mb-3 flex items-center gap-2 text-lg font-semibold">
-            <i class="pi pi-chart-bar"></i>{{ facade.currentPoll()!.question }}
-        </h3>
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="flex items-center gap-2 text-lg font-semibold">
+                <i class="pi pi-chart-bar"></i>{{ poll.question }}
+                @if (poll.isAnonymous) {
+                <span
+                    class="bg-surface-100 dark:bg-surface-700 text-surface-500 rounded-full px-2 py-0.5 text-[10px] font-normal"
+                    ><i class="pi pi-eye-slash mr-1"></i>{{ t('threadDetail.poll.anonymous') }}</span
+                >
+                }
+            </h3>
+            @if (canEditPoll()) {
+            <p-button
+                (onClick)="openPollEditDialog()"
+                icon="pi pi-pencil"
+                [label]="t('threadDetail.poll.editBtn')"
+                [text]="true"
+                severity="secondary"
+                size="small"
+            />
+            }
+        </div>
+
+        @if (hasImages) {
+        <!-- ═══ Candidate-style grid layout (with images) ═══ -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            @for (option of poll.options; track option.index) {
+            <div
+                class="border-surface-200 dark:border-surface-700 group relative flex flex-col items-center overflow-hidden rounded-xl border transition-all"
+                [class.border-primary]="poll.myVote === option.index"
+                [class.ring-2]="poll.myVote === option.index"
+                [class.ring-primary/30]="poll.myVote === option.index"
+                [class.shadow-md]="poll.myVote === option.index"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.hover:border-primary/50]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.hover:shadow-sm]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.opacity-60]="poll.myVote !== null && poll.myVote !== option.index"
+                (click)="votePoll(option.index)"
+            >
+                <!-- Image -->
+                <div class="relative w-full pt-[100%]">
+                    @if (option.imageUrl) {
+                    <img
+                        class="absolute inset-0 h-full w-full object-cover"
+                        [alt]="option.text"
+                        [src]="option.imageUrl"
+                    />
+                    } @else {
+                    <div
+                        class="bg-surface-100 dark:bg-surface-800 absolute inset-0 flex items-center justify-center text-3xl font-bold"
+                    >
+                        {{ option.text.charAt(0).toUpperCase() }}
+                    </div>
+                    }
+                    <!-- Vote check overlay -->
+                    @if (poll.myVote === option.index) {
+                    <div class="bg-primary absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full">
+                        <i class="pi pi-check text-xs text-white"></i>
+                    </div>
+                    }
+                </div>
+
+                <!-- Info -->
+                <div class="flex w-full flex-col gap-1.5 p-3">
+                    <span class="text-surface-900 dark:text-surface-0 truncate text-sm font-semibold">
+                        {{ option.text }}
+                    </span>
+                    <!-- Progress bar -->
+                    <div class="bg-surface-100 dark:bg-surface-700 h-1.5 w-full overflow-hidden rounded-full">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            [class.bg-primary]="poll.myVote === option.index"
+                            [class.bg-surface-300]="poll.myVote !== option.index"
+                            [class.dark:bg-surface-500]="poll.myVote !== option.index"
+                            [style.width.%]="option.percentage"
+                        ></div>
+                    </div>
+                    <div class="text-surface-500 flex items-center justify-between text-xs">
+                        <span>{{ option.percentage }}%</span>
+                        <span>{{ option.votes }}</span>
+                    </div>
+                    <!-- Voter avatars -->
+                    @if (option.voters && option.voters.length > 0) {
+                    <div class="mt-1 flex -space-x-1.5">
+                        @for (voter of option.voters.slice(0, 5); track voter.userId) {
+                        @if (voter.avatarUrl) {
+                        <img
+                            class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
+                            [alt]="voter.username"
+                            [src]="voter.avatarUrl"
+                            [pTooltip]="voter.username"
+                        />
+                        } @else {
+                        <div
+                            class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                            [pTooltip]="voter.username"
+                        >
+                            {{ voter.username.charAt(0).toUpperCase() }}
+                        </div>
+                        }
+                        }
+                        @if (option.voters.length > 5) {
+                        <div
+                            class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
+                        >
+                            +{{ option.voters.length - 5 }}
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <!-- ═══ Classic list layout (text-only, no images) ═══ -->
         <div class="flex flex-col gap-2">
-            @for (option of facade.currentPoll()!.options; track option.index) {
+            @for (option of poll.options; track option.index) {
             <div
                 class="border-surface-200 dark:border-surface-700 relative overflow-hidden rounded-lg border p-3 transition-colors"
-                [class.border-primary]="facade.currentPoll()!.myVote === option.index"
-                [class.cursor-pointer]="facade.currentPoll()!.myVote === null && !facade.currentPoll()!.isClosed"
-                [class.cursor-not-allowed]="facade.currentPoll()!.isClosed || facade.currentPoll()!.myVote !== null"
+                [class.border-primary]="poll.myVote === option.index"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
+                [class.cursor-not-allowed]="poll.isClosed || poll.myVote !== null"
                 (click)="votePoll(option.index)"
             >
                 <div
@@ -159,20 +455,59 @@
                 ></div>
                 <div class="relative flex items-center justify-between">
                     <span class="text-sm font-medium">
-                        @if (facade.currentPoll()!.myVote === option.index) {
+                        @if (poll.myVote === option.index) {
                         <i class="pi pi-check-circle text-primary mr-1"></i>
                         }
                         {{ option.text }}
                     </span>
-                    <span class="text-surface-500 text-xs">{{ option.votes }} ({{ option.percentage }}%)</span>
+                    <div class="flex items-center gap-2">
+                        @if (option.voters && option.voters.length > 0) {
+                        <div class="flex -space-x-1.5">
+                            @for (voter of option.voters.slice(0, 3); track voter.userId) {
+                            @if (voter.avatarUrl) {
+                            <img
+                                class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
+                                [alt]="voter.username"
+                                [src]="voter.avatarUrl"
+                                [pTooltip]="voter.username"
+                            />
+                            } @else {
+                            <div
+                                class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                                [pTooltip]="voter.username"
+                            >
+                                {{ voter.username.charAt(0).toUpperCase() }}
+                            </div>
+                            }
+                            }
+                            @if (option.voters.length > 3) {
+                            <div
+                                class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
+                            >
+                                +{{ option.voters.length - 3 }}
+                            </div>
+                            }
+                        </div>
+                        }
+                        <span class="text-surface-500 text-xs">{{ option.votes }} ({{ option.percentage }}%)</span>
+                    </div>
                 </div>
             </div>
             }
         </div>
-        <div class="text-surface-400 mt-3 flex items-center gap-3 text-xs">
-            <span>{{ facade.currentPoll()!.totalVotes }} Stimmen</span>
-            @if (facade.currentPoll()!.isClosed) {
-            <span class="text-orange-500"><i class="pi pi-lock mr-1"></i>Geschlossen</span>
+        }
+
+        <div class="text-surface-400 mt-4 flex items-center gap-3 text-xs">
+            <span><i class="pi pi-users mr-1"></i>{{ poll.totalVotes }} {{ t('threadDetail.poll.votes') }}</span>
+            @if (poll.isClosed) {
+            <span class="text-orange-500"><i class="pi pi-lock mr-1"></i>{{ t('threadDetail.poll.closed') }}</span>
+            } @else if (poll.myVote === null) {
+            <span class="text-primary"><i class="pi pi-info-circle mr-1"></i>{{ t('threadDetail.poll.clickToVote') }}</span>
+            } @else if (poll.myVote !== null && poll.canChangeVote) {
+            <span class="text-green-500"><i class="pi pi-check mr-1"></i>{{ t('threadDetail.poll.voted') }}</span>
+            <span class="text-primary text-xs">— {{ t('threadDetail.poll.changeVoteHint') }}</span>
+            } @else {
+            <span class="text-green-500"><i class="pi pi-check mr-1"></i>{{ t('threadDetail.poll.voted') }}</span>
             }
         </div>
     </div>
@@ -365,6 +700,16 @@
                         } @if (post.isEdited) {
                         <span class="text-surface-400 text-xs italic">
                             {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
+                            @if (post.editReason) { — {{ post.editReason }} }
+                            @if (post.editHistory && post.editHistory.length > 0) {
+                            <button
+                                class="text-primary ml-1 cursor-pointer border-none bg-transparent text-xs underline"
+                                (click)="openHistoryDialog(post)"
+                                type="button"
+                            >
+                                {{ t('threadDetail.editedTimes', { count: post.editCount }) }}
+                            </button>
+                            }
                         </span>
                         } @if (post.reactionCount > 0) {
                         <span class="text-surface-500 text-sm">
@@ -401,6 +746,17 @@
                         <i class="pi pi-reply text-sm"></i>
                         <span>{{ t('threadDetail.quote') }}</span>
                     </button>
+
+                    @if (canEditPost(post)) {
+                    <button
+                        class="text-surface-400 dark:text-surface-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+                        (click)="openEditDialog(post); $event.stopPropagation()"
+                        [pTooltip]="t('threadDetail.editTooltip')"
+                    >
+                        <i class="pi pi-pencil text-sm"></i>
+                        <span>{{ t('threadDetail.editBtn') }}</span>
+                    </button>
+                    }
 
                     <button
                         class="text-surface-400 dark:text-surface-500 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-orange-900/10"
@@ -454,9 +810,9 @@
     <div class="border-primary bg-primary/10 flex items-center justify-between rounded-lg border p-3">
         <span class="text-sm">
             <i class="pi pi-bolt mr-1"></i>
-            <strong>{{ newPostHint()!.authorName }}</strong> hat eine neue Antwort geschrieben.
+            {{ t('threadDetail.newPostHint', { author: newPostHint()!.authorName }) }}
         </span>
-        <p-button (onClick)="loadNewPosts()" label="Anzeigen" [text]="true" size="small" icon="pi pi-refresh" />
+        <p-button (onClick)="loadNewPosts()" [label]="t('threadDetail.newPostShow')" [text]="true" size="small" icon="pi pi-refresh" />
     </div>
     }
 

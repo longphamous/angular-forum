@@ -37,7 +37,9 @@
     "saved": "Saved",
     "created": "Created",
     "deleted": "Deleted",
-    "more": "More"
+    "more": "More",
+    "reset": "Reset",
+    "adminSettings": "Settings"
   },
   "nav": {
     "profile": "Profile",
@@ -163,8 +165,12 @@
     "firstPost": "First post",
     "op": "OP",
     "edited": "edited",
+    "editedTimes": "(edited {{count}}x)",
+    "editBtn": "Edit",
+    "editTooltip": "Edit",
     "quote": "Quote",
     "quoteTooltip": "Quote this post",
+    "quotePrefix": "{{author}} wrote:",
     "report": "Report",
     "reportTooltip": "Report this post",
     "bestAnswer": "Best Answer",
@@ -177,12 +183,67 @@
     "replyPlaceholder": "Your reply...",
     "replySend": "Send reply",
     "lockedMessage": "This thread is locked. No more replies possible.",
+    "newPostHint": "{{author}} posted a new reply.",
+    "newPostShow": "Show",
     "reportDialog": {
       "header": "Report post",
       "description": "Please briefly describe why you are reporting this post.",
       "placeholder": "Reason (e.g. spam, inappropriate content...)",
       "success": "Thank you! The post has been reported.",
       "submit": "Report"
+    },
+    "editDialog": {
+      "header": "Edit post",
+      "reasonLabel": "Edit reason (optional)",
+      "reasonPlaceholder": "e.g. Fixed typo, updated link..."
+    },
+    "historyDialog": {
+      "header": "Edit history",
+      "empty": "No history available."
+    },
+    "moderation": {
+      "label": "Moderation:",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "sticky": "Important",
+      "unsticky": "Not important",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "move": "Move",
+      "delete": "Delete",
+      "moveDialog": {
+        "header": "Move thread",
+        "selectForum": "Select target forum:",
+        "current": "(current)"
+      },
+      "deleteDialog": {
+        "header": "Delete thread",
+        "message": "Are you sure you want to delete the thread \"{{title}}\"? This action cannot be undone."
+      }
+    },
+    "poll": {
+      "anonymous": "Anonymous",
+      "votes": "Votes",
+      "closed": "Closed",
+      "clickToVote": "Click to vote",
+      "voted": "Voted",
+      "changeVoteHint": "Click another option to change your vote",
+      "editBtn": "Edit",
+      "editDialog": {
+        "header": "Edit poll",
+        "question": "Question",
+        "settings": "Settings",
+        "anonymousVoting": "Anonymous voting",
+        "showVoters": "Show who voted",
+        "allowVoteChange": "Allow vote changes",
+        "changeDeadline": "Changeable until (optional)",
+        "pollClosed": "Poll closed",
+        "closesAt": "Closes automatically on (optional)",
+        "addOptionsHeader": "Add new options",
+        "newOptionPlaceholder": "New option {{index}}",
+        "imageUrlPlaceholder": "Image URL (optional)",
+        "addOption": "Add option"
+      }
     }
   },
   "threadCreate": {
@@ -198,7 +259,23 @@
     "cancel": "Cancel",
     "submit": "Create thread",
     "createError": "Error creating the thread.",
-    "requiredFields": "Title and content are required."
+    "requiredFields": "Title and content are required.",
+    "poll": {
+      "title": "Poll",
+      "question": "Question",
+      "questionPlaceholder": "e.g. What is your favourite anime genre?",
+      "options": "Answer options",
+      "optionPlaceholder": "Option {{index}}",
+      "imageUrlPlaceholder": "Image URL (optional, e.g. https://...)",
+      "addOption": "Add option",
+      "settings": "Settings",
+      "multipleChoice": "Allow multiple choice",
+      "anonymous": "Anonymous voting",
+      "showVoters": "Show who voted",
+      "allowVoteChange": "Allow vote changes",
+      "voteChangeDeadline": "Vote changeable until (optional)",
+      "validationError": "Poll requires a question and at least 2 options."
+    }
   },
   "adminOverview": {
     "title": "Admin Overview",

@@ -16,9 +16,18 @@ export interface Post {
     isEdited: boolean;
     editedAt?: string;
     editCount: number;
+    editReason?: string;
+    editHistory?: PostEditHistoryEntry[];
     reactionCount: number;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface PostEditHistoryEntry {
+    content: string;
+    editedBy: string;
+    editedAt: string;
+    reason: string | null;
 }
 
 export interface PaginatedPosts {

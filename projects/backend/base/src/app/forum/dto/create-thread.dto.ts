@@ -7,8 +7,12 @@ export class CreateThreadDto {
     tags?: string[];
     poll?: {
         question: string;
-        options: string[];
+        options: { text: string; imageUrl?: string }[];
         isMultipleChoice?: boolean;
+        isAnonymous?: boolean;
+        showVoterNames?: boolean;
+        allowVoteChange?: boolean;
+        voteChangeDeadline?: string;
         closesAt?: string;
     };
 }

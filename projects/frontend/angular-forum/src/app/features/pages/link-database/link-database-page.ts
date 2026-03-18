@@ -17,12 +17,14 @@ import { TooltipModule } from "primeng/tooltip";
 import { LinkEntry, LinkSortBy } from "../../../core/models/link-database/link-database";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { LinkDatabaseFacade } from "../../../facade/link-database/link-database-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     selector: "app-link-database-page",
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AdminQuicklink,
         ButtonModule,
         ChipModule,
         FormsModule,

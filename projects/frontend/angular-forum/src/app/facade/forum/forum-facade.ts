@@ -161,7 +161,13 @@ export class ForumFacade {
         title: string,
         content: string,
         tags: string[] = [],
-        poll?: { question: string; options: string[]; isMultipleChoice?: boolean }
+        poll?: {
+            question: string;
+            options: { text: string; imageUrl?: string }[];
+            isMultipleChoice?: boolean;
+            allowVoteChange?: boolean;
+            voteChangeDeadline?: string;
+        }
     ): Observable<Thread> {
         return this.http.post<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.threads(forumId)}`, {
             title,
@@ -189,6 +195,13 @@ export class ForumFacade {
         return this.http.delete<void>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.react(postId)}`);
     }
 
+    updatePost(postId: string, content: string, editReason?: string): Observable<Post> {
+        return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.update(postId)}`, {
+            content,
+            ...(editReason ? { editReason } : {})
+        });
+    }
+
     markBestAnswer(threadId: string, postId: string): Observable<Post> {
         return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.bestAnswer(threadId, postId)}`, {});
     }
@@ -206,6 +219,10 @@ export class ForumFacade {
         return this.http.post<Poll>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.pollVote(threadId)}`, {
             optionIndex
         });
+    }
+
+    updatePoll(threadId: string, payload: Record<string, unknown>): Observable<Poll> {
+        return this.http.patch<Poll>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.pollUpdate(threadId)}`, payload);
     }
 
     // ── Thread moderation ─────────────────────────────────────────────────

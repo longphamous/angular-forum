@@ -30,10 +30,12 @@ import {
 } from "../../../core/models/lotto/lotto";
 import { Wallet } from "../../../core/models/wallet/wallet";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AdminQuicklink,
         BadgeModule,
         ButtonModule,
         FormsModule,

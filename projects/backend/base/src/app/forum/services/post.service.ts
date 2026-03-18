@@ -49,6 +49,8 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
         isEdited: entity.isEdited,
         editedAt: entity.editedAt?.toISOString(),
         editCount: entity.editCount,
+        editReason: entity.editReason ?? undefined,
+        editHistory: entity.editHistory?.length ? entity.editHistory : undefined,
         reactionCount: entity.reactionCount,
         createdAt: entity.createdAt.toISOString(),
         updatedAt: entity.updatedAt.toISOString()
@@ -182,13 +184,23 @@ export class PostService {
         return toDto(post);
     }
 
-    async update(id: string, dto: UpdatePostDto, userId: string): Promise<PostDto> {
+    async update(id: string, dto: UpdatePostDto, userId: string, userRole: UserRole): Promise<PostDto> {
         const entity = await this.findEntityById(id);
-        if (entity.authorId !== userId) {
+        if (!canModify(entity.authorId, userId, userRole)) {
             throw new ForbiddenException("You do not have permission to update this post");
         }
 
+        // Save previous content to edit history
+        const historyEntry = {
+            content: entity.content,
+            editedBy: userId,
+            editedAt: new Date().toISOString(),
+            reason: dto.editReason?.trim() || null
+        };
+        entity.editHistory = [...(entity.editHistory ?? []), historyEntry];
+
         entity.content = dto.content;
+        entity.editReason = dto.editReason?.trim() || null;
         entity.isEdited = true;
         entity.editedAt = new Date();
         entity.editCount += 1;

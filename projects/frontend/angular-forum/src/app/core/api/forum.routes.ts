@@ -16,9 +16,11 @@ export const FORUM_ROUTES = {
         posts: (threadId: string) => `/forum/threads/${threadId}/posts`,
         myReactions: (threadId: string) => `/forum/threads/${threadId}/my-reactions`,
         poll: (threadId: string) => `/forum/threads/${threadId}/poll`,
+        pollUpdate: (threadId: string) => `/forum/threads/${threadId}/poll`,
         pollVote: (threadId: string) => `/forum/threads/${threadId}/poll/vote`
     },
     posts: {
+        update: (postId: string) => `/forum/posts/${postId}`,
         react: (postId: string) => `/forum/posts/${postId}/react`,
         bestAnswer: (threadId: string, postId: string) => `/forum/threads/${threadId}/best-answer/${postId}`
     }
