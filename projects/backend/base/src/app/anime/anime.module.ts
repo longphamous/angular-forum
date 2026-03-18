@@ -12,7 +12,7 @@ import { UserAnimeListEntity } from "./entities/user-anime-list.entity";
 const ANIME_DB_CONNECTION = "anime-db";
 
 /**
- * AnimeModule – connects to the local `__PLACEHOLDER__` PostgreSQL database
+ * AnimeModule – connects to a secondary PostgreSQL database
  * which contains the `public.anime` table.
  *
  * Uses a separate named TypeORM connection ("anime-db") so it does not
@@ -31,9 +31,9 @@ const ANIME_DB_CONNECTION = "anime-db";
                 type: "postgres" as const,
                 host: config.get<string>("ANIME_DB_HOST", "localhost"),
                 port: config.get<number>("ANIME_DB_PORT", 5432),
-                username: config.get<string>("ANIME_DB_USER", "__PLACEHOLDER__"),
+                username: config.getOrThrow<string>("ANIME_DB_USER"),
                 password: config.get<string>("ANIME_DB_PASSWORD", ""),
-                database: config.get<string>("ANIME_DB_NAME", "__PLACEHOLDER__"),
+                database: config.getOrThrow<string>("ANIME_DB_NAME"),
                 schema: config.get<string>("ANIME_DB_SCHEMA", "public"),
                 entities: [AnimeEntity],
                 synchronize: false,
