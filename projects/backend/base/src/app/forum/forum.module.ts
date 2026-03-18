@@ -11,6 +11,7 @@ import { ThreadController } from "./controllers/thread.controller";
 import { ForumCategoryEntity } from "./entities/category.entity";
 import { ForumEntity } from "./entities/forum.entity";
 import { ForumPostEntity } from "./entities/post.entity";
+import { ForumPollEntity } from "./entities/poll.entity";
 import { ForumPostReactionEntity } from "./entities/post-reaction.entity";
 import { ForumThreadEntity } from "./entities/thread.entity";
 import { CategoryService } from "./services/category.service";
@@ -27,6 +28,7 @@ import { ThreadService } from "./services/thread.service";
             ForumEntity,
             ForumThreadEntity,
             ForumPostEntity,
+            ForumPollEntity,
             ForumPostReactionEntity,
             UserEntity
         ])

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
@@ -9,9 +9,10 @@ import { CreateThreadDto } from "../dto/create-thread.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
 import { UpdateThreadDto } from "../dto/update-thread.dto";
 import { ForumEntity } from "../entities/forum.entity";
+import { ForumPollEntity } from "../entities/poll.entity";
 import { ForumPostEntity } from "../entities/post.entity";
 import { ForumThreadEntity } from "../entities/thread.entity";
-import { PaginatedResult, ThreadDetailDto, ThreadDto } from "../models/forum.model";
+import { PaginatedResult, PollDto, PollOptionDto, ThreadDetailDto, ThreadDto } from "../models/forum.model";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,8 @@ export class ThreadService {
         private readonly postRepo: Repository<ForumPostEntity>,
         @InjectRepository(ForumEntity)
         private readonly forumRepo: Repository<ForumEntity>,
+        @InjectRepository(ForumPollEntity)
+        private readonly pollRepo: Repository<ForumPollEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService
@@ -117,8 +120,11 @@ export class ThreadService {
         await this.threadRepo.increment({ id }, "viewCount", 1);
         entity.viewCount += 1;
 
+        const hasPoll = await this.pollRepo.existsBy({ threadId: id });
+
         return {
             ...toDto(entity),
+            hasPoll,
             forumName: entity.forum.name,
             forumSlug: entity.forum.slug
         };
@@ -157,6 +163,20 @@ export class ThreadService {
         await this.forumRepo.increment({ id: forumId }, "postCount", 1);
         await this.forumRepo.update(forumId, { lastPostAt: now, lastPostByUserId: authorId });
 
+        // Create poll if provided
+        if (dto.poll && dto.poll.question && dto.poll.options.length >= 2) {
+            const poll = this.pollRepo.create({
+                threadId: thread.id,
+                question: dto.poll.question,
+                options: dto.poll.options,
+                votes: {},
+                voterMap: {},
+                isMultipleChoice: dto.poll.isMultipleChoice ?? false,
+                closesAt: dto.poll.closesAt ? new Date(dto.poll.closesAt) : null
+            });
+            await this.pollRepo.save(poll);
+        }
+
         // Award XP for creating a thread
         void this.gamificationService.awardXp(authorId, "create_thread", thread.id);
 
@@ -169,17 +189,52 @@ export class ThreadService {
             throw new ForbiddenException("You do not have permission to update this thread");
         }
 
+        const isMod = userRole === "admin" || userRole === "moderator";
+
         if (dto.title !== undefined) {
             entity.title = dto.title;
             entity.slug = await this.buildUniqueSlug(generateSlug(dto.title), id);
         }
-        if (dto.isPinned !== undefined) entity.isPinned = dto.isPinned;
-        if (dto.isLocked !== undefined) entity.isLocked = dto.isLocked;
-        if (dto.isSticky !== undefined) entity.isSticky = dto.isSticky;
         if (dto.tags !== undefined) entity.tags = dto.tags;
+
+        // Moderator/admin-only fields
+        if (isMod) {
+            if (dto.isPinned !== undefined) entity.isPinned = dto.isPinned;
+            if (dto.isLocked !== undefined) entity.isLocked = dto.isLocked;
+            if (dto.isSticky !== undefined) entity.isSticky = dto.isSticky;
+
+            // Move thread to another forum
+            if (dto.forumId !== undefined && dto.forumId !== entity.forumId) {
+                await this.moveThread(entity, dto.forumId);
+            }
+        }
 
         await this.threadRepo.save(entity);
         return toDto(entity);
+    }
+
+    /** Move a thread to a different forum, updating counters on both sides. */
+    private async moveThread(entity: ForumThreadEntity, targetForumId: string): Promise<void> {
+        const targetForum = await this.forumRepo.findOneBy({ id: targetForumId });
+        if (!targetForum) throw new NotFoundException(`Target forum "${targetForumId}" not found`);
+
+        const oldForumId = entity.forumId;
+        const postCount = entity.replyCount + 1; // replies + first post
+
+        // Decrement old forum counters
+        const oldForum = await this.forumRepo.findOneBy({ id: oldForumId });
+        if (oldForum) {
+            await this.forumRepo.update(oldForumId, {
+                threadCount: Math.max(0, oldForum.threadCount - 1),
+                postCount: Math.max(0, oldForum.postCount - postCount)
+            });
+        }
+
+        // Increment target forum counters
+        await this.forumRepo.increment({ id: targetForumId }, "threadCount", 1);
+        await this.forumRepo.increment({ id: targetForumId }, "postCount", postCount);
+
+        entity.forumId = targetForumId;
     }
 
     async remove(id: string, userId: string, userRole: UserRole): Promise<void> {
@@ -199,6 +254,64 @@ export class ThreadService {
                 postCount: Math.max(0, currentForum.postCount - (entity.replyCount + 1))
             });
         }
+    }
+
+    // ── Poll ──────────────────────────────────────────────────────────────────
+
+    async getPoll(threadId: string, userId?: string): Promise<PollDto | null> {
+        const poll = await this.pollRepo.findOneBy({ threadId });
+        if (!poll) return null;
+
+        const totalVotes = Object.values(poll.votes).reduce((sum, n) => sum + n, 0);
+        const myVote = userId && poll.voterMap[userId] !== undefined ? poll.voterMap[userId] : null;
+
+        const options: PollOptionDto[] = poll.options.map((text, index) => {
+            const votes = poll.votes[String(index)] ?? 0;
+            return {
+                index,
+                text,
+                votes,
+                percentage: totalVotes > 0 ? Math.round((votes / totalVotes) * 1000) / 10 : 0
+            };
+        });
+
+        return {
+            id: poll.id,
+            threadId: poll.threadId,
+            question: poll.question,
+            options,
+            totalVotes,
+            isMultipleChoice: poll.isMultipleChoice,
+            isClosed: poll.isClosed || (poll.closesAt !== null && poll.closesAt < new Date()),
+            closesAt: poll.closesAt?.toISOString() ?? null,
+            myVote,
+            createdAt: poll.createdAt.toISOString()
+        };
+    }
+
+    async vote(threadId: string, userId: string, optionIndex: number): Promise<PollDto> {
+        const poll = await this.pollRepo.findOneBy({ threadId });
+        if (!poll) throw new NotFoundException("Poll not found");
+
+        if (poll.isClosed || (poll.closesAt && poll.closesAt < new Date())) {
+            throw new BadRequestException("This poll is closed");
+        }
+
+        if (optionIndex < 0 || optionIndex >= poll.options.length) {
+            throw new BadRequestException("Invalid option index");
+        }
+
+        if (poll.voterMap[userId] !== undefined) {
+            throw new BadRequestException("You have already voted");
+        }
+
+        // Record vote
+        poll.voterMap[userId] = optionIndex;
+        const key = String(optionIndex);
+        poll.votes[key] = (poll.votes[key] ?? 0) + 1;
+
+        await this.pollRepo.save(poll);
+        return (await this.getPoll(threadId, userId))!;
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

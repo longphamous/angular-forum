@@ -5,6 +5,7 @@ import { DataSource, In, MoreThanOrEqual, Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
+import { PushService } from "../push/push.service";
 import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
@@ -45,6 +46,7 @@ function toProfile(user: UserEntity, postCount = 0, xpData: UserXpData = DEFAULT
         location: user.location,
         website: user.website,
         signature: user.signature,
+        socialLinks: user.socialLinks,
         role: user.role,
         status: user.status,
         groups: user.groups?.map((g) => g.name) ?? [],
@@ -71,7 +73,8 @@ export class UserService {
         @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly authService: AuthService,
-        private readonly gamificationService: GamificationService
+        private readonly gamificationService: GamificationService,
+        private readonly pushService: PushService
     ) {}
 
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -149,6 +152,7 @@ export class UserService {
         if (dto.location !== undefined) user.location = dto.location;
         if (dto.website !== undefined) user.website = dto.website;
         if (dto.signature !== undefined) user.signature = dto.signature;
+        if (dto.socialLinks !== undefined) user.socialLinks = dto.socialLinks;
         await this.userRepo.save(user);
         return toProfile(user);
     }
@@ -252,15 +256,9 @@ export class UserService {
         }));
     }
 
-    async getOnlineUserIds(thresholdMinutes = 5): Promise<string[]> {
-        const since = new Date(Date.now() - thresholdMinutes * 60_000);
-        const users = await this.userRepo
-            .createQueryBuilder("u")
-            .select("u.id")
-            .where("u.lastSeenAt >= :since", { since })
-            .andWhere("u.status = :status", { status: "active" })
-            .getMany();
-        return users.map((u) => u.id);
+    async getOnlineUserIds(): Promise<string[]> {
+        // Use real-time WebSocket presence; no DB polling needed
+        return this.pushService.getOnlineUserIds();
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

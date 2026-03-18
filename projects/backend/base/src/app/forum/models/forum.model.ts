@@ -71,6 +71,7 @@ export interface ThreadDto {
     lastPostAt?: string;
     lastPostByUserId?: string;
     bestAnswerPostId?: string;
+    hasPoll?: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -113,4 +114,26 @@ export interface ReactionDto {
     userId: string;
     reactionType: string;
     createdAt: string;
+}
+
+// ─── Poll ────────────────────────────────────────────────────────────────────
+
+export interface PollDto {
+    id: string;
+    threadId: string;
+    question: string;
+    options: PollOptionDto[];
+    totalVotes: number;
+    isMultipleChoice: boolean;
+    isClosed: boolean;
+    closesAt: string | null;
+    myVote: number | null;
+    createdAt: string;
+}
+
+export interface PollOptionDto {
+    index: number;
+    text: string;
+    votes: number;
+    percentage: number;
 }

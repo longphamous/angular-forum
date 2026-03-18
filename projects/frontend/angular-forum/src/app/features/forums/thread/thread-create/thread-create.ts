@@ -1,14 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
 import { Chip } from "primeng/chip";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
 import { FluidModule } from "primeng/fluid";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
+import { ToggleSwitchModule } from "primeng/toggleswitch";
 
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
@@ -19,11 +21,13 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         InputTextModule,
         Chip,
         ButtonModule,
+        CheckboxModule,
         EditorModule,
         FluidModule,
         DividerModule,
         MessageModule,
         RouterModule,
+        ToggleSwitchModule,
         TranslocoModule
     ],
     templateUrl: "./thread-create.html",
@@ -44,6 +48,12 @@ export class ThreadCreate implements OnInit {
     submitting = false;
     error: string | null = null;
 
+    // Poll
+    readonly pollEnabled = signal(false);
+    pollQuestion = "";
+    pollOptions: string[] = ["", ""];
+    pollMultipleChoice = false;
+
     private forumId = "";
 
     ngOnInit(): void {
@@ -57,9 +67,27 @@ export class ThreadCreate implements OnInit {
             this.error = this.translocoService.translate("threadCreate.requiredFields");
             return;
         }
+
+        // Validate poll if enabled
+        const validOptions = this.pollOptions.map((o) => o.trim()).filter((o) => o.length > 0);
+        if (this.pollEnabled() && (!this.pollQuestion.trim() || validOptions.length < 2)) {
+            this.error = "Umfrage benötigt eine Frage und mindestens 2 Optionen.";
+            return;
+        }
+
         this.submitting = true;
         this.error = null;
-        this.facade.createThread(this.forumId, this.title.trim(), this.content, this.tags).subscribe({
+
+        const poll =
+            this.pollEnabled() && validOptions.length >= 2
+                ? {
+                      question: this.pollQuestion.trim(),
+                      options: validOptions,
+                      isMultipleChoice: this.pollMultipleChoice
+                  }
+                : undefined;
+
+        this.facade.createThread(this.forumId, this.title.trim(), this.content, this.tags, poll).subscribe({
             next: (thread) => {
                 this.router.navigate(["/forum/threads", thread.id]);
             },
@@ -87,5 +115,27 @@ export class ThreadCreate implements OnInit {
 
     removeTag(tag: string): void {
         this.tags = this.tags.filter((t) => t !== tag);
+    }
+
+    // ── Poll helpers ──────────────────────────────────────────────────────────
+
+    addPollOption(): void {
+        if (this.pollOptions.length < 10) {
+            this.pollOptions = [...this.pollOptions, ""];
+        }
+    }
+
+    removePollOption(index: number): void {
+        if (this.pollOptions.length > 2) {
+            this.pollOptions = this.pollOptions.filter((_, i) => i !== index);
+        }
+    }
+
+    trackByIndex(index: number): number {
+        return index;
+    }
+
+    updatePollOption(index: number, value: string): void {
+        this.pollOptions = this.pollOptions.map((o, i) => (i === index ? value : o));
     }
 }

@@ -12,6 +12,16 @@ export class ForumController {
     constructor(private readonly forumService: ForumService) {}
 
     /**
+     * GET /forum/forums
+     * Lists all forums (for moderator move-thread dialog).
+     */
+    @Public()
+    @Get("forums")
+    findAll(): Promise<ForumDto[]> {
+        return this.forumService.findAll();
+    }
+
+    /**
      * GET /forum/categories/:categoryId/forums
      * Lists forums within a category (paginated).
      */

@@ -7,6 +7,7 @@ import { AUTH_ROUTES } from "../../core/api/auth.routes";
 import { USER_ROUTES } from "../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { AuthSession, LoginResponse, UserProfile } from "../../core/models/user/user";
+import { PushService } from "../../core/services/push.service";
 
 const STORAGE_TOKEN = "aniverse_access_token";
 const STORAGE_REFRESH = "aniverse_refresh_token";
@@ -48,6 +49,7 @@ export class AuthFacade {
     private readonly http = inject(HttpClient);
     private readonly router = inject(Router);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly pushService = inject(PushService);
 
     constructor() {
         this.currentUser = this._currentUser.asReadonly();
@@ -98,6 +100,7 @@ export class AuthFacade {
     }
 
     logout(): void {
+        this.pushService.disconnect();
         this._accessToken.set(null);
         this._currentUser.set(null);
         localStorage.removeItem(STORAGE_TOKEN);
@@ -112,6 +115,7 @@ export class AuthFacade {
         localStorage.setItem(STORAGE_TOKEN, session.accessToken);
         localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
         localStorage.setItem(STORAGE_PROFILE, JSON.stringify(profile));
+        this.pushService.connect(session.accessToken);
     }
 
     private _restoreFromStorage(): void {
@@ -121,6 +125,7 @@ export class AuthFacade {
         try {
             this._accessToken.set(token);
             this._currentUser.set(JSON.parse(raw) as UserProfile);
+            this.pushService.connect(token);
         } catch {
             localStorage.removeItem(STORAGE_TOKEN);
             localStorage.removeItem(STORAGE_REFRESH);

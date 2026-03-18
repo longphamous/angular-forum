@@ -17,6 +17,7 @@ export interface Thread {
     lastPostAt?: string;
     lastPostByUserId?: string;
     bestAnswerPostId?: string;
+    hasPoll?: boolean;
     createdAt: string;
     updatedAt: string;
 }

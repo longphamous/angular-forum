@@ -4,4 +4,5 @@ export class UpdateThreadDto {
     isLocked?: boolean;
     isSticky?: boolean;
     tags?: string[];
+    forumId?: string;
 }

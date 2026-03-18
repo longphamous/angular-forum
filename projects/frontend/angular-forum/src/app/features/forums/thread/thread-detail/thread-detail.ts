@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
@@ -13,9 +13,13 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
+import { Subscription } from "rxjs";
+
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { Post } from "../../../../core/models/forum/post";
+import { PushThreadNewPost } from "../../../../core/models/push/push-events";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
+import { PushService } from "../../../../core/services/push.service";
 import { AuthFacade } from "../../../../facade/auth/auth-facade";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 import { OnlineIndicator } from "../../../../shared/components/online-indicator/online-indicator";
@@ -43,14 +47,15 @@ import { OnlineIndicator } from "../../../../shared/components/online-indicator/
     styleUrl: "./thread-detail.scss",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ThreadDetail implements OnInit {
+export class ThreadDetail implements OnInit, OnDestroy {
     readonly facade = inject(ForumFacade);
     readonly navHistory = inject(NavigationHistoryService);
     readonly route = inject(ActivatedRoute);
     readonly router = inject(Router);
     readonly cd = inject(ChangeDetectorRef);
-    private readonly authFacade = inject(AuthFacade);
+    readonly authFacade = inject(AuthFacade);
     private readonly translocoService = inject(TranslocoService);
+    private readonly pushService = inject(PushService);
     readonly pageSize = 20;
 
     replyContent = "";
@@ -59,23 +64,60 @@ export class ThreadDetail implements OnInit {
 
     readonly reportVisible = signal(false);
     readonly reportSuccess = signal(false);
+    readonly newPostHint = signal<PushThreadNewPost | null>(null);
+    readonly moveDialogVisible = signal(false);
+    readonly deleteDialogVisible = signal(false);
+    readonly availableForums = signal<{ id: string; name: string }[]>([]);
+    moveTargetForumId = "";
     reportReason = "";
 
     private threadId = "";
     private currentPage = 1;
     private readonly reactedPostIds = new Set<string>();
     private readonly reactionAdjust = new Map<string, number>();
+    private pushSub: Subscription | null = null;
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
+            // Leave previous thread room
+            if (this.threadId) {
+                this.pushService.leaveThread(this.threadId);
+            }
+
             this.threadId = params["threadId"] as string;
             this.currentPage = 1;
             this.reactedPostIds.clear();
             this.reactionAdjust.clear();
+            this.newPostHint.set(null);
             this.facade.loadThread(this.threadId);
             this.facade.loadPosts(this.threadId, 1, this.pageSize);
+            this.facade.loadPoll(this.threadId);
             this.loadMyReactions();
+
+            // Join thread room for real-time updates
+            this.pushService.joinThread(this.threadId);
+            this.pushSub?.unsubscribe();
+            this.pushSub = this.pushService.on<PushThreadNewPost>("thread:newPost").subscribe((ev) => {
+                // Skip if it's our own post
+                if (ev.authorId === this.authFacade.currentUser()?.id) return;
+                this.newPostHint.set(ev);
+                this.cd.markForCheck();
+            });
         });
+    }
+
+    ngOnDestroy(): void {
+        if (this.threadId) {
+            this.pushService.leaveThread(this.threadId);
+        }
+        this.pushSub?.unsubscribe();
+    }
+
+    /** Reload posts after a push notification about a new post. */
+    loadNewPosts(): void {
+        this.newPostHint.set(null);
+        const lastPage = Math.ceil((this.facade.postTotal() + 1) / this.pageSize);
+        this.facade.loadPosts(this.threadId, lastPage, this.pageSize);
     }
 
     onPostsPageChange(event: PaginatorState): void {
@@ -202,6 +244,81 @@ export class ThreadDetail implements OnInit {
                 this.facade.loadThread(this.threadId);
                 this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
                 this.cd.markForCheck();
+            }
+        });
+    }
+
+    // ── Poll ──────────────────────────────────────────────────────────────────
+
+    votePoll(optionIndex: number): void {
+        const poll = this.facade.currentPoll();
+        if (!poll || poll.isClosed || poll.myVote !== null) return;
+        this.facade.votePoll(this.threadId, optionIndex).subscribe({
+            next: () => {
+                this.facade.loadPoll(this.threadId);
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    // ── Moderation ─────────────────────────────────────────────────────────────
+
+    togglePin(): void {
+        const thread = this.facade.currentThread();
+        if (!thread) return;
+        this.facade.togglePin(this.threadId, !thread.isPinned).subscribe({
+            next: () => this.facade.loadThread(this.threadId)
+        });
+    }
+
+    toggleSticky(): void {
+        const thread = this.facade.currentThread();
+        if (!thread) return;
+        this.facade.toggleSticky(this.threadId, !thread.isSticky).subscribe({
+            next: () => this.facade.loadThread(this.threadId)
+        });
+    }
+
+    toggleLock(): void {
+        const thread = this.facade.currentThread();
+        if (!thread) return;
+        this.facade.toggleLock(this.threadId, !thread.isLocked).subscribe({
+            next: () => this.facade.loadThread(this.threadId)
+        });
+    }
+
+    openMoveDialog(): void {
+        this.moveTargetForumId = "";
+        this.facade.loadForumsList().subscribe({
+            next: (forums) => {
+                this.availableForums.set(forums);
+                this.moveDialogVisible.set(true);
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    moveThread(): void {
+        if (!this.moveTargetForumId) return;
+        this.facade.moveThread(this.threadId, this.moveTargetForumId).subscribe({
+            next: () => {
+                this.moveDialogVisible.set(false);
+                this.facade.loadThread(this.threadId);
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    confirmDelete(): void {
+        this.deleteDialogVisible.set(true);
+    }
+
+    deleteThread(): void {
+        this.facade.deleteThread(this.threadId).subscribe({
+            next: () => {
+                this.deleteDialogVisible.set(false);
+                const thread = this.facade.currentThread();
+                this.router.navigate(["/forum", thread?.forumId ?? ""]);
             }
         });
     }

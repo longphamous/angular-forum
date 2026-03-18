@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { NotificationsService } from "../notifications/notifications.service";
+import { PushMessageNew } from "../push/push-event.types";
+import { PushService } from "../push/push.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { ConversationEntity } from "./entities/conversation.entity";
 import { MessageEntity } from "./entities/message.entity";
@@ -62,7 +64,8 @@ export class MessagesService {
         private readonly messageRepo: Repository<MessageEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly pushService: PushService
     ) {}
 
     async getConversations(userId: string): Promise<ConversationDto[]> {
@@ -175,6 +178,17 @@ export class MessagesService {
 
         const sender = await this.userRepo.findOneBy({ id: userId });
         const senderName = sender?.displayName ?? sender?.username ?? "Unknown";
+
+        // Push real-time message to conversation room
+        const pushPayload: PushMessageNew = {
+            conversationId: convId,
+            messageId: msg.id,
+            senderId: userId,
+            senderName,
+            preview: content.slice(0, 100),
+            createdAt: msg.createdAt.toISOString()
+        };
+        this.pushService.sendToConversation(convId, "message:new", pushPayload);
 
         // Notify all other participants
         for (const recipientId of conv.participantIds.filter((id) => id !== userId)) {

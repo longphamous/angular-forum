@@ -24,6 +24,7 @@ import { LinkDatabaseModule } from "./link-database/link-database.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MessagesModule } from "./messages/messages.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { PushModule } from "./push/push.module";
 import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
 import { UserModule } from "./user/user.module";
@@ -50,6 +51,7 @@ import { UserModule } from "./user/user.module";
         DashboardModule,
         GalleryModule,
         NotificationsModule,
+        PushModule.register(),
         MessagesModule,
         BlogModule,
         ChronikModule,

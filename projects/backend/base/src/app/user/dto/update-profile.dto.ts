@@ -8,4 +8,5 @@ export class UpdateProfileDto {
     location?: string;
     website?: string;
     signature?: string;
+    socialLinks?: Record<string, string>;
 }

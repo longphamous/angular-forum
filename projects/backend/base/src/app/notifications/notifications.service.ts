@@ -2,13 +2,16 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { PushNotificationNew } from "../push/push-event.types";
+import { PushService } from "../push/push.service";
 import { NotificationEntity, NotificationType } from "./entities/notification.entity";
 
 @Injectable()
 export class NotificationsService {
     constructor(
         @InjectRepository(NotificationEntity)
-        private readonly notifRepo: Repository<NotificationEntity>
+        private readonly notifRepo: Repository<NotificationEntity>,
+        private readonly pushService: PushService
     ) {}
 
     /**
@@ -32,7 +35,18 @@ export class NotificationsService {
             link: link ?? null,
             metadata: metadata ?? null
         });
-        await this.notifRepo.save(notif);
+        const saved = await this.notifRepo.save(notif);
+
+        // Push real-time notification to connected clients
+        const pushPayload: PushNotificationNew = {
+            id: saved.id,
+            type,
+            title,
+            body,
+            link: link ?? null,
+            createdAt: saved.createdAt.toISOString()
+        };
+        this.pushService.sendToUser(userId, "notification:new", pushPayload);
     }
 
     async getForUser(userId: string, limit = 30): Promise<NotificationEntity[]> {

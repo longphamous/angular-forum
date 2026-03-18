@@ -46,6 +46,9 @@ export class UserEntity {
     @Column({ nullable: true, type: "text" })
     signature?: string;
 
+    @Column({ name: "social_links", type: "jsonb", nullable: true })
+    socialLinks?: Record<string, string>;
+
     @Column({
         type: "enum",
         enum: ["admin", "moderator", "member", "guest"],

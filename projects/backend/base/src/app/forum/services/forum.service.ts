@@ -51,6 +51,17 @@ export class ForumService {
         private readonly categoryRepo: Repository<ForumCategoryEntity>
     ) {}
 
+    async findAll(): Promise<ForumDto[]> {
+        const forums = await this.forumRepo.find({
+            order: { position: "ASC" },
+            relations: ["category"]
+        });
+        return forums.map((f) => ({
+            ...toDto(f),
+            name: `${f.category?.name ?? ""} → ${f.name}`
+        }));
+    }
+
     async findByCategory(categoryId: string, query: ForumQueryDto): Promise<PaginatedResult<ForumDto>> {
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;

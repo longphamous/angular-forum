@@ -5,4 +5,10 @@ export class CreateThreadDto {
     isPinned?: boolean;
     isSticky?: boolean;
     tags?: string[];
+    poll?: {
+        question: string;
+        options: string[];
+        isMultipleChoice?: boolean;
+        closesAt?: string;
+    };
 }

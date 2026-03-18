@@ -51,6 +51,74 @@
             </div>
         </div>
 
+        <!-- Poll Section -->
+        <div class="mt-8 flex">
+            <div class="card flex w-full flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-lg font-semibold">
+                        <i class="pi pi-chart-bar mr-2"></i>Umfrage
+                    </div>
+                    <p-toggleSwitch [(ngModel)]="pollEnabled" />
+                </div>
+
+                @if (pollEnabled()) {
+                <p-divider />
+                <div class="flex w-full flex-col gap-2">
+                    <label class="font-medium" for="poll-question">Frage</label>
+                    <input
+                        class="w-full"
+                        id="poll-question"
+                        [(ngModel)]="pollQuestion"
+                        [disabled]="submitting"
+                        pInputText
+                        placeholder="z.B. Was ist euer liebstes Anime-Genre?"
+                        type="text"
+                    />
+                </div>
+                <div class="flex w-full flex-col gap-3">
+                    <label class="font-medium">Antwortmöglichkeiten</label>
+                    @for (option of pollOptions; track trackByIndex($index)) {
+                    <div class="flex items-center gap-2">
+                        <span class="text-surface-400 w-6 text-center text-sm">{{ $index + 1 }}.</span>
+                        <input
+                            class="flex-1"
+                            [disabled]="submitting"
+                            [ngModel]="option"
+                            (ngModelChange)="updatePollOption($index, $event)"
+                            pInputText
+                            [placeholder]="'Option ' + ($index + 1)"
+                            type="text"
+                        />
+                        @if (pollOptions.length > 2) {
+                        <p-button
+                            (onClick)="removePollOption($index)"
+                            [text]="true"
+                            icon="pi pi-times"
+                            severity="danger"
+                            size="small"
+                        />
+                        }
+                    </div>
+                    }
+                    @if (pollOptions.length < 10) {
+                    <p-button
+                        (onClick)="addPollOption()"
+                        [text]="true"
+                        icon="pi pi-plus"
+                        label="Option hinzufügen"
+                        severity="secondary"
+                        size="small"
+                    />
+                    }
+                </div>
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="pollMultipleChoice" [binary]="true" inputId="poll-multi" />
+                    <label class="text-sm" for="poll-multi">Mehrfachauswahl erlauben</label>
+                </div>
+                }
+            </div>
+        </div>
+
         <div class="mt-8 flex">
             <div class="card flex w-full flex-col gap-6">
                 <div class="text-lg font-semibold">{{ t('threadCreate.contentLabel') }}</div>

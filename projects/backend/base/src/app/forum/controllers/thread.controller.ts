@@ -6,7 +6,7 @@ import { AuthenticatedUser } from "../../auth/models/jwt.model";
 import { CreateThreadDto } from "../dto/create-thread.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
 import { UpdateThreadDto } from "../dto/update-thread.dto";
-import { PaginatedResult, ThreadDetailDto, ThreadDto } from "../models/forum.model";
+import { PaginatedResult, PollDto, ThreadDetailDto, ThreadDto } from "../models/forum.model";
 import { ThreadService } from "../services/thread.service";
 
 @Controller("forum")
@@ -60,6 +60,32 @@ export class ThreadController {
         @CurrentUser() user: AuthenticatedUser
     ): Promise<ThreadDto> {
         return this.threadService.update(id, dto, user.userId, user.role);
+    }
+
+    /**
+     * GET /forum/threads/:id/poll
+     * Returns the poll for a thread (if one exists).
+     */
+    @Public()
+    @Get("threads/:id/poll")
+    getPoll(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user?: AuthenticatedUser
+    ): Promise<PollDto | null> {
+        return this.threadService.getPoll(id, user?.userId);
+    }
+
+    /**
+     * POST /forum/threads/:id/poll/vote
+     * Casts a vote on a thread's poll. Requires authentication.
+     */
+    @Post("threads/:id/poll/vote")
+    vote(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() body: { optionIndex: number },
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PollDto> {
+        return this.threadService.vote(id, user.userId, body.optionIndex);
     }
 
     /**

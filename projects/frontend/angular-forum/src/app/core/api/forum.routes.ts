@@ -11,8 +11,12 @@ export const FORUM_ROUTES = {
     },
     threads: {
         detail: (id: string) => `/forum/threads/${id}`,
+        update: (id: string) => `/forum/threads/${id}`,
+        delete: (id: string) => `/forum/threads/${id}`,
         posts: (threadId: string) => `/forum/threads/${threadId}/posts`,
-        myReactions: (threadId: string) => `/forum/threads/${threadId}/my-reactions`
+        myReactions: (threadId: string) => `/forum/threads/${threadId}/my-reactions`,
+        poll: (threadId: string) => `/forum/threads/${threadId}/poll`,
+        pollVote: (threadId: string) => `/forum/threads/${threadId}/poll/vote`
     },
     posts: {
         react: (postId: string) => `/forum/posts/${postId}/react`,

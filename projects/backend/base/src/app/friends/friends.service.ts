@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { NotificationsService } from "../notifications/notifications.service";
+import { PushFriendAccepted, PushFriendRequest } from "../push/push-event.types";
+import { PushService } from "../push/push.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { FriendshipEntity } from "./entities/friendship.entity";
 
@@ -47,7 +49,8 @@ export class FriendsService {
         private readonly friendshipRepo: Repository<FriendshipEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly pushService: PushService
     ) {}
 
     async sendRequest(requesterId: string, addresseeId: string): Promise<FriendRequestDto> {
@@ -99,6 +102,16 @@ export class FriendsService {
             `/users/${requester.id}`
         );
 
+        // Push real-time friend request
+        const pushPayload: PushFriendRequest = {
+            friendshipId: saved.id,
+            userId: requesterId,
+            username: requester.username,
+            displayName: requester.displayName,
+            avatarUrl: requester.avatarUrl ?? null
+        };
+        this.pushService.sendToUser(addresseeId, "friend:request", pushPayload);
+
         return {
             id: saved.id,
             user: {
@@ -130,6 +143,18 @@ export class FriendsService {
 
         const requester = await this.userRepo.findOne({ where: { id: friendship.requesterId } });
         const addressee = await this.userRepo.findOne({ where: { id: userId } });
+
+        // Push real-time friend accepted
+        if (requester) {
+            const acceptPush: PushFriendAccepted = {
+                friendshipId: saved.id,
+                userId,
+                username: addressee?.username ?? "",
+                displayName: addressee?.displayName ?? "",
+                avatarUrl: addressee?.avatarUrl ?? null
+            };
+            this.pushService.sendToUser(friendship.requesterId, "friend:accepted", acceptPush);
+        }
 
         if (addressee) {
             await this.notificationsService.create(

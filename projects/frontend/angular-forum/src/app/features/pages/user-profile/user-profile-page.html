@@ -82,6 +82,39 @@
                     {{ p.website }}
                 </a>
                 }
+
+                <!-- Social Media Links -->
+                @if (p.socialLinks?.['twitter']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://x.com/' + p.socialLinks!['twitter']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-twitter text-xs"></i>{{ p.socialLinks!['twitter'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['discord']) {
+                <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5 text-sm">
+                    <i class="pi pi-discord text-xs"></i>{{ p.socialLinks!['discord'] }}
+                </span>
+                }
+                @if (p.socialLinks?.['youtube']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://youtube.com/' + p.socialLinks!['youtube']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-youtube text-xs"></i>{{ p.socialLinks!['youtube'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['twitch']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://twitch.tv/' + p.socialLinks!['twitch']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-twitch text-xs"></i>{{ p.socialLinks!['twitch'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['instagram']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://instagram.com/' + p.socialLinks!['instagram']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-instagram text-xs"></i>{{ p.socialLinks!['instagram'] }}
+                </a>
+                }
+                @if (p.socialLinks?.['github']) {
+                <a class="text-surface-500 hover:text-primary flex items-center gap-1.5 text-sm no-underline" [href]="'https://github.com/' + p.socialLinks!['github']" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-github text-xs"></i>{{ p.socialLinks!['github'] }}
+                </a>
+                }
+
                 <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1.5">
                     <i class="pi pi-calendar text-xs"></i>
                     {{ t('userProfile.memberSince') }} {{ formatDate(p.createdAt) }}

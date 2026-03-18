@@ -7,6 +7,7 @@ import { FORUM_ROUTES } from "../../core/api/forum.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import { Forum } from "../../core/models/forum/forum";
 import { ForumCategory } from "../../core/models/forum/forum-category";
+import { Poll } from "../../core/models/forum/poll";
 import { PaginatedPosts, Post } from "../../core/models/forum/post";
 import { PaginatedThreads, Thread } from "../../core/models/forum/thread";
 
@@ -19,6 +20,7 @@ export class ForumFacade {
     readonly currentThread: Signal<Thread | null>;
     readonly posts: Signal<Post[]>;
     readonly postTotal: Signal<number>;
+    readonly currentPoll: Signal<Poll | null>;
     readonly loading: Signal<boolean>;
     readonly error: Signal<string | null>;
 
@@ -29,6 +31,7 @@ export class ForumFacade {
     private readonly _currentThread = signal<Thread | null>(null);
     private readonly _posts = signal<Post[]>([]);
     private readonly _postTotal = signal(0);
+    private readonly _currentPoll = signal<Poll | null>(null);
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly http = inject(HttpClient);
@@ -40,6 +43,7 @@ export class ForumFacade {
         this.threads = this._threads.asReadonly();
         this.threadTotal = this._threadTotal.asReadonly();
         this.currentThread = this._currentThread.asReadonly();
+        this.currentPoll = this._currentPoll.asReadonly();
         this.posts = this._posts.asReadonly();
         this.postTotal = this._postTotal.asReadonly();
         this.loading = this._loading.asReadonly();
@@ -152,11 +156,18 @@ export class ForumFacade {
             });
     }
 
-    createThread(forumId: string, title: string, content: string, tags: string[] = []): Observable<Thread> {
+    createThread(
+        forumId: string,
+        title: string,
+        content: string,
+        tags: string[] = [],
+        poll?: { question: string; options: string[]; isMultipleChoice?: boolean }
+    ): Observable<Thread> {
         return this.http.post<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.forums.threads(forumId)}`, {
             title,
             content,
-            tags
+            tags,
+            ...(poll ? { poll } : {})
         });
     }
 
@@ -180,6 +191,56 @@ export class ForumFacade {
 
     markBestAnswer(threadId: string, postId: string): Observable<Post> {
         return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.bestAnswer(threadId, postId)}`, {});
+    }
+
+    // ── Poll ───────────────────────────────────────────────────────────────
+
+    loadPoll(threadId: string): void {
+        this.http.get<Poll>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.poll(threadId)}`).subscribe({
+            next: (poll) => this._currentPoll.set(poll),
+            error: () => this._currentPoll.set(null)
+        });
+    }
+
+    votePoll(threadId: string, optionIndex: number): Observable<Poll> {
+        return this.http.post<Poll>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.pollVote(threadId)}`, {
+            optionIndex
+        });
+    }
+
+    // ── Thread moderation ─────────────────────────────────────────────────
+
+    updateThread(threadId: string, payload: Partial<Thread>): Observable<Thread> {
+        return this.http.patch<Thread>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.update(threadId)}`,
+            payload
+        );
+    }
+
+    deleteThread(threadId: string): Observable<{ success: boolean }> {
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.delete(threadId)}`
+        );
+    }
+
+    togglePin(threadId: string, isPinned: boolean): Observable<Thread> {
+        return this.updateThread(threadId, { isPinned });
+    }
+
+    toggleLock(threadId: string, isLocked: boolean): Observable<Thread> {
+        return this.updateThread(threadId, { isLocked });
+    }
+
+    toggleSticky(threadId: string, isSticky: boolean): Observable<Thread> {
+        return this.updateThread(threadId, { isSticky });
+    }
+
+    moveThread(threadId: string, targetForumId: string): Observable<Thread> {
+        return this.updateThread(threadId, { forumId: targetForumId });
+    }
+
+    loadForumsList(): Observable<Forum[]> {
+        return this.http.get<Forum[]>(`${this.apiConfig.baseUrl}/forum/forums`);
     }
 
     resetError(): void {

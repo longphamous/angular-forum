@@ -14,6 +14,7 @@ export interface UserProfile {
     location?: string;
     website?: string;
     signature?: string;
+    socialLinks?: Record<string, string>;
     role: UserRole;
     status: UserStatus;
     groups: string[];

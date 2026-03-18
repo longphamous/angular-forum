@@ -4,6 +4,8 @@ import { In, Repository } from "typeorm";
 
 import { CreditService } from "../../credit/credit.service";
 import { GamificationService } from "../../gamification/gamification.service";
+import { PushThreadNewPost } from "../../push/push-event.types";
+import { PushService } from "../../push/push.service";
 import { UserXpData } from "../../gamification/level.config";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreatePostDto } from "../dto/create-post.dto";
@@ -83,7 +85,8 @@ export class PostService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
-        private readonly creditService: CreditService
+        private readonly creditService: CreditService,
+        private readonly pushService: PushService
     ) {}
 
     async findByThread(threadId: string, query: ForumQueryDto): Promise<PaginatedResult<PostDto>> {
@@ -164,6 +167,17 @@ export class PostService {
         void this.gamificationService.awardXp(authorId, "create_post", post.id);
         // Award 5 coins for creating a post
         void this.creditService.addCredits(authorId, 5, "reward", "Coins für neuen Beitrag").catch(() => undefined);
+
+        // Push real-time new-post event to everyone viewing this thread
+        const author = await this.userRepo.findOneBy({ id: authorId });
+        const pushPayload: PushThreadNewPost = {
+            threadId,
+            postId: post.id,
+            authorId,
+            authorName: author?.displayName ?? author?.username ?? "Unbekannt",
+            preview: dto.content.replace(/<[^>]+>/g, "").slice(0, 150)
+        };
+        this.pushService.sendToThread(threadId, "thread:newPost", pushPayload);
 
         return toDto(post);
     }
