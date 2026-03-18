@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
@@ -37,23 +37,22 @@ interface SelectOption<T> {
     selector: "app-admin-tcg",
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        TranslocoModule,
-        ButtonModule,
-        CardModule,
-        ConfirmDialogModule,
-        DialogModule,
-        InputNumberModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        SkeletonModule,
-        TableModule,
-        TabsModule,
-        TagModule,
-        TooltipModule
-    ],
+    FormsModule,
+    TranslocoModule,
+    ButtonModule,
+    CardModule,
+    ConfirmDialogModule,
+    DialogModule,
+    InputNumberModule,
+    InputTextModule,
+    TextareaModule,
+    SelectModule,
+    SkeletonModule,
+    TableModule,
+    TabsModule,
+    TagModule,
+    TooltipModule
+],
     providers: [ConfirmationService],
     templateUrl: "./admin-tcg.html",
     styleUrl: "./admin-tcg.css",

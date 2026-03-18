@@ -1,6 +1,6 @@
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 import { HTTP_INTERCEPTORS } from "@angular/common/http";
-import { isDevMode } from "@angular/core";
+import { isDevMode, provideZoneChangeDetection } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideTransloco } from "@jsverse/transloco";
 
@@ -28,7 +28,7 @@ console.info(`[bootstrap] Mock-Interceptor: ${environment.useMock ? "aktiv" : "d
 
 bootstrapApplication(AppComponent, {
     providers: [
-        ...appConfig.providers,
+        provideZoneChangeDetection(),...appConfig.providers,
         { provide: API_CONFIG, useValue: environment.api },
         // HttpClient with interceptor support (so that DI-registered interceptors take effect)
         provideHttpClient(withInterceptorsFromDi()),

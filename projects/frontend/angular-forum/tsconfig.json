@@ -8,7 +8,9 @@
     "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "checkJs": true
+    "checkJs": true,
+    "module": "preserve",
+    "moduleResolution": "bundler"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

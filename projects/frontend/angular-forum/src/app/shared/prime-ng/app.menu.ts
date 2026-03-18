@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslocoService } from "@jsverse/transloco";
@@ -11,13 +11,17 @@ import { AppMenuitem } from "./app.menuitem";
 @Component({
     selector: "app-menu",
     standalone: true,
-    imports: [CommonModule, AppMenuitem, RouterModule],
+    imports: [AppMenuitem, RouterModule],
     template: `<ul class="layout-menu">
-        <ng-container *ngFor="let item of model; let i = index">
-            <li *ngIf="!item.separator" [index]="i" [item]="item" [root]="true" app-menuitem></li>
-            <li class="menu-separator" *ngIf="item.separator"></li>
-        </ng-container>
-    </ul> `
+          @for (item of model; track item; let i = $index) {
+            @if (!item.separator) {
+              <li [index]="i" [item]="item" [root]="true" app-menuitem></li>
+            }
+            @if (item.separator) {
+              <li class="menu-separator"></li>
+            }
+          }
+        </ul>`
 })
 export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];

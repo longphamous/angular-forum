@@ -14,59 +14,62 @@ import { LayoutService } from "./service/layout.service";
     imports: [CommonModule, RouterModule, RippleModule],
     template: `
         <ng-container>
-            <!-- Root section header (clickable toggle, no routerLink) -->
+          <!-- Root section header (clickable toggle, no routerLink) -->
+          @if (root && item.visible !== false) {
             <div
-                class="layout-menuitem-root-text"
-                *ngIf="root && item.visible !== false"
-                (click)="rootToggle($event)"
-                (keydown.enter)="rootToggle($event)"
-                role="button"
-                tabindex="0"
-            >
-                <span>{{ item.label }}</span>
-                <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
+              class="layout-menuitem-root-text"
+              (click)="rootToggle($event)"
+              (keydown.enter)="rootToggle($event)"
+              role="button"
+              tabindex="0"
+              >
+              <span>{{ item.label }}</span>
+              <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
             </div>
-
-            <!-- Non-root item with submenu (no routerLink, has children) -->
+          }
+        
+          <!-- Non-root item with submenu (no routerLink, has children) -->
+          @if (!root && !item.routerLink && item.items && item.visible !== false) {
             <a
-                *ngIf="!root && !item.routerLink && item.items && item.visible !== false"
-                [attr.href]="item.url"
-                [attr.target]="item.target"
-                [ngClass]="item.styleClass"
-                (click)="itemClick($event)"
-                pRipple
-                tabindex="0"
-            >
-                <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-                <span class="layout-menuitem-text">{{ item.label }}</span>
-                <i class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
+              [attr.href]="item.url"
+              [attr.target]="item.target"
+              [ngClass]="item.styleClass"
+              (click)="itemClick($event)"
+              pRipple
+              tabindex="0"
+              >
+              <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+              <span class="layout-menuitem-text">{{ item.label }}</span>
+              <i class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
             </a>
-
-            <!-- Non-root item with no children and no routerLink (plain link) -->
+          }
+        
+          <!-- Non-root item with no children and no routerLink (plain link) -->
+          @if (!root && !item.routerLink && !item.items && item.visible !== false) {
             <a
-                *ngIf="!root && !item.routerLink && !item.items && item.visible !== false"
-                [attr.href]="item.url"
-                [attr.target]="item.target"
-                [ngClass]="item.styleClass"
-                (click)="itemClick($event)"
-                pRipple
-                tabindex="0"
-            >
-                <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-                <span class="layout-menuitem-text">{{ item.label }}</span>
+              [attr.href]="item.url"
+              [attr.target]="item.target"
+              [ngClass]="item.styleClass"
+              (click)="itemClick($event)"
+              pRipple
+              tabindex="0"
+              >
+              <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+              <span class="layout-menuitem-text">{{ item.label }}</span>
             </a>
-
-            <!-- Non-root item with routerLink (leaf navigation) -->
+          }
+        
+          <!-- Non-root item with routerLink (leaf navigation) -->
+          @if (!root && item.routerLink && !item.items && item.visible !== false) {
             <a
-                *ngIf="!root && item.routerLink && !item.items && item.visible !== false"
-                [attr.target]="item.target"
-                [fragment]="item.fragment"
-                [ngClass]="item.styleClass"
-                [preserveFragment]="item.preserveFragment"
-                [queryParams]="item.queryParams"
-                [queryParamsHandling]="item.queryParamsHandling"
-                [replaceUrl]="item.replaceUrl"
-                [routerLink]="item.routerLink"
+              [attr.target]="item.target"
+              [fragment]="item.fragment"
+              [ngClass]="item.styleClass"
+              [preserveFragment]="item.preserveFragment"
+              [queryParams]="item.queryParams"
+              [queryParamsHandling]="item.queryParamsHandling"
+              [replaceUrl]="item.replaceUrl"
+              [routerLink]="item.routerLink"
                 [routerLinkActiveOptions]="
                     item.routerLinkActiveOptions || {
                         paths: 'exact',
@@ -75,24 +78,27 @@ import { LayoutService } from "./service/layout.service";
                         fragment: 'ignored'
                     }
                 "
-                [skipLocationChange]="item.skipLocationChange"
-                [state]="item.state"
-                (click)="itemClick($event)"
-                pRipple
-                routerLinkActive="active-route"
-                tabindex="0"
+            [skipLocationChange]="item.skipLocationChange"
+            [state]="item.state"
+            (click)="itemClick($event)"
+            pRipple
+            routerLinkActive="active-route"
+            tabindex="0"
             >
-                <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-                <span class="layout-menuitem-text">{{ item.label }}</span>
-            </a>
-
-            <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation" style="overflow: hidden;">
-                <ng-template [ngForOf]="item.items" let-child let-i="index" ngFor>
-                    <li [class]="child['badgeClass']" [index]="i" [item]="child" [parentKey]="key" app-menuitem></li>
-                </ng-template>
-            </ul>
+            <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+            <span class="layout-menuitem-text">{{ item.label }}</span>
+          </a>
+        }
+        
+        @if (item.items && item.visible !== false) {
+          <ul [@children]="submenuAnimation" style="overflow: hidden;">
+            @for (child of item.items; track child; let i = $index) {
+              <li [class]="child['badgeClass']" [index]="i" [item]="child" [parentKey]="key" app-menuitem></li>
+            }
+          </ul>
+        }
         </ng-container>
-    `,
+        `,
     styles: [
         `
             .layout-menuitem-root-text {
