@@ -27,9 +27,9 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [value]="0">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
-            <p-tab [value]="0">
+            <p-tab value="0">
                 <i class="pi pi-clock mr-2"></i>
                 {{ t("links.admin.pending") }} @if (facade.pendingLinks().length > 0) {
                 <span class="ml-1 rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">
@@ -37,14 +37,14 @@
                 </span>
                 }
             </p-tab>
-            <p-tab [value]="1">
+            <p-tab value="1">
                 <i class="pi pi-folder mr-2"></i>
                 {{ t("links.admin.categories") }}
             </p-tab>
         </p-tablist>
 
         <!-- PENDING LINKS TAB -->
-        <p-tabpanel [value]="0">
+        <p-tabpanel value="0">
             <div class="mt-4">
                 @if (facade.loading()) {
                 <div class="flex flex-col gap-3">
@@ -154,7 +154,7 @@
         </p-tabpanel>
 
         <!-- CATEGORIES TAB -->
-        <p-tabpanel [value]="1">
+        <p-tabpanel value="1">
             <div class="mt-4 flex flex-col gap-4">
                 <!-- Add category button -->
                 <div class="flex justify-end">

@@ -16,6 +16,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import type { BoosterPack, Card, CardElement, CardRarity, UserCard } from "../../../core/models/tcg/tcg";
 import { ELEMENT_CONFIG, RARITY_CONFIG } from "../../../core/models/tcg/tcg";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { TcgFacade } from "../../../facade/tcg/tcg-facade";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
@@ -56,8 +57,9 @@ export class TcgPage implements OnInit {
     readonly tcgFacade = inject(TcgFacade);
     readonly walletFacade = inject(WalletFacade);
     readonly authFacade = inject(AuthFacade);
+    private readonly tabService = inject(TabPersistenceService);
 
-    readonly activeTab = signal<string>("boosters");
+    readonly activeTab = signal<string>(this.tabService.get("boosters"));
     readonly showOpenDialog = signal(false);
 
     // Collection filters
@@ -174,6 +176,11 @@ export class TcgPage implements OnInit {
         const userId = this.authFacade.currentUser()?.id;
         return this.tcgFacade.listings().filter((l) => l.userId !== userId && l.status === "active");
     });
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.walletFacade.loadWallet();

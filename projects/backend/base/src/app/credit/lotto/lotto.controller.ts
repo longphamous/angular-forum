@@ -6,6 +6,7 @@ import { LottoScheduler } from "./lotto.scheduler";
 import { LottoService } from "./lotto.service";
 import {
     CreateSpecialDrawDto,
+    DrawHistoryEntry,
     DrawResult,
     DrawScheduleConfig,
     LottoDraw,
@@ -33,125 +34,134 @@ export class LottoController {
 
     @Roles("admin")
     @Patch("config")
-    updateConfig(@Body() body: Partial<DrawScheduleConfig>): DrawScheduleConfig {
-        const updated = this.lottoService.updateConfig(body);
+    async updateConfig(@Body() body: Partial<DrawScheduleConfig>): Promise<DrawScheduleConfig> {
+        const updated = await this.lottoService.updateConfig(body);
         this.lottoScheduler.updateSchedule(updated);
         return updated;
     }
 
-    // ─── Stats ────────────────────────────────────────────────────────────────
+    // ─── Stats ──────────────────────────────────────────────────────────────
 
     @Public()
     @Get("stats")
-    getStats(): LottoStats {
+    getStats(): Promise<LottoStats> {
         return this.lottoService.getStats();
     }
 
-    // ─── Draws ────────────────────────────────────────────────────────────────
+    @Roles("admin")
+    @Post("stats/rebuild")
+    async rebuildStats(): Promise<{ success: boolean }> {
+        await this.lottoService.rebuildStats();
+        return { success: true };
+    }
+
+    // ─── Draw History ───────────────────────────────────────────────────────
+
+    @Public()
+    @Get("draw-history")
+    getDrawHistory(): Promise<DrawHistoryEntry[]> {
+        return this.lottoService.getDrawHistory();
+    }
+
+    // ─── Draws ──────────────────────────────────────────────────────────────
 
     @Public()
     @Get("draws")
-    getAllDraws(): LottoDraw[] {
+    getAllDraws(): Promise<LottoDraw[]> {
         return this.lottoService.getAllDraws();
     }
 
     @Public()
     @Get("draws/:id")
-    getDrawById(@Param("id") id: string): LottoDraw {
+    getDrawById(@Param("id") id: string): Promise<LottoDraw> {
         return this.lottoService.getDrawById(id);
     }
 
     @Roles("admin")
     @Post("draws")
-    scheduleNextDraw(@Body() body: { jackpot?: number }): LottoDraw {
+    scheduleNextDraw(@Body() body: { jackpot?: number }): Promise<LottoDraw> {
         return this.lottoService.scheduleNextDraw(body.jackpot);
     }
 
     @Roles("admin")
     @Post("draws/:id/perform")
-    async performWeeklyDraw(@Param("id") id: string): Promise<DrawResult> {
+    performWeeklyDraw(@Param("id") id: string): Promise<DrawResult> {
         return this.lottoService.performWeeklyDraw(id);
     }
 
     @Public()
     @Get("draws/:id/results")
-    getDrawResults(@Param("id") id: string): DrawResult {
+    getDrawResults(@Param("id") id: string): Promise<DrawResult> {
         return this.lottoService.getDrawResults(id);
     }
 
-    // ─── Tickets ──────────────────────────────────────────────────────────────
+    // ─── Tickets ────────────────────────────────────────────────────────────
 
     @Get("my-tickets")
-    getMyTickets(@Req() req: Request): LottoTicket[] {
+    getMyTickets(@Req() req: Request): Promise<LottoTicket[]> {
         const user = req.user as { userId: string } | undefined;
-        if (!user?.userId) return [];
+        if (!user?.userId) return Promise.resolve([]);
         return this.lottoService.getTicketsByUser(user.userId);
     }
 
     @Get("tickets")
     @Roles("admin")
-    getTicketsByUser(@Query("userId") userId: string): LottoTicket[] {
+    getTicketsByUser(@Query("userId") userId: string): Promise<LottoTicket[]> {
         return this.lottoService.getTicketsByUser(userId);
     }
 
     @Post("tickets")
-    async purchaseTicket(
+    purchaseTicket(
         @Req() req: Request,
-        @Body() body: { numbers: number[]; superNumber: number; drawId: string; repeatWeeks?: number }
+        @Body() body: { fields: number[][]; superNumber: number; drawId: string; repeatWeeks?: number }
     ): Promise<LottoTicket[]> {
         const user = req.user as { userId: string } | undefined;
         if (!user?.userId) throw new Error("Unauthorized");
-        return this.lottoService.purchaseTicket(
-            user.userId,
-            body.numbers,
-            body.superNumber,
-            body.drawId,
-            body.repeatWeeks ?? 1
-        );
+        return this.lottoService.purchaseTicket(user.userId, body.fields, body.superNumber, body.drawId, body.repeatWeeks ?? 1);
     }
 
-    // ─── User results ─────────────────────────────────────────────────────────
+    // ─── User results ───────────────────────────────────────────────────────
 
     @Get("my-results")
-    getMyResults(@Req() req: Request, @Query("drawId") drawId?: string): LottoResult[] {
+    getMyResults(@Req() req: Request, @Query("drawId") drawId?: string): Promise<LottoResult[]> {
         const user = req.user as { userId: string } | undefined;
-        if (!user?.userId) return [];
+        if (!user?.userId) return Promise.resolve([]);
         return this.lottoService.getUserResults(user.userId, drawId);
     }
 
     @Public()
     @Get("users/:userId/results")
-    getUserResults(@Param("userId") userId: string, @Query("drawId") drawId?: string): LottoResult[] {
+    getUserResults(@Param("userId") userId: string, @Query("drawId") drawId?: string): Promise<LottoResult[]> {
         return this.lottoService.getUserResults(userId, drawId);
     }
 
-    // ─── Special draws ────────────────────────────────────────────────────────
+    // ─── Special draws ──────────────────────────────────────────────────────
 
     @Public()
     @Get("special-draws")
-    getAllSpecialDraws(): SpecialDraw[] {
+    getAllSpecialDraws(): Promise<SpecialDraw[]> {
         return this.lottoService.getAllSpecialDraws();
     }
 
     @Roles("admin")
     @Post("special-draws")
-    createSpecialDraw(@Body() body: CreateSpecialDrawDto): SpecialDraw {
+    createSpecialDraw(@Body() body: CreateSpecialDrawDto): Promise<SpecialDraw> {
         return this.lottoService.createSpecialDraw(body);
     }
 
     @Roles("admin")
     @Post("special-draws/:id/perform")
-    async performSpecialDraw(@Param("id") id: string): Promise<SpecialDrawResult> {
+    performSpecialDraw(@Param("id") id: string): Promise<SpecialDrawResult> {
         return this.lottoService.performSpecialDraw(id);
     }
 
     @Post("special-draws/:id/tickets")
-    async purchaseSpecialTicket(
+    purchaseSpecialTicket(
         @Req() req: Request,
-        @Body() body: { numbers: number[]; superNumber: number }
+        @Body() body: { fields: number[][]; superNumber: number }
     ): Promise<LottoTicket> {
         const user = req.user as { userId: string } | undefined;
         if (!user?.userId) throw new Error("Unauthorized");
-        return this.lottoService.purchaseSpecialTicket(user.userId, body.numbers, body.superNumber, req.params["id"]);
+        return this.lottoService.purchaseSpecialTicket(user.userId, body.fields, body.superNumber, req.params["id"]);
     }
 }

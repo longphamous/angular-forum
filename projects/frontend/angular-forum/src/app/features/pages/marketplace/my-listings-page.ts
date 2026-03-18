@@ -1,5 +1,5 @@
 import { CurrencyPipe } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ConfirmationService } from "primeng/api";
@@ -10,6 +10,7 @@ import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
@@ -34,6 +35,14 @@ export class MyListingsPage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly cd = inject(ChangeDetectorRef);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("0"));
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.facade.loadMyListings();

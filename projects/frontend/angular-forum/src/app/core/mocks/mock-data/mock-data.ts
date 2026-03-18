@@ -1405,7 +1405,7 @@ export const mockLottoTickets: LottoTicket[] = [
     {
         id: "lt-001",
         userId: "00000000-0000-0000-0000-000000000001",
-        numbers: [5, 9, 17, 28, 36, 49],
+        fields: [[5, 9, 17, 28, 36, 49]],
         superNumber: 3,
         drawId: "draw-2026-03-07",
         purchasedAt: "2026-03-06T10:00:00.000Z",
@@ -1414,7 +1414,7 @@ export const mockLottoTickets: LottoTicket[] = [
     {
         id: "lt-002",
         userId: "00000000-0000-0000-0000-000000000001",
-        numbers: [5, 13, 21, 34, 42, 48],
+        fields: [[5, 13, 21, 34, 42, 48]],
         superNumber: 1,
         drawId: "draw-2026-03-14",
         purchasedAt: "2026-03-13T14:30:00.000Z",
@@ -1423,7 +1423,7 @@ export const mockLottoTickets: LottoTicket[] = [
     {
         id: "lt-003",
         userId: "00000000-0000-0000-0000-000000000001",
-        numbers: [3, 14, 25, 36, 47, 49],
+        fields: [[3, 14, 25, 36, 47, 49]],
         superNumber: 7,
         drawId: "draw-2026-03-21",
         purchasedAt: "2026-03-15T09:00:00.000Z",
@@ -1462,7 +1462,8 @@ export const mockLottoStats: LottoStats = {
     lastDraw: mockLottoDraws[2]!,
     nextDraw: mockLottoDraws[3]!,
     hotNumbers: [5, 13, 21, 28, 34, 42, 48, 9, 17, 36],
-    coldNumbers: [1, 4, 11, 15, 23, 29, 32, 37, 44, 46]
+    coldNumbers: [1, 4, 11, 15, 23, 29, 32, 37, 44, 46],
+    numberFrequency: Array.from({ length: 49 }, (_, i) => ({ number: i + 1, count: Math.floor(Math.random() * 20) }))
 };
 
 // ── Messages ──────────────────────────────────────────────────────────────────

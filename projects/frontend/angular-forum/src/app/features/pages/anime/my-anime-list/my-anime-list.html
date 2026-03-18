@@ -140,7 +140,7 @@
         </div>
 
         <!-- Tabs -->
-        <p-tabs (valueChange)="activeTab = $any($event)" [value]="activeTab">
+        <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
             <p-tablist>
                 <p-tab value="all">
                     {{ t('anime.myList.allTab') }}

@@ -13,6 +13,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { USER_ROUTES } from "../../../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../../../core/config/api.config";
+import { TabPersistenceService } from "../../../../core/services/tab-persistence.service";
 import { AnimeListEntry, AnimeListStatus } from "../../../../core/models/anime/anime";
 import { UserProfile } from "../../../../core/models/user/user";
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
@@ -79,15 +80,20 @@ export class MyAnimeList implements OnInit {
     );
     protected readonly viewedProfile = signal<UserProfile | null>(null);
 
-    protected activeTab: string = "all";
-
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly authFacade = inject(AuthFacade);
     private readonly http = inject(HttpClient);
     private readonly route = inject(ActivatedRoute);
+    private readonly tabService = inject(TabPersistenceService);
+    readonly activeTab = signal(this.tabService.get("all"));
     private readonly router = inject(Router);
     private readonly translocoService = inject(TranslocoService);
     private readonly userId = signal<string | null>(null);
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         const uid = this.route.snapshot.paramMap.get("userId");

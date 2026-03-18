@@ -57,11 +57,12 @@
     </div>
     }
 
-    <p-tabs value="overview">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
             <p-tab value="overview"><i class="pi pi-chart-bar mr-2"></i>{{ t('lotto.tabs.overview') }}</p-tab>
             <p-tab value="buy"><i class="pi pi-ticket mr-2"></i>{{ t('lotto.tabs.buy') }}</p-tab>
             <p-tab value="mytickets"><i class="pi pi-list mr-2"></i>{{ t('lotto.tabs.myTickets') }}</p-tab>
+            <p-tab value="history"><i class="pi pi-history mr-2"></i>{{ t('lotto.tabs.history') }}</p-tab>
             <p-tab value="stats"><i class="pi pi-chart-pie mr-2"></i>{{ t('lotto.tabs.stats') }}</p-tab>
         </p-tablist>
 
@@ -239,67 +240,80 @@
                                 >{{ formatDate(nextDraw()!.drawDate) }}</span
                             >
                         </p>
+                        <p class="text-surface-400 text-xs">{{ t('lotto.filledFields', { count: filledFieldCount() }) }}</p>
                     </div>
-                    <div class="flex gap-2">
-                        <p-button
-                            (click)="quickPick()"
-                            [label]="t('lotto.quickPick')"
-                            icon="pi pi-bolt"
-                            severity="secondary"
-                            size="small"
-                        />
-                        <p-button
-                            (click)="clearSelection()"
-                            [label]="t('common.reset')"
-                            icon="pi pi-refresh"
-                            severity="secondary"
-                            size="small"
-                        />
+                    <div class="flex flex-wrap gap-2">
+                        <p-button (click)="quickPick()" [label]="t('lotto.quickPick')" icon="pi pi-bolt" severity="secondary" size="small" />
+                        <p-button (click)="quickPickAll()" [label]="t('lotto.quickPickAll')" icon="pi pi-bolt" severity="secondary" size="small" [outlined]="true" />
+                        <p-button (click)="clearSelection()" [label]="t('common.reset')" icon="pi pi-refresh" severity="secondary" size="small" />
                     </div>
                 </div>
 
-                <!-- Selected numbers display -->
-                <div class="bg-surface-50 dark:bg-surface-800 flex flex-wrap items-center gap-3 rounded-xl p-4">
-                    <span class="text-surface-500 min-w-[5rem] text-sm">{{ t('lotto.yourNumbers') }}:</span>
-                    @for (n of numbers1to49.slice(0, 6); track $index) { @if ($index < selectedNumbers().length) {
-                    <div
-                        class="bg-primary flex h-10 w-10 items-center justify-center rounded-full font-bold text-white shadow"
+                <!-- ═══ Field selector tabs (1–12) ═══ -->
+                <div class="grid grid-cols-4 gap-1.5 sm:grid-cols-6 md:grid-cols-12">
+                    @for (i of fieldIndices; track i) {
+                    <button
+                        class="relative flex flex-col items-center rounded-lg border-2 px-1 py-1.5 text-center transition-all"
+                        (click)="activeField.set(i)"
+                        [class.border-primary]="activeField() === i"
+                        [class.bg-primary/5]="activeField() === i"
+                        [class.border-surface-200]="activeField() !== i"
+                        [class.dark:border-surface-600]="activeField() !== i"
+                        type="button"
                     >
-                        {{ selectedNumbers()[$index] }}
-                    </div>
-                    } @else {
-                    <div
-                        class="border-surface-300 dark:border-surface-600 text-surface-400 flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed"
-                    >
-                        ?
-                    </div>
-                    } }
-                    <div class="border-surface-300 dark:border-surface-600 mx-2 h-8 border-l"></div>
-                    <span class="text-surface-500 text-xs">SZ:</span>
-                    @if (selectedSuperNumber() !== null) {
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 font-bold text-white shadow"
-                    >
-                        {{ selectedSuperNumber() }}
-                    </div>
-                    } @else {
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-yellow-300 text-yellow-400"
-                    >
-                        ?
-                    </div>
+                        <span class="text-[10px] font-medium" [class.text-primary]="activeField() === i">
+                            {{ t('lotto.field') }} {{ i + 1 }}
+                        </span>
+                        @if (fields()[i].length === 6) {
+                        <div class="mt-0.5 flex gap-0.5">
+                            @for (n of fields()[i]; track n) {
+                            <span class="bg-primary inline-block h-1 w-1 rounded-full"></span>
+                            }
+                        </div>
+                        } @else if (fields()[i].length > 0) {
+                        <div class="mt-0.5 flex gap-0.5">
+                            @for (n of fields()[i]; track n) {
+                            <span class="bg-surface-300 inline-block h-1 w-1 rounded-full"></span>
+                            }
+                        </div>
+                        } @else {
+                        <span class="text-surface-400 mt-0.5 text-[8px]">—</span>
+                        }
+                    </button>
                     }
                 </div>
 
-                <!-- Number grid 1–49 -->
-                <div>
-                    <p class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-medium">
-                        {{ t('lotto.pick6') }}
-                    </p>
-                    <div class="grid gap-1.5" style="grid-template-columns: repeat(7, minmax(0, 1fr))">
+                <!-- ═══ Active field number picker ═══ -->
+                <div class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 mx-auto w-full max-w-lg rounded-xl border p-4">
+                    <!-- Active field header -->
+                    <div class="mb-3 flex items-center justify-between">
+                        <span class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                            {{ t('lotto.field') }} {{ activeField() + 1 }} — {{ t('lotto.pick6') }}
+                        </span>
+                        <div class="flex gap-1">
+                            <p-button (click)="quickPick()" icon="pi pi-bolt" [rounded]="true" [text]="true" severity="secondary" size="small" [pTooltip]="t('lotto.quickPick')" />
+                            <p-button (click)="clearField()" icon="pi pi-eraser" [rounded]="true" [text]="true" severity="secondary" size="small" [pTooltip]="t('lotto.clearField')" />
+                        </div>
+                    </div>
+
+                    <!-- Selected numbers preview for this field -->
+                    <div class="mb-3 flex items-center justify-center gap-1.5">
+                        @for (slot of [0,1,2,3,4,5]; track slot) {
+                            @if (slot < selectedNumbers().length) {
+                            <div class="bg-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white shadow">
+                                {{ selectedNumbers()[slot] }}
+                            </div>
+                            } @else {
+                            <div class="border-surface-300 dark:border-surface-600 text-surface-400 flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed text-xs">?</div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Number grid 1–49 -->
+                    <div class="mx-auto grid max-w-sm gap-1" style="grid-template-columns: repeat(7, minmax(0, 1fr))">
                         @for (n of numbers1to49; track n) {
                         <button
-                            class="flex aspect-square items-center justify-center rounded-full border-2 text-sm font-semibold transition-all"
+                            class="flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-bold transition-all sm:h-9 sm:w-9 sm:text-xs"
                             (click)="toggleNumber(n)"
                             [class.bg-primary]="selectedNumbers().includes(n)"
                             [class.bg-surface-0]="!selectedNumbers().includes(n)"
@@ -314,26 +328,29 @@
                             [class.text-blue-400]="!selectedNumbers().includes(n) && isNumberCold(n)"
                             [class.text-orange-600]="!selectedNumbers().includes(n) && isNumberHot(n)"
                             [class.text-white]="selectedNumbers().includes(n)"
+                            [class.shadow-md]="selectedNumbers().includes(n)"
+                            [class.scale-110]="selectedNumbers().includes(n)"
+                            type="button"
                         >
                             {{ n }}
                         </button>
                         }
                     </div>
-                    <p class="text-surface-400 mt-2 text-xs">
-                        <span class="text-orange-500">■</span> {{ t('lotto.hotNumber') }} &nbsp;
-                        <span class="text-blue-400">■</span> {{ t('lotto.coldNumber') }}
+                    <p class="text-surface-400 mt-2 text-center text-[10px]">
+                        <span class="text-orange-500">●</span> {{ t('lotto.hotNumber') }} &nbsp;
+                        <span class="text-blue-400">●</span> {{ t('lotto.coldNumber') }}
                     </p>
                 </div>
 
-                <!-- Super number 0–9 -->
+                <!-- Super number 0–9 (shared across all fields) -->
                 <div>
-                    <p class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-medium">
+                    <p class="text-surface-700 dark:text-surface-300 mb-3 text-center text-sm font-medium">
                         {{ t('lotto.pickSuperNumber') }}
                     </p>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="mx-auto flex max-w-sm flex-wrap justify-center gap-2">
                         @for (n of superNumbers; track n) {
                         <button
-                            class="flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all"
+                            class="flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold transition-all"
                             (click)="selectSuperNumber(n)"
                             [class.bg-surface-0]="selectedSuperNumber() !== n"
                             [class.bg-yellow-500]="selectedSuperNumber() === n"
@@ -342,6 +359,9 @@
                             [class.dark:bg-surface-800]="selectedSuperNumber() !== n"
                             [class.dark:border-surface-600]="selectedSuperNumber() !== n"
                             [class.text-white]="selectedSuperNumber() === n"
+                            [class.shadow-md]="selectedSuperNumber() === n"
+                            [class.scale-110]="selectedSuperNumber() === n"
+                            type="button"
                         >
                             {{ n }}
                         </button>
@@ -350,62 +370,33 @@
                 </div>
 
                 <!-- Repeat weeks -->
-                <div>
+                <div class="mx-auto max-w-sm">
                     <div class="mb-2 flex items-center justify-between">
-                        <p class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                            {{ t('lotto.repeatWeeks') }}
-                        </p>
+                        <p class="text-surface-700 dark:text-surface-300 text-sm font-medium">{{ t('lotto.repeatWeeks') }}</p>
                         <span class="text-primary font-bold">{{ repeatWeeks() }}x</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button
-                            class="border-surface-200 dark:border-surface-600 hover:border-primary hover:text-primary flex h-8 w-8 items-center justify-center rounded-full border-2 font-bold transition-colors"
-                            (click)="repeatWeeks.set(repeatWeeks() > 1 ? repeatWeeks() - 1 : 1)"
-                        >
-                            -
-                        </button>
+                        <button class="border-surface-200 dark:border-surface-600 hover:border-primary hover:text-primary flex h-8 w-8 items-center justify-center rounded-full border-2 font-bold transition-colors" (click)="repeatWeeks.set(repeatWeeks() > 1 ? repeatWeeks() - 1 : 1)" type="button">-</button>
                         <div class="flex flex-1 gap-1">
                             @for (w of [1,2,3,4,5,6,7,8]; track w) {
-                            <button
-                                class="h-2 flex-1 rounded-full transition-colors"
-                                (click)="repeatWeeks.set(w)"
-                                [attr.aria-label]="w + ' week' + (w > 1 ? 's' : '')"
-                                [class.bg-primary]="w <= repeatWeeks()"
-                                [class.bg-surface-200]="w > repeatWeeks()"
-                                [class.dark:bg-surface-600]="w > repeatWeeks()"
-                                type="button"
-                            ></button>
+                            <button class="h-2 flex-1 rounded-full transition-colors" (click)="repeatWeeks.set(w)" [class.bg-primary]="w <= repeatWeeks()" [class.bg-surface-200]="w > repeatWeeks()" [class.dark:bg-surface-600]="w > repeatWeeks()" type="button"></button>
                             }
                         </div>
-                        <button
-                            class="border-surface-200 dark:border-surface-600 hover:border-primary hover:text-primary flex h-8 w-8 items-center justify-center rounded-full border-2 font-bold transition-colors"
-                            (click)="repeatWeeks.set(repeatWeeks() < 8 ? repeatWeeks() + 1 : 8)"
-                        >
-                            +
-                        </button>
+                        <button class="border-surface-200 dark:border-surface-600 hover:border-primary hover:text-primary flex h-8 w-8 items-center justify-center rounded-full border-2 font-bold transition-colors" (click)="repeatWeeks.set(repeatWeeks() < 8 ? repeatWeeks() + 1 : 8)" type="button">+</button>
                     </div>
                     <p class="text-surface-400 mt-1 text-xs">{{ t('lotto.repeatWeeksHint') }}</p>
                 </div>
 
                 <!-- Cost & Buy button -->
-                <div
-                    class="bg-surface-50 dark:bg-surface-800 flex flex-wrap items-center justify-between gap-3 rounded-xl p-4"
-                >
+                <div class="bg-surface-50 dark:bg-surface-800 mx-auto flex max-w-sm flex-wrap items-center justify-between gap-3 rounded-xl p-4">
                     <div>
-                        <p class="text-surface-500 text-xs">{{ t('lotto.totalCost') }}</p>
+                        <p class="text-surface-500 text-xs">{{ t('lotto.totalCost') }} ({{ filledFieldCount() }} {{ t('lotto.field') }}{{ filledFieldCount() > 1 ? 'er' : '' }})</p>
                         <p class="text-primary text-2xl font-black">{{ formatCredits(ticketCost()) }}</p>
                         @if ((wallet()?.balance ?? 0) < ticketCost()) {
                         <p class="mt-0.5 text-xs text-red-500">{{ t('lotto.insufficientBalance') }}</p>
                         }
                     </div>
-                    <p-button
-                        (click)="purchaseTicket()"
-                        [disabled]="!canBuy()"
-                        [label]="t('lotto.buyTicket')"
-                        [loading]="purchasing()"
-                        icon="pi pi-ticket"
-                        size="large"
-                    />
+                    <p-button (click)="purchaseTicket()" [disabled]="!canBuy()" [label]="t('lotto.buyTicket')" [loading]="purchasing()" icon="pi pi-ticket" size="large" />
                 </div>
                 }
             </div>
@@ -427,73 +418,239 @@
                 <div
                     class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
                 >
-                    <!-- Card header -->
+                    <!-- Clickable header (always visible) -->
                     <div
-                        [class]="'border-surface-100 dark:border-surface-800 flex items-center justify-between border-b px-4 py-3' + (item.result && item.result.prizeAmount > 0 ? ' bg-green-50 dark:bg-green-900/20' : '')"
+                        class="flex cursor-pointer items-center justify-between px-4 py-2.5 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
+                        [class.bg-green-50]="!!(item.result && item.result.prizeAmount > 0)"
+                        [class.dark:bg-green-900/20]="!!(item.result && item.result.prizeAmount > 0)"
+                        (click)="toggleTicket(item.ticket.id)"
                     >
                         <div class="flex items-center gap-2 text-sm">
-                            <i class="pi pi-calendar text-surface-400"></i>
-                            <span class="text-surface-600 dark:text-surface-300"
-                                >{{ formatDate(item.draw.drawDate) }}</span
-                            >
+                            <i
+                                class="pi text-surface-400 text-[10px] transition-transform"
+                                [class.pi-chevron-right]="!isTicketExpanded(item.ticket.id)"
+                                [class.pi-chevron-down]="isTicketExpanded(item.ticket.id)"
+                            ></i>
+                            <span class="text-surface-600 dark:text-surface-300">{{ formatDate(item.draw.drawDate) }}</span>
+                            @if (item.ticket.fields.length > 1) {
+                            <p-tag [value]="item.ticket.fields.length + ' Felder'" severity="secondary" styleClass="text-xs" />
+                            }
                             @if (item.ticket.repeatWeeks && item.ticket.repeatWeeks > 1) {
                             <p-tag [value]="item.ticket.repeatWeeks + 'x'" severity="info" styleClass="text-xs" />
                             }
+                            <!-- Compact inline preview when collapsed -->
+                            @if (!isTicketExpanded(item.ticket.id)) {
+                            <div class="hidden items-center gap-0.5 sm:flex">
+                                <span class="text-surface-300 mx-1">·</span>
+                                @for (n of item.ticket.fields[0]; track n) {
+                                <span class="bg-primary/10 text-primary rounded px-1 text-[10px] font-bold">{{ n }}</span>
+                                }
+                                <span class="bg-yellow-100 dark:bg-yellow-900/30 ml-0.5 rounded px-1 text-[10px] font-bold text-yellow-600 dark:text-yellow-400">{{ item.ticket.superNumber }}</span>
+                                @if (item.ticket.fields.length > 1) {
+                                <span class="text-surface-400 text-[10px]">+{{ item.ticket.fields.length - 1 }}</span>
+                                }
+                            </div>
+                            }
                         </div>
-                        @if (item.draw.status === 'pending') {
-                        <p-tag [value]="t('lotto.pending')" severity="warn" styleClass="text-xs" />
-                        } @else if (item.result) { @if (item.result.prizeAmount > 0) {
-                        <p-tag
-                            [value]="'🏆 ' + formatCredits(item.result.prizeAmount)"
-                            severity="success"
-                            styleClass="text-xs"
-                        />
-                        } @else {
-                        <p-tag [value]="t('lotto.noWin')" severity="secondary" styleClass="text-xs" />
-                        } }
+                        <div class="flex items-center gap-2">
+                            @if (item.result && item.result.matchedCount > 0 && !isTicketExpanded(item.ticket.id)) {
+                            <span class="text-surface-400 hidden text-[10px] sm:inline">
+                                {{ item.result.matchedCount }} {{ t('lotto.matches') }}
+                            </span>
+                            }
+                            @if (item.draw.status === 'pending') {
+                            <p-tag [value]="t('lotto.pending')" severity="warn" styleClass="text-xs" />
+                            } @else if (item.result) { @if (item.result.prizeAmount > 0) {
+                            <p-tag [value]="'🏆 ' + formatCredits(item.result.prizeAmount)" severity="success" styleClass="text-xs" />
+                            } @else {
+                            <p-tag [value]="t('lotto.noWin')" severity="secondary" styleClass="text-xs" />
+                            } }
+                        </div>
                     </div>
-                    <!-- Numbers -->
-                    <div class="flex flex-wrap items-center gap-2 px-4 py-3">
-                        @for (n of item.ticket.numbers; track n) {
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold shadow-sm"
-                            [class.bg-green-500]="item.draw.status === 'drawn' && item.result?.matchedNumbers?.includes(n)"
-                            [class.bg-primary]="item.draw.status === 'pending'"
-                            [class.bg-surface-300]="item.draw.status === 'drawn' && !item.result?.matchedNumbers?.includes(n)"
-                            [class.dark:bg-surface-600]="item.draw.status === 'drawn' && !item.result?.matchedNumbers?.includes(n)"
-                            [class.ring-4]="item.result?.matchedNumbers?.includes(n)"
-                            [class.ring-green-400]="item.result?.matchedNumbers?.includes(n)"
-                            [class.text-white]="true"
-                        >
-                            {{ n }}
-                        </div>
-                        }
-                        <div class="bg-surface-200 dark:bg-surface-700 mx-1 h-8 w-px"></div>
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold shadow-sm"
-                            [class.bg-yellow-500]="true"
-                            [class.ring-4]="item.result?.superNumberMatched"
-                            [class.ring-yellow-300]="item.result?.superNumberMatched"
-                            [class.text-white]="true"
-                        >
-                            {{ item.ticket.superNumber }}
-                        </div>
-                        <span class="text-surface-400 ml-1 text-xs">SZ</span>
 
+                    <!-- Expandable fields detail -->
+                    @if (isTicketExpanded(item.ticket.id)) {
+                    <div class="border-surface-100 dark:border-surface-800 border-t">
+                        <div class="flex flex-col gap-2 px-4 py-3">
+                            @for (field of item.ticket.fields; track $index) { @let fr = item.result?.fieldResults?.[$index];
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="text-surface-400 w-8 text-[10px]">F{{ $index + 1 }}</span>
+                                @for (n of field; track n) {
+                                <div
+                                    class="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold shadow-sm"
+                                    [class.bg-green-500]="item.draw.status === 'drawn' && fr?.matchedNumbers?.includes(n)"
+                                    [class.bg-primary]="item.draw.status === 'pending'"
+                                    [class.bg-surface-300]="item.draw.status === 'drawn' && !fr?.matchedNumbers?.includes(n)"
+                                    [class.dark:bg-surface-600]="item.draw.status === 'drawn' && !fr?.matchedNumbers?.includes(n)"
+                                    [class.text-white]="true"
+                                >
+                                    {{ n }}
+                                </div>
+                                }
+                                @if (fr && fr.prizeAmount > 0) {
+                                <span class="ml-1 text-[10px] font-semibold text-green-600 dark:text-green-400">{{ formatCredits(fr.prizeAmount) }}</span>
+                                }
+                            </div>
+                            }
+                            <div class="flex items-center gap-1.5 pt-1">
+                                <span class="text-surface-400 w-8 text-[10px]">SZ</span>
+                                <div
+                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-yellow-500 text-[11px] font-bold text-white shadow-sm"
+                                    [class.ring-2]="item.result?.superNumberMatched"
+                                    [class.ring-yellow-300]="item.result?.superNumberMatched"
+                                >
+                                    {{ item.ticket.superNumber }}
+                                </div>
+                            </div>
+                        </div>
                         @if (item.result && item.result.matchedCount > 0) {
-                        <span class="text-surface-500 ml-auto text-xs"
-                            >{{ item.result.matchedCount }} {{ t('lotto.matches') }}@if (item.result.superNumberMatched)
-                            { + SZ}</span
-                        >
+                        <div class="border-surface-100 dark:border-surface-800 border-t px-4 py-2">
+                            <span class="text-surface-500 text-xs">
+                                {{ item.result.matchedCount }} {{ t('lotto.matches') }}@if (item.result.superNumberMatched) { + SZ}
+                            </span>
+                        </div>
                         }
                     </div>
+                    }
                 </div>
                 } }
             </div>
         </p-tabpanel>
 
         <!-- ────────────────────────────────────────────────────────────────── -->
-        <!-- Tab 4: Statistics                                                 -->
+        <!-- Tab 4: Draw History                                               -->
+        <!-- ────────────────────────────────────────────────────────────────── -->
+        <p-tabpanel value="history">
+            <div class="flex flex-col gap-4">
+                <div>
+                    <h2 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                        {{ t('lotto.history.title') }}
+                    </h2>
+                    <p class="text-surface-500 mt-1 text-sm">{{ t('lotto.history.subtitle') }}</p>
+                </div>
+
+                @if (drawHistory().length === 0) {
+                <div class="text-surface-400 py-12 text-center">
+                    <i class="pi pi-history mb-2 text-4xl"></i>
+                    <p>{{ t('lotto.history.noDraws') }}</p>
+                </div>
+                } @else { @for (entry of drawHistory(); track entry.id) {
+                <div
+                    class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 overflow-hidden rounded-xl border"
+                >
+                    <!-- Draw header (always visible) -->
+                    <div
+                        class="flex cursor-pointer flex-wrap items-center gap-3 px-5 py-4 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
+                        (click)="toggleDrawExpand(entry.id)"
+                    >
+                        <!-- Type badge -->
+                        <p-tag
+                            [value]="entry.type === 'special' ? (entry.name ?? t('lotto.history.special')) : t('lotto.history.regular')"
+                            [severity]="entry.type === 'special' ? 'warn' : 'info'"
+                            styleClass="text-xs"
+                        />
+
+                        <!-- Date -->
+                        <span class="text-surface-500 text-sm">{{ formatDate(entry.drawDate) }}</span>
+
+                        <!-- Winning numbers -->
+                        <div class="flex flex-wrap gap-1.5">
+                            @for (n of entry.winningNumbers; track n) {
+                            <div
+                                class="bg-primary flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white"
+                            >
+                                {{ n }}
+                            </div>
+                            }
+                            <div
+                                class="flex h-7 w-7 items-center justify-center rounded-full bg-yellow-500 text-xs font-bold text-white"
+                            >
+                                {{ entry.superNumber }}
+                            </div>
+                        </div>
+
+                        <!-- Summary stats -->
+                        <div class="ml-auto flex items-center gap-4 text-xs">
+                            <span class="text-surface-500">
+                                <i class="pi pi-ticket mr-1"></i>{{ entry.totalTickets }}
+                            </span>
+                            <span class="text-surface-500">
+                                <i class="pi pi-trophy mr-1"></i>{{ entry.totalWinners }}
+                            </span>
+                            <span class="text-primary font-semibold">
+                                {{ formatCredits(entry.totalPrizesPaid) }}
+                            </span>
+                            <i
+                                class="pi text-surface-400 text-sm transition-transform"
+                                [class.pi-chevron-down]="expandedDrawId() !== entry.id"
+                                [class.pi-chevron-up]="expandedDrawId() === entry.id"
+                            ></i>
+                        </div>
+                    </div>
+
+                    <!-- Expanded detail -->
+                    @if (expandedDrawId() === entry.id) {
+                    <div class="border-surface-200 dark:border-surface-700 border-t px-5 py-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <!-- Jackpot -->
+                            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
+                                <div class="text-surface-400 text-xs uppercase">Jackpot</div>
+                                <div class="text-primary text-lg font-bold">{{ formatCredits(entry.jackpot) }}</div>
+                            </div>
+                            <!-- Tickets -->
+                            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
+                                <div class="text-surface-400 text-xs uppercase">{{ t('lotto.history.tickets') }}</div>
+                                <div class="text-surface-900 dark:text-surface-0 text-lg font-bold">
+                                    {{ entry.totalTickets }}
+                                </div>
+                            </div>
+                            <!-- Prizes paid -->
+                            <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-3 text-center">
+                                <div class="text-surface-400 text-xs uppercase">{{ t('lotto.history.prizesPaid') }}</div>
+                                <div class="text-lg font-bold text-green-600 dark:text-green-400">
+                                    {{ formatCredits(entry.totalPrizesPaid) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Winners by class -->
+                        @if (entry.winnersByClass.length > 0) {
+                        <div class="mt-4">
+                            <h4 class="text-surface-500 mb-2 text-xs font-semibold uppercase">
+                                {{ t('lotto.history.winnersByClass') }}
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                @for (wc of entry.winnersByClass; track wc.prizeClass) {
+                                <div
+                                    class="border-surface-200 dark:border-surface-700 flex items-center gap-2 rounded-lg border px-3 py-2"
+                                >
+                                    <p-tag
+                                        [value]="t(prizeClassInfo[wc.prizeClass].label)"
+                                        [severity]="prizeClassSeverity(wc.prizeClass)"
+                                        styleClass="text-xs"
+                                    />
+                                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
+                                        >{{ wc.count }}x</span
+                                    >
+                                    <span class="text-surface-400 text-xs">{{ formatCredits(wc.amount) }}</span>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        } @else {
+                        <p class="text-surface-400 mt-4 text-center text-sm">
+                            {{ t('lotto.history.noDraws') }}
+                        </p>
+                        }
+                    </div>
+                    }
+                </div>
+                } }
+            </div>
+        </p-tabpanel>
+
+        <!-- ────────────────────────────────────────────────────────────────── -->
+        <!-- Tab 5: Statistics                                                 -->
         <!-- ────────────────────────────────────────────────────────────────── -->
         <p-tabpanel value="stats">
             <div class="flex flex-col gap-6 pt-4">
@@ -501,7 +658,7 @@
                 <p-skeleton height="8rem" styleClass="rounded-xl" />
                 } @else if (stats()) {
 
-                <!-- Number frequency heatmap -->
+                <!-- Number frequency heatmap with counts -->
                 <div
                     class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-5"
                 >
@@ -509,27 +666,27 @@
                         <i class="pi pi-chart-bar text-primary"></i>
                         {{ t('lotto.stats.numberFrequency') }}
                     </h3>
-                    <div class="mb-3 grid gap-1.5" style="grid-template-columns: repeat(7, minmax(0, 1fr))">
+                    <div class="mx-auto mb-3 grid max-w-lg gap-1.5" style="grid-template-columns: repeat(7, minmax(0, 1fr))">
                         @for (n of numbers1to49; track n) {
                         <div
-                            class="flex aspect-square items-center justify-center rounded-lg text-xs font-semibold transition-all"
-                            [class.bg-blue-200]="isNumberCold(n)"
+                            class="flex flex-col items-center justify-center rounded-lg py-1.5 transition-all"
                             [class.bg-orange-500]="isNumberHot(n)"
+                            [class.bg-blue-200]="isNumberCold(n)"
                             [class.bg-surface-100]="!isNumberHot(n) && !isNumberCold(n)"
                             [class.dark:bg-blue-900]="isNumberCold(n)"
                             [class.dark:bg-surface-700]="!isNumberHot(n) && !isNumberCold(n)"
-                            [class.dark:text-blue-300]="isNumberCold(n)"
-                            [class.dark:text-surface-300]="!isNumberHot(n) && !isNumberCold(n)"
-                            [class.text-blue-700]="isNumberCold(n)"
-                            [class.text-surface-600]="!isNumberHot(n) && !isNumberCold(n)"
                             [class.text-white]="isNumberHot(n)"
-                            [pTooltip]="isNumberHot(n) ? t('lotto.hotNumber') : isNumberCold(n) ? t('lotto.coldNumber') : ''"
+                            [class.text-blue-700]="isNumberCold(n)"
+                            [class.dark:text-blue-300]="isNumberCold(n)"
+                            [class.text-surface-600]="!isNumberHot(n) && !isNumberCold(n)"
+                            [class.dark:text-surface-300]="!isNumberHot(n) && !isNumberCold(n)"
                         >
-                            {{ n }}
+                            <span class="text-xs font-bold">{{ n }}</span>
+                            <span class="text-[9px] opacity-70">{{ getFrequency(n) }}x</span>
                         </div>
                         }
                     </div>
-                    <div class="text-surface-500 flex gap-4 text-xs">
+                    <div class="text-surface-500 flex justify-center gap-4 text-xs">
                         <div class="flex items-center gap-1">
                             <div class="h-3 w-3 rounded bg-orange-500"></div>
                             {{ t('lotto.hotNumber') }} (Top 10)
@@ -541,36 +698,60 @@
                     </div>
                 </div>
 
-                <!-- Hot numbers list -->
+                <!-- Frequency ranking -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <!-- Hot numbers with frequency -->
                     <div
                         class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
                     >
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-orange-600">
                             <i class="pi pi-fire"></i> {{ t('lotto.stats.hotNumbers') }}
                         </h4>
-                        <div class="flex flex-wrap gap-2">
-                            @for (n of stats()!.hotNumbers; track n) {
-                            <div
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white shadow"
-                            >
-                                {{ n }}
+                        <div class="flex flex-col gap-1.5">
+                            @for (entry of sortedFrequency().slice(0, 10); track entry.number) {
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white"
+                                >
+                                    {{ entry.number }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-surface-100 dark:bg-surface-700 h-1.5 overflow-hidden rounded-full">
+                                        <div
+                                            class="h-full rounded-full bg-orange-400"
+                                            [style.width.%]="stats()!.totalDraws > 0 ? (entry.count / stats()!.totalDraws) * 100 : 0"
+                                        ></div>
+                                    </div>
+                                </div>
+                                <span class="text-surface-500 w-8 text-right text-xs font-semibold">{{ entry.count }}x</span>
                             </div>
                             }
                         </div>
                     </div>
+                    <!-- Cold numbers with frequency -->
                     <div
                         class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 rounded-xl border p-4"
                     >
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-500">
                             <i class="pi pi-snowflake"></i> {{ t('lotto.stats.coldNumbers') }}
                         </h4>
-                        <div class="flex flex-wrap gap-2">
-                            @for (n of stats()!.coldNumbers; track n) {
-                            <div
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-400 text-sm font-bold text-white shadow"
-                            >
-                                {{ n }}
+                        <div class="flex flex-col gap-1.5">
+                            @for (entry of sortedFrequency().slice(-10).reverse(); track entry.number) {
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-400 text-xs font-bold text-white"
+                                >
+                                    {{ entry.number }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-surface-100 dark:bg-surface-700 h-1.5 overflow-hidden rounded-full">
+                                        <div
+                                            class="h-full rounded-full bg-blue-300 dark:bg-blue-600"
+                                            [style.width.%]="stats()!.totalDraws > 0 ? (entry.count / stats()!.totalDraws) * 100 : 0"
+                                        ></div>
+                                    </div>
+                                </div>
+                                <span class="text-surface-500 w-8 text-right text-xs font-semibold">{{ entry.count }}x</span>
                             </div>
                             }
                         </div>

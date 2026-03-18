@@ -146,6 +146,20 @@ export class DynamicMarketPage implements OnInit, OnDestroy {
         return lang === "de" ? entry.de : entry.en;
     }
 
+    getResourceTooltip(resource: MarketResource): string {
+        const lines: string[] = [];
+        if (resource.description) lines.push(resource.description);
+        if (resource.craftedFrom) {
+            const source = this.marketFacade.allResources().find((r) => r.slug === resource.craftedFrom);
+            if (source) lines.push(`${resource.craftCost}x ${source.name} → 1x ${resource.name}`);
+        }
+        const tierLabel = ["Rohstoff", "Verarbeitet", "Veredelt", "Meisterwerk"][resource.tier] ?? "";
+        if (tierLabel) lines.push(`Stufe: ${tierLabel}`);
+        lines.push(`Preisspanne: ${resource.minPrice} – ${resource.maxPrice}`);
+        if (resource.volatility > 1) lines.push(`Volatilität: ${resource.volatility}x`);
+        return lines.join("\n");
+    }
+
     getPricePercent(resource: MarketResource): number {
         const range = resource.maxPrice - resource.minPrice;
         if (range <= 0) return 50;

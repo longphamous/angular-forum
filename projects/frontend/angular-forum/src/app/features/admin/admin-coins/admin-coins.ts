@@ -20,6 +20,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { WALLET_ROUTES } from "../../../core/api/wallet.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     AdminWalletEntry,
     CoinEarnConfig,
@@ -62,6 +63,9 @@ export class AdminCoins implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly messageService = inject(MessageService);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("0"));
 
     protected readonly loadingConfig = signal(true);
     protected readonly savingConfig = signal(false);
@@ -94,6 +98,11 @@ export class AdminCoins implements OnInit {
 
     private get base(): string {
         return this.apiConfig.baseUrl;
+    }
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
     }
 
     ngOnInit(): void {

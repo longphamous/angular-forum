@@ -39,7 +39,7 @@
     </div>
 
     <!-- Tabs: Bots | Protokoll -->
-    <p-tabs value="0">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
             <p-tab value="0"><i class="pi pi-robot mr-2"></i>Bots ({{ facade.bots().length }})</p-tab>
             <p-tab value="1"><i class="pi pi-list mr-2"></i>Protokoll</p-tab>

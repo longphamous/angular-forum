@@ -15,6 +15,7 @@ import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { TooltipModule } from "primeng/tooltip";
 
 import { CreateCategoryPayload, LinkCategory, LinkEntry } from "../../../core/models/link-database/link-database";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { LinkDatabaseFacade } from "../../../facade/link-database/link-database-facade";
 
 @Component({
@@ -43,6 +44,9 @@ export class AdminLinkDatabase implements OnInit {
     readonly facade = inject(LinkDatabaseFacade);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly messageService = inject(MessageService);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("0"));
 
     readonly categoryDialogVisible = signal(false);
     readonly rejectDialogVisible = signal(false);
@@ -67,6 +71,11 @@ export class AdminLinkDatabase implements OnInit {
         { label: "Bewertung", value: "rating" },
         { label: "Alphabetisch", value: "title" }
     ];
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.facade.loadCategories();

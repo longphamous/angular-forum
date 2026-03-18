@@ -1,12 +1,21 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException, OnModuleInit } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
 import { NotificationsService } from "../../notifications/notifications.service";
 import { CreditService } from "../credit.service";
+import { LottoConfigEntity } from "./entities/lotto-config.entity";
+import { LottoDrawEntity } from "./entities/lotto-draw.entity";
+import { LottoSpecialDrawEntity } from "./entities/lotto-special-draw.entity";
+import { LottoStatsEntity } from "./entities/lotto-stats.entity";
+import { LottoTicketEntity } from "./entities/lotto-ticket.entity";
 import {
     CreateSpecialDrawDto,
+    DrawHistoryEntry,
     DrawResult,
     DrawScheduleConfig,
     LottoDraw,
+    LottoFieldResult,
     LottoPrizeClass,
     LottoResult,
     LottoStats,
@@ -18,20 +27,9 @@ import {
 
 /**
  * Prize amounts per class (in virtual credits).
- * Based loosely on the German "6 aus 49" prize structure.
- *
- * Class 1  – 6 numbers + super number matched  → jackpot (rolls over if no winner)
- * Class 2  – 6 numbers matched                 → 2nd prize
- * Class 3  – 5 numbers + super number matched  → 3rd prize
- * Class 4  – 5 numbers matched
- * Class 5  – 4 numbers + super number matched
- * Class 6  – 4 numbers matched
- * Class 7  – 3 numbers + super number matched
- * Class 8  – 3 numbers matched
- * Class 9  – 2 numbers + super number matched
  */
 const PRIZE_TABLE: Record<LottoPrizeClass, number> = {
-    class1: 10_000_000, // overridden by draw.jackpot at payout time
+    class1: 10_000_000,
     class2: 500_000,
     class3: 100_000,
     class4: 5_000,
@@ -43,7 +41,6 @@ const PRIZE_TABLE: Record<LottoPrizeClass, number> = {
     no_win: 0
 };
 
-/** Default schedule: every Saturday at 19:00 UTC */
 const DEFAULT_CONFIG: DrawScheduleConfig = {
     drawDays: [6],
     drawHourUtc: 19,
@@ -53,410 +50,518 @@ const DEFAULT_CONFIG: DrawScheduleConfig = {
     ticketCost: 2
 };
 
-const draws: LottoDraw[] = [
-    {
-        id: "draw-2026-w01",
-        drawDate: "2026-01-03T19:00:00.000Z",
-        winningNumbers: [3, 12, 19, 27, 35, 42],
-        superNumber: 7,
-        jackpot: 8_500_000,
-        status: "drawn",
-        totalTickets: 3
-    }
-];
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const tickets: LottoTicket[] = [
-    {
-        id: "ticket-001",
-        userId: "u1",
-        numbers: [3, 12, 19, 27, 35, 42],
-        superNumber: 7,
-        drawId: "draw-2026-w01",
-        purchasedAt: "2026-01-02T10:00:00.000Z",
-        cost: 2
-    },
-    {
-        id: "ticket-002",
-        userId: "u2",
-        numbers: [5, 12, 19, 27, 35, 42],
-        superNumber: 3,
-        drawId: "draw-2026-w01",
-        purchasedAt: "2026-01-02T11:00:00.000Z",
-        cost: 2
-    },
-    {
-        id: "ticket-003",
-        userId: "u3",
-        numbers: [1, 7, 13, 25, 38, 49],
-        superNumber: 5,
-        drawId: "draw-2026-w01",
-        purchasedAt: "2026-01-02T12:00:00.000Z",
-        cost: 2
-    }
-];
+function drawEntityToModel(e: LottoDrawEntity, totalTickets?: number): LottoDraw {
+    return {
+        id: e.id,
+        drawDate: e.drawDate.toISOString(),
+        winningNumbers: e.winningNumbers,
+        superNumber: e.superNumber,
+        jackpot: e.jackpot,
+        status: e.status,
+        totalTickets
+    };
+}
 
-const specialDraws: SpecialDraw[] = [];
-const specialTickets: LottoTicket[] = [];
+function ticketEntityToModel(e: LottoTicketEntity): LottoTicket {
+    // Backward compat: if entity still has old `numbers` (single array), wrap it
+    const fields: number[][] = Array.isArray(e.fields?.[0]) ? e.fields : [e.fields as unknown as number[]];
+    return {
+        id: e.id,
+        userId: e.userId,
+        fields,
+        superNumber: e.superNumber,
+        drawId: e.drawId,
+        purchasedAt: e.purchasedAt.toISOString(),
+        cost: e.cost,
+        repeatWeeks: e.repeatWeeks ?? undefined
+    };
+}
+
+function specialEntityToModel(e: LottoSpecialDrawEntity, totalTickets?: number): SpecialDraw {
+    return {
+        id: e.id,
+        name: e.name,
+        drawDate: e.drawDate.toISOString(),
+        ticketMode: e.ticketMode,
+        prizeMode: e.prizeMode,
+        customJackpot: e.customJackpot ?? undefined,
+        singlePrizeClass: (e.singlePrizeClass as LottoPrizeClass) ?? undefined,
+        singlePrizeAmount: e.singlePrizeAmount ?? undefined,
+        ticketCost: e.ticketCost ?? undefined,
+        status: e.status,
+        winningNumbers: e.winningNumbers ?? undefined,
+        superNumber: e.superNumber ?? undefined,
+        totalTickets,
+        createdAt: e.createdAt.toISOString()
+    };
+}
+
+// ─── Service ─────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class LottoService {
+export class LottoService implements OnModuleInit {
     private readonly logger = new Logger(LottoService.name);
-    private config: DrawScheduleConfig = { ...DEFAULT_CONFIG };
+    private configCache: DrawScheduleConfig = { ...DEFAULT_CONFIG };
 
     constructor(
         @Inject(forwardRef(() => CreditService)) private readonly creditService: CreditService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        @InjectRepository(LottoDrawEntity) private readonly drawRepo: Repository<LottoDrawEntity>,
+        @InjectRepository(LottoTicketEntity) private readonly ticketRepo: Repository<LottoTicketEntity>,
+        @InjectRepository(LottoSpecialDrawEntity) private readonly specialDrawRepo: Repository<LottoSpecialDrawEntity>,
+        @InjectRepository(LottoConfigEntity) private readonly configRepo: Repository<LottoConfigEntity>,
+        @InjectRepository(LottoStatsEntity) private readonly statsRepo: Repository<LottoStatsEntity>
     ) {}
 
-    // ─── Config ───────────────────────────────────────────────────────────────
-
-    getConfig(): DrawScheduleConfig {
-        return { ...this.config };
+    async onModuleInit(): Promise<void> {
+        await this.loadConfig();
+        await this.ensureStats();
     }
 
-    updateConfig(partial: Partial<DrawScheduleConfig>): DrawScheduleConfig {
+    // ─── Config (persisted) ──────────────────────────────────────────────────
+
+    private async loadConfig(): Promise<void> {
+        let entity = await this.configRepo.findOneBy({ id: "default" });
+        if (!entity) {
+            entity = this.configRepo.create({
+                id: "default",
+                ...DEFAULT_CONFIG
+            });
+            await this.configRepo.save(entity);
+            this.logger.log("Created default lotto config in DB");
+        }
+        this.configCache = {
+            drawDays: entity.drawDays as Weekday[],
+            drawHourUtc: entity.drawHourUtc,
+            drawMinuteUtc: entity.drawMinuteUtc,
+            baseJackpot: entity.baseJackpot,
+            rolloverPercentage: entity.rolloverPercentage,
+            ticketCost: entity.ticketCost
+        };
+    }
+
+    getConfig(): DrawScheduleConfig {
+        return { ...this.configCache };
+    }
+
+    async updateConfig(partial: Partial<DrawScheduleConfig>): Promise<DrawScheduleConfig> {
         if (partial.drawDays !== undefined) {
-            if (!Array.isArray(partial.drawDays) || partial.drawDays.length === 0) {
+            if (!Array.isArray(partial.drawDays) || partial.drawDays.length === 0)
                 throw new BadRequestException("drawDays must be a non-empty array");
-            }
-            const valid = partial.drawDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6);
-            if (!valid) {
-                throw new BadRequestException("drawDays values must be integers between 0 (Sun) and 6 (Sat)");
-            }
+            if (!partial.drawDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6))
+                throw new BadRequestException("drawDays values must be integers between 0 and 6");
         }
-        if (partial.drawHourUtc !== undefined && (partial.drawHourUtc < 0 || partial.drawHourUtc > 23)) {
+        if (partial.drawHourUtc !== undefined && (partial.drawHourUtc < 0 || partial.drawHourUtc > 23))
             throw new BadRequestException("drawHourUtc must be between 0 and 23");
-        }
-        if (partial.drawMinuteUtc !== undefined && (partial.drawMinuteUtc < 0 || partial.drawMinuteUtc > 59)) {
+        if (partial.drawMinuteUtc !== undefined && (partial.drawMinuteUtc < 0 || partial.drawMinuteUtc > 59))
             throw new BadRequestException("drawMinuteUtc must be between 0 and 59");
-        }
-        if (
-            partial.rolloverPercentage !== undefined &&
-            (partial.rolloverPercentage < 0 || partial.rolloverPercentage > 100)
-        ) {
+        if (partial.rolloverPercentage !== undefined && (partial.rolloverPercentage < 0 || partial.rolloverPercentage > 100))
             throw new BadRequestException("rolloverPercentage must be between 0 and 100");
-        }
-        if (partial.baseJackpot !== undefined && partial.baseJackpot <= 0) {
+        if (partial.baseJackpot !== undefined && partial.baseJackpot <= 0)
             throw new BadRequestException("baseJackpot must be greater than 0");
-        }
-        if (partial.ticketCost !== undefined && partial.ticketCost <= 0) {
+        if (partial.ticketCost !== undefined && partial.ticketCost <= 0)
             throw new BadRequestException("ticketCost must be greater than 0");
-        }
 
         const scheduleChanged =
             partial.drawDays !== undefined || partial.drawHourUtc !== undefined || partial.drawMinuteUtc !== undefined;
 
-        this.config = { ...this.config, ...partial };
-        this.logger.log(`Schedule config updated: ${JSON.stringify(this.config)}`);
+        this.configCache = { ...this.configCache, ...partial };
+
+        // Persist to DB
+        await this.configRepo.update("default", {
+            drawDays: this.configCache.drawDays,
+            drawHourUtc: this.configCache.drawHourUtc,
+            drawMinuteUtc: this.configCache.drawMinuteUtc,
+            baseJackpot: this.configCache.baseJackpot,
+            rolloverPercentage: this.configCache.rolloverPercentage,
+            ticketCost: this.configCache.ticketCost
+        });
+
+        this.logger.log(`Config updated and persisted: ${JSON.stringify(this.configCache)}`);
 
         if (scheduleChanged) {
-            // Remove pending draws (wrong dates) and schedule a fresh one
-            const pendingIndices = draws
-                .map((d, i) => (d.status === "pending" ? i : -1))
-                .filter((i) => i !== -1)
-                .reverse();
-            for (const i of pendingIndices) {
-                draws.splice(i, 1);
-            }
-            this.scheduleNextDraw();
+            await this.drawRepo.delete({ status: "pending" });
+            await this.scheduleNextDraw();
             this.logger.log("Pending draws rescheduled after config change");
         }
 
-        return { ...this.config };
+        return { ...this.configCache };
     }
 
-    // ─── Draws ────────────────────────────────────────────────────────────────
+    // ─── Draws ───────────────────────────────────────────────────────────────
 
-    getAllDraws(): LottoDraw[] {
-        return draws.map((d) => ({
-            ...d,
-            totalTickets: tickets.filter((t) => t.drawId === d.id).length
-        }));
-    }
-
-    getDrawById(id: string): LottoDraw {
-        const draw = draws.find((d) => d.id === id);
-        if (!draw) {
-            throw new NotFoundException(`Draw with id "${id}" not found`);
+    async getAllDraws(): Promise<LottoDraw[]> {
+        const entities = await this.drawRepo.find({ order: { drawDate: "DESC" } });
+        const result: LottoDraw[] = [];
+        for (const e of entities) {
+            const count = await this.ticketRepo.count({ where: { drawId: e.id } });
+            result.push(drawEntityToModel(e, count));
         }
-        return { ...draw, totalTickets: tickets.filter((t) => t.drawId === draw.id).length };
+        return result;
     }
 
-    getNextDraw(): LottoDraw | null {
-        const pending = draws
-            .filter((d) => d.status === "pending")
-            .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime());
-        return pending[0]
-            ? { ...pending[0], totalTickets: tickets.filter((t) => t.drawId === pending[0]!.id).length }
-            : null;
+    async getDrawById(id: string): Promise<LottoDraw> {
+        const entity = await this.drawRepo.findOneBy({ id });
+        if (!entity) throw new NotFoundException(`Draw "${id}" not found`);
+        const count = await this.ticketRepo.count({ where: { drawId: id } });
+        return drawEntityToModel(entity, count);
     }
 
-    getLastDraw(): LottoDraw | null {
-        const drawn = draws
-            .filter((d) => d.status === "drawn")
-            .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
-        return drawn[0] ? { ...drawn[0], totalTickets: tickets.filter((t) => t.drawId === drawn[0]!.id).length } : null;
+    async getNextDraw(): Promise<LottoDraw | null> {
+        const entity = await this.drawRepo.findOne({ where: { status: "pending" }, order: { drawDate: "ASC" } });
+        if (!entity) return null;
+        const count = await this.ticketRepo.count({ where: { drawId: entity.id } });
+        return drawEntityToModel(entity, count);
     }
 
-    /**
-     * Performs the weekly "6 aus 49" draw for the given drawId.
-     */
+    async getLastDraw(): Promise<LottoDraw | null> {
+        const entity = await this.drawRepo.findOne({ where: { status: "drawn" }, order: { drawDate: "DESC" } });
+        if (!entity) return null;
+        const count = await this.ticketRepo.count({ where: { drawId: entity.id } });
+        return drawEntityToModel(entity, count);
+    }
+
     async performWeeklyDraw(drawId: string): Promise<DrawResult> {
-        const draw = draws.find((d) => d.id === drawId);
-        if (!draw) throw new NotFoundException(`Draw with id "${drawId}" not found`);
-        if (draw.status === "drawn") {
-            throw new BadRequestException(`Draw "${drawId}" has already been drawn`);
-        }
+        const draw = await this.drawRepo.findOneBy({ id: drawId });
+        if (!draw) throw new NotFoundException(`Draw "${drawId}" not found`);
+        if (draw.status === "drawn") throw new BadRequestException(`Draw "${drawId}" has already been drawn`);
 
-        const winningNumbers = this.drawUniqueNumbers(1, 49, 6);
-        const superNumber = Math.floor(Math.random() * 10); // 0–9
-
-        draw.winningNumbers = winningNumbers;
-        draw.superNumber = superNumber;
+        draw.winningNumbers = this.drawUniqueNumbers(1, 49, 6);
+        draw.superNumber = Math.floor(Math.random() * 10);
         draw.status = "drawn";
+        await this.drawRepo.save(draw);
 
-        const ticketsForDraw = tickets.filter((t) => t.drawId === drawId);
-        const allResults = ticketsForDraw.map((ticket) => this.evaluateTicket(ticket, draw));
+        const ticketEntities = await this.ticketRepo.find({ where: { drawId } });
+        const drawModel = drawEntityToModel(draw);
+        const ticketModels = ticketEntities.map(ticketEntityToModel);
+        const allResults = ticketModels.map((t) => this.evaluateTicket(t, drawModel));
         const winners = allResults.filter((r) => r.prizeAmount > 0);
         const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
 
-        this.logger.log(
-            `Draw "${drawId}" completed. Numbers: [${winningNumbers.join(", ")}] Super: ${superNumber}. Winners: ${winners.length}`
-        );
+        this.logger.log(`Draw "${drawId}" completed. Winners: ${winners.length}`);
 
-        // ── Credit winners ────────────────────────────────────────────────────
         for (const winner of winners) {
             try {
-                await this.creditService.addCredits(
-                    winner.userId,
-                    winner.prizeAmount,
-                    "lotto_win",
-                    `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`
-                );
-                await this.notificationsService.create(
-                    winner.userId,
-                    "coins_received",
-                    "Lottogewinn!",
-                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
-                    "/lotto"
-                );
+                await this.creditService.addCredits(winner.userId, winner.prizeAmount, "lotto_win",
+                    `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`);
+                await this.notificationsService.create(winner.userId, "coins_received",
+                    "Lottogewinn!", `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`, "/lotto");
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
         }
 
-        // ── Jackpot rollover ──────────────────────────────────────────────────
         const hasJackpotWinner = allResults.some((r) => r.prizeClass === "class1");
         if (!hasJackpotWinner) {
-            const totalRevenue = ticketsForDraw.reduce((sum, t) => sum + t.cost, 0);
-            const rolloverAmount = Math.floor(totalRevenue * (this.config.rolloverPercentage / 100));
-            const nextJackpot = draw.jackpot + rolloverAmount;
-            this.logger.log(`No jackpot winner – rolling over ${rolloverAmount} credits. Next jackpot: ${nextJackpot}`);
-            this.scheduleNextDraw(nextJackpot);
+            const totalRevenue = ticketModels.reduce((sum, t) => sum + t.cost, 0);
+            const rolloverAmount = Math.floor(totalRevenue * (this.configCache.rolloverPercentage / 100));
+            await this.scheduleNextDraw(draw.jackpot + rolloverAmount);
         } else {
-            this.scheduleNextDraw(this.config.baseJackpot);
+            await this.scheduleNextDraw(this.configCache.baseJackpot);
         }
 
-        return {
-            draw,
-            totalTickets: ticketsForDraw.length,
-            winners,
-            totalPrizesPaid
-        };
+        // Persist stats incrementally
+        await this.updateStatsAfterDraw(draw.winningNumbers, draw.jackpot, ticketModels.length, totalPrizesPaid);
+
+        return { draw: drawModel, totalTickets: ticketModels.length, winners, totalPrizesPaid };
     }
 
-    /**
-     * Manually creates the next draw on the next configured draw day.
-     */
-    scheduleNextDraw(jackpot?: number): LottoDraw {
-        const effectiveJackpot = jackpot ?? this.config.baseJackpot;
+    async scheduleNextDraw(jackpot?: number): Promise<LottoDraw> {
+        const effectiveJackpot = jackpot ?? this.configCache.baseJackpot;
         const nextDate = this.nextDrawDate();
         const id = `draw-${nextDate.toISOString().replace(/[:T]/g, "-").slice(0, 16)}`;
 
-        if (draws.some((d) => d.id === id)) {
-            this.logger.log(`Draw "${id}" already exists, skipping creation`);
-            return draws.find((d) => d.id === id)!;
-        }
+        const existing = await this.drawRepo.findOneBy({ id });
+        if (existing) return drawEntityToModel(existing);
 
-        const newDraw: LottoDraw = {
+        const entity = this.drawRepo.create({
             id,
-            drawDate: nextDate.toISOString(),
+            drawDate: nextDate,
             winningNumbers: [],
             superNumber: -1,
             jackpot: effectiveJackpot,
-            status: "pending",
-            totalTickets: 0
-        };
-
-        draws.push(newDraw);
-        this.logger.log(`Next draw scheduled: "${id}" on ${nextDate.toISOString()} with jackpot ${effectiveJackpot}`);
-        return newDraw;
+            status: "pending"
+        });
+        await this.drawRepo.save(entity);
+        this.logger.log(`Next draw scheduled: "${id}" with jackpot ${effectiveJackpot}`);
+        return drawEntityToModel(entity);
     }
 
-    // ─── Tickets ──────────────────────────────────────────────────────────────
+    // ─── Tickets ─────────────────────────────────────────────────────────────
 
-    getTicketsByUser(userId: string): LottoTicket[] {
-        return tickets.filter((t) => t.userId === userId);
+    async getTicketsByUser(userId: string): Promise<LottoTicket[]> {
+        const entities = await this.ticketRepo.find({ where: { userId }, order: { purchasedAt: "DESC" } });
+        return entities.map(ticketEntityToModel);
     }
 
     async purchaseTicket(
         userId: string,
-        numbers: number[],
+        fields: number[][],
         superNumber: number,
         drawId: string,
         repeatWeeks = 1
     ): Promise<LottoTicket[]> {
-        this.validateNumbers(numbers, superNumber);
+        if (!fields.length || fields.length > 12) throw new BadRequestException("1 to 12 fields required");
+        for (const nums of fields) this.validateNumbers(nums, superNumber);
 
-        const totalCost = this.config.ticketCost * Math.max(1, repeatWeeks);
+        const fieldCount = fields.length;
+        const totalCost = this.configCache.ticketCost * fieldCount * Math.max(1, repeatWeeks);
 
-        // Deduct credits
-        await this.creditService.deductCredits(
-            userId,
-            totalCost,
-            "lotto_ticket",
-            `Lotto Ticket (${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"}): ${numbers.join(", ")} | SZ: ${superNumber}`
-        );
+        await this.creditService.deductCredits(userId, totalCost, "lotto_ticket",
+            `Lotto Ticket (${fieldCount} Felder, ${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"})`);
 
-        await this.notificationsService.create(
-            userId,
-            "system",
+        await this.notificationsService.create(userId, "system",
             "Lottoticket gekauft",
-            "Du hast ein Lottoticket für die nächste Ziehung gekauft.",
-            "/lotto"
-        );
+            `Du hast ein Ticket mit ${fieldCount} Feld${fieldCount > 1 ? "ern" : ""} gekauft.`,
+            "/lotto");
 
-        const createdTickets: LottoTicket[] = [];
-
-        // For repeat weeks, get or create draws for subsequent weeks
+        const sortedFields = fields.map((nums) => [...nums].sort((a, b) => a - b));
+        const created: LottoTicket[] = [];
         let currentDrawId = drawId;
-        for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
-            const draw = draws.find((d) => d.id === currentDrawId);
-            if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
-            if (draw.status === "drawn")
-                throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
 
-            const ticket: LottoTicket = {
-                id: `ticket-${Date.now()}-${week}`,
+        for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
+            const draw = await this.drawRepo.findOneBy({ id: currentDrawId });
+            if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
+            if (draw.status === "drawn") throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
+
+            const entity = this.ticketRepo.create({
+                id: `ticket-${Date.now()}-${week}-${Math.random().toString(36).slice(2, 8)}`,
                 userId,
-                numbers: [...numbers].sort((a, b) => a - b),
+                fields: sortedFields,
                 superNumber,
                 drawId: currentDrawId,
-                purchasedAt: new Date().toISOString(),
-                cost: this.config.ticketCost,
+                cost: this.configCache.ticketCost * fieldCount,
                 repeatWeeks: repeatWeeks > 1 ? repeatWeeks : undefined
-            };
-            tickets.push(ticket);
-            createdTickets.push(ticket);
+            });
+            await this.ticketRepo.save(entity);
+            created.push(ticketEntityToModel(entity));
 
-            // For next iteration: find or create the next draw
             if (week < repeatWeeks - 1) {
                 const nextDrawDate = new Date(draw.drawDate);
-                // Find next draw after this one
-                const subsequentDraw = draws
-                    .filter((d) => d.status === "pending" && new Date(d.drawDate) > nextDrawDate)
-                    .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime())[0];
-                if (subsequentDraw) {
-                    currentDrawId = subsequentDraw.id;
+                const subsequent = await this.drawRepo.findOne({
+                    where: { status: "pending" },
+                    order: { drawDate: "ASC" }
+                });
+                if (subsequent && new Date(subsequent.drawDate) > nextDrawDate) {
+                    currentDrawId = subsequent.id;
                 } else {
-                    // Calculate next draw date and create it
-                    const nextDate = this.nextDrawDateAfter(nextDrawDate);
-                    const nextId = `draw-${nextDate.toISOString().replace(/[:T]/g, "-").slice(0, 16)}`;
-                    if (!draws.some((d) => d.id === nextId)) {
-                        draws.push({
-                            id: nextId,
-                            drawDate: nextDate.toISOString(),
-                            winningNumbers: [],
-                            superNumber: -1,
-                            jackpot: this.config.baseJackpot,
-                            status: "pending",
-                            totalTickets: 0
-                        });
-                    }
-                    currentDrawId = nextId;
+                    const scheduled = await this.scheduleNextDraw();
+                    currentDrawId = scheduled.id;
+                }
+            }
+        }
+        await this.updateStatsTicketCount();
+        return created;
+    }
+
+    // ─── Results ─────────────────────────────────────────────────────────────
+
+    async getDrawResults(drawId: string): Promise<DrawResult> {
+        const draw = await this.drawRepo.findOneBy({ id: drawId });
+        if (!draw) throw new NotFoundException(`Draw "${drawId}" not found`);
+        if (draw.status !== "drawn") throw new BadRequestException(`Draw "${drawId}" has not been drawn yet`);
+
+        const drawModel = drawEntityToModel(draw);
+        const ticketEntities = await this.ticketRepo.find({ where: { drawId } });
+        const ticketModels = ticketEntities.map(ticketEntityToModel);
+        const results = ticketModels.map((t) => this.evaluateTicket(t, drawModel));
+        const winners = results.filter((r) => r.prizeAmount > 0);
+        return { draw: drawModel, totalTickets: ticketModels.length, winners, totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0) };
+    }
+
+    async getDrawHistory(): Promise<DrawHistoryEntry[]> {
+        const history: DrawHistoryEntry[] = [];
+
+        const drawnDraws = await this.drawRepo.find({ where: { status: "drawn" }, order: { drawDate: "DESC" } });
+        for (const draw of drawnDraws) {
+            const ticketEntities = await this.ticketRepo.find({ where: { drawId: draw.id } });
+            const drawModel = drawEntityToModel(draw);
+            const results = ticketEntities.map(ticketEntityToModel).map((t) => this.evaluateTicket(t, drawModel));
+            const winners = results.filter((r) => r.prizeAmount > 0);
+            history.push(this.buildHistoryEntry(draw.id, "regular", drawModel, ticketEntities.length, winners));
+        }
+
+        const drawnSpecials = await this.specialDrawRepo.find({ where: { status: "drawn" }, order: { drawDate: "DESC" } });
+        for (const sd of drawnSpecials) {
+            const sdModel = specialEntityToModel(sd);
+            const ticketEntities = sd.ticketMode === "all_current"
+                ? await this.ticketRepo.find()
+                : await this.ticketRepo.find({ where: { drawId: sd.id } });
+            const mockDraw: LottoDraw = {
+                id: sd.id, drawDate: sd.drawDate.toISOString(),
+                winningNumbers: sd.winningNumbers ?? [], superNumber: sd.superNumber ?? 0,
+                jackpot: sd.customJackpot ?? 0, status: "drawn"
+            };
+            const results = ticketEntities.map(ticketEntityToModel).map((t) => this.evaluateSpecialTicket(t, sdModel));
+            const winners = results.filter((r) => r.prizeAmount > 0);
+            history.push(this.buildHistoryEntry(sd.id, "special", mockDraw, ticketEntities.length, winners, sd.name));
+        }
+
+        return history.sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
+    }
+
+    async getUserResults(userId: string, drawId?: string): Promise<LottoResult[]> {
+        const where: Record<string, string> = { userId };
+        if (drawId) where["drawId"] = drawId;
+        const userTickets = await this.ticketRepo.find({ where });
+
+        const results: LottoResult[] = [];
+        for (const te of userTickets) {
+            const draw = await this.drawRepo.findOneBy({ id: te.drawId });
+            if (!draw || draw.status !== "drawn") continue;
+            results.push(this.evaluateTicket(ticketEntityToModel(te), drawEntityToModel(draw)));
+        }
+        return results;
+    }
+
+    async getStats(): Promise<LottoStats> {
+        const stats = await this.statsRepo.findOneBy({ id: "default" });
+        const freq = stats?.numberFrequency ?? {};
+
+        // Build sorted frequency list for all 49 numbers
+        const numberFrequency = Array.from({ length: 49 }, (_, i) => ({
+            number: i + 1,
+            count: freq[String(i + 1)] ?? 0
+        }));
+        const sorted = [...numberFrequency].sort((a, b) => b.count - a.count);
+        const hotNumbers = sorted.slice(0, 10).map((e) => e.number);
+        const coldNumbers = sorted.slice(-10).map((e) => e.number);
+
+        return {
+            totalDraws: stats?.totalDraws ?? 0,
+            totalTicketsSold: stats?.totalTicketsSold ?? 0,
+            totalPrizePaid: Number(stats?.totalPrizePaid ?? 0),
+            biggestJackpot: stats?.biggestJackpot ?? 0,
+            lastDraw: await this.getLastDraw(),
+            nextDraw: await this.getNextDraw(),
+            hotNumbers,
+            coldNumbers,
+            numberFrequency
+        };
+    }
+
+    // ─── Stats persistence ───────────────────────────────────────────────────
+
+    /** Ensure the singleton stats row exists. If not, rebuild from DB. */
+    private async ensureStats(): Promise<void> {
+        let stats = await this.statsRepo.findOneBy({ id: "default" });
+        if (!stats) {
+            this.logger.log("Stats row missing — rebuilding from historical data...");
+            await this.rebuildStats();
+        } else if (stats.totalDraws === 0) {
+            // Might be a fresh row but with existing draws — check
+            const drawCount = await this.drawRepo.count({ where: { status: "drawn" } });
+            if (drawCount > 0) {
+                this.logger.log("Stats are stale — rebuilding...");
+                await this.rebuildStats();
+            }
+        }
+    }
+
+    /** Full rebuild of stats from all historical draws — only runs once or on demand. */
+    async rebuildStats(): Promise<void> {
+        const drawnDraws = await this.drawRepo.find({ where: { status: "drawn" } });
+        const allDraws = await this.drawRepo.find();
+        const ticketCount = await this.ticketRepo.count();
+
+        const numberFrequency: Record<string, number> = {};
+        for (let n = 1; n <= 49; n++) numberFrequency[String(n)] = 0;
+
+        let totalPrizePaid = 0;
+
+        for (const draw of drawnDraws) {
+            // Count winning number frequencies
+            for (const n of draw.winningNumbers) {
+                numberFrequency[String(n)] = (numberFrequency[String(n)] ?? 0) + 1;
+            }
+
+            // Calculate prizes paid for this draw
+            const ticketEntities = await this.ticketRepo.find({ where: { drawId: draw.id } });
+            const drawModel = drawEntityToModel(draw);
+            for (const te of ticketEntities) {
+                totalPrizePaid += this.evaluateTicket(ticketEntityToModel(te), drawModel).prizeAmount;
+            }
+        }
+
+        // Also count special draws
+        const drawnSpecials = await this.specialDrawRepo.find({ where: { status: "drawn" } });
+        for (const sd of drawnSpecials) {
+            if (sd.winningNumbers) {
+                for (const n of sd.winningNumbers) {
+                    numberFrequency[String(n)] = (numberFrequency[String(n)] ?? 0) + 1;
                 }
             }
         }
 
-        return createdTickets;
-    }
+        const biggest = allDraws.length > 0 ? Math.max(...allDraws.map((d) => d.jackpot)) : 0;
 
-    // ─── Results ──────────────────────────────────────────────────────────────
-
-    getDrawResults(drawId: string): DrawResult {
-        const draw = draws.find((d) => d.id === drawId);
-        if (!draw) throw new NotFoundException(`Draw "${drawId}" not found`);
-        if (draw.status !== "drawn") {
-            throw new BadRequestException(`Draw "${drawId}" has not been drawn yet`);
-        }
-
-        const ticketsForDraw = tickets.filter((t) => t.drawId === drawId);
-        const results = ticketsForDraw.map((ticket) => this.evaluateTicket(ticket, draw));
-        const winners = results.filter((r) => r.prizeAmount > 0);
-        const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
-
-        return { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid };
-    }
-
-    getUserResults(userId: string, drawId?: string): LottoResult[] {
-        const userTickets = tickets.filter((t) => t.userId === userId && (!drawId || t.drawId === drawId));
-
-        return userTickets
-            .map((ticket) => {
-                const draw = draws.find((d) => d.id === ticket.drawId);
-                if (!draw || draw.status !== "drawn") return null;
-                return this.evaluateTicket(ticket, draw);
-            })
-            .filter((r): r is LottoResult => r !== null);
-    }
-
-    getStats(): LottoStats {
-        const drawnDraws = draws.filter((d) => d.status === "drawn");
-        const allWinningNumbers = drawnDraws.flatMap((d) => d.winningNumbers);
-        const numberFrequency = new Map<number, number>();
-        for (let n = 1; n <= 49; n++) numberFrequency.set(n, 0);
-        for (const n of allWinningNumbers) numberFrequency.set(n, (numberFrequency.get(n) ?? 0) + 1);
-
-        const sorted = [...numberFrequency.entries()].sort((a, b) => b[1] - a[1]);
-        const hotNumbers = sorted.slice(0, 10).map(([n]) => n);
-        const coldNumbers = sorted.slice(-10).map(([n]) => n);
-
-        const allResults = tickets.flatMap((t) => {
-            const draw = draws.find((d) => d.id === t.drawId);
-            if (!draw || draw.status !== "drawn") return [];
-            return [this.evaluateTicket(t, draw)];
+        await this.statsRepo.save({
+            id: "default",
+            totalDraws: drawnDraws.length + drawnSpecials.length,
+            totalTicketsSold: ticketCount,
+            totalPrizePaid,
+            biggestJackpot: biggest,
+            numberFrequency
         });
 
-        return {
-            totalDraws: drawnDraws.length,
-            totalTicketsSold: tickets.length,
-            totalPrizePaid: allResults.reduce((sum, r) => sum + r.prizeAmount, 0),
-            biggestJackpot: Math.max(...draws.map((d) => d.jackpot), 0),
-            lastDraw: this.getLastDraw(),
-            nextDraw: this.getNextDraw(),
-            hotNumbers,
-            coldNumbers
-        };
+        this.logger.log(`Stats rebuilt: ${drawnDraws.length + drawnSpecials.length} draws, ${ticketCount} tickets, ${totalPrizePaid} paid`);
     }
 
-    /**
-     * Returns the next UTC datetime that matches one of the configured draw days,
-     * at the configured hour:minute. Always returns a future time.
-     */
+    /** Incrementally update stats after a single draw completes. */
+    private async updateStatsAfterDraw(
+        winningNumbers: number[],
+        jackpot: number,
+        ticketCount: number,
+        prizesPaid: number
+    ): Promise<void> {
+        let stats = await this.statsRepo.findOneBy({ id: "default" });
+        if (!stats) {
+            stats = this.statsRepo.create({
+                id: "default",
+                totalDraws: 0,
+                totalTicketsSold: 0,
+                totalPrizePaid: 0,
+                biggestJackpot: 0,
+                numberFrequency: {}
+            });
+        }
+
+        stats.totalDraws += 1;
+        stats.totalTicketsSold = await this.ticketRepo.count(); // accurate total
+        stats.totalPrizePaid = Number(stats.totalPrizePaid) + prizesPaid;
+        if (jackpot > stats.biggestJackpot) stats.biggestJackpot = jackpot;
+
+        // Update number frequency
+        const freq = stats.numberFrequency ?? {};
+        for (const n of winningNumbers) {
+            freq[String(n)] = (freq[String(n)] ?? 0) + 1;
+        }
+        stats.numberFrequency = freq;
+
+        await this.statsRepo.save(stats);
+    }
+
+    /** Update ticket count in stats (called after purchase). */
+    private async updateStatsTicketCount(): Promise<void> {
+        const count = await this.ticketRepo.count();
+        await this.statsRepo.update("default", { totalTicketsSold: count });
+    }
+
+    // ─── Schedule helpers ────────────────────────────────────────────────────
+
     nextDrawDate(): Date {
         return this.nextDrawDateAfter(new Date());
     }
 
     nextDrawDateAfter(after: Date): Date {
-        const { drawDays, drawHourUtc, drawMinuteUtc } = this.config;
+        const { drawDays, drawHourUtc, drawMinuteUtc } = this.configCache;
         for (let offset = 1; offset <= 8; offset++) {
             const candidate = new Date(after);
             candidate.setUTCDate(after.getUTCDate() + offset);
             candidate.setUTCHours(drawHourUtc, drawMinuteUtc, 0, 0);
-            const dayOfWeek = candidate.getUTCDay() as Weekday;
-            if (drawDays.includes(dayOfWeek) && candidate > after) {
-                return candidate;
-            }
+            if (drawDays.includes(candidate.getUTCDay() as Weekday) && candidate > after) return candidate;
         }
         const fallback = new Date(after);
         fallback.setUTCDate(after.getUTCDate() + 7);
@@ -464,164 +569,184 @@ export class LottoService {
         return fallback;
     }
 
-    // ─── Special draws ────────────────────────────────────────────────────────
+    // ─── Special draws ───────────────────────────────────────────────────────
 
-    createSpecialDraw(dto: CreateSpecialDrawDto): SpecialDraw {
+    async createSpecialDraw(dto: CreateSpecialDrawDto): Promise<SpecialDraw> {
         if (!dto.name?.trim()) throw new BadRequestException("name is required");
         if (!dto.drawDate) throw new BadRequestException("drawDate is required");
         if (new Date(dto.drawDate) <= new Date()) throw new BadRequestException("drawDate must be in the future");
 
-        const draw: SpecialDraw = {
+        const entity = this.specialDrawRepo.create({
             id: `special-${Date.now()}`,
             name: dto.name.trim(),
-            drawDate: dto.drawDate,
+            drawDate: new Date(dto.drawDate),
             ticketMode: dto.ticketMode ?? "separate",
             prizeMode: dto.prizeMode ?? "standard",
-            customJackpot: dto.customJackpot,
-            singlePrizeClass: dto.singlePrizeClass,
-            singlePrizeAmount: dto.singlePrizeAmount,
-            ticketCost: dto.ticketCost,
-            status: "pending",
-            createdAt: new Date().toISOString()
-        };
-        specialDraws.push(draw);
-        this.logger.log(`Special draw created: "${draw.id}" – "${draw.name}"`);
-        return draw;
+            customJackpot: dto.customJackpot ?? undefined,
+            singlePrizeClass: dto.singlePrizeClass ?? undefined,
+            singlePrizeAmount: dto.singlePrizeAmount ?? undefined,
+            ticketCost: dto.ticketCost ?? undefined,
+            status: "pending"
+        });
+        await this.specialDrawRepo.save(entity);
+        this.logger.log(`Special draw created: "${entity.id}"`);
+        return specialEntityToModel(entity);
     }
 
-    getAllSpecialDraws(): SpecialDraw[] {
-        return specialDraws.map((d) => ({
-            ...d,
-            totalTickets:
-                d.ticketMode === "all_current" ? tickets.length : specialTickets.filter((t) => t.drawId === d.id).length
-        }));
+    async getAllSpecialDraws(): Promise<SpecialDraw[]> {
+        const entities = await this.specialDrawRepo.find({ order: { drawDate: "DESC" } });
+        const result: SpecialDraw[] = [];
+        for (const e of entities) {
+            const count = e.ticketMode === "all_current"
+                ? await this.ticketRepo.count()
+                : await this.ticketRepo.count({ where: { drawId: e.id } });
+            result.push(specialEntityToModel(e, count));
+        }
+        return result;
     }
 
     async performSpecialDraw(drawId: string): Promise<SpecialDrawResult> {
-        const draw = specialDraws.find((d) => d.id === drawId);
+        const draw = await this.specialDrawRepo.findOneBy({ id: drawId });
         if (!draw) throw new NotFoundException(`Special draw "${drawId}" not found`);
         if (draw.status === "drawn") throw new BadRequestException(`Special draw "${drawId}" has already been drawn`);
 
-        const winningNumbers = this.drawUniqueNumbers(1, 49, 6);
-        const superNumber = Math.floor(Math.random() * 10);
-        draw.winningNumbers = winningNumbers;
-        draw.superNumber = superNumber;
+        draw.winningNumbers = this.drawUniqueNumbers(1, 49, 6);
+        draw.superNumber = Math.floor(Math.random() * 10);
         draw.status = "drawn";
+        await this.specialDrawRepo.save(draw);
 
-        const ticketsForDraw =
-            draw.ticketMode === "all_current" ? tickets : specialTickets.filter((t) => t.drawId === drawId);
-        const allResults = ticketsForDraw.map((ticket) => this.evaluateSpecialTicket(ticket, draw));
+        const sdModel = specialEntityToModel(draw);
+        const ticketEntities = draw.ticketMode === "all_current"
+            ? await this.ticketRepo.find()
+            : await this.ticketRepo.find({ where: { drawId } });
+        const ticketModels = ticketEntities.map(ticketEntityToModel);
+        const allResults = ticketModels.map((t) => this.evaluateSpecialTicket(t, sdModel));
         const winners = allResults.filter((r) => r.prizeAmount > 0);
         const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
 
-        this.logger.log(
-            `Special draw "${drawId}" completed. Numbers: [${winningNumbers.join(", ")}] Super: ${superNumber}. Winners: ${winners.length}`
-        );
-
         for (const winner of winners) {
             try {
-                await this.creditService.addCredits(
-                    winner.userId,
-                    winner.prizeAmount,
-                    "lotto_special_win",
-                    `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass} (${winner.prizeAmount} Credits)`
-                );
-                await this.notificationsService.create(
-                    winner.userId,
-                    "coins_received",
-                    "Sonderziehung Gewinn!",
-                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
-                    "/lotto"
-                );
+                await this.creditService.addCredits(winner.userId, winner.prizeAmount, "lotto_special_win",
+                    `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass}`);
+                await this.notificationsService.create(winner.userId, "coins_received",
+                    "Sonderziehung Gewinn!", `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`, "/lotto");
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
         }
 
-        return { draw, totalTickets: ticketsForDraw.length, winners, totalPrizesPaid };
+        // Persist stats incrementally
+        await this.updateStatsAfterDraw(draw.winningNumbers ?? [], draw.customJackpot ?? 0, ticketModels.length, totalPrizesPaid);
+
+        return { draw: sdModel, totalTickets: ticketModels.length, winners, totalPrizesPaid };
     }
 
-    async purchaseSpecialTicket(
-        userId: string,
-        numbers: number[],
-        superNumber: number,
-        drawId: string
-    ): Promise<LottoTicket> {
-        this.validateNumbers(numbers, superNumber);
-        const draw = specialDraws.find((d) => d.id === drawId);
+    async purchaseSpecialTicket(userId: string, fields: number[][], superNumber: number, drawId: string): Promise<LottoTicket> {
+        if (!fields.length || fields.length > 12) throw new BadRequestException("1 to 12 fields required");
+        for (const nums of fields) this.validateNumbers(nums, superNumber);
+
+        const draw = await this.specialDrawRepo.findOneBy({ id: drawId });
         if (!draw) throw new NotFoundException(`Special draw "${drawId}" not found`);
         if (draw.status === "drawn") throw new BadRequestException("Special draw has already been drawn");
-        if (draw.ticketMode !== "separate")
-            throw new BadRequestException("This special draw uses all existing tickets");
+        if (draw.ticketMode !== "separate") throw new BadRequestException("This special draw uses all existing tickets");
 
-        const cost = draw.ticketCost ?? this.config.ticketCost;
-        await this.creditService.deductCredits(
-            userId,
-            cost,
-            "lotto_special_ticket",
-            `Sonderziehung Ticket "${draw.name}"`
-        );
+        const costPerField = draw.ticketCost ?? this.configCache.ticketCost;
+        const totalCost = costPerField * fields.length;
+        await this.creditService.deductCredits(userId, totalCost, "lotto_special_ticket", `Sonderziehung Ticket "${draw.name}"`);
 
-        const ticket: LottoTicket = {
-            id: `sticket-${Date.now()}`,
+        const entity = this.ticketRepo.create({
+            id: `sticket-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             userId,
-            numbers: [...numbers].sort((a, b) => a - b),
+            fields: fields.map((nums) => [...nums].sort((a, b) => a - b)),
             superNumber,
             drawId,
-            purchasedAt: new Date().toISOString(),
-            cost
-        };
-        specialTickets.push(ticket);
-        return ticket;
+            cost: totalCost
+        });
+        await this.ticketRepo.save(entity);
+        await this.updateStatsTicketCount();
+        return ticketEntityToModel(entity);
     }
 
-    // ─── Private helpers ──────────────────────────────────────────────────────
+    // ─── Private helpers ─────────────────────────────────────────────────────
+
+    private buildHistoryEntry(
+        id: string, type: "regular" | "special", draw: LottoDraw,
+        totalTickets: number, winners: LottoResult[], name?: string
+    ): DrawHistoryEntry {
+        const classCounts = new Map<LottoPrizeClass, { count: number; amount: number }>();
+        for (const r of winners) {
+            const entry = classCounts.get(r.prizeClass) ?? { count: 0, amount: 0 };
+            entry.count += 1;
+            entry.amount += r.prizeAmount;
+            classCounts.set(r.prizeClass, entry);
+        }
+        return {
+            id, type, name,
+            drawDate: draw.drawDate,
+            winningNumbers: draw.winningNumbers,
+            superNumber: draw.superNumber,
+            jackpot: draw.jackpot,
+            totalTickets,
+            totalWinners: winners.length,
+            totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0),
+            winnersByClass: [...classCounts.entries()].map(([prizeClass, data]) => ({ prizeClass, ...data }))
+        };
+    }
 
     private evaluateTicket(ticket: LottoTicket, draw: LottoDraw): LottoResult {
-        const matchedNumbers = ticket.numbers.filter((n) => draw.winningNumbers.includes(n));
-        const matchedCount = matchedNumbers.length;
-        const superNumberMatched = ticket.superNumber === draw.superNumber;
-        const prizeClass = this.determinePrizeClass(matchedCount, superNumberMatched);
-        const prizeAmount = prizeClass === "class1" ? draw.jackpot : PRIZE_TABLE[prizeClass];
+        const superMatched = ticket.superNumber === draw.superNumber;
+        const fieldResults: LottoFieldResult[] = ticket.fields.map((nums, idx) => {
+            const matched = nums.filter((n) => draw.winningNumbers.includes(n));
+            const pc = this.determinePrizeClass(matched.length, superMatched);
+            return {
+                fieldIndex: idx, numbers: nums,
+                matchedNumbers: matched, matchedCount: matched.length,
+                superNumberMatched: superMatched, prizeClass: pc,
+                prizeAmount: pc === "class1" ? draw.jackpot : PRIZE_TABLE[pc]
+            };
+        });
+
+        const totalPrize = fieldResults.reduce((s, f) => s + f.prizeAmount, 0);
+        const best = fieldResults.reduce((a, b) => (b.prizeAmount > a.prizeAmount ? b : a), fieldResults[0]);
 
         return {
-            ticketId: ticket.id,
-            userId: ticket.userId,
-            drawId: draw.id,
-            matchedNumbers,
-            matchedCount,
-            superNumberMatched,
-            prizeClass,
-            prizeAmount
+            ticketId: ticket.id, userId: ticket.userId, drawId: draw.id,
+            matchedNumbers: best.matchedNumbers, matchedCount: best.matchedCount,
+            superNumberMatched: superMatched, prizeClass: best.prizeClass,
+            prizeAmount: totalPrize, fieldResults
         };
     }
 
     private evaluateSpecialTicket(ticket: LottoTicket, draw: SpecialDraw): LottoResult {
-        const matchedNumbers = ticket.numbers.filter((n) => (draw.winningNumbers ?? []).includes(n));
-        const matchedCount = matchedNumbers.length;
-        const superNumberMatched = ticket.superNumber === draw.superNumber;
-        const prizeClass = this.determinePrizeClass(matchedCount, superNumberMatched);
+        const superMatched = ticket.superNumber === (draw.superNumber ?? -1);
+        const fieldResults: LottoFieldResult[] = ticket.fields.map((nums, idx) => {
+            const matched = nums.filter((n) => (draw.winningNumbers ?? []).includes(n));
+            const pc = this.determinePrizeClass(matched.length, superMatched);
 
-        let prizeAmount: number;
-        if (draw.prizeMode === "single_class") {
-            prizeAmount =
-                prizeClass !== "no_win" && draw.singlePrizeClass === prizeClass ? (draw.singlePrizeAmount ?? 0) : 0;
-        } else if (draw.prizeMode === "custom_jackpot") {
-            prizeAmount =
-                prizeClass === "class1" ? (draw.customJackpot ?? PRIZE_TABLE.class1) : PRIZE_TABLE[prizeClass];
-        } else {
-            prizeAmount = PRIZE_TABLE[prizeClass];
-        }
+            let amount: number;
+            if (draw.prizeMode === "single_class") {
+                amount = pc !== "no_win" && draw.singlePrizeClass === pc ? (draw.singlePrizeAmount ?? 0) : 0;
+            } else if (draw.prizeMode === "custom_jackpot") {
+                amount = pc === "class1" ? (draw.customJackpot ?? PRIZE_TABLE.class1) : PRIZE_TABLE[pc];
+            } else {
+                amount = PRIZE_TABLE[pc];
+            }
+
+            return {
+                fieldIndex: idx, numbers: nums,
+                matchedNumbers: matched, matchedCount: matched.length,
+                superNumberMatched: superMatched, prizeClass: pc, prizeAmount: amount
+            };
+        });
+
+        const totalPrize = fieldResults.reduce((s, f) => s + f.prizeAmount, 0);
+        const best = fieldResults.reduce((a, b) => (b.prizeAmount > a.prizeAmount ? b : a), fieldResults[0]);
 
         return {
-            ticketId: ticket.id,
-            userId: ticket.userId,
-            drawId: draw.id,
-            matchedNumbers,
-            matchedCount,
-            superNumberMatched,
-            prizeClass,
-            prizeAmount
+            ticketId: ticket.id, userId: ticket.userId, drawId: draw.id,
+            matchedNumbers: best.matchedNumbers, matchedCount: best.matchedCount,
+            superNumberMatched: superMatched, prizeClass: best.prizeClass,
+            prizeAmount: totalPrize, fieldResults
         };
     }
 
@@ -648,17 +773,9 @@ export class LottoService {
     }
 
     private validateNumbers(numbers: number[], superNumber: number): void {
-        if (numbers.length !== 6) {
-            throw new BadRequestException("Exactly 6 numbers must be provided");
-        }
-        if (new Set(numbers).size !== 6) {
-            throw new BadRequestException("Numbers must be unique");
-        }
-        if (numbers.some((n) => n < 1 || n > 49)) {
-            throw new BadRequestException("Numbers must be between 1 and 49");
-        }
-        if (superNumber < 0 || superNumber > 9) {
-            throw new BadRequestException("Super number must be between 0 and 9");
-        }
+        if (numbers.length !== 6) throw new BadRequestException("Exactly 6 numbers must be provided");
+        if (new Set(numbers).size !== 6) throw new BadRequestException("Numbers must be unique");
+        if (numbers.some((n) => n < 1 || n > 49)) throw new BadRequestException("Numbers must be between 1 and 49");
+        if (superNumber < 0 || superNumber > 9) throw new BadRequestException("Super number must be between 0 and 9");
     }
 }

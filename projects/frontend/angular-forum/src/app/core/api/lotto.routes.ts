@@ -1,6 +1,7 @@
 export const LOTTO_ROUTES = {
     config: () => "/credit/lotto/config",
     stats: () => "/credit/lotto/stats",
+    drawHistory: () => "/credit/lotto/draw-history",
     draws: () => "/credit/lotto/draws",
     draw: (id: string) => `/credit/lotto/draws/${id}`,
     scheduleNextDraw: () => "/credit/lotto/draws",

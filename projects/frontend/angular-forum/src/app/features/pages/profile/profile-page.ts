@@ -30,6 +30,7 @@ import { Subscription } from "rxjs";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { SHOP_ROUTES } from "../../../core/api/shop.routes";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AchievementCard } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -145,7 +146,7 @@ const ROLE_SEVERITIES: Record<UserRole, "success" | "info" | "warn" | "danger" |
             </p-card>
 
             <!-- Tabs -->
-            <p-tabs value="overview">
+            <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
                 <p-tablist>
                     <p-tab value="overview"> <i class="pi pi-user mr-2"></i>{{ t("profile.tabs.profile") }} </p-tab>
                     <p-tab value="achievements">
@@ -804,9 +805,12 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly translocoService = inject(TranslocoService);
+    private readonly tabService = inject(TabPersistenceService);
     private readonly langChangesSubscription: Subscription;
 
     protected readonly walletFacade = inject(WalletFacade);
+
+    readonly activeTab = signal(this.tabService.get("overview"));
 
     protected transferDialogVisible = false;
     protected transferToUserId = "";
@@ -878,6 +882,11 @@ export class ProfilePage implements OnInit, OnDestroy {
                 this.profileForm.markAsPristine();
             }
         });
+    }
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
     }
 
     ngOnInit(): void {

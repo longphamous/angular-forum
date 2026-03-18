@@ -11,6 +11,7 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { FriendsFacade } from "../../../facade/friends/friends-facade";
 import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
 
@@ -38,9 +39,10 @@ import { OnlineIndicator } from "../../../shared/components/online-indicator/onl
 export class FriendsPage implements OnInit {
     protected readonly friendsFacade = inject(FriendsFacade);
     private readonly cd = inject(ChangeDetectorRef);
+    private readonly tabService = inject(TabPersistenceService);
 
     protected readonly searchQuery = signal("");
-    protected readonly activeTab = signal("0");
+    protected readonly activeTab = signal(this.tabService.get("0"));
 
     protected readonly filteredFriends = computed(() => {
         const query = this.searchQuery().toLowerCase().trim();
@@ -52,6 +54,11 @@ export class FriendsPage implements OnInit {
     });
 
     protected readonly incomingCount = computed(() => this.friendsFacade.incomingRequests().length);
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.friendsFacade.loadFriends();

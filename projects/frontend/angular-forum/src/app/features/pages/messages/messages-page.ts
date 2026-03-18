@@ -17,6 +17,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { MESSAGES_ROUTES } from "../../../core/api/messages.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     ComposePayload,
     Conversation,
@@ -53,6 +54,7 @@ type ActiveTab = "conversations" | "drafts" | "sent";
 export class MessagesPage implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly tabService = inject(TabPersistenceService);
     protected readonly authFacade = inject(AuthFacade);
     protected readonly messageService = inject(MessageService);
 
@@ -61,7 +63,7 @@ export class MessagesPage implements OnInit {
     protected readonly conversations = signal<Conversation[]>([]);
     protected readonly drafts = signal<Draft[]>([]);
     protected readonly selectedDetail = signal<ConversationDetail | null>(null);
-    protected readonly activeTab = signal<ActiveTab>("conversations");
+    protected readonly activeTab = signal<ActiveTab>(this.tabService.get("conversations") as ActiveTab);
     protected readonly loadingDetail = signal(false);
     protected readonly sending = signal(false);
 
@@ -256,6 +258,7 @@ export class MessagesPage implements OnInit {
     protected setActiveTab(value: string | number | undefined): void {
         if (value === "conversations" || value === "drafts" || value === "sent") {
             this.activeTab.set(value);
+            this.tabService.set(value);
         }
     }
 

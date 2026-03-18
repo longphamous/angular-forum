@@ -30,6 +30,9 @@ export interface MarketResourceDto {
     canSell: boolean;
     isActive: boolean;
     sortOrder: number;
+    tier: number;
+    craftedFrom: string | null;
+    craftCost: number;
     /** Price trend: positive = rising, negative = falling */
     trend: number;
     /** Recent price snapshots for sparkline */
@@ -102,6 +105,9 @@ export interface CreateMarketResourceDto {
     canSell?: boolean;
     sortOrder?: number;
     maxStock?: number | null;
+    tier?: number;
+    craftedFrom?: string | null;
+    craftCost?: number;
 }
 
 export interface UpdateMarketResourceDto {
@@ -208,927 +214,1521 @@ export interface MarketActivityDto {
     timestamp: string;
 }
 
-// ─── Default resources (anime/manga themed) ─────────────────────────────────
+// ─── Default resources (with processing chains) ──────────────────────────────
+// Tier 0 = Raw, Tier 1 = Processed, Tier 2 = Refined, Tier 3 = Masterwork
+// craftedFrom = slug of the source resource, craftCost = units needed
 
 const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
-    // ── Otaku-Waren ──────────────────────────────────────────────────────────
+    // ═══ Bergbau / Mining ═══════════════════════════════════════════════════
+    // Kupfer-Kette: Kupfererz → Kupferbarren → Kupferdraht → Elektronik
     {
-        slug: "manga_volume",
-        name: "Manga Band",
-        groupKey: "otaku",
-        basePrice: 120,
-        minPrice: 60,
-        maxPrice: 300,
-        icon: "pi pi-book",
-        sortOrder: 1
-    },
-    {
-        slug: "rare_figure",
-        name: "Seltene Figur",
-        groupKey: "otaku",
-        basePrice: 850,
-        minPrice: 400,
-        maxPrice: 2000,
-        icon: "pi pi-star",
-        volatility: 1.5,
-        sortOrder: 2
-    },
-    {
-        slug: "anime_bluray",
-        name: "Anime Blu-ray",
-        groupKey: "otaku",
-        basePrice: 250,
-        minPrice: 100,
-        maxPrice: 600,
-        icon: "pi pi-play",
-        sortOrder: 3
-    },
-    {
-        slug: "cosplay_material",
-        name: "Cosplay Material",
-        groupKey: "otaku",
-        basePrice: 180,
-        minPrice: 80,
-        maxPrice: 450,
-        icon: "pi pi-palette",
-        sortOrder: 4
-    },
-    {
-        slug: "doujinshi",
-        name: "Doujinshi",
-        groupKey: "otaku",
-        basePrice: 80,
-        minPrice: 30,
-        maxPrice: 220,
-        icon: "pi pi-book",
-        sortOrder: 5
-    },
-    {
-        slug: "nendoroid",
-        name: "Nendoroid Figur",
-        groupKey: "otaku",
-        basePrice: 420,
-        minPrice: 180,
-        maxPrice: 950,
-        icon: "pi pi-star-fill",
-        volatility: 1.3,
-        sortOrder: 6
-    },
-    {
-        slug: "trading_card",
-        name: "Sammelkarte",
-        groupKey: "otaku",
-        basePrice: 200,
-        minPrice: 40,
-        maxPrice: 1200,
-        icon: "pi pi-id-card",
-        volatility: 1.8,
-        sortOrder: 7
-    },
-    {
-        slug: "artbook",
-        name: "Artbook",
-        groupKey: "otaku",
-        basePrice: 160,
-        minPrice: 70,
-        maxPrice: 380,
-        icon: "pi pi-image",
-        sortOrder: 8
-    },
-    {
-        slug: "dakimakura",
-        name: "Dakimakura",
-        groupKey: "otaku",
-        basePrice: 300,
-        minPrice: 120,
-        maxPrice: 700,
-        icon: "pi pi-heart-fill",
-        volatility: 1.2,
-        sortOrder: 9
-    },
-
-    // ── Japanische Natur ─────────────────────────────────────────────────────
-    {
-        slug: "sakura_petals",
-        name: "Sakura-Blüten",
-        groupKey: "nature",
-        basePrice: 50,
-        minPrice: 20,
-        maxPrice: 150,
-        icon: "pi pi-sun",
-        sortOrder: 1
-    },
-    {
-        slug: "matcha_powder",
-        name: "Matcha-Pulver",
-        groupKey: "nature",
-        basePrice: 90,
-        minPrice: 40,
-        maxPrice: 220,
-        icon: "pi pi-leaf",
-        sortOrder: 2
-    },
-    {
-        slug: "bamboo",
-        name: "Bambus",
-        groupKey: "nature",
-        basePrice: 35,
-        minPrice: 15,
-        maxPrice: 100,
-        icon: "pi pi-bars",
-        sortOrder: 3
-    },
-    {
-        slug: "koi_fish",
-        name: "Koi-Fisch",
-        groupKey: "nature",
-        basePrice: 300,
-        minPrice: 120,
-        maxPrice: 750,
-        icon: "pi pi-heart",
-        volatility: 1.3,
-        sortOrder: 4
-    },
-    {
-        slug: "bonsai_tree",
-        name: "Bonsai-Baum",
-        groupKey: "nature",
-        basePrice: 450,
-        minPrice: 180,
-        maxPrice: 1200,
-        icon: "pi pi-sitemap",
-        volatility: 1.1,
-        sortOrder: 5
-    },
-    {
-        slug: "washi_paper",
-        name: "Washi-Papier",
-        groupKey: "nature",
-        basePrice: 70,
-        minPrice: 28,
-        maxPrice: 180,
-        icon: "pi pi-file",
-        sortOrder: 6
-    },
-    {
-        slug: "kokedama",
-        name: "Kokedama",
-        groupKey: "nature",
-        basePrice: 130,
-        minPrice: 50,
-        maxPrice: 320,
+        slug: "copper_ore",
+        name: "Kupfererz",
+        description: "Hergestellt aus 3x Kupfererz.",
+        groupKey: "mining",
+        basePrice: 30,
+        minPrice: 12,
+        maxPrice: 90,
         icon: "pi pi-circle",
-        sortOrder: 7
+        tier: 0,
+        sortOrder: 0
     },
     {
-        slug: "sencha_tea",
-        name: "Sencha-Tee",
-        groupKey: "nature",
+        slug: "copper_ingot",
+        name: "Kupferbarren", description: "Hergestellt aus 3x Kupfererz.",
+        groupKey: "mining",
         basePrice: 75,
         minPrice: 30,
-        maxPrice: 190,
-        icon: "pi pi-coffee",
-        sortOrder: 8
-    },
-    {
-        slug: "lotus_blossom",
-        name: "Lotusblüte",
-        groupKey: "nature",
-        basePrice: 110,
-        minPrice: 45,
-        maxPrice: 280,
-        icon: "pi pi-sun",
-        volatility: 1.2,
-        sortOrder: 9
-    },
-
-    // ── Edelsteine & Metalle ─────────────────────────────────────────────────
-    {
-        slug: "jade_stone",
-        name: "Jadenstein",
-        groupKey: "minerals",
-        basePrice: 400,
-        minPrice: 200,
-        maxPrice: 1000,
-        icon: "pi pi-circle",
+        maxPrice: 200,
+        icon: "pi pi-stop",
+        tier: 1,
+        craftedFrom: "copper_ore",
+        craftCost: 3,
         sortOrder: 1
+    },
+    {
+        slug: "copper_wire",
+        name: "Kupferdraht",
+        description: "Hergestellt aus 2x Kupferbarren.",
+        groupKey: "mining",
+        basePrice: 160,
+        minPrice: 65,
+        maxPrice: 420,
+        icon: "pi pi-minus",
+        tier: 2,
+        craftedFrom: "copper_ingot",
+        craftCost: 2,
+        sortOrder: 2
+    },
+    {
+        slug: "electronics",
+        name: "Elektronik",
+        description: "Hergestellt aus 3x Kupferdraht.",
+        groupKey: "mining",
+        basePrice: 380,
+        minPrice: 150,
+        maxPrice: 950,
+        icon: "pi pi-microchip",
+        tier: 3,
+        craftedFrom: "copper_wire",
+        craftCost: 3,
+        volatility: 1.3,
+        sortOrder: 3
+    },
+    // Eisen-Kette: Eisenerz → Stahlbarren → Tamahagane → Katana
+    {
+        slug: "iron_ore",
+        name: "Eisenerz",
+        description: "Hergestellt aus 3x Eisenerz.",
+        groupKey: "mining",
+        basePrice: 35,
+        minPrice: 14,
+        maxPrice: 100,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 4
+    },
+    {
+        slug: "steel_ingot",
+        name: "Stahlbarren", description: "Hergestellt aus 3x Eisenerz.",
+        groupKey: "mining",
+        basePrice: 90,
+        minPrice: 36,
+        maxPrice: 240,
+        icon: "pi pi-stop",
+        tier: 1,
+        craftedFrom: "iron_ore",
+        craftCost: 3,
+        sortOrder: 5
     },
     {
         slug: "tamahagane",
         name: "Tamahagane-Stahl",
-        groupKey: "minerals",
-        basePrice: 600,
-        minPrice: 300,
-        maxPrice: 1500,
-        icon: "pi pi-bolt",
+        description: "Hergestellt aus 3x Stahlbarren.",
+        groupKey: "mining",
+        basePrice: 250,
+        minPrice: 100,
+        maxPrice: 650,
+        icon: "pi pi-shield",
+        tier: 2,
+        craftedFrom: "steel_ingot",
+        craftCost: 3,
         volatility: 1.2,
-        sortOrder: 2
-    },
-    {
-        slug: "crystal_shard",
-        name: "Kristallsplitter",
-        groupKey: "minerals",
-        basePrice: 200,
-        minPrice: 80,
-        maxPrice: 500,
-        icon: "pi pi-sparkles",
-        sortOrder: 3
-    },
-    {
-        slug: "obsidian",
-        name: "Obsidian",
-        groupKey: "minerals",
-        basePrice: 180,
-        minPrice: 70,
-        maxPrice: 460,
-        icon: "pi pi-stop-circle",
-        sortOrder: 4
-    },
-    {
-        slug: "pearl",
-        name: "Perle",
-        groupKey: "minerals",
-        basePrice: 350,
-        minPrice: 140,
-        maxPrice: 920,
-        icon: "pi pi-circle-fill",
-        volatility: 1.3,
-        sortOrder: 5
-    },
-    {
-        slug: "orichalcum",
-        name: "Oreichalkon",
-        groupKey: "minerals",
-        basePrice: 1100,
-        minPrice: 450,
-        maxPrice: 3000,
-        icon: "pi pi-server",
-        volatility: 1.8,
         sortOrder: 6
     },
     {
-        slug: "mithril_dust",
-        name: "Mithrilstaub",
-        groupKey: "minerals",
-        basePrice: 780,
+        slug: "katana",
+        name: "Katana",
+        description: "Hergestellt aus 2x Tamahagane-Stahl.",
+        groupKey: "mining",
+        basePrice: 800,
         minPrice: 320,
-        maxPrice: 2000,
-        icon: "pi pi-sparkles",
+        maxPrice: 2200,
+        icon: "pi pi-bolt",
+        tier: 3,
+        craftedFrom: "tamahagane",
+        craftCost: 2,
         volatility: 1.5,
         sortOrder: 7
     },
-
-    // ── Speisen & Getränke ───────────────────────────────────────────────────
+    // Gold-Kette: Golderz → Goldbarren → Goldschmuck
     {
-        slug: "onigiri",
-        name: "Onigiri",
-        groupKey: "food",
+        slug: "gold_ore",
+        name: "Golderz",
+        description: "Hergestellt aus 3x Golderz.",
+        groupKey: "mining",
+        basePrice: 80,
+        minPrice: 32,
+        maxPrice: 220,
+        icon: "pi pi-circle",
+        tier: 0,
+        volatility: 1.1,
+        sortOrder: 8
+    },
+    {
+        slug: "gold_ingot",
+        name: "Goldbarren", description: "Hergestellt aus 3x Golderz.",
+        groupKey: "mining",
+        basePrice: 220,
+        minPrice: 88,
+        maxPrice: 580,
+        icon: "pi pi-stop",
+        tier: 1,
+        craftedFrom: "gold_ore",
+        craftCost: 3,
+        volatility: 1.2,
+        sortOrder: 9
+    },
+    {
+        slug: "gold_jewelry",
+        name: "Goldschmuck",
+        description: "Hergestellt aus 2x Goldbarren.",
+        groupKey: "mining",
+        basePrice: 600,
+        minPrice: 240,
+        maxPrice: 1600,
+        icon: "pi pi-star",
+        tier: 2,
+        craftedFrom: "gold_ingot",
+        craftCost: 2,
+        volatility: 1.4,
+        sortOrder: 10
+    },
+    // Jade-Kette: Jadeerz → Jadeschliff → Jadeamulett
+    {
+        slug: "jade_raw",
+        name: "Rohjade",
+        description: "Hergestellt aus 2x Rohjade.",
+        groupKey: "mining",
+        basePrice: 60,
+        minPrice: 24,
+        maxPrice: 160,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 11
+    },
+    {
+        slug: "jade_polished",
+        name: "Polierte Jade", description: "Hergestellt aus 2x Rohjade.",
+        groupKey: "mining",
+        basePrice: 180,
+        minPrice: 72,
+        maxPrice: 480,
+        icon: "pi pi-sun",
+        tier: 1,
+        craftedFrom: "jade_raw",
+        craftCost: 2,
+        sortOrder: 12
+    },
+    {
+        slug: "jade_amulet",
+        name: "Jade-Amulett",
+        description: "Hergestellt aus 2x Polierte Jade.",
+        groupKey: "mining",
+        basePrice: 500,
+        minPrice: 200,
+        maxPrice: 1300,
+        icon: "pi pi-heart",
+        tier: 2,
+        craftedFrom: "jade_polished",
+        craftCost: 2,
+        volatility: 1.3,
+        sortOrder: 13
+    },
+    // Kristall: Kristall → Kristalllinse → Kristallkugel
+    {
+        slug: "crystal_raw",
+        name: "Rohkristall",
+        description: "Hergestellt aus 3x Rohkristall.",
+        groupKey: "mining",
+        basePrice: 45,
+        minPrice: 18,
+        maxPrice: 130,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 14
+    },
+    {
+        slug: "crystal_lens",
+        name: "Kristalllinse", description: "Hergestellt aus 3x Rohkristall.",
+        groupKey: "mining",
+        basePrice: 140,
+        minPrice: 56,
+        maxPrice: 370,
+        icon: "pi pi-eye",
+        tier: 1,
+        craftedFrom: "crystal_raw",
+        craftCost: 3,
+        sortOrder: 15
+    },
+    {
+        slug: "crystal_orb",
+        name: "Kristallkugel",
+        description: "Hergestellt aus 2x Kristalllinse.",
+        groupKey: "mining",
+        basePrice: 420,
+        minPrice: 168,
+        maxPrice: 1100,
+        icon: "pi pi-globe",
+        tier: 2,
+        craftedFrom: "crystal_lens",
+        craftCost: 2,
+        volatility: 1.4,
+        sortOrder: 16
+    },
+
+    // ═══ Natur / Nature ═════════════════════════════════════════════════════
+    // Bambus-Kette: Bambus → Bambusbretter → Bambusmöbel
+    {
+        slug: "bamboo",
+        name: "Bambus",
+        description: "Hergestellt aus 4x Bambus.",
+        groupKey: "nature",
         basePrice: 25,
         minPrice: 10,
-        maxPrice: 70,
-        icon: "pi pi-apple",
+        maxPrice: 75,
+        icon: "pi pi-align-justify",
+        tier: 0,
+        sortOrder: 0
+    },
+    {
+        slug: "bamboo_planks",
+        name: "Bambusbretter", description: "Hergestellt aus 4x Bambus.",
+        groupKey: "nature",
+        basePrice: 65,
+        minPrice: 26,
+        maxPrice: 175,
+        icon: "pi pi-table",
+        tier: 1,
+        craftedFrom: "bamboo",
+        craftCost: 4,
         sortOrder: 1
+    },
+    {
+        slug: "bamboo_furniture",
+        name: "Bambusmöbel",
+        description: "Hergestellt aus 3x Bambusbretter.",
+        groupKey: "nature",
+        basePrice: 200,
+        minPrice: 80,
+        maxPrice: 520,
+        icon: "pi pi-home",
+        tier: 2,
+        craftedFrom: "bamboo_planks",
+        craftCost: 3,
+        sortOrder: 2
+    },
+    // Sakura-Kette: Sakurablüten → Sakura-Extrakt → Sakura-Parfüm
+    {
+        slug: "sakura_petals",
+        name: "Sakura-Blüten",
+        description: "Hergestellt aus 5x Sakura-Blüten.",
+        groupKey: "nature",
+        basePrice: 40,
+        minPrice: 16,
+        maxPrice: 120,
+        icon: "pi pi-sun",
+        tier: 0,
+        sortOrder: 3
+    },
+    {
+        slug: "sakura_extract",
+        name: "Sakura-Extrakt", description: "Hergestellt aus 5x Sakura-Blüten.",
+        groupKey: "nature",
+        basePrice: 120,
+        minPrice: 48,
+        maxPrice: 320,
+        icon: "pi pi-filter",
+        tier: 1,
+        craftedFrom: "sakura_petals",
+        craftCost: 5,
+        sortOrder: 4
+    },
+    {
+        slug: "sakura_perfume",
+        name: "Sakura-Parfüm",
+        description: "Hergestellt aus 2x Sakura-Extrakt.",
+        groupKey: "nature",
+        basePrice: 350,
+        minPrice: 140,
+        maxPrice: 920,
+        icon: "pi pi-sparkles",
+        tier: 2,
+        craftedFrom: "sakura_extract",
+        craftCost: 2,
+        volatility: 1.3,
+        sortOrder: 5
+    },
+    // Tee-Kette: Teeblätter → Matcha-Pulver → Premium-Matcha-Set
+    {
+        slug: "tea_leaves",
+        name: "Teeblätter",
+        description: "Hergestellt aus 5x Teeblätter.",
+        groupKey: "nature",
+        basePrice: 20,
+        minPrice: 8,
+        maxPrice: 60,
+        icon: "pi pi-leaf",
+        tier: 0,
+        sortOrder: 6
+    },
+    {
+        slug: "matcha_powder",
+        name: "Matcha-Pulver", description: "Hergestellt aus 5x Teeblätter.",
+        groupKey: "nature",
+        basePrice: 70,
+        minPrice: 28,
+        maxPrice: 185,
+        icon: "pi pi-box",
+        tier: 1,
+        craftedFrom: "tea_leaves",
+        craftCost: 5,
+        sortOrder: 7
+    },
+    {
+        slug: "matcha_set",
+        name: "Premium-Matcha-Set",
+        description: "Hergestellt aus 3x Matcha-Pulver.",
+        groupKey: "nature",
+        basePrice: 220,
+        minPrice: 88,
+        maxPrice: 580,
+        icon: "pi pi-gift",
+        tier: 2,
+        craftedFrom: "matcha_powder",
+        craftCost: 3,
+        sortOrder: 8
+    },
+    // Lotus-Kette: Lotussamen → Lotusblüte → Lotusessenz
+    {
+        slug: "lotus_seed",
+        name: "Lotussamen",
+        description: "Hergestellt aus 3x Lotussamen.",
+        groupKey: "nature",
+        basePrice: 30,
+        minPrice: 12,
+        maxPrice: 90,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 9
+    },
+    {
+        slug: "lotus_blossom",
+        name: "Lotusblüte", description: "Hergestellt aus 3x Lotussamen.",
+        groupKey: "nature",
+        basePrice: 95,
+        minPrice: 38,
+        maxPrice: 250,
+        icon: "pi pi-sun",
+        tier: 1,
+        craftedFrom: "lotus_seed",
+        craftCost: 3,
+        sortOrder: 10
+    },
+    {
+        slug: "lotus_essence",
+        name: "Lotusessenz",
+        description: "Hergestellt aus 3x Lotusblüte.",
+        groupKey: "nature",
+        basePrice: 280,
+        minPrice: 112,
+        maxPrice: 740,
+        icon: "pi pi-sparkles",
+        tier: 2,
+        craftedFrom: "lotus_blossom",
+        craftCost: 3,
+        volatility: 1.2,
+        sortOrder: 11
+    },
+    // Seidenraupe → Seide → Kimono
+    {
+        slug: "silkworm",
+        name: "Seidenraupe",
+        description: "Hergestellt aus 4x Seidenraupe.",
+        groupKey: "nature",
+        basePrice: 35,
+        minPrice: 14,
+        maxPrice: 100,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 12
+    },
+    {
+        slug: "silk",
+        name: "Seide", description: "Hergestellt aus 4x Seidenraupe.",
+        groupKey: "nature",
+        basePrice: 110,
+        minPrice: 44,
+        maxPrice: 290,
+        icon: "pi pi-palette",
+        tier: 1,
+        craftedFrom: "silkworm",
+        craftCost: 4,
+        sortOrder: 13
+    },
+    {
+        slug: "kimono",
+        name: "Kimono",
+        description: "Hergestellt aus 3x Seide.",
+        groupKey: "nature",
+        basePrice: 400,
+        minPrice: 160,
+        maxPrice: 1050,
+        icon: "pi pi-user",
+        tier: 2,
+        craftedFrom: "silk",
+        craftCost: 3,
+        volatility: 1.3,
+        sortOrder: 14
+    },
+
+    // ═══ Nahrung / Food ═════════════════════════════════════════════════════
+    // Reis-Kette: Reis → Onigiri → Bento-Box
+    {
+        slug: "rice",
+        name: "Reis",
+        description: "Hergestellt aus 3x Reis.",
+        groupKey: "food",
+        basePrice: 15,
+        minPrice: 6,
+        maxPrice: 45,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 0
+    },
+    {
+        slug: "onigiri",
+        name: "Onigiri", description: "Hergestellt aus 3x Reis.",
+        groupKey: "food",
+        basePrice: 40,
+        minPrice: 16,
+        maxPrice: 110,
+        icon: "pi pi-stop",
+        tier: 1,
+        craftedFrom: "rice",
+        craftCost: 3,
+        sortOrder: 1
+    },
+    {
+        slug: "bento_box",
+        name: "Bento-Box",
+        description: "Hergestellt aus 3x Onigiri.",
+        groupKey: "food",
+        basePrice: 120,
+        minPrice: 48,
+        maxPrice: 320,
+        icon: "pi pi-th-large",
+        tier: 2,
+        craftedFrom: "onigiri",
+        craftCost: 3,
+        sortOrder: 2
+    },
+    // Mehl-Kette: Mehl → Nudelteig → Ramen
+    {
+        slug: "flour",
+        name: "Mehl",
+        description: "Hergestellt aus 3x Mehl.",
+        groupKey: "food",
+        basePrice: 12,
+        minPrice: 5,
+        maxPrice: 35,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 3
+    },
+    {
+        slug: "noodle_dough",
+        name: "Nudelteig", description: "Hergestellt aus 3x Mehl.",
+        groupKey: "food",
+        basePrice: 35,
+        minPrice: 14,
+        maxPrice: 95,
+        icon: "pi pi-minus",
+        tier: 1,
+        craftedFrom: "flour",
+        craftCost: 3,
+        sortOrder: 4
     },
     {
         slug: "ramen_bowl",
         name: "Ramen-Schüssel",
+        description: "Hergestellt aus 2x Nudelteig.",
         groupKey: "food",
-        basePrice: 60,
-        minPrice: 25,
-        maxPrice: 150,
-        icon: "pi pi-shopping-bag",
-        sortOrder: 2
-    },
-    {
-        slug: "mochi",
-        name: "Mochi",
-        groupKey: "food",
-        basePrice: 40,
-        minPrice: 15,
-        maxPrice: 100,
-        icon: "pi pi-circle-fill",
-        sortOrder: 3
-    },
-    {
-        slug: "sake_bottle",
-        name: "Sake-Flasche",
-        groupKey: "food",
-        basePrice: 150,
-        minPrice: 60,
-        maxPrice: 400,
-        icon: "pi pi-gift",
-        volatility: 1.1,
-        sortOrder: 4
-    },
-    {
-        slug: "takoyaki",
-        name: "Takoyaki",
-        groupKey: "food",
-        basePrice: 35,
-        minPrice: 14,
-        maxPrice: 90,
-        icon: "pi pi-circle",
+        basePrice: 100,
+        minPrice: 40,
+        maxPrice: 260,
+        icon: "pi pi-sun",
+        tier: 2,
+        craftedFrom: "noodle_dough",
+        craftCost: 2,
         sortOrder: 5
+    },
+    // Fisch-Kette: Fisch → Sashimi → Sushi-Platte
+    {
+        slug: "raw_fish",
+        name: "Frischer Fisch",
+        description: "Hergestellt aus 2x Frischer Fisch.",
+        groupKey: "food",
+        basePrice: 25,
+        minPrice: 10,
+        maxPrice: 70,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 6
+    },
+    {
+        slug: "sashimi",
+        name: "Sashimi", description: "Hergestellt aus 2x Frischer Fisch.",
+        groupKey: "food",
+        basePrice: 70,
+        minPrice: 28,
+        maxPrice: 185,
+        icon: "pi pi-minus",
+        tier: 1,
+        craftedFrom: "raw_fish",
+        craftCost: 2,
+        sortOrder: 7
+    },
+    {
+        slug: "sushi_platter",
+        name: "Sushi-Platte",
+        description: "Hergestellt aus 3x Sashimi.",
+        groupKey: "food",
+        basePrice: 220,
+        minPrice: 88,
+        maxPrice: 580,
+        icon: "pi pi-th-large",
+        tier: 2,
+        craftedFrom: "sashimi",
+        craftCost: 3,
+        volatility: 1.2,
+        sortOrder: 8
+    },
+    // Azuki-Kette: Azuki-Bohnen → Anko → Wagashi
+    {
+        slug: "azuki_beans",
+        name: "Azuki-Bohnen",
+        description: "Hergestellt aus 4x Azuki-Bohnen.",
+        groupKey: "food",
+        basePrice: 18,
+        minPrice: 7,
+        maxPrice: 50,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 9
+    },
+    {
+        slug: "anko_paste",
+        name: "Anko-Paste", description: "Hergestellt aus 4x Azuki-Bohnen.",
+        groupKey: "food",
+        basePrice: 50,
+        minPrice: 20,
+        maxPrice: 135,
+        icon: "pi pi-filter",
+        tier: 1,
+        craftedFrom: "azuki_beans",
+        craftCost: 4,
+        sortOrder: 10
     },
     {
         slug: "wagashi",
         name: "Wagashi",
+        description: "Hergestellt aus 2x Anko-Paste.",
         groupKey: "food",
-        basePrice: 55,
-        minPrice: 20,
-        maxPrice: 140,
+        basePrice: 150,
+        minPrice: 60,
+        maxPrice: 400,
         icon: "pi pi-heart",
-        sortOrder: 6
+        tier: 2,
+        craftedFrom: "anko_paste",
+        craftCost: 2,
+        sortOrder: 11
+    },
+    // Sake-Kette: Reis → Sake → Premium-Sake
+    {
+        slug: "sake_rice",
+        name: "Sake-Reis",
+        description: "Hergestellt aus 5x Sake-Reis.",
+        groupKey: "food",
+        basePrice: 22,
+        minPrice: 9,
+        maxPrice: 65,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 12
     },
     {
-        slug: "yakitori",
-        name: "Yakitori",
+        slug: "sake",
+        name: "Sake", description: "Hergestellt aus 5x Sake-Reis.",
         groupKey: "food",
-        basePrice: 45,
-        minPrice: 18,
-        maxPrice: 115,
-        icon: "pi pi-bolt",
-        sortOrder: 7
+        basePrice: 80,
+        minPrice: 32,
+        maxPrice: 210,
+        icon: "pi pi-glass-martini",
+        tier: 1,
+        craftedFrom: "sake_rice",
+        craftCost: 5,
+        sortOrder: 13
     },
     {
-        slug: "taiyaki",
-        name: "Taiyaki",
+        slug: "premium_sake",
+        name: "Premium-Sake",
+        description: "Hergestellt aus 2x Sake.",
         groupKey: "food",
-        basePrice: 30,
-        minPrice: 12,
-        maxPrice: 75,
+        basePrice: 280,
+        minPrice: 112,
+        maxPrice: 740,
         icon: "pi pi-star",
-        sortOrder: 8
-    },
-    {
-        slug: "umeshu",
-        name: "Umeshu (Pflaumenwein)",
-        groupKey: "food",
-        basePrice: 110,
-        minPrice: 45,
-        maxPrice: 280,
-        icon: "pi pi-bottle",
-        volatility: 1.2,
-        sortOrder: 9
+        tier: 2,
+        craftedFrom: "sake",
+        craftCost: 2,
+        volatility: 1.3,
+        sortOrder: 14
     },
 
-    // ── Seltene Güter ────────────────────────────────────────────────────────
+    // ═══ Otaku / Sammlerstücke ══════════════════════════════════════════════
+    // Manga-Kette: Papier → Manga → Sammelband → Collector's Edition
     {
-        slug: "dragon_scale",
-        name: "Drachenschuppe",
-        groupKey: "rare",
-        basePrice: 1500,
-        minPrice: 700,
-        maxPrice: 4000,
-        icon: "pi pi-shield",
-        volatility: 2.0,
-        sortOrder: 1,
-        canSell: true
+        slug: "blank_paper",
+        name: "Druckpapier",
+        description: "Hergestellt aus 5x Druckpapier.",
+        groupKey: "otaku",
+        basePrice: 10,
+        minPrice: 4,
+        maxPrice: 30,
+        icon: "pi pi-file",
+        tier: 0,
+        sortOrder: 0
     },
     {
-        slug: "spirit_essence",
-        name: "Geisteressenz",
-        groupKey: "rare",
-        basePrice: 2000,
-        minPrice: 900,
-        maxPrice: 5000,
-        icon: "pi pi-eye",
-        volatility: 2.0,
+        slug: "manga_volume",
+        name: "Manga Band", description: "Hergestellt aus 5x Druckpapier.",
+        groupKey: "otaku",
+        basePrice: 55,
+        minPrice: 22,
+        maxPrice: 145,
+        icon: "pi pi-book",
+        tier: 1,
+        craftedFrom: "blank_paper",
+        craftCost: 5,
+        sortOrder: 1
+    },
+    {
+        slug: "manga_box_set",
+        name: "Manga Sammelbox",
+        description: "Hergestellt aus 5x Manga Band.",
+        groupKey: "otaku",
+        basePrice: 250,
+        minPrice: 100,
+        maxPrice: 660,
+        icon: "pi pi-inbox",
+        tier: 2,
+        craftedFrom: "manga_volume",
+        craftCost: 5,
         sortOrder: 2
     },
     {
-        slug: "ancient_scroll",
-        name: "Alte Schriftrolle",
-        groupKey: "rare",
-        basePrice: 1200,
-        minPrice: 500,
-        maxPrice: 3000,
-        icon: "pi pi-file",
-        volatility: 1.8,
+        slug: "collectors_edition",
+        name: "Collector's Edition",
+        description: "Hergestellt aus 2x Manga Sammelbox.",
+        groupKey: "otaku",
+        basePrice: 700,
+        minPrice: 280,
+        maxPrice: 1850,
+        icon: "pi pi-trophy",
+        tier: 3,
+        craftedFrom: "manga_box_set",
+        craftCost: 2,
+        volatility: 1.5,
         sortOrder: 3
     },
+    // Figur-Kette: Plastik → Rohfigur → Nendoroid → Limitierte Figur
+    {
+        slug: "raw_plastic",
+        name: "Rohmaterial",
+        description: "Hergestellt aus 4x Rohmaterial.",
+        groupKey: "otaku",
+        basePrice: 15,
+        minPrice: 6,
+        maxPrice: 45,
+        icon: "pi pi-circle",
+        tier: 0,
+        sortOrder: 4
+    },
+    {
+        slug: "figure_base",
+        name: "Rohfigur", description: "Hergestellt aus 4x Rohmaterial.",
+        groupKey: "otaku",
+        basePrice: 60,
+        minPrice: 24,
+        maxPrice: 160,
+        icon: "pi pi-user",
+        tier: 1,
+        craftedFrom: "raw_plastic",
+        craftCost: 4,
+        sortOrder: 5
+    },
+    {
+        slug: "nendoroid",
+        name: "Nendoroid",
+        description: "Hergestellt aus 2x Rohfigur.",
+        groupKey: "otaku",
+        basePrice: 200,
+        minPrice: 80,
+        maxPrice: 520,
+        icon: "pi pi-star",
+        tier: 2,
+        craftedFrom: "figure_base",
+        craftCost: 2,
+        volatility: 1.3,
+        sortOrder: 6
+    },
+    {
+        slug: "limited_figure",
+        name: "Limitierte Figur",
+        description: "Hergestellt aus 2x Nendoroid.",
+        groupKey: "otaku",
+        basePrice: 650,
+        minPrice: 260,
+        maxPrice: 1700,
+        icon: "pi pi-crown",
+        tier: 3,
+        craftedFrom: "nendoroid",
+        craftCost: 2,
+        volatility: 1.6,
+        sortOrder: 7
+    },
+    // Cosplay-Kette: Stoff → Cosplay-Teil → Cosplay-Set
+    {
+        slug: "fabric",
+        name: "Stoff",
+        description: "Hergestellt aus 4x Stoff.",
+        groupKey: "otaku",
+        basePrice: 20,
+        minPrice: 8,
+        maxPrice: 55,
+        icon: "pi pi-palette",
+        tier: 0,
+        sortOrder: 8
+    },
+    {
+        slug: "cosplay_piece",
+        name: "Cosplay-Teil", description: "Hergestellt aus 4x Stoff.",
+        groupKey: "otaku",
+        basePrice: 80,
+        minPrice: 32,
+        maxPrice: 210,
+        icon: "pi pi-user",
+        tier: 1,
+        craftedFrom: "fabric",
+        craftCost: 4,
+        sortOrder: 9
+    },
+    {
+        slug: "cosplay_set",
+        name: "Vollständiges Cosplay",
+        description: "Hergestellt aus 4x Cosplay-Teil.",
+        groupKey: "otaku",
+        basePrice: 350,
+        minPrice: 140,
+        maxPrice: 920,
+        icon: "pi pi-users",
+        tier: 2,
+        craftedFrom: "cosplay_piece",
+        craftCost: 4,
+        volatility: 1.2,
+        sortOrder: 10
+    },
+    // Sammelkarten
+    {
+        slug: "trading_card",
+        name: "Sammelkarte",
+        description: "Hergestellt aus 4x Mithrilstaub.",
+        groupKey: "otaku",
+        basePrice: 45,
+        minPrice: 18,
+        maxPrice: 250,
+        icon: "pi pi-id-card",
+        tier: 0,
+        volatility: 1.8,
+        sortOrder: 11
+    },
+
+    // ═══ Mythisch / Rare ════════════════════════════════════════════════════
+    // Mithril-Kette: Mithrilstaub → Mithrilbarren → Mithrilklinge → Mithrilrüstung
+    {
+        slug: "mithril_dust",
+        name: "Mithrilstaub",
+        description: "Seltener Mithrilstaub aus den Tiefen der Erde.",
+        groupKey: "rare",
+        basePrice: 200,
+        minPrice: 80,
+        maxPrice: 520,
+        icon: "pi pi-sparkles",
+        tier: 0,
+        volatility: 1.5,
+        sortOrder: 0
+    },
+    {
+        slug: "mithril_ingot",
+        name: "Mithrilbarren", description: "Hergestellt aus 4x Mithrilstaub.",
+        groupKey: "rare",
+        basePrice: 550,
+        minPrice: 220,
+        maxPrice: 1450,
+        icon: "pi pi-stop",
+        tier: 1,
+        craftedFrom: "mithril_dust",
+        craftCost: 4,
+        volatility: 1.5,
+        sortOrder: 1
+    },
+    {
+        slug: "mithril_blade",
+        name: "Mithrilklinge",
+        description: "Hergestellt aus 2x Mithrilbarren.",
+        groupKey: "rare",
+        basePrice: 1400,
+        minPrice: 560,
+        maxPrice: 3700,
+        icon: "pi pi-bolt",
+        tier: 2,
+        craftedFrom: "mithril_ingot",
+        craftCost: 2,
+        volatility: 1.8,
+        sortOrder: 2
+    },
+    {
+        slug: "mithril_armor",
+        name: "Mithrilrüstung",
+        description: "Hergestellt aus 2x Mithrilklinge.",
+        groupKey: "rare",
+        basePrice: 3500,
+        minPrice: 1400,
+        maxPrice: 9200,
+        icon: "pi pi-shield",
+        tier: 3,
+        craftedFrom: "mithril_blade",
+        craftCost: 2,
+        volatility: 2.0,
+        sortOrder: 3
+    },
+    // Drachenschuppe → Drachenpanzer
+    {
+        slug: "dragon_scale",
+        name: "Drachenschuppe",
+        description: "Hergestellt aus 4x Drachenschuppe.",
+        groupKey: "rare",
+        basePrice: 800,
+        minPrice: 320,
+        maxPrice: 2100,
+        icon: "pi pi-bolt",
+        tier: 0,
+        volatility: 2.0,
+        sortOrder: 4
+    },
+    {
+        slug: "dragon_armor",
+        name: "Drachenpanzer", description: "Hergestellt aus 4x Drachenschuppe.",
+        groupKey: "rare",
+        basePrice: 2500,
+        minPrice: 1000,
+        maxPrice: 6600,
+        icon: "pi pi-shield",
+        tier: 1,
+        craftedFrom: "dragon_scale",
+        craftCost: 4,
+        volatility: 2.2,
+        sortOrder: 5
+    },
+    // Phönix-Kette: Phönixfeder → Phönixumhang
     {
         slug: "phoenix_feather",
         name: "Phönixfeder",
+        description: "Hergestellt aus 3x Phönixfeder.",
         groupKey: "rare",
-        basePrice: 3000,
-        minPrice: 1100,
-        maxPrice: 8000,
-        icon: "pi pi-send",
+        basePrice: 1200,
+        minPrice: 480,
+        maxPrice: 3200,
+        icon: "pi pi-sun",
+        tier: 0,
         volatility: 2.5,
-        sortOrder: 4
+        sortOrder: 6
+    },
+    {
+        slug: "phoenix_cloak",
+        name: "Phönixumhang", description: "Hergestellt aus 3x Phönixfeder.",
+        groupKey: "rare",
+        basePrice: 3800,
+        minPrice: 1520,
+        maxPrice: 10000,
+        icon: "pi pi-sparkles",
+        tier: 1,
+        craftedFrom: "phoenix_feather",
+        craftCost: 3,
+        volatility: 2.5,
+        sortOrder: 7
+    },
+    // Mondstein-Kette: Mondstein → Mondstein-Amulett → Mondstein-Krone
+    {
+        slug: "moonstone",
+        name: "Mondstein",
+        description: "Hergestellt aus 3x Mondstein.",
+        groupKey: "rare",
+        basePrice: 600,
+        minPrice: 240,
+        maxPrice: 1600,
+        icon: "pi pi-moon",
+        tier: 0,
+        volatility: 1.9,
+        sortOrder: 8
+    },
+    {
+        slug: "moonstone_amulet",
+        name: "Mondstein-Amulett", description: "Hergestellt aus 3x Mondstein.",
+        groupKey: "rare",
+        basePrice: 1600,
+        minPrice: 640,
+        maxPrice: 4200,
+        icon: "pi pi-heart",
+        tier: 1,
+        craftedFrom: "moonstone",
+        craftCost: 3,
+        volatility: 2.0,
+        sortOrder: 9
+    },
+    {
+        slug: "moonstone_crown",
+        name: "Mondstein-Krone",
+        description: "Hergestellt aus 2x Mondstein-Amulett.",
+        groupKey: "rare",
+        basePrice: 4500,
+        minPrice: 1800,
+        maxPrice: 12000,
+        icon: "pi pi-crown",
+        tier: 2,
+        craftedFrom: "moonstone_amulet",
+        craftCost: 2,
+        volatility: 2.3,
+        sortOrder: 10
+    },
+    // Geisteressenz → Geisterschild
+    {
+        slug: "spirit_essence",
+        name: "Geisteressenz",
+        description: "Hergestellt aus 3x Geisteressenz.",
+        groupKey: "rare",
+        basePrice: 900,
+        minPrice: 360,
+        maxPrice: 2400,
+        icon: "pi pi-eye",
+        tier: 0,
+        volatility: 2.0,
+        sortOrder: 11
+    },
+    {
+        slug: "spirit_shield",
+        name: "Geisterschild", description: "Hergestellt aus 3x Geisteressenz.",
+        groupKey: "rare",
+        basePrice: 2800,
+        minPrice: 1120,
+        maxPrice: 7400,
+        icon: "pi pi-shield",
+        tier: 1,
+        craftedFrom: "spirit_essence",
+        craftCost: 3,
+        volatility: 2.2,
+        sortOrder: 12
+    },
+    // Standalone Rare
+    {
+        slug: "ancient_scroll",
+        name: "Alte Schriftrolle",
+        description: "Uralte Schriftrolle mit vergessenem Wissen.",
+        groupKey: "rare",
+        basePrice: 500,
+        minPrice: 200,
+        maxPrice: 1300,
+        icon: "pi pi-file",
+        tier: 0,
+        volatility: 1.8,
+        sortOrder: 13
     },
     {
         slug: "oni_horn",
         name: "Oni-Horn",
+        description: "Horn eines besiegten Oni-Dämons.",
         groupKey: "rare",
-        basePrice: 2400,
-        minPrice: 900,
-        maxPrice: 6000,
-        icon: "pi pi-wrench",
+        basePrice: 1000,
+        minPrice: 400,
+        maxPrice: 2600,
+        icon: "pi pi-exclamation-triangle",
+        tier: 0,
         volatility: 2.2,
-        sortOrder: 5
-    },
-    {
-        slug: "moonstone",
-        name: "Mondstein",
-        groupKey: "rare",
-        basePrice: 1800,
-        minPrice: 650,
-        maxPrice: 4800,
-        icon: "pi pi-moon",
-        volatility: 1.9,
-        sortOrder: 6
-    },
-    {
-        slug: "cursed_katana",
-        name: "Verfluchtes Katana",
-        groupKey: "rare",
-        basePrice: 2800,
-        minPrice: 1000,
-        maxPrice: 7000,
-        icon: "pi pi-minus",
-        volatility: 2.3,
-        sortOrder: 7
+        sortOrder: 14
     }
 ];
 
 const DEFAULT_EVENTS: CreateMarketEventDto[] = [
-    // ── Otaku-Events ─────────────────────────────────────────────────────────
+    // ═══ Mining Events ══════════════════════════════════════════════════════
+    {
+        title: "Kupferader entdeckt!",
+        description: "Eine riesige Kupferader wurde gefunden — Kupfererz flutet den Markt.",
+        affectedSlugs: ["copper_ore", "copper_ingot"],
+        modifierType: "multiply",
+        modifierValue: 0.6,
+        weight: 8
+    },
+    {
+        title: "Eisenmangel",
+        description: "Eisen wird knapp — die Preise steigen.",
+        affectedSlugs: ["iron_ore", "steel_ingot", "tamahagane"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
+        weight: 7
+    },
+    {
+        title: "Goldrausch!",
+        description: "Alle suchen Gold — enorme Nachfrage treibt die Preise.",
+        affectedSlugs: ["gold_ore", "gold_ingot", "gold_jewelry"],
+        modifierType: "set_max",
+        weight: 5
+    },
+    {
+        title: "Schwertschmiede-Meister",
+        description: "Ein berühmter Schmied braucht Stahl — Tamahagane und Katana sind gefragt.",
+        affectedSlugs: ["tamahagane", "katana"],
+        modifierType: "multiply",
+        modifierValue: 1.7,
+        weight: 7
+    },
+    {
+        title: "Kristallmine eingestürzt",
+        description: "Kristalle werden selten — Preise explodieren.",
+        affectedSlugs: ["crystal_raw", "crystal_lens", "crystal_orb"],
+        modifierType: "multiply",
+        modifierValue: 1.8,
+        weight: 5
+    },
+    {
+        title: "Jade-Auktion",
+        description: "Seltene Jade wird versteigert — alle Jade-Produkte im Aufschwung.",
+        affectedSlugs: ["jade_raw", "jade_polished", "jade_amulet"],
+        modifierType: "multiply",
+        modifierValue: 1.5,
+        weight: 7
+    },
+    {
+        title: "Elektronik-Boom",
+        description: "Hohe Nachfrage nach Elektronik treibt die gesamte Kupfer-Kette.",
+        affectedSlugs: ["copper_wire", "electronics"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Überschuss an Erzen",
+        description: "Minen produzieren zu viel — Rohstoffpreise fallen.",
+        affectedSlugs: ["copper_ore", "iron_ore", "gold_ore", "jade_raw", "crystal_raw"],
+        modifierType: "multiply",
+        modifierValue: 0.5,
+        weight: 6
+    },
+
+    // ═══ Nature Events ══════════════════════════════════════════════════════
+    {
+        title: "Kirschblüten-Saison!",
+        description: "Sakura-Blüten sind überall — Überangebot drückt den Preis.",
+        affectedSlugs: ["sakura_petals", "sakura_extract"],
+        modifierType: "multiply",
+        modifierValue: 0.55,
+        weight: 10
+    },
+    {
+        title: "Parfüm-Wahn",
+        description: "Sakura-Parfüm ist der neue Trend — Preise steigen stark.",
+        affectedSlugs: ["sakura_perfume", "sakura_extract"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Bambus-Dürre",
+        description: "Bambus wächst nicht — extreme Knappheit.",
+        affectedSlugs: ["bamboo", "bamboo_planks"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Möbelmesse",
+        description: "Bambusmöbel sind gefragt wie nie.",
+        affectedSlugs: ["bamboo_furniture", "bamboo_planks"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
+        weight: 7
+    },
+    {
+        title: "Tee-Rekordernte",
+        description: "Perfektes Wetter — Teeblätter und Matcha im Überfluss.",
+        affectedSlugs: ["tea_leaves", "matcha_powder"],
+        modifierType: "multiply",
+        modifierValue: 0.55,
+        weight: 8
+    },
+    {
+        title: "Matcha-Hype",
+        description: "Matcha wird zum Superfood erklärt — Premium-Sets fliegen aus den Regalen.",
+        affectedSlugs: ["matcha_set", "matcha_powder"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Seidenstraße geöffnet",
+        description: "Neue Handelsroute — Seide und Kimonos werden günstig.",
+        affectedSlugs: ["silk", "kimono", "silkworm"],
+        modifierType: "multiply",
+        modifierValue: 0.6,
+        weight: 7
+    },
+    {
+        title: "Kimono-Festival",
+        description: "Kimonos sind extrem gefragt — Preise steigen.",
+        affectedSlugs: ["kimono", "silk"],
+        modifierType: "multiply",
+        modifierValue: 1.7,
+        weight: 7
+    },
+    {
+        title: "Lotusblüte-Saison",
+        description: "Lotusblüten blühen — Überangebot.",
+        affectedSlugs: ["lotus_seed", "lotus_blossom"],
+        modifierType: "multiply",
+        modifierValue: 0.6,
+        weight: 8
+    },
+    {
+        title: "Heilkräuter-Nachfrage",
+        description: "Lotusessenz wird als Heilmittel gesucht.",
+        affectedSlugs: ["lotus_essence", "lotus_blossom"],
+        modifierType: "multiply",
+        modifierValue: 1.8,
+        weight: 5
+    },
+
+    // ═══ Food Events ════════════════════════════════════════════════════════
+    {
+        title: "Ramen-Festival!",
+        description: "Ramen-Stände überall — die ganze Produktionskette boomt.",
+        affectedSlugs: ["flour", "noodle_dough", "ramen_bowl"],
+        modifierType: "multiply",
+        modifierValue: 1.5,
+        weight: 10
+    },
+    {
+        title: "Sushi-Woche",
+        description: "Sushi-Restaurants machen Werbung — Fisch und Sushi-Platten gefragt.",
+        affectedSlugs: ["raw_fish", "sashimi", "sushi_platter"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
+        weight: 8
+    },
+    {
+        title: "Fischfang-Boom",
+        description: "Fischer haben eine Rekordfang — Fischpreise fallen.",
+        affectedSlugs: ["raw_fish", "sashimi"],
+        modifierType: "multiply",
+        modifierValue: 0.5,
+        weight: 7
+    },
+    {
+        title: "Reis-Knappheit",
+        description: "Schlechte Ernte — Reis wird teuer.",
+        affectedSlugs: ["rice", "onigiri", "sake_rice"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Bento-Trend",
+        description: "Bento-Boxen sind der neue Lunch-Trend.",
+        affectedSlugs: ["bento_box", "onigiri"],
+        modifierType: "multiply",
+        modifierValue: 1.5,
+        weight: 8
+    },
+    {
+        title: "Wagashi-Kunstmarkt",
+        description: "Handgemachte Süßigkeiten sind im Trend.",
+        affectedSlugs: ["wagashi", "anko_paste", "azuki_beans"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
+        weight: 7
+    },
+    {
+        title: "Sake-Fest!",
+        description: "Großes Sake-Festival — Premium-Sake explodiert im Preis.",
+        affectedSlugs: ["sake", "premium_sake"],
+        modifierType: "set_max",
+        weight: 6
+    },
+    {
+        title: "Sake-Überproduktion",
+        description: "Zu viel Sake produziert — Preise sinken.",
+        affectedSlugs: ["sake", "sake_rice"],
+        modifierType: "multiply",
+        modifierValue: 0.55,
+        weight: 7
+    },
+    {
+        title: "Erntefest",
+        description: "Großes Erntefest — alle Grundnahrungsmittel werden günstig.",
+        affectedSlugs: ["rice", "flour", "azuki_beans", "raw_fish", "sake_rice"],
+        modifierType: "multiply",
+        modifierValue: 0.6,
+        weight: 8
+    },
+    {
+        title: "Lebensmittelkrise",
+        description: "Naturkatastrophe — alle Nahrungsmittel werden teuer.",
+        affectedSlugs: ["rice", "flour", "raw_fish", "onigiri", "ramen_bowl"],
+        modifierType: "multiply",
+        modifierValue: 1.7,
+        weight: 4
+    },
+
+    // ═══ Otaku Events ═══════════════════════════════════════════════════════
     {
         title: "Anime-Convention!",
-        description: "Eine große Anime-Convention steigt! Otaku-Waren sind extrem gefragt!",
-        affectedSlugs: ["manga_volume", "rare_figure", "anime_bluray", "cosplay_material"],
+        description: "Große Convention — Otaku-Waren boomen.",
+        affectedSlugs: ["manga_volume", "nendoroid", "limited_figure", "cosplay_set", "trading_card"],
         modifierType: "set_max",
         weight: 8
     },
     {
         title: "Manga-Überschwemmung",
-        description: "Ein Großverlag veröffentlicht reihenweise günstige Nachdrucke. Manga-Preise fallen!",
-        affectedSlugs: ["manga_volume", "doujinshi", "artbook"],
+        description: "Neuer Manga-Verlag druckt zu viel — Manga-Preise fallen.",
+        affectedSlugs: ["manga_volume", "blank_paper", "manga_box_set"],
         modifierType: "multiply",
-        modifierValue: 0.65,
-        weight: 9
+        modifierValue: 0.6,
+        weight: 8
     },
     {
-        title: "Sammelkarten-Hype",
-        description: "Ein virales Video macht Sammelkarten zum Kult – die Preise schießen durch die Decke!",
+        title: "Sammelkarten-Hype!",
+        description: "Neue Kartenedition — Trading Cards explodieren im Preis.",
         affectedSlugs: ["trading_card"],
         modifierType: "set_max",
         weight: 6
     },
     {
         title: "Nendoroid-Kollaboration",
-        description: "Eine exklusive Kollaboration mit einem Top-Franchise lässt Nendoroids und Figuren ausverkaufen!",
-        affectedSlugs: ["nendoroid", "rare_figure"],
-        modifierType: "set_max",
+        description: "Beliebter Anime bekommt Nendoroid — Figuren gefragt.",
+        affectedSlugs: ["nendoroid", "limited_figure", "figure_base"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
         weight: 7
     },
     {
         title: "Cosplay-Wettbewerb",
-        description: "Ein großer Cosplay-Wettbewerb sorgt für riesige Nachfrage nach Materialien!",
-        affectedSlugs: ["cosplay_material", "rare_figure"],
+        description: "Großer Cosplay-Wettbewerb steht an.",
+        affectedSlugs: ["cosplay_piece", "cosplay_set", "fabric"],
         modifierType: "multiply",
-        modifierValue: 1.4,
-        weight: 9
+        modifierValue: 1.5,
+        weight: 8
     },
     {
-        title: "Dakimakura-Lager-Räumung",
-        description: "Großes Lager wird geräumt – Dakimakuras zu Schleuderpreisen!",
-        affectedSlugs: ["dakimakura"],
-        modifierType: "set_min",
-        weight: 7
+        title: "Collector's Edition Ankündigung",
+        description: "Limitierte Collector's Edition angekündigt — Preise steigen enorm.",
+        affectedSlugs: ["collectors_edition", "manga_box_set"],
+        modifierType: "set_max",
+        weight: 4
     },
     {
         title: "Spielzeugmesse",
-        description: "Die jährliche Spielzeugmesse zieht Sammler an – Figuren und Karten explodieren!",
-        affectedSlugs: ["rare_figure", "nendoroid", "trading_card"],
+        description: "Internationale Spielzeugmesse — alle Figuren gefragt.",
+        affectedSlugs: ["figure_base", "nendoroid", "limited_figure", "raw_plastic"],
         modifierType: "multiply",
         modifierValue: 1.5,
-        weight: 8
-    },
-
-    // ── Natur-Events ─────────────────────────────────────────────────────────
-    {
-        title: "Kirschblüten-Saison",
-        description: "Die Sakura-Saison hat begonnen – Blüten sind überall verfügbar!",
-        affectedSlugs: ["sakura_petals", "lotus_blossom"],
-        modifierType: "set_min",
-        weight: 10
-    },
-    {
-        title: "Bambus-Dürre",
-        description: "Eine ungewöhnliche Dürre dezimiert die Bambuswälder. Preise steigen stark!",
-        affectedSlugs: ["bamboo", "kokedama"],
-        modifierType: "set_max",
-        weight: 6
-    },
-    {
-        title: "Matcha-Rekordernte",
-        description: "Die diesjährige Matcha- und Sencha-Ernte übertrifft alle Erwartungen!",
-        affectedSlugs: ["matcha_powder", "sencha_tea"],
-        modifierType: "multiply",
-        modifierValue: 0.65,
-        weight: 8
-    },
-    {
-        title: "Karpfenrennen",
-        description: "Das spektakuläre Koi-Rennen lässt Züchter die Preise hochjagen!",
-        affectedSlugs: ["koi_fish"],
-        modifierType: "set_max",
         weight: 7
     },
     {
-        title: "Bonsai-Ausstellung",
-        description: "Die nationale Bonsai-Schau lockt Sammler – Preise steigen dramatisch!",
-        affectedSlugs: ["bonsai_tree"],
-        modifierType: "multiply",
-        modifierValue: 1.7,
-        weight: 6
-    },
-    {
-        title: "Washi-Kunstmarkt",
-        description: "Traditionelle Künstler reißen Washi-Papier vom Markt!",
-        affectedSlugs: ["washi_paper", "artbook"],
-        modifierType: "multiply",
-        modifierValue: 1.5,
-        weight: 8
-    },
-    {
-        title: "Lotusblüte-Saison",
-        description: "Lotusblüten blühen in Hülle und Fülle – ein Überangebot drückt den Preis!",
-        affectedSlugs: ["lotus_blossom", "sakura_petals"],
-        modifierType: "multiply",
-        modifierValue: 0.6,
-        weight: 8
-    },
-
-    // ── Mineral-Events ────────────────────────────────────────────────────────
-    {
-        title: "Schwertschmiede-Meister",
-        description: "Ein berühmter Schmied besucht die Stadt. Tamahagane wird knapp!",
-        affectedSlugs: ["tamahagane", "orichalcum"],
-        modifierType: "multiply",
-        modifierValue: 1.6,
-        weight: 7
-    },
-    {
-        title: "Kristall-Mine entdeckt",
-        description: "Eine neue Kristallmine wurde entdeckt – Kristalle und Obsidian im Überfluss!",
-        affectedSlugs: ["crystal_shard", "jade_stone", "obsidian"],
+        title: "Druckkosten gesunken",
+        description: "Papier wird billig — Manga-Produktion wird günstiger.",
+        affectedSlugs: ["blank_paper", "manga_volume"],
         modifierType: "multiply",
         modifierValue: 0.55,
-        weight: 6
-    },
-    {
-        title: "Perlenfischer-Saison",
-        description: "Die Perlenfischer-Flotte kehrt mit rekordverdächtiger Ausbeute zurück!",
-        affectedSlugs: ["pearl"],
-        modifierType: "multiply",
-        modifierValue: 0.6,
         weight: 7
     },
+
+    // ═══ Rare/Mythical Events ═══════════════════════════════════════════════
     {
-        title: "Edelstein-Diebstahl",
-        description: "Ein Dieb hat das Jadestein-Lager ausgeraubt – Preise schnellen hoch!",
-        affectedSlugs: ["jade_stone", "crystal_shard", "pearl"],
+        title: "Drachenfest!",
+        description: "Drachenschuppen sind extrem gefragt.",
+        affectedSlugs: ["dragon_scale", "dragon_armor"],
         modifierType: "multiply",
         modifierValue: 1.8,
         weight: 5
     },
     {
-        title: "Waffenschmied-Turnier",
-        description: "Das große Schmiedeturnier lässt alle Metallpreise steigen!",
-        affectedSlugs: ["tamahagane", "obsidian", "mithril_dust"],
-        modifierType: "multiply",
-        modifierValue: 1.5,
-        weight: 7
-    },
-    {
-        title: "Mithril-Fund",
-        description: "In den Bergen wird eine Mithrilader entdeckt – Preise stürzen ab!",
-        affectedSlugs: ["mithril_dust", "orichalcum"],
-        modifierType: "multiply",
-        modifierValue: 0.5,
-        weight: 5
-    },
-
-    // ── Food-Events ──────────────────────────────────────────────────────────
-    {
-        title: "Ramen-Festival",
-        description: "Ein Ramen-Festival findet statt – Ramen-Preise explodieren!",
-        affectedSlugs: ["ramen_bowl", "onigiri"],
-        modifierType: "multiply",
-        modifierValue: 1.5,
-        weight: 12
-    },
-    {
-        title: "Sake-Fest",
-        description: "Die jährliche Sake-Verkostung treibt die Preise in die Höhe!",
-        affectedSlugs: ["sake_bottle", "umeshu"],
-        modifierType: "multiply",
-        modifierValue: 1.7,
-        weight: 8
-    },
-    {
-        title: "Sake-Knappheit",
-        description: "Eine schlechte Reisernte macht Sake zur Rarität!",
-        affectedSlugs: ["sake_bottle"],
-        modifierType: "set_max",
-        weight: 6
-    },
-    {
-        title: "Takoyaki-Stand-Boom",
-        description: "Takoyaki-Stände eröffnen überall – riesige Nachfrage!",
-        affectedSlugs: ["takoyaki", "onigiri", "taiyaki"],
-        modifierType: "multiply",
-        modifierValue: 1.4,
-        weight: 10
-    },
-    {
-        title: "Herbstfest",
-        description: "Das Herbstfest zieht Massen an – Wagashi und Sake sind Renner!",
-        affectedSlugs: ["wagashi", "sake_bottle", "mochi"],
-        modifierType: "multiply",
-        modifierValue: 1.45,
-        weight: 9
-    },
-    {
-        title: "Lebensmittelkrise",
-        description: "Lieferengpässe sorgen für Hamsterkäufe – Basisnahrung ist knapp!",
-        affectedSlugs: ["ramen_bowl", "onigiri", "mochi", "taiyaki"],
-        modifierType: "multiply",
-        modifierValue: 1.6,
-        weight: 5
-    },
-    {
-        title: "Küstenmarkt",
-        description: "Der Küstenmarkt bietet frische Meeresfrüchte – Takoyaki und Yakitori in Fülle!",
-        affectedSlugs: ["takoyaki", "yakitori"],
-        modifierType: "multiply",
-        modifierValue: 0.65,
-        weight: 8
-    },
-    {
-        title: "Umeshu-Ernte",
-        description: "Außergewöhnlich gute Pflaumen-Ernte – Umeshu wird günstig!",
-        affectedSlugs: ["umeshu"],
-        modifierType: "multiply",
-        modifierValue: 0.6,
-        weight: 7
-    },
-
-    // ── Rare-Events ──────────────────────────────────────────────────────────
-    {
-        title: "Drachenfest",
-        description: "Beim jährlichen Drachenfest sind Drachenschuppen hochbegehrt!",
-        affectedSlugs: ["dragon_scale"],
-        modifierType: "multiply",
-        modifierValue: 1.8,
-        weight: 5
-    },
-    {
-        title: "Geister-Erscheinung",
-        description: "Mysteriöse Geister wurden gesichtet. Geisteressenzen fluten den Markt!",
-        affectedSlugs: ["spirit_essence"],
-        modifierType: "multiply",
-        modifierValue: 0.5,
-        weight: 6
-    },
-    {
-        title: "Große Schriftgelehrte",
-        description: "Reisende Gelehrte suchen überall nach seltenen Schriftrollen und Artbooks!",
-        affectedSlugs: ["ancient_scroll", "artbook"],
-        modifierType: "multiply",
-        modifierValue: 1.6,
-        weight: 7
-    },
-    {
-        title: "Phönix-Erscheinung",
-        description: "Ein Phönix wurde über der Stadt gesichtet – seine Federn sind unschätzbar!",
-        affectedSlugs: ["phoenix_feather"],
+        title: "Phönix-Erscheinung!",
+        description: "Ein Phönix wurde gesichtet — Federn werden extrem wertvoll.",
+        affectedSlugs: ["phoenix_feather", "phoenix_cloak"],
         modifierType: "set_max",
         weight: 3
     },
     {
-        title: "Phönix-Feuer-Regen",
-        description: "Phönixfedern regnen auf die Stadt – ein Überangebot drückt die Preise!",
-        affectedSlugs: ["phoenix_feather"],
+        title: "Mithril-Fund!",
+        description: "Neue Mithril-Vorkommen entdeckt — Mithrilstaub wird günstiger.",
+        affectedSlugs: ["mithril_dust", "mithril_ingot"],
         modifierType: "multiply",
-        modifierValue: 0.4,
+        modifierValue: 0.5,
+        weight: 5
+    },
+    {
+        title: "Waffenschmied-Turnier",
+        description: "Schmiede brauchen seltene Materialien — Mithril und Drachenschuppen gefragt.",
+        affectedSlugs: ["mithril_blade", "mithril_armor", "dragon_armor", "katana"],
+        modifierType: "multiply",
+        modifierValue: 1.6,
+        weight: 6
+    },
+    {
+        title: "Mondnacht-Ritual",
+        description: "Seltenes Ritual — Mondstein-Artefakte extrem gefragt.",
+        affectedSlugs: ["moonstone", "moonstone_amulet", "moonstone_crown"],
+        modifierType: "set_max",
         weight: 4
     },
     {
-        title: "Oni-Invasion",
-        description: "Oni überfallen das Tal – ihre Hörner werden von Jägern gesammelt!",
+        title: "Geister-Erscheinung",
+        description: "Geister wurden gesichtet — Geisteressenz wird reichlich verfügbar.",
+        affectedSlugs: ["spirit_essence", "spirit_shield"],
+        modifierType: "multiply",
+        modifierValue: 0.5,
+        weight: 6
+    },
+    {
+        title: "Oni-Invasion!",
+        description: "Oni greifen an — Oni-Hörner fallen überall.",
         affectedSlugs: ["oni_horn"],
         modifierType: "multiply",
         modifierValue: 0.55,
         weight: 5
     },
     {
-        title: "Mondnacht-Ritual",
-        description: "Ein mystisches Mondnacht-Ritual lässt Mondsteine und Geisteressenzen begehrt werden!",
-        affectedSlugs: ["moonstone", "spirit_essence"],
-        modifierType: "set_max",
-        weight: 5
+        title: "Alte Bibliothek entdeckt",
+        description: "Schriftrollen aus einer alten Bibliothek gefunden.",
+        affectedSlugs: ["ancient_scroll"],
+        modifierType: "multiply",
+        modifierValue: 0.6,
+        weight: 6
     },
     {
-        title: "Verfluchtes Katana gefunden",
-        description: "Ein verfluchtes Katana wurde ausgegraben – Sammler zahlen Höchstpreise!",
-        affectedSlugs: ["cursed_katana"],
-        modifierType: "set_max",
-        weight: 4
-    },
-    {
-        title: "Fluch gebrochen",
-        description: "Der Fluch des Katanas wurde gebrochen – sein Wert sinkt drastisch!",
-        affectedSlugs: ["cursed_katana", "ancient_scroll"],
+        title: "Große Reinigung",
+        description: "Dunkle Magie wird verbannt — mystische Artefakte verlieren an Wert.",
+        affectedSlugs: ["spirit_essence", "moonstone", "phoenix_feather", "ancient_scroll"],
         modifierType: "multiply",
         modifierValue: 0.5,
-        weight: 4
+        weight: 3
+    },
+    {
+        title: "Goldenes Zeitalter",
+        description: "Alle seltenen Items steigen massiv im Wert.",
+        affectedSlugs: ["mithril_armor", "dragon_armor", "phoenix_cloak", "moonstone_crown", "spirit_shield"],
+        modifierType: "multiply",
+        modifierValue: 1.5,
+        weight: 3
     },
 
-    // ── Marktweite Events ─────────────────────────────────────────────────────
+    // ═══ Global/Cross-chain Events ══════════════════════════════════════════
     {
         title: "Großer Basar",
-        description: "Der jährliche große Basar öffnet – alle Nahrungspreise sinken!",
-        affectedSlugs: ["onigiri", "ramen_bowl", "mochi", "takoyaki", "wagashi", "yakitori", "taiyaki"],
+        description: "Markttag — alle verarbeiteten Waren werden günstiger.",
+        affectedSlugs: [
+            "onigiri",
+            "ramen_bowl",
+            "sashimi",
+            "sake",
+            "wagashi",
+            "bamboo_planks",
+            "silk",
+            "copper_ingot",
+            "steel_ingot"
+        ],
         modifierType: "multiply",
         modifierValue: 0.7,
         weight: 7
     },
     {
-        title: "Konjunktur-Boom",
-        description: "Die Wirtschaft boomt! Alle Sammelgüter werden teurer.",
-        affectedSlugs: ["manga_volume", "artbook", "doujinshi", "trading_card", "ancient_scroll"],
+        title: "Handwerker-Meisterkurs",
+        description: "Handwerker lernen neue Techniken — Verarbeitetes wird wertvoller.",
+        affectedSlugs: [
+            "katana",
+            "electronics",
+            "gold_jewelry",
+            "jade_amulet",
+            "crystal_orb",
+            "bamboo_furniture",
+            "kimono",
+            "cosplay_set"
+        ],
         modifierType: "multiply",
-        modifierValue: 1.35,
+        modifierValue: 1.45,
         weight: 6
-    },
-
-    // ── Saisonale / Globale Events ────────────────────────────────────────────
-    {
-        title: "Großes Erdbeben",
-        description: "Ein Erdbeben erschüttert die Region – seltene Güter werden noch knapper!",
-        affectedSlugs: ["dragon_scale", "phoenix_feather", "cursed_katana", "moonstone"],
-        modifierType: "multiply",
-        modifierValue: 1.9,
-        weight: 3
     },
     {
         title: "Handelskrieg",
-        description: "Diplomatische Spannungen unterbrechen Handelsrouten – Metalle sind Mangelware!",
-        affectedSlugs: ["tamahagane", "orichalcum", "mithril_dust", "obsidian"],
+        description: "Embargo auf Rohstoffe — alle Rohmaterialien werden teuer.",
+        affectedSlugs: [
+            "copper_ore",
+            "iron_ore",
+            "gold_ore",
+            "jade_raw",
+            "crystal_raw",
+            "bamboo",
+            "tea_leaves",
+            "rice",
+            "flour"
+        ],
         modifierType: "multiply",
         modifierValue: 1.7,
         weight: 4
     },
     {
         title: "Friedensvertrag",
-        description: "Ein Friedensvertrag öffnet neue Handelswege – alle Rohstoffe werden günstiger!",
-        affectedSlugs: ["tamahagane", "orichalcum", "mithril_dust", "jade_stone", "crystal_shard"],
+        description: "Handel normalisiert sich — alle Preise fallen moderat.",
+        affectedSlugs: ["copper_ore", "iron_ore", "gold_ore", "steel_ingot", "tamahagane", "mithril_dust"],
         modifierType: "multiply",
         modifierValue: 0.65,
+        weight: 5
+    },
+    {
+        title: "Großes Erdbeben",
+        description: "Naturkatastrophe — alle seltenen Items werden noch seltener.",
+        affectedSlugs: ["dragon_scale", "phoenix_feather", "moonstone", "mithril_dust", "crystal_raw"],
+        modifierType: "multiply",
+        modifierValue: 1.9,
+        weight: 3
+    },
+    {
+        title: "Taifun-Saison",
+        description: "Stürme zerstören Ernten und Minen.",
+        affectedSlugs: ["rice", "tea_leaves", "bamboo", "sakura_petals", "copper_ore", "iron_ore"],
+        modifierType: "set_max",
         weight: 4
     },
     {
+        title: "Internet-Meme-Boom",
+        description: "Ein Meme geht viral — zufällige Sammelstücke werden gehyped.",
+        affectedSlugs: ["trading_card", "nendoroid", "manga_volume"],
+        modifierType: "set_max",
+        weight: 5
+    },
+    {
         title: "Silvesternacht",
-        description: "Die Silvesternacht lässt Sake und Wagashi aus den Regalen fliegen!",
-        affectedSlugs: ["sake_bottle", "umeshu", "wagashi", "mochi"],
+        description: "Feierlichkeiten — Sake und Wagashi boomen.",
+        affectedSlugs: ["premium_sake", "sake", "wagashi", "mochi"],
         modifierType: "set_max",
         weight: 6
     },
     {
-        title: "Manga-Ausverkauf",
-        description: "Ein Großverlag schließt – alle Manga-Bestände werden verramscht!",
-        affectedSlugs: ["manga_volume", "doujinshi", "artbook"],
-        modifierType: "set_min",
-        weight: 5
-    },
-    {
-        title: "Geisterschiff",
-        description: "Ein Geisterschiff voller Waren treibt in den Hafen – Exotisches wird billig!",
-        affectedSlugs: ["koi_fish", "pearl", "lotus_blossom", "washi_paper"],
-        modifierType: "multiply",
-        modifierValue: 0.55,
-        weight: 5
-    },
-    {
-        title: "Mondfinsternis",
-        description: "Eine seltene Mondfinsternis steigert die mystische Nachfrage!",
-        affectedSlugs: ["moonstone", "spirit_essence", "oni_horn", "phoenix_feather"],
-        modifierType: "multiply",
-        modifierValue: 1.6,
-        weight: 5
-    },
-    {
-        title: "Monsterjäger-Gilde aktiv",
-        description: "Die Monsterjäger-Gilde zahlt Höchstpreise für rare Drops!",
-        affectedSlugs: ["dragon_scale", "oni_horn", "cursed_katana"],
-        modifierType: "multiply",
-        modifierValue: 1.75,
-        weight: 4
-    },
-    {
-        title: "Schwarzmarkt-Razzia",
-        description: "Eine Razzia auf den Schwarzmarkt lässt seltene Güter offiziell im Wert steigen!",
-        affectedSlugs: ["ancient_scroll", "cursed_katana", "spirit_essence"],
-        modifierType: "multiply",
-        modifierValue: 1.5,
-        weight: 5
-    },
-    {
-        title: "Großer Blizzard",
-        description: "Ein Blizzard legt Lieferketten lahm – Nahrungspreise explodieren!",
-        affectedSlugs: ["onigiri", "ramen_bowl", "mochi", "wagashi", "taiyaki", "yakitori"],
-        modifierType: "multiply",
-        modifierValue: 1.65,
-        weight: 4
-    },
-    {
-        title: "Erntefest",
-        description: "Das diesjährige Erntefest beschert Überfluss – Lebensmittel im Sonderangebot!",
-        affectedSlugs: ["onigiri", "ramen_bowl", "takoyaki", "taiyaki", "yakitori", "wagashi"],
-        modifierType: "multiply",
-        modifierValue: 0.6,
-        weight: 7
-    },
-    {
-        title: "Kuno-Ichi-Turnier",
-        description: "Das Kuno-Ichi-Turnier lässt Cosplay und Figuren aus den Regalen fliegen!",
-        affectedSlugs: ["cosplay_material", "nendoroid", "rare_figure", "dakimakura"],
-        modifierType: "multiply",
-        modifierValue: 1.55,
-        weight: 7
-    },
-    {
-        title: "Internet-Meme-Boom",
-        description: "Ein virales Meme katapultiert Sammelkarten in ungeahnte Höhen!",
-        affectedSlugs: ["trading_card", "doujinshi"],
-        modifierType: "set_max",
-        weight: 5
-    },
-    {
-        title: "Naturschutzgesetz",
-        description: "Neues Naturschutzgesetz: Koi-Fische und Bonsai dürfen nicht mehr frei gehandelt werden!",
-        affectedSlugs: ["koi_fish", "bonsai_tree", "kokedama"],
-        modifierType: "multiply",
-        modifierValue: 2.0,
-        weight: 4
-    },
-    {
-        title: "Schatztaucher-Expedition",
-        description: "Eine Expedition bringt Unmengen von Perlen und Jade zurück – Preise verfallen!",
-        affectedSlugs: ["pearl", "jade_stone", "crystal_shard"],
-        modifierType: "multiply",
-        modifierValue: 0.45,
-        weight: 4
-    },
-    {
-        title: "Magische Dürre",
-        description: "Eine magische Dürre vernichtet Bambusbestände und trocknet Matcha-Felder aus!",
-        affectedSlugs: ["bamboo", "matcha_powder", "sencha_tea", "kokedama"],
-        modifierType: "set_max",
-        weight: 5
-    },
-    {
-        title: "Goldenes Zeitalter",
-        description: "Das Goldene Zeitalter beginnt – alle seltenen Güter sind begehrt wie nie!",
+        title: "Konjunktur-Boom",
+        description: "Wirtschaft brummt — alle Masterwork-Produkte werden wertvoller.",
         affectedSlugs: [
-            "dragon_scale",
-            "spirit_essence",
-            "ancient_scroll",
-            "phoenix_feather",
-            "moonstone",
-            "oni_horn",
-            "cursed_katana"
+            "electronics",
+            "katana",
+            "collectors_edition",
+            "limited_figure",
+            "mithril_armor",
+            "moonstone_crown",
+            "phoenix_cloak"
         ],
         modifierType: "multiply",
         modifierValue: 1.4,
-        weight: 3
+        weight: 5
     },
     {
-        title: "Große Reinigung",
-        description: "Alle seltenen Güter werden zu Spottpreisen abgegeben – die große Reinigung!",
-        affectedSlugs: ["dragon_scale", "spirit_essence", "ancient_scroll", "phoenix_feather", "moonstone"],
+        title: "Schwarzmarkt-Razzia",
+        description: "Behörden beschlagnahmen seltene Waren — Preise steigen.",
+        affectedSlugs: ["ancient_scroll", "oni_horn", "spirit_essence", "dragon_scale"],
         modifierType: "multiply",
-        modifierValue: 0.5,
-        weight: 3
-    },
-    {
-        title: "Handwerker-Meisterkurs",
-        description: "Angehende Meister kaufen alles an Rohstoffen auf was sie kriegen können!",
-        affectedSlugs: ["tamahagane", "washi_paper", "bamboo", "jade_stone"],
-        modifierType: "multiply",
-        modifierValue: 1.45,
-        weight: 8
-    },
-    {
-        title: "Taifun-Saison",
-        description: "Taifune unterbrechen Fischerboote – Koi und Perlen werden extrem rar!",
-        affectedSlugs: ["koi_fish", "pearl"],
-        modifierType: "set_max",
+        modifierValue: 1.6,
         weight: 5
     }
 ];
@@ -1509,6 +2109,9 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
             canBuy: dto.canBuy ?? true,
             canSell: dto.canSell ?? true,
             sortOrder: dto.sortOrder ?? 0,
+            tier: dto.tier ?? 0,
+            craftedFrom: dto.craftedFrom ?? null,
+            craftCost: dto.craftCost ?? 1,
             maxStock: dto.maxStock ?? null,
             currentStock: dto.maxStock ?? null
         });
@@ -2042,6 +2645,9 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
                     canBuy: dto.canBuy ?? true,
                     canSell: dto.canSell ?? true,
                     sortOrder: dto.sortOrder ?? 0,
+                    tier: dto.tier ?? 0,
+                    craftedFrom: dto.craftedFrom ?? null,
+                    craftCost: dto.craftCost ?? 1,
                     priceHistory: history
                 })
             );
@@ -2116,6 +2722,9 @@ export class DynamicMarketService implements OnModuleInit, OnModuleDestroy {
             canSell: r.canSell,
             isActive: r.isActive,
             sortOrder: r.sortOrder,
+            tier: r.tier,
+            craftedFrom: r.craftedFrom,
+            craftCost: r.craftCost,
             trend: r.currentPrice - prev,
             priceHistory: r.priceHistory ?? [],
             changePercent: Math.round(changePercent * 100) / 100,

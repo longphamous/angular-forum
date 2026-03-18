@@ -142,7 +142,7 @@
         [style]="{ width: '640px', maxWidth: '95vw' }"
         [visible]="dialogVisible()"
     >
-        <p-tabs value="content">
+        <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
             <!-- ── Tab: Content ────────────────────────────────────────────── -->
             <p-tablist>
                 <p-tab value="content">

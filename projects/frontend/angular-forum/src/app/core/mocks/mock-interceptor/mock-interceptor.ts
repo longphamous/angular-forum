@@ -1426,7 +1426,8 @@ export class MockInterceptor implements HttpInterceptor {
                 class9: 5
             };
             for (const ticket of ticketsForDraw) {
-                const matched = ticket.numbers.filter((n) => draw.winningNumbers.includes(n));
+                const firstField = ticket.fields[0] ?? [];
+                const matched = firstField.filter((n: number) => draw.winningNumbers.includes(n));
                 const mc = matched.length;
                 const sz = ticket.superNumber === draw.superNumber;
                 let prizeClass = "no_win";
@@ -1527,7 +1528,7 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && /\/api\/credit\/lotto\/tickets$/.test(url)) {
-            const body = req.body as { numbers: number[]; superNumber: number; drawId: string; repeatWeeks?: number };
+            const body = req.body as { fields: number[][]; superNumber: number; drawId: string; repeatWeeks?: number };
             const repeatWeeks = Math.max(1, body.repeatWeeks ?? 1);
             const createdTickets: LottoTicket[] = [];
             let currentDrawId = body.drawId;
@@ -1537,7 +1538,7 @@ export class MockInterceptor implements HttpInterceptor {
                 const ticket: LottoTicket = {
                     id: `lt-${Date.now()}-${w}`,
                     userId: "00000000-0000-0000-0000-000000000001",
-                    numbers: [...body.numbers].sort((a, b) => a - b),
+                    fields: (body.fields ?? []).map((f: number[]) => [...f].sort((a, b) => a - b)),
                     superNumber: body.superNumber,
                     drawId: currentDrawId,
                     purchasedAt: new Date().toISOString(),

@@ -6,7 +6,7 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs (valueChange)="activeTab.set($event + '')" [value]="activeTab()">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
             <p-tab value="0">
                 <i class="pi pi-users mr-2"></i>

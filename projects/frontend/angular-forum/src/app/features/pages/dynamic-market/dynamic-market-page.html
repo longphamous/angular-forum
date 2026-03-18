@@ -221,7 +221,7 @@
                             Vol.
                             <p-sortIcon field="volatility" />
                         </th>
-                        <th class="text-center" style="min-width: 290px; width: 290px">
+                        <th class="text-right" style="min-width: 290px; width: 290px">
                             {{ t('dynamicMarket.trade') }}
                         </th>
                     </tr>
@@ -231,7 +231,7 @@
                         (click)="selectResource(resource)"
                         [class.selected-row]="selectedResource()?.slug === resource.slug"
                     >
-                        <td class="resource-name-cell">
+                        <td class="resource-name-cell" [pTooltip]="getResourceTooltip(resource)" tooltipPosition="right" [escape]="false">
                             <div class="flex items-center gap-2">
                                 @if (resource.imageUrl) {
                                 <div class="resource-img-wrapper">
@@ -241,7 +241,12 @@
                                 <i [class]="resource.icon + ' text-lg'" style="width: 32px; text-align: center"></i>
                                 }
                                 <div>
-                                    <div class="font-semibold dark:text-white">{{ resource.name }}</div>
+                                    <div class="flex items-center gap-1.5 font-semibold dark:text-white">
+                                        {{ resource.name }}
+                                        @if (resource.tier > 0) {
+                                        <span class="text-[9px] font-normal opacity-50">{{ '★'.repeat(resource.tier) }}</span>
+                                        }
+                                    </div>
                                     <div class="text-xs text-gray-400">{{ resource.slug }}</div>
                                 </div>
                             </div>
@@ -316,8 +321,8 @@
                                 {{ resource.volatility }}x
                             </span>
                         </td>
-                        <td class="text-center" style="min-width: 290px; width: 290px">
-                            <div class="flex items-center justify-center gap-1" style="flex-wrap: nowrap">
+                        <td style="min-width: 290px; width: 290px">
+                            <div class="flex items-center justify-end gap-1" style="flex-wrap: nowrap">
                                 @if (resource.canBuy) {
                                 <p-inputNumber
                                     [(ngModel)]="buyQuantities[resource.slug]"
@@ -340,20 +345,22 @@
                                     pTooltip="{{ t('dynamicMarket.buy') }}"
                                     severity="success"
                                     size="small"
-                                />
-                                } @if (resource.canSell) {
-                                <p-button
-                                    (onClick)="onSell(resource.slug); $event.stopPropagation()"
-                                    [disabled]="getInventoryQty(resource.slug) === 0"
-                                    [loading]="marketFacade.trading()"
-                                    [rounded]="true"
-                                    [style.visibility]="getInventoryQty(resource.slug) > 0 ? 'visible' : 'hidden'"
-                                    icon="pi pi-arrow-down"
-                                    pTooltip="{{ t('dynamicMarket.sell') }}"
-                                    severity="warn"
-                                    size="small"
+                                    styleClass="w-24"
                                 />
                                 }
+                                <div style="width: 2.5rem; flex-shrink: 0; display: flex; justify-content: center">
+                                    @if (resource.canSell && getInventoryQty(resource.slug) > 0) {
+                                    <p-button
+                                        (onClick)="onSell(resource.slug); $event.stopPropagation()"
+                                        [loading]="marketFacade.trading()"
+                                        [rounded]="true"
+                                        icon="pi pi-arrow-down"
+                                        pTooltip="{{ t('dynamicMarket.sell') }}"
+                                        severity="warn"
+                                        size="small"
+                                    />
+                                    }
+                                </div>
                             </div>
                         </td>
                     </tr>

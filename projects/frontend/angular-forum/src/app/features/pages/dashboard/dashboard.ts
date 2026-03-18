@@ -25,26 +25,44 @@ import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
         UpcomingEventsWidget
     ],
     selector: "app-dashboard",
+    styles: `
+        :host ::ng-deep .p-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        :host ::ng-deep .p-card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        :host ::ng-deep .p-card-content {
+            flex: 1;
+        }
+    `,
     template: `
-        <div class="grid grid-cols-12 gap-6">
+        <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12">
                 <app-teaser-slideshow />
             </div>
+
             <app-dashboard-stats-widget class="contents" />
+
+            <!-- Row 2: Threads (main) + Sidebar -->
             <div class="col-span-12 xl:col-span-8">
                 <app-recent-threads-widget />
             </div>
-            <div class="col-span-12 flex flex-col gap-6 xl:col-span-4">
-                <app-upcoming-events-widget />
-                <app-top-posters-widget />
-                <app-top-wealth-widget />
+            <div class="col-span-12 flex flex-col gap-4 xl:col-span-4">
+                <app-upcoming-events-widget class="flex-1" />
                 <app-online-users-widget />
             </div>
-            <div class="col-span-12 xl:col-span-7">
-                <app-newest-anime-widget />
-            </div>
-            <div class="col-span-12 xl:col-span-5">
-                <app-active-forums-widget />
+
+            <!-- Row 3: Rankings + Content -->
+            <div class="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <app-top-posters-widget />
+                <app-top-wealth-widget />
+                <app-newest-anime-widget class="sm:col-span-1 xl:col-span-1" />
+                <app-active-forums-widget class="sm:col-span-1 xl:col-span-1" />
             </div>
         </div>
     `

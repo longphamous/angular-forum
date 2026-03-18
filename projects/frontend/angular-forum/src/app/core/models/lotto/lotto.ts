@@ -24,7 +24,7 @@ export interface DrawScheduleConfig {
 export interface LottoTicket {
     id: string;
     userId: string;
-    numbers: number[];
+    fields: number[][];
     superNumber: number;
     drawId: string;
     purchasedAt: string;
@@ -42,6 +42,16 @@ export interface LottoDraw {
     totalTickets?: number;
 }
 
+export interface LottoFieldResult {
+    fieldIndex: number;
+    numbers: number[];
+    matchedNumbers: number[];
+    matchedCount: number;
+    superNumberMatched: boolean;
+    prizeClass: LottoPrizeClass;
+    prizeAmount: number;
+}
+
 export interface LottoResult {
     ticketId: string;
     userId: string;
@@ -51,6 +61,7 @@ export interface LottoResult {
     superNumberMatched: boolean;
     prizeClass: LottoPrizeClass;
     prizeAmount: number;
+    fieldResults?: LottoFieldResult[];
 }
 
 export interface DrawResult {
@@ -58,6 +69,11 @@ export interface DrawResult {
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface NumberFrequencyEntry {
+    number: number;
+    count: number;
 }
 
 export interface LottoStats {
@@ -69,6 +85,7 @@ export interface LottoStats {
     nextDraw: LottoDraw | null;
     hotNumbers: number[];
     coldNumbers: number[];
+    numberFrequency: NumberFrequencyEntry[];
 }
 
 export interface MyTicketWithResult {
@@ -144,4 +161,18 @@ export interface SpecialDrawResult {
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface DrawHistoryEntry {
+    id: string;
+    type: "regular" | "special";
+    name?: string;
+    drawDate: string;
+    winningNumbers: number[];
+    superNumber: number;
+    jackpot: number;
+    totalTickets: number;
+    totalWinners: number;
+    totalPrizesPaid: number;
+    winnersByClass: { prizeClass: LottoPrizeClass; count: number; amount: number }[];
 }

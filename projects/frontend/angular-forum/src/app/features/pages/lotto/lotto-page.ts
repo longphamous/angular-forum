@@ -17,6 +17,7 @@ import { LOTTO_ROUTES } from "../../../core/api/lotto.routes";
 import { WALLET_ROUTES } from "../../../core/api/wallet.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import {
+    DrawHistoryEntry,
     DrawScheduleConfig,
     LottoDraw,
     LottoPrizeClass,
@@ -29,6 +30,7 @@ import {
     SpecialDraw
 } from "../../../core/models/lotto/lotto";
 import { Wallet } from "../../../core/models/wallet/wallet";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
@@ -57,8 +59,10 @@ export class LottoPage implements OnInit, OnDestroy {
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     protected readonly authFacade = inject(AuthFacade);
     protected readonly messageService = inject(MessageService);
+    private readonly tabService = inject(TabPersistenceService);
 
     // ─── State ────────────────────────────────────────────────────────────────
+    protected readonly activeTab = signal(this.tabService.get("overview"));
     protected readonly loading = signal(true);
     protected readonly stats = signal<LottoStats | null>(null);
     protected readonly draws = signal<LottoDraw[]>([]);
@@ -68,12 +72,21 @@ export class LottoPage implements OnInit, OnDestroy {
     protected readonly myResults = signal<LottoResult[]>([]);
     protected readonly purchasing = signal(false);
     protected readonly specialDraws = signal<SpecialDraw[]>([]);
+    protected readonly drawHistory = signal<DrawHistoryEntry[]>([]);
+    protected readonly expandedDrawId = signal<string | null>(null);
+    protected readonly expandedTickets = signal<Set<string>>(new Set());
     protected readonly purchasingSpecial = signal<string | null>(null); // drawId being purchased
 
-    // ─── Ticket form ──────────────────────────────────────────────────────────
-    protected selectedNumbers = signal<number[]>([]);
+    // ─── Ticket form (12 fields like a real lotto slip) ─────────────────────────
+    protected readonly FIELD_COUNT = 12;
+    protected readonly fieldIndices = Array.from({ length: 12 }, (_, i) => i);
+    protected fields = signal<number[][]>(Array.from({ length: 12 }, () => []));
+    protected activeField = signal(0);
     protected selectedSuperNumber = signal<number | null>(null);
     protected repeatWeeks = signal(1);
+
+    /** Shortcut: the numbers of the currently active field. */
+    protected selectedNumbers = computed(() => this.fields()[this.activeField()] ?? []);
 
     // ─── Countdown ────────────────────────────────────────────────────────────
     protected readonly countdown = signal({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -89,11 +102,16 @@ export class LottoPage implements OnInit, OnDestroy {
     protected readonly nextDraw = computed(() => this.stats()?.nextDraw ?? null);
     protected readonly lastDraw = computed(() => this.stats()?.lastDraw ?? null);
 
-    protected readonly ticketCost = computed(() => (this.config()?.ticketCost ?? 2) * this.repeatWeeks());
+    /** Number of fields that have exactly 6 numbers selected. */
+    protected readonly filledFieldCount = computed(() => this.fields().filter((f) => f.length === 6).length);
+
+    protected readonly ticketCost = computed(
+        () => (this.config()?.ticketCost ?? 2) * Math.max(1, this.filledFieldCount()) * this.repeatWeeks()
+    );
 
     protected readonly canBuy = computed(
         () =>
-            this.selectedNumbers().length === 6 &&
+            this.filledFieldCount() > 0 &&
             this.selectedSuperNumber() !== null &&
             !this.purchasing() &&
             (this.wallet()?.balance ?? 0) >= this.ticketCost()
@@ -114,6 +132,14 @@ export class LottoPage implements OnInit, OnDestroy {
 
     protected readonly hotNumbersSet = computed(() => new Set(this.stats()?.hotNumbers ?? []));
     protected readonly coldNumbersSet = computed(() => new Set(this.stats()?.coldNumbers ?? []));
+    protected readonly frequencyMap = computed(() => {
+        const map = new Map<number, number>();
+        for (const entry of this.stats()?.numberFrequency ?? []) map.set(entry.number, entry.count);
+        return map;
+    });
+    protected readonly sortedFrequency = computed(() =>
+        [...(this.stats()?.numberFrequency ?? [])].sort((a, b) => b.count - a.count)
+    );
 
     protected readonly pendingDraws = computed(() => this.draws().filter((d) => d.status === "pending"));
     protected readonly completedDraws = computed(() =>
@@ -131,6 +157,11 @@ export class LottoPage implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadAll();
+    }
+
+    protected onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
     }
 
     ngOnDestroy(): void {
@@ -172,60 +203,117 @@ export class LottoPage implements OnInit, OnDestroy {
         this.http.get<SpecialDraw[]>(`${base}${LOTTO_ROUTES.specialDraws()}`).subscribe({
             next: (s) => this.specialDraws.set(s)
         });
+
+        this.http.get<DrawHistoryEntry[]>(`${base}${LOTTO_ROUTES.drawHistory()}`).subscribe({
+            next: (h) => this.drawHistory.set(h)
+        });
+    }
+
+    protected toggleDrawExpand(drawId: string): void {
+        this.expandedDrawId.set(this.expandedDrawId() === drawId ? null : drawId);
+    }
+
+    protected toggleTicket(ticketId: string): void {
+        this.expandedTickets.update((set) => {
+            const next = new Set(set);
+            if (next.has(ticketId)) next.delete(ticketId);
+            else next.add(ticketId);
+            return next;
+        });
+    }
+
+    protected isTicketExpanded(ticketId: string): boolean {
+        return this.expandedTickets().has(ticketId);
     }
 
     // ─── Number selection ─────────────────────────────────────────────────────
     protected toggleNumber(n: number): void {
-        const current = this.selectedNumbers();
+        const idx = this.activeField();
+        const current = this.fields()[idx];
+        let updated: number[];
         if (current.includes(n)) {
-            this.selectedNumbers.set(current.filter((x) => x !== n));
+            updated = current.filter((x) => x !== n);
         } else if (current.length < 6) {
-            this.selectedNumbers.set([...current, n].sort((a, b) => a - b));
+            updated = [...current, n].sort((a, b) => a - b);
+        } else {
+            return;
         }
+        this.fields.update((f) => f.map((field, i) => (i === idx ? updated : field)));
     }
 
     protected selectSuperNumber(n: number): void {
         this.selectedSuperNumber.set(this.selectedSuperNumber() === n ? null : n);
     }
 
+    /** Quick-pick the current active field. */
     protected quickPick(): void {
         const pool = Array.from({ length: 49 }, (_, i) => i + 1);
         for (let i = pool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [pool[i], pool[j]] = [pool[j], pool[i]];
         }
-        this.selectedNumbers.set(pool.slice(0, 6).sort((a, b) => a - b));
+        const nums = pool.slice(0, 6).sort((a, b) => a - b);
+        const idx = this.activeField();
+        this.fields.update((f) => f.map((field, i) => (i === idx ? nums : field)));
+        if (this.selectedSuperNumber() === null) {
+            this.selectedSuperNumber.set(Math.floor(Math.random() * 10));
+        }
+    }
+
+    /** Quick-pick all 12 fields at once. */
+    protected quickPickAll(): void {
+        const newFields = Array.from({ length: 12 }, () => {
+            const pool = Array.from({ length: 49 }, (_, i) => i + 1);
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            return pool.slice(0, 6).sort((a, b) => a - b);
+        });
+        this.fields.set(newFields);
         this.selectedSuperNumber.set(Math.floor(Math.random() * 10));
     }
 
+    /** Clear only the active field. */
+    protected clearField(): void {
+        const idx = this.activeField();
+        this.fields.update((f) => f.map((field, i) => (i === idx ? [] : field)));
+    }
+
+    /** Clear all fields and super number. */
     protected clearSelection(): void {
-        this.selectedNumbers.set([]);
+        this.fields.set(Array.from({ length: 12 }, () => []));
         this.selectedSuperNumber.set(null);
+        this.activeField.set(0);
     }
 
     // ─── Purchase ─────────────────────────────────────────────────────────────
     protected purchaseTicket(): void {
         const next = this.nextDraw();
         if (!next || !this.canBuy()) return;
-        this.purchasing.set(true);
 
+        const filledFields = this.fields().filter((f) => f.length === 6);
+        if (filledFields.length === 0) return;
+
+        this.purchasing.set(true);
         const payload = {
-            numbers: this.selectedNumbers(),
+            fields: filledFields,
             superNumber: this.selectedSuperNumber()!,
             drawId: next.id,
             repeatWeeks: this.repeatWeeks()
         };
+        const totalCost = this.ticketCost();
 
         this.http.post<LottoTicket[]>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.purchaseTicket()}`, payload).subscribe({
             next: (tickets) => {
                 this.purchasing.set(false);
                 this.myTickets.update((t) => [...t, ...tickets]);
-                // Deduct from wallet display
-                this.wallet.update((w) => (w ? { ...w, balance: w.balance - this.ticketCost() } : w));
+                this.wallet.update((w) => (w ? { ...w, balance: w.balance - totalCost } : w));
                 this.clearSelection();
+                const fieldCount = filledFields.length;
                 this.messageService.add({
                     severity: "success",
-                    summary: `${tickets.length} Ticket${tickets.length > 1 ? "s" : ""} gekauft!`,
+                    summary: `Ticket mit ${fieldCount} Feld${fieldCount > 1 ? "ern" : ""} gekauft!`,
                     life: 3000
                 });
             },
@@ -241,8 +329,11 @@ export class LottoPage implements OnInit, OnDestroy {
         if (!this.canBuy()) return;
         this.purchasingSpecial.set(draw.id);
 
+        const filledFields = this.fields().filter((f) => f.length === 6);
+        if (filledFields.length === 0) return;
+
         const payload = {
-            numbers: this.selectedNumbers(),
+            fields: filledFields,
             superNumber: this.selectedSuperNumber()!
         };
 
@@ -320,6 +411,10 @@ export class LottoPage implements OnInit, OnDestroy {
 
     protected isNumberCold(n: number): boolean {
         return this.coldNumbersSet().has(n);
+    }
+
+    protected getFrequency(n: number): number {
+        return this.frequencyMap().get(n) ?? 0;
     }
 
     protected pad2(n: number): string {

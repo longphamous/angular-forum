@@ -7,7 +7,7 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [(value)]="activeTab">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
             <p-tab value="cards"> <i class="pi pi-id-card mr-2"></i>{{ t('adminTcg.tabs.cards') }} </p-tab>
             <p-tab value="boosters"> <i class="pi pi-box mr-2"></i>{{ t('adminTcg.tabs.boosters') }} </p-tab>

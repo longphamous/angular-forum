@@ -17,6 +17,7 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import type {
     AdminBoosterDetail,
     Card,
@@ -61,8 +62,9 @@ interface SelectOption<T> {
 export class AdminTcg implements OnInit {
     readonly tcgFacade = inject(TcgFacade);
     private readonly confirmationService = inject(ConfirmationService);
+    private readonly tabService = inject(TabPersistenceService);
 
-    readonly activeTab = signal<string>("cards");
+    readonly activeTab = signal<string>(this.tabService.get("cards"));
 
     // Card dialog
     readonly showCardDialog = signal(false);
@@ -111,6 +113,11 @@ export class AdminTcg implements OnInit {
         { label: "-- None --", value: undefined },
         ...this.rarityOptions
     ];
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.tcgFacade.loadAdminCards();

@@ -17,6 +17,7 @@ import { ToastModule } from "primeng/toast";
 import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { TooltipModule } from "primeng/tooltip";
 
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     ActionConfig,
     BotAction,
@@ -58,6 +59,9 @@ export class AdminCommunityBot implements OnInit {
     readonly facade = inject(CommunityBotFacade);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly messageService = inject(MessageService);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("0"));
 
     // Dialog state
     readonly editorVisible = signal(false);
@@ -138,6 +142,11 @@ export class AdminCommunityBot implements OnInit {
         { label: "Größer gleich", value: "gte" },
         { label: "Kleiner gleich", value: "lte" }
     ];
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.facade.loadBots();

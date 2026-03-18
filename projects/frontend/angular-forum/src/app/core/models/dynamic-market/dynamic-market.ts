@@ -15,6 +15,9 @@ export interface MarketResource {
     canSell: boolean;
     isActive: boolean;
     sortOrder: number;
+    tier: number;
+    craftedFrom: string | null;
+    craftCost: number;
     trend: number;
     priceHistory: number[];
     changePercent: number;
@@ -135,11 +138,11 @@ export interface MarketConfig {
 export type MarketModifierType = "set_max" | "set_min" | "multiply" | "add" | "set";
 
 export const MARKET_GROUP_LABELS: Record<string, { de: string; en: string }> = {
-    otaku: { de: "Otaku-Waren", en: "Otaku Goods" },
-    nature: { de: "Japanische Natur", en: "Japanese Nature" },
-    minerals: { de: "Edelsteine & Metalle", en: "Gems & Metals" },
+    mining: { de: "Bergbau & Metalle", en: "Mining & Metals" },
+    nature: { de: "Natur & Handwerk", en: "Nature & Crafts" },
     food: { de: "Speisen & Getränke", en: "Food & Drinks" },
-    rare: { de: "Seltene Güter", en: "Rare Goods" }
+    otaku: { de: "Otaku & Sammlerstücke", en: "Otaku & Collectibles" },
+    rare: { de: "Mythische Güter", en: "Mythical Goods" }
 };
 
 export type MarketActivityType = "buy" | "sell" | "event" | "price_update";

@@ -21,6 +21,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { SLIDESHOW_ROUTES } from "../../../core/api/slideshow.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { TeaserSlide } from "../../../core/models/slideshow/teaser-slide";
 
 export interface SlideFormData {
@@ -91,6 +92,9 @@ export class AdminSlideshow implements OnInit {
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly translocoService = inject(TranslocoService);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("content"));
 
     readonly loading = signal(true);
     readonly saving = signal(false);
@@ -101,6 +105,11 @@ export class AdminSlideshow implements OnInit {
     readonly dialogVisible = signal(false);
     readonly editingId = signal<string | null>(null);
     readonly form = signal<SlideFormData>({ ...EMPTY_FORM });
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.loadSlides();

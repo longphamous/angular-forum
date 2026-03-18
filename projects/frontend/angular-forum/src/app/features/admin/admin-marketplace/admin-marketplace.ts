@@ -11,6 +11,7 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 
 import { MarketListing } from "../../../core/models/marketplace/marketplace";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
@@ -34,10 +35,18 @@ import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facad
 export class AdminMarketplace implements OnInit {
     readonly facade = inject(MarketplaceFacade);
     private readonly cd = inject(ChangeDetectorRef);
+    private readonly tabService = inject(TabPersistenceService);
+
+    readonly activeTab = signal(this.tabService.get("0"));
 
     rejectDialogVisible = signal(false);
     rejectReason = "";
     pendingListing: MarketListing | null = null;
+
+    onTabChange(tab: string): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+    }
 
     ngOnInit(): void {
         this.facade.loadPendingListings();

@@ -23,7 +23,7 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [(value)]="activeTab">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
             <p-tab value="boosters"> <i class="pi pi-box mr-2"></i>{{ t('tcg.tabs.boosters') }} </p-tab>
             <p-tab value="collection"> <i class="pi pi-th-large mr-2"></i>{{ t('tcg.tabs.collection') }} </p-tab>

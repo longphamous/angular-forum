@@ -22,12 +22,12 @@ export interface DrawScheduleConfig {
 export interface LottoTicket {
     id: string;
     userId: string;
-    numbers: number[];
+    /** Array of fields, each containing 6 numbers. Max 12 fields per ticket. */
+    fields: number[][];
     superNumber: number;
     drawId: string;
     purchasedAt: string;
     cost: number;
-    /** Number of consecutive weeks this ticket was played (for recurring tickets) */
     repeatWeeks?: number;
 }
 
@@ -53,10 +53,9 @@ export type LottoPrizeClass =
     | "class9"
     | "no_win";
 
-export interface LottoResult {
-    ticketId: string;
-    userId: string;
-    drawId: string;
+export interface LottoFieldResult {
+    fieldIndex: number;
+    numbers: number[];
     matchedNumbers: number[];
     matchedCount: number;
     superNumberMatched: boolean;
@@ -64,11 +63,30 @@ export interface LottoResult {
     prizeAmount: number;
 }
 
+export interface LottoResult {
+    ticketId: string;
+    userId: string;
+    drawId: string;
+    /** Best result across all fields (for backward compat / summary). */
+    matchedNumbers: number[];
+    matchedCount: number;
+    superNumberMatched: boolean;
+    prizeClass: LottoPrizeClass;
+    prizeAmount: number;
+    /** Per-field breakdown. */
+    fieldResults: LottoFieldResult[];
+}
+
 export interface DrawResult {
     draw: LottoDraw;
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface NumberFrequencyEntry {
+    number: number;
+    count: number;
 }
 
 export interface LottoStats {
@@ -80,6 +98,7 @@ export interface LottoStats {
     nextDraw: LottoDraw | null;
     hotNumbers: number[];
     coldNumbers: number[];
+    numberFrequency: NumberFrequencyEntry[];
 }
 
 export type SpecialDrawTicketMode = "all_current" | "separate";
@@ -118,4 +137,18 @@ export interface SpecialDrawResult {
     totalTickets: number;
     winners: LottoResult[];
     totalPrizesPaid: number;
+}
+
+export interface DrawHistoryEntry {
+    id: string;
+    type: "regular" | "special";
+    name?: string;
+    drawDate: string;
+    winningNumbers: number[];
+    superNumber: number;
+    jackpot: number;
+    totalTickets: number;
+    totalWinners: number;
+    totalPrizesPaid: number;
+    winnersByClass: { prizeClass: LottoPrizeClass; count: number; amount: number }[];
 }

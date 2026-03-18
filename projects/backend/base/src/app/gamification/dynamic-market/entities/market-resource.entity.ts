@@ -69,6 +69,18 @@ export class MarketResourceEntity {
     @Column({ name: "price_history", type: "jsonb", default: [] })
     priceHistory!: number[];
 
+    /** Processing tier: 0=raw, 1=processed, 2=refined, 3=masterwork */
+    @Column({ type: "int", default: 0 })
+    tier!: number;
+
+    /** Slug of the resource required to craft this one (null = raw resource) */
+    @Column({ name: "crafted_from", type: "varchar", length: 80, nullable: true })
+    craftedFrom!: string | null;
+
+    /** How many units of the source resource are needed to craft 1 unit */
+    @Column({ name: "craft_cost", type: "int", default: 1 })
+    craftCost!: number;
+
     /** Display order within the group */
     @Column({ name: "sort_order", type: "int", default: 0 })
     sortOrder!: number;

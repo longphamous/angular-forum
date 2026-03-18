@@ -19,9 +19,9 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [value]="0">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
         <p-tablist>
-            <p-tab [value]="0">
+            <p-tab value="0">
                 <i class="pi pi-tag mr-2"></i>
                 Meine Inserate @if (facade.myListings().length > 0) {
                 <span class="bg-primary ml-1 rounded-full px-2 py-0.5 text-xs text-white"
@@ -29,7 +29,7 @@
                 >
                 }
             </p-tab>
-            <p-tab [value]="1">
+            <p-tab value="1">
                 <i class="pi pi-send mr-2"></i>
                 Gesendete Angebote @if (facade.myOffers().length > 0) {
                 <span class="bg-primary ml-1 rounded-full px-2 py-0.5 text-xs text-white"
@@ -40,7 +40,7 @@
         </p-tablist>
 
         <!-- My Listings tab -->
-        <p-tabpanel [value]="0">
+        <p-tabpanel value="0">
             <div class="mt-4">
                 @if (facade.loading()) {
                 <div class="flex flex-col gap-3">
@@ -130,7 +130,7 @@
         </p-tabpanel>
 
         <!-- Sent offers tab -->
-        <p-tabpanel [value]="1">
+        <p-tabpanel value="1">
             <div class="mt-4">
                 @if (facade.myOffers().length === 0) {
                 <div class="card flex flex-col items-center py-12 text-center">
