@@ -4,9 +4,9 @@ import { In, Repository } from "typeorm";
 
 import { CreditService } from "../../credit/credit.service";
 import { GamificationService } from "../../gamification/gamification.service";
-import { PushThreadNewPost } from "../../push/push-event.types";
-import { PushService } from "../../push/push.service";
 import { UserXpData } from "../../gamification/level.config";
+import { PushService } from "../../push/push.service";
+import { PushThreadNewPost } from "../../push/push-event.types";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreatePostDto } from "../dto/create-post.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";

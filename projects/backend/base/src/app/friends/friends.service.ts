@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { NotificationsService } from "../notifications/notifications.service";
-import { PushFriendAccepted, PushFriendRequest } from "../push/push-event.types";
 import { PushService } from "../push/push.service";
+import { PushFriendAccepted, PushFriendRequest } from "../push/push-event.types";
 import { UserEntity } from "../user/entities/user.entity";
 import { FriendshipEntity } from "./entities/friendship.entity";
 

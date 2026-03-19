@@ -36,22 +36,27 @@ This document covers the architecture, project structure, key patterns, database
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Frontend framework | Angular | 20 |
-| UI component library | PrimeNG (Aura theme) | latest |
-| CSS framework | Tailwind CSS | v3 |
+| Frontend framework | Angular | 21.1.6 |
+| UI component library | PrimeNG (Aura theme) | 20 |
+| CSS framework | Tailwind CSS | 4 |
 | State management | Angular Signals | built-in |
-| i18n | @jsverse/transloco | latest |
+| i18n | @jsverse/transloco | 7.6 |
 | Rich text editor | Quill | 2.0 |
-| Frontend test runner | Vitest | latest |
-| Backend framework | NestJS | 10 |
-| ORM | TypeORM | latest |
+| Charts | Chart.js | 4.4 |
+| Frontend test runner | Vitest | 4.1 |
+| Backend framework | NestJS | 10.4 |
+| ORM | TypeORM | 0.3.28 |
 | Database | PostgreSQL | 14+ |
-| Auth strategy | passport-jwt | latest |
-| Password hashing | bcryptjs | latest |
-| Backend test runner | Jest | latest |
-| Package manager | pnpm | 8+ |
-| Monorepo tooling | Nx | latest |
-| Build tool (frontend) | Vite | latest |
+| Auth strategy | passport-jwt | 4.0 |
+| Password hashing | bcryptjs | 3.0 |
+| WebSocket | Socket.IO | 4.8 |
+| Scheduler | @nestjs/schedule | 6.1 |
+| Backend test runner | Jest | 30.2 |
+| Package manager | pnpm | 10+ (enforced) |
+| Monorepo tooling | Nx | 22.5 |
+| Build tool (frontend) | Vite | 7.3 |
+| TypeScript | typescript | 5.9 |
+| Node.js | Node.js | 24+ (required) |
 
 ---
 
@@ -258,20 +263,25 @@ projects/backend/base/src/app/
 ├── anime-list/
 ├── blog/
 ├── calendar/
+├── chronik/
 ├── community-bot/
 ├── credit/
+│   └── lotto/               # Lotto system with scheduler & draws
 ├── dashboard/
 ├── database/
+├── dynamic-market/
 ├── feed/
 ├── forum/
+├── friends/
 ├── gallery/
 ├── gamification/
+│   └── tcg/                 # Trading Card Game (boosters, cards, listings)
 ├── group/
 ├── link-database/
-├── lotto/
 ├── marketplace/
 ├── messages/
 ├── notifications/
+├── push/                    # WebSocket gateway (Socket.IO at /push)
 ├── shop/
 ├── slideshow/
 └── user/
@@ -369,6 +379,12 @@ When a module needs access to `UserEntity` from another module, it registers `Us
 ### Scheduled Tasks
 
 Background tasks are handled via `@nestjs/schedule` (`SchedulerRegistry` + `CronJob`). The `ScheduleModule.forRoot()` call is idempotent — multiple modules can call it safely.
+
+**Lotto scheduler** (`lotto.scheduler.ts`):
+
+| Job | Schedule | Purpose |
+|-----|----------|---------|
+| Lotto draw | Configurable cron | Execute lottery draw, pick winner, distribute prize coins |
 
 **Community Bot scheduler** (`bot-scheduler.service.ts`):
 
@@ -482,6 +498,29 @@ Notifications are stored in the database and polled/fetched by the frontend.
 | `messages` | id, conversationId, senderId, content, isDraft |
 | `notifications` | id, userId, type, title, body, link, isRead, createdAt |
 
+### TCG Tables
+
+| Table | Key Columns |
+|-------|------------|
+| `booster_categories` | id, name, description, sortOrder |
+| `booster_packs` | id, categoryId, name, description, price, cardCount, rarity, imageUrl |
+| `cards` | id, name, description, imageUrl, rarity, attributes (JSONB) |
+| `card_listings` | id, cardId, sellerId, price, status, createdAt |
+| `user_cards` | id, userId, cardId, quantity |
+
+### Friends Tables
+
+| Table | Key Columns |
+|-------|------------|
+| `friendships` | id, requesterId, addresseeId, status, createdAt |
+
+### Lotto Tables
+
+| Table | Key Columns |
+|-------|------------|
+| `lotto_draws` | id, prizeAmount, ticketPrice, winnerId, drawDate, status |
+| `lotto_tickets` | id, drawId, userId, createdAt |
+
 ### Other Tables
 
 | Table | Key Columns |
@@ -588,6 +627,47 @@ All API endpoints are prefixed with `/api`. The backend runs on port 3000 in dev
 | GET | `/api/gamification/xp` | JWT | Get own XP/level |
 | GET | `/api/gamification/config` | Admin | Get XP config |
 | PATCH | `/api/gamification/config` | Admin | Update XP config |
+
+### TCG (Trading Card Game)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/tcg/booster-packs` | JWT | List available booster packs |
+| GET | `/api/tcg/booster-packs/:id` | JWT | Get booster pack details |
+| POST | `/api/tcg/booster-packs/:id/open` | JWT | Purchase and open a booster pack |
+| GET | `/api/tcg/cards` | JWT | List all cards |
+| GET | `/api/tcg/collection` | JWT | Get own card collection |
+| GET | `/api/tcg/listings` | JWT | List card trade listings |
+| POST | `/api/tcg/listings` | JWT | Create card listing |
+| POST | `/api/tcg/booster-categories` | Admin | Create booster category |
+| POST | `/api/tcg/booster-packs` | Admin | Create booster pack |
+| POST | `/api/tcg/cards` | Admin | Create card |
+
+### Lotto
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/credit/lotto` | JWT | Get current lotto info |
+| POST | `/api/credit/lotto/buy` | JWT | Buy lotto ticket |
+| GET | `/api/credit/lotto/history` | JWT | Get draw history |
+
+### Friends
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/friends` | JWT | List own friends |
+| POST | `/api/friends/request` | JWT | Send friend request |
+| PATCH | `/api/friends/request/:id` | JWT | Accept/decline request |
+| DELETE | `/api/friends/:id` | JWT | Remove friend |
+
+### Push (WebSocket)
+
+The WebSocket gateway runs at `/push` and emits real-time events to connected clients:
+
+| Event | Description |
+|-------|-------------|
+| `notification` | New notification for the user |
+| `message` | New direct message received |
 
 ---
 
@@ -727,9 +807,18 @@ All environment variables live in `projects/backend/base/.env` (not committed):
 | `DB_NAME` | Yes | Database name (`aniverse_base`) |
 | `DB_USER` | Yes | Database role (`aniverse_app`) |
 | `DB_PASSWORD` | Yes | Database password |
+| `DB_SSL` | No | Enable SSL for DB connection (default: `false`) |
 | `JWT_SECRET` | Yes | Secret used to sign/verify JWTs |
 | `JWT_EXPIRES_IN` | No | Token lifetime (default: `7d`) |
 | `PORT` | No | Backend listen port (default: `3000`) |
+| `NODE_ENV` | No | Environment mode (default: `development`) |
+| `PUSH_ENABLED` | No | Enable WebSocket push gateway (default: `true`) |
+| `ANIME_DB_HOST` | No | Secondary anime database host |
+| `ANIME_DB_PORT` | No | Secondary anime database port |
+| `ANIME_DB_USER` | No | Secondary anime database user |
+| `ANIME_DB_PASSWORD` | No | Secondary anime database password |
+| `ANIME_DB_NAME` | No | Secondary anime database name |
+| `ANIME_DB_SCHEMA` | No | Secondary anime database schema |
 
 The `ConfigModule` loads `.env` files in this order (first match wins):
 1. `projects/backend/base/.env`

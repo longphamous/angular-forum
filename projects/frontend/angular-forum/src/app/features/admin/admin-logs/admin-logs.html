@@ -1,0 +1,155 @@
+<div class="p-4" *transloco="let t">
+    <p-confirmDialog />
+
+    <!-- Header -->
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+            <h1 class="text-2xl font-bold dark:text-white">{{ t('adminLogs.title') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('adminLogs.subtitle') }}</p>
+        </div>
+        <p-button
+            (onClick)="onCleanup($event)"
+            [label]="t('adminLogs.cleanup')"
+            icon="pi pi-trash"
+            severity="danger"
+            size="small"
+        />
+    </div>
+
+    <!-- Stats Cards -->
+    @if (facade.stats(); as stats) {
+    <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <p-card styleClass="text-center">
+            <div class="text-2xl font-bold dark:text-white">{{ stats.total }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('adminLogs.stats.total') }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+            <div class="text-2xl font-bold text-blue-500">{{ stats.byLevel['info'] || 0 }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('adminLogs.stats.info') }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+            <div class="text-2xl font-bold text-yellow-500">{{ stats.byLevel['warn'] || 0 }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('adminLogs.stats.warnings') }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+            <div class="text-2xl font-bold text-red-500">{{ stats.byLevel['error'] || 0 }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('adminLogs.stats.errors') }}</div>
+        </p-card>
+    </div>
+    }
+
+    <!-- Filters -->
+    <div class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+        <div>
+            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="filterLevel">
+                {{ t('adminLogs.filter.level') }}
+            </label>
+            <p-select
+                [(ngModel)]="filterLevel"
+                [options]="levelOptions"
+                inputId="filterLevel"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-40"
+            />
+        </div>
+        <div>
+            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="filterCategory">
+                {{ t('adminLogs.filter.category') }}
+            </label>
+            <p-select
+                [(ngModel)]="filterCategory"
+                [options]="categoryOptions"
+                inputId="filterCategory"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-48"
+            />
+        </div>
+        <div>
+            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="filterFrom">
+                {{ t('adminLogs.filter.from') }}
+            </label>
+            <input class="w-44" id="filterFrom" [(ngModel)]="filterFrom" pInputText type="date" />
+        </div>
+        <div>
+            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="filterTo">
+                {{ t('adminLogs.filter.to') }}
+            </label>
+            <input class="w-44" id="filterTo" [(ngModel)]="filterTo" pInputText type="date" />
+        </div>
+        <div class="flex-1">
+            <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400" for="filterSearch">
+                {{ t('adminLogs.filter.search') }}
+            </label>
+            <input
+                class="w-full"
+                id="filterSearch"
+                [(ngModel)]="filterSearch"
+                [placeholder]="t('adminLogs.filter.searchPlaceholder')"
+                pInputText
+                type="text"
+            />
+        </div>
+        <p-button (onClick)="onFilter()" [label]="t('adminLogs.filter.apply')" icon="pi pi-search" size="small" />
+        <p-button
+            (onClick)="onClearFilters()"
+            [label]="t('adminLogs.filter.clear')"
+            [text]="true"
+            icon="pi pi-filter-slash"
+            severity="secondary"
+            size="small"
+        />
+    </div>
+
+    <!-- Logs Table -->
+    @if (facade.loading() && facade.logs().items.length === 0) {
+    <p-skeleton height="30rem" />
+    } @else {
+    <p-table
+        [rowHover]="true"
+        [scrollable]="true"
+        [value]="facade.logs().items"
+        styleClass="p-datatable-sm p-datatable-striped"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="w-40">{{ t('adminLogs.table.timestamp') }}</th>
+                <th class="w-20">{{ t('adminLogs.table.level') }}</th>
+                <th class="w-32">{{ t('adminLogs.table.category') }}</th>
+                <th class="w-40">{{ t('adminLogs.table.action') }}</th>
+                <th>{{ t('adminLogs.table.message') }}</th>
+                <th class="w-32">{{ t('adminLogs.table.user') }}</th>
+                <th class="w-28">{{ t('adminLogs.table.ip') }}</th>
+            </tr>
+        </ng-template>
+        <ng-template let-log pTemplate="body">
+            <tr>
+                <td class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ log.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}
+                </td>
+                <td>
+                    <p-tag [severity]="getLevelSeverity(log.level)" [value]="log.level" />
+                </td>
+                <td>
+                    <span class="text-sm font-medium dark:text-gray-300">{{ log.category }}</span>
+                </td>
+                <td class="font-mono text-sm dark:text-gray-300">{{ log.action }}</td>
+                <td class="text-sm dark:text-gray-300">
+                    <span [pTooltip]="log.metadata ? (log.metadata | json) : ''">{{ log.message }}</span>
+                </td>
+                <td class="text-sm dark:text-gray-400">{{ log.username || '-' }}</td>
+                <td class="font-mono text-sm text-gray-400">{{ log.ipAddress || '-' }}</td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-center text-gray-500" colspan="7">{{ t('common.noData') }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    @if (totalRecords() > 50) {
+    <p-paginator (onPageChange)="onPageChange($any($event))" [rows]="50" [totalRecords]="totalRecords()" />
+    } }
+</div>

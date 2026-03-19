@@ -68,10 +68,7 @@ export class ThreadController {
      */
     @Public()
     @Get("threads/:id/poll")
-    getPoll(
-        @Param("id", ParseUUIDPipe) id: string,
-        @CurrentUser() user?: AuthenticatedUser
-    ): Promise<PollDto | null> {
+    getPoll(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user?: AuthenticatedUser): Promise<PollDto | null> {
         return this.threadService.getPoll(id, user?.userId);
     }
 

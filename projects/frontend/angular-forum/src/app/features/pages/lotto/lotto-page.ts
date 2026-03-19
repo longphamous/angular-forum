@@ -27,7 +27,8 @@ import {
     MyTicketWithResult,
     PRIZE_CLASS_INFO,
     PRIZE_CLASSES,
-    SpecialDraw
+    SpecialDraw,
+    TicketDrawGroup
 } from "../../../core/models/lotto/lotto";
 import { Wallet } from "../../../core/models/wallet/wallet";
 import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
@@ -130,6 +131,11 @@ export class LottoPage implements OnInit, OnDestroy {
             .filter((t) => t.draw);
     });
 
+    /** Tickets grouped by draw, split into pending (upcoming) and completed (past). */
+    protected readonly pendingTicketGroups = computed(() => this.groupTicketsByDraw("pending"));
+    protected readonly completedTicketGroups = computed(() => this.groupTicketsByDraw("drawn"));
+    protected readonly expandedDrawGroups = signal<Set<string>>(new Set());
+
     protected readonly hotNumbersSet = computed(() => new Set(this.stats()?.hotNumbers ?? []));
     protected readonly coldNumbersSet = computed(() => new Set(this.stats()?.coldNumbers ?? []));
     protected readonly frequencyMap = computed(() => {
@@ -224,6 +230,36 @@ export class LottoPage implements OnInit, OnDestroy {
 
     protected isTicketExpanded(ticketId: string): boolean {
         return this.expandedTickets().has(ticketId);
+    }
+
+    protected toggleDrawGroup(drawId: string): void {
+        this.expandedDrawGroups.update((set) => {
+            const next = new Set(set);
+            if (next.has(drawId)) next.delete(drawId);
+            else next.add(drawId);
+            return next;
+        });
+    }
+
+    protected isDrawGroupExpanded(drawId: string): boolean {
+        return this.expandedDrawGroups().has(drawId);
+    }
+
+    private groupTicketsByDraw(status: "pending" | "drawn"): TicketDrawGroup[] {
+        const items = this.myTicketsWithResults().filter((t) => t.draw.status === status);
+        const map = new Map<string, TicketDrawGroup>();
+        for (const item of items) {
+            let group = map.get(item.draw.id);
+            if (!group) {
+                group = { draw: item.draw, tickets: [], totalPrize: 0 };
+                map.set(item.draw.id, group);
+            }
+            group.tickets.push(item);
+            group.totalPrize += item.result?.prizeAmount ?? 0;
+        }
+        return [...map.values()].sort(
+            (a, b) => new Date(b.draw.drawDate).getTime() - new Date(a.draw.drawDate).getTime()
+        );
     }
 
     // ─── Number selection ─────────────────────────────────────────────────────

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    inject,
+    OnDestroy,
+    OnInit,
+    signal
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
@@ -7,14 +15,13 @@ import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
 import { DividerModule } from "primeng/divider";
 import { EditorModule } from "primeng/editor";
-import { MessageModule } from "primeng/message";
 import { InputTextModule } from "primeng/inputtext";
+import { MessageModule } from "primeng/message";
 import { PaginatorModule, PaginatorState } from "primeng/paginator";
 import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
-
 import { Subscription } from "rxjs";
 
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";

@@ -1,4 +1,3 @@
-
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
@@ -9,6 +8,7 @@ import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { DialogModule } from "primeng/dialog";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
+import { MultiSelectModule } from "primeng/multiselect";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
@@ -17,16 +17,17 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import type {
     AdminBoosterDetail,
+    BoosterCategory,
     Card,
-    CardElement,
     CardRarity,
+    CreateBoosterCategoryDto,
     CreateBoosterPackDto,
     CreateCardDto
 } from "../../../core/models/tcg/tcg";
-import { ELEMENT_CONFIG, RARITY_CONFIG } from "../../../core/models/tcg/tcg";
+import { RARITY_CONFIG } from "../../../core/models/tcg/tcg";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { TcgFacade } from "../../../facade/tcg/tcg-facade";
 
 interface SelectOption<T> {
@@ -34,26 +35,34 @@ interface SelectOption<T> {
     value: T;
 }
 
+interface BoosterCardEntry {
+    cardId: string;
+    cardName: string;
+    cardRarity: CardRarity;
+    dropWeight: number;
+}
+
 @Component({
     selector: "app-admin-tcg",
     standalone: true,
     imports: [
-    FormsModule,
-    TranslocoModule,
-    ButtonModule,
-    CardModule,
-    ConfirmDialogModule,
-    DialogModule,
-    InputNumberModule,
-    InputTextModule,
-    TextareaModule,
-    SelectModule,
-    SkeletonModule,
-    TableModule,
-    TabsModule,
-    TagModule,
-    TooltipModule
-],
+        FormsModule,
+        TranslocoModule,
+        ButtonModule,
+        CardModule,
+        ConfirmDialogModule,
+        DialogModule,
+        InputNumberModule,
+        InputTextModule,
+        MultiSelectModule,
+        TextareaModule,
+        SelectModule,
+        SkeletonModule,
+        TableModule,
+        TabsModule,
+        TagModule,
+        TooltipModule
+    ],
     providers: [ConfirmationService],
     templateUrl: "./admin-tcg.html",
     styleUrl: "./admin-tcg.css",
@@ -75,8 +84,16 @@ export class AdminTcg implements OnInit {
     readonly showBoosterDialog = signal(false);
     readonly editingBoosterId = signal<string | null>(null);
     boosterForm: CreateBoosterPackDto = this.emptyBoosterForm();
+    boosterCardEntries: BoosterCardEntry[] = [];
+    readonly boosterAddCardId = signal<string | null>(null);
+    readonly boosterAddCardWeight = signal<number>(100);
 
-    // Booster card management
+    // Category dialog
+    readonly showCategoryDialog = signal(false);
+    readonly editingCategoryId = signal<string | null>(null);
+    categoryForm: CreateBoosterCategoryDto = this.emptyCategoryForm();
+
+    // Booster card management (existing boosters)
     readonly showBoosterCardDialog = signal(false);
     readonly managingBoosterId = signal<string | null>(null);
     readonly addCardId = signal<string | null>(null);
@@ -87,7 +104,6 @@ export class AdminTcg implements OnInit {
     readonly editingBoosterCardWeight = signal<number>(100);
 
     readonly rarityConfig = RARITY_CONFIG;
-    readonly elementConfig = ELEMENT_CONFIG;
 
     readonly rarityOptions: SelectOption<CardRarity>[] = [
         { label: "Common", value: "common" },
@@ -96,17 +112,6 @@ export class AdminTcg implements OnInit {
         { label: "Epic", value: "epic" },
         { label: "Legendary", value: "legendary" },
         { label: "Mythic", value: "mythic" }
-    ];
-
-    readonly elementOptions: SelectOption<CardElement | undefined>[] = [
-        { label: "-- None --", value: undefined },
-        { label: "Fire", value: "fire" },
-        { label: "Water", value: "water" },
-        { label: "Earth", value: "earth" },
-        { label: "Wind", value: "wind" },
-        { label: "Light", value: "light" },
-        { label: "Dark", value: "dark" },
-        { label: "Neutral", value: "neutral" }
     ];
 
     readonly guaranteedRarityOptions: SelectOption<CardRarity | undefined>[] = [
@@ -122,6 +127,7 @@ export class AdminTcg implements OnInit {
     ngOnInit(): void {
         this.tcgFacade.loadAdminCards();
         this.tcgFacade.loadAdminBoosters();
+        this.tcgFacade.loadAdminCategories();
     }
 
     // ─── Card CRUD ───────────────────────────────────────────────────────────
@@ -140,7 +146,6 @@ export class AdminTcg implements OnInit {
             imageUrl: card.imageUrl ?? undefined,
             rarity: card.rarity,
             series: card.series,
-            element: card.element ?? undefined,
             attack: card.attack,
             defense: card.defense,
             hp: card.hp,
@@ -174,6 +179,7 @@ export class AdminTcg implements OnInit {
     onNewBooster(): void {
         this.editingBoosterId.set(null);
         this.boosterForm = this.emptyBoosterForm();
+        this.boosterCardEntries = [];
         this.showBoosterDialog.set(true);
     }
 
@@ -187,20 +193,33 @@ export class AdminTcg implements OnInit {
             cardsPerPack: booster.cardsPerPack,
             guaranteedRarity: booster.guaranteedRarity ?? undefined,
             series: booster.series,
+            categoryId: booster.categoryId ?? undefined,
             availableFrom: booster.availableFrom ?? undefined,
             availableUntil: booster.availableUntil ?? undefined,
             maxPurchasesPerUser: booster.maxPurchasesPerUser ?? undefined,
             sortOrder: booster.sortOrder
         };
+        this.boosterCardEntries = booster.cards.map((c) => ({
+            cardId: c.cardId,
+            cardName: c.cardName,
+            cardRarity: c.cardRarity,
+            dropWeight: c.dropWeight
+        }));
         this.showBoosterDialog.set(true);
     }
 
     onSaveBooster(): void {
         const id = this.editingBoosterId();
-        if (id) {
-            this.tcgFacade.updateBooster(id, this.boosterForm);
+        const dto = { ...this.boosterForm };
+
+        if (!id) {
+            dto.cards = this.boosterCardEntries.map((e) => ({
+                cardId: e.cardId,
+                dropWeight: e.dropWeight
+            }));
+            this.tcgFacade.createBooster(dto);
         } else {
-            this.tcgFacade.createBooster(this.boosterForm);
+            this.tcgFacade.updateBooster(id, dto);
         }
         this.showBoosterDialog.set(false);
     }
@@ -213,7 +232,39 @@ export class AdminTcg implements OnInit {
         });
     }
 
-    // ─── Booster Card Management ─────────────────────────────────────────────
+    // ─── Booster Dialog Card Management ─────────────────────────────────────
+
+    getAvailableCardsForBoosterDialog(): SelectOption<string>[] {
+        const existingIds = new Set(this.boosterCardEntries.map((e) => e.cardId));
+        return this.tcgFacade
+            .adminCards()
+            .filter((c) => !existingIds.has(c.id))
+            .map((c) => ({ label: `${c.name} (${c.rarity})`, value: c.id }));
+    }
+
+    onAddCardToBoosterDialog(): void {
+        const cardId = this.boosterAddCardId();
+        if (!cardId) return;
+        const card = this.tcgFacade.adminCards().find((c) => c.id === cardId);
+        if (!card) return;
+        this.boosterCardEntries = [
+            ...this.boosterCardEntries,
+            {
+                cardId: card.id,
+                cardName: card.name,
+                cardRarity: card.rarity,
+                dropWeight: this.boosterAddCardWeight()
+            }
+        ];
+        this.boosterAddCardId.set(null);
+        this.boosterAddCardWeight.set(100);
+    }
+
+    onRemoveCardFromBoosterDialog(cardId: string): void {
+        this.boosterCardEntries = this.boosterCardEntries.filter((e) => e.cardId !== cardId);
+    }
+
+    // ─── Booster Card Management (existing boosters) ────────────────────────
 
     onManageBoosterCards(booster: AdminBoosterDetail): void {
         this.managingBoosterId.set(booster.id);
@@ -274,6 +325,58 @@ export class AdminTcg implements OnInit {
         this.editingBoosterCardId.set(null);
     }
 
+    // ─── Category CRUD ───────────────────────────────────────────────────────
+
+    onNewCategory(): void {
+        this.editingCategoryId.set(null);
+        this.categoryForm = this.emptyCategoryForm();
+        this.showCategoryDialog.set(true);
+    }
+
+    onEditCategory(category: BoosterCategory): void {
+        this.editingCategoryId.set(category.id);
+        this.categoryForm = {
+            name: category.name,
+            description: category.description ?? undefined,
+            icon: category.icon ?? undefined,
+            sortOrder: category.sortOrder
+        };
+        this.showCategoryDialog.set(true);
+    }
+
+    onSaveCategory(): void {
+        const id = this.editingCategoryId();
+        if (id) {
+            this.tcgFacade.updateCategory(id, this.categoryForm);
+        } else {
+            this.tcgFacade.createCategory(this.categoryForm);
+        }
+        this.showCategoryDialog.set(false);
+    }
+
+    onDeleteCategory(category: BoosterCategory, event: Event): void {
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: `${category.name} wirklich löschen?`,
+            accept: () => this.tcgFacade.deleteCategory(category.id)
+        });
+    }
+
+    getCategoryOptions(): SelectOption<string | undefined>[] {
+        return [
+            { label: "-- None --", value: undefined },
+            ...this.tcgFacade
+                .adminCategories()
+                .filter((c) => c.isActive)
+                .map((c) => ({ label: c.name, value: c.id }))
+        ];
+    }
+
+    getCategoryName(categoryId: string | null): string | null {
+        if (!categoryId) return null;
+        return this.tcgFacade.adminCategories().find((c) => c.id === categoryId)?.name ?? null;
+    }
+
     getRaritySeverity(rarity: CardRarity): "success" | "info" | "warn" | "secondary" | "contrast" | "danger" {
         return (RARITY_CONFIG[rarity]?.severity ?? "secondary") as
             | "success"
@@ -282,11 +385,6 @@ export class AdminTcg implements OnInit {
             | "secondary"
             | "contrast"
             | "danger";
-    }
-
-    getElementInfo(element: string | null): { icon: string; color: string; label: string } | null {
-        if (!element) return null;
-        return ELEMENT_CONFIG[element as CardElement] ?? null;
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -309,6 +407,13 @@ export class AdminTcg implements OnInit {
             price: 100,
             series: "",
             cardsPerPack: 5,
+            sortOrder: 0
+        };
+    }
+
+    private emptyCategoryForm(): CreateBoosterCategoryDto {
+        return {
+            name: "",
             sortOrder: 0
         };
     }

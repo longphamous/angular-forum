@@ -70,8 +70,8 @@
                         id="poll-question"
                         [(ngModel)]="pollQuestion"
                         [disabled]="submitting"
-                        pInputText
                         [placeholder]="t('threadCreate.poll.questionPlaceholder')"
+                        pInputText
                         type="text"
                     />
                 </div>
@@ -101,20 +101,20 @@
                         <!-- Text + Image URL inputs -->
                         <div class="flex flex-1 flex-col gap-2">
                             <input
+                                (ngModelChange)="updatePollOptionText($index, $event)"
                                 [disabled]="submitting"
                                 [ngModel]="option.text"
-                                (ngModelChange)="updatePollOptionText($index, $event)"
-                                pInputText
                                 [placeholder]="t('threadCreate.poll.optionPlaceholder', { index: $index + 1 })"
+                                pInputText
                                 type="text"
                             />
                             <div class="flex items-center gap-2">
                                 <i class="pi pi-image text-surface-400 text-xs"></i>
                                 <input
                                     class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
+                                    (ngModelChange)="updatePollOptionImage($index, $event)"
                                     [disabled]="submitting"
                                     [ngModel]="option.imageUrl"
-                                    (ngModelChange)="updatePollOptionImage($index, $event)"
                                     [placeholder]="t('threadCreate.poll.imageUrlPlaceholder')"
                                     type="text"
                                 />
@@ -131,13 +131,12 @@
                         />
                         }
                     </div>
-                    }
-                    @if (pollOptions.length < 10) {
+                    } @if (pollOptions.length < 10) {
                     <p-button
                         (onClick)="addPollOption()"
+                        [label]="t('threadCreate.poll.addOption')"
                         [text]="true"
                         icon="pi pi-plus"
-                        [label]="t('threadCreate.poll.addOption')"
                         severity="secondary"
                         size="small"
                     />
@@ -162,7 +161,9 @@
                     }
                     <div class="flex items-center gap-2">
                         <p-checkbox [(ngModel)]="pollAllowVoteChange" [binary]="true" inputId="poll-vote-change" />
-                        <label class="text-sm" for="poll-vote-change">{{ t('threadCreate.poll.allowVoteChange') }}</label>
+                        <label class="text-sm" for="poll-vote-change"
+                            >{{ t('threadCreate.poll.allowVoteChange') }}</label
+                        >
                     </div>
                     @if (pollAllowVoteChange) {
                     <div class="flex flex-col gap-1 pl-7">

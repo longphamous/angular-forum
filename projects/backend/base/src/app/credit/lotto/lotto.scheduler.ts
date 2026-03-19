@@ -11,27 +11,45 @@ import { DrawScheduleConfig, Weekday } from "./models/lotto.model";
  * One cron job is registered per configured draw day so that draws fire
  * automatically at the configured UTC time on the configured weekdays.
  *
- * When the config is updated via updateSchedule(), all existing jobs are
- * removed and replaced with new ones matching the new config.
+ * Additionally runs a catch-up check every 5 minutes to handle overdue draws
+ * that were missed (e.g. because the server was down during the scheduled time).
  */
 @Injectable()
 export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(LottoScheduler.name);
     private readonly JOB_PREFIX = "lotto-draw-day-";
+    private catchUpInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(
         private readonly lottoService: LottoService,
         private readonly schedulerRegistry: SchedulerRegistry
     ) {}
 
-    onModuleInit(): void {
-        // Ensure at least one upcoming draw exists on startup
-        this.lottoService.scheduleNextDraw();
-        this.registerJobs(this.lottoService.getConfig());
+    async onModuleInit(): Promise<void> {
+        // Small delay to let LottoService.onModuleInit() load config from DB first
+        await new Promise((r) => setTimeout(r, 500));
+
+        const config = this.lottoService.getConfig();
+        this.logger.log(
+            `Config loaded: drawDays=${JSON.stringify(config.drawDays)}, time=${config.drawHourUtc}:${config.drawMinuteUtc} UTC`
+        );
+
+        // Ensure at least one upcoming draw exists
+        await this.lottoService.scheduleNextDraw();
+
+        // Register cron jobs for configured draw days
+        this.registerJobs(config);
+
+        // Catch-up: check every 5 minutes for overdue draws
+        this.catchUpInterval = setInterval(() => void this.catchUpOverdueDraws(), 5 * 60_000);
+
+        // Also run catch-up immediately on startup
+        await this.catchUpOverdueDraws();
     }
 
     onModuleDestroy(): void {
         this.removeAllJobs();
+        if (this.catchUpInterval) clearInterval(this.catchUpInterval);
     }
 
     /**
@@ -48,15 +66,14 @@ export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
     private registerJobs(config: DrawScheduleConfig): void {
         const { drawDays, drawHourUtc, drawMinuteUtc } = config;
 
-        // Cron expression: "<minute> <hour> * * <weekday>"
         for (const day of drawDays) {
             const jobName = `${this.JOB_PREFIX}${day}`;
             const cronExpression = this.buildCronExpression(drawMinuteUtc, drawHourUtc, day);
 
-            const job = new CronJob(cronExpression, () => this.runDraw(), undefined, true, "UTC");
+            const job = new CronJob(cronExpression, () => void this.runDraw(), undefined, true, "UTC");
 
             this.schedulerRegistry.addCronJob(jobName, job);
-            this.logger.log(`Registered cron job "${jobName}" with expression "${cronExpression}" (UTC)`);
+            this.logger.log(`Registered cron job "${jobName}" — "${cronExpression}" (UTC)`);
         }
     }
 
@@ -71,17 +88,44 @@ export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Triggered automatically by each cron job.
-     * Finds the next pending draw whose drawDate is in the past (or now),
-     * executes it, and the service will schedule the following one automatically.
+     * Checks for any overdue pending draws and performs them.
+     * This handles cases where the server was down during the scheduled time.
+     */
+    private async catchUpOverdueDraws(): Promise<void> {
+        const now = new Date();
+        const allDraws = await this.lottoService.getAllDraws();
+        const overdue = allDraws.filter((d) => d.status === "pending" && new Date(d.drawDate) <= now);
+
+        if (overdue.length === 0) return;
+
+        this.logger.log(`Found ${overdue.length} overdue draw(s) — performing catch-up...`);
+
+        for (const draw of overdue) {
+            try {
+                const result = await this.lottoService.performWeeklyDraw(draw.id);
+                this.logger.log(
+                    `Catch-up draw "${draw.id}" completed. ` +
+                        `Tickets: ${result.totalTickets}, Winners: ${result.winners.length}`
+                );
+            } catch (err) {
+                this.logger.error(`Failed catch-up draw "${draw.id}": ${(err as Error).message}`);
+            }
+        }
+
+        // performWeeklyDraw already calls scheduleNextDraw with the correct jackpot.
+        // No need to call it again here — that would overwrite the rollover jackpot.
+    }
+
+    /**
+     * Triggered automatically by each cron job at the scheduled time.
      */
     private async runDraw(): Promise<void> {
         const now = new Date();
         const allDraws = await this.lottoService.getAllDraws();
-        const due = allDraws.find((d: { status: string; drawDate: string }) => d.status === "pending" && new Date(d.drawDate) <= now);
+        const due = allDraws.find((d) => d.status === "pending" && new Date(d.drawDate) <= now);
 
         if (!due) {
-            this.logger.warn("Scheduled draw triggered but no pending draw found – creating next draw");
+            this.logger.warn("Cron triggered but no pending draw due — scheduling next draw");
             await this.lottoService.scheduleNextDraw();
             return;
         }
@@ -90,15 +134,14 @@ export class LottoScheduler implements OnModuleInit, OnModuleDestroy {
         try {
             const result = await this.lottoService.performWeeklyDraw(due.id);
             this.logger.log(
-                `Draw "${due.id}" completed automatically. ` +
-                    `Tickets: ${result.totalTickets}, Winners: ${result.winners.length}, Prizes paid: ${result.totalPrizesPaid}`
+                `Draw "${due.id}" completed. ` +
+                    `Tickets: ${result.totalTickets}, Winners: ${result.winners.length}, Prizes: ${result.totalPrizesPaid}`
             );
         } catch (err) {
-            this.logger.error(`Failed to perform draw "${due.id}": ${(err as Error).message}`);
+            this.logger.error(`Failed draw "${due.id}": ${(err as Error).message}`);
         }
     }
 
-    /** Builds a standard cron expression for a given minute, hour and weekday (0=Sun, 6=Sat). */
     private buildCronExpression(minute: number, hour: number, weekday: Weekday): string {
         return `${minute} ${hour} * * ${weekday}`;
     }

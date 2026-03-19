@@ -117,7 +117,13 @@ export class LottoController {
     ): Promise<LottoTicket[]> {
         const user = req.user as { userId: string } | undefined;
         if (!user?.userId) throw new Error("Unauthorized");
-        return this.lottoService.purchaseTicket(user.userId, body.fields, body.superNumber, body.drawId, body.repeatWeeks ?? 1);
+        return this.lottoService.purchaseTicket(
+            user.userId,
+            body.fields,
+            body.superNumber,
+            body.drawId,
+            body.repeatWeeks ?? 1
+        );
     }
 
     // ─── User results ───────────────────────────────────────────────────────

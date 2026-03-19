@@ -7,6 +7,7 @@ import { MarketCategoryEntity } from "../../marketplace/entities/market-category
 import { MarketListingEntity } from "../../marketplace/entities/market-listing.entity";
 import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity } from "../../user/entities/user.entity";
+import { BoosterCategoryEntity } from "./entities/booster-category.entity";
 import { BoosterPackEntity } from "./entities/booster-pack.entity";
 import { BoosterPackCardEntity } from "./entities/booster-pack-card.entity";
 import { CardEntity } from "./entities/card.entity";
@@ -42,6 +43,15 @@ export interface CardDto {
     owned?: number;
 }
 
+export interface BoosterCategoryDto {
+    id: string;
+    name: string;
+    description: string | null;
+    icon: string | null;
+    isActive: boolean;
+    sortOrder: number;
+}
+
 export interface BoosterPackDto {
     id: string;
     name: string;
@@ -51,6 +61,8 @@ export interface BoosterPackDto {
     cardsPerPack: number;
     guaranteedRarity: CardRarity | null;
     series: string;
+    categoryId: string | null;
+    categoryName: string | null;
     availableFrom: string | null;
     availableUntil: string | null;
     maxPurchasesPerUser: number | null;
@@ -130,10 +142,23 @@ export interface CreateBoosterPackDto {
     cardsPerPack?: number;
     guaranteedRarity?: CardRarity;
     series: string;
+    categoryId?: string;
     availableFrom?: string;
     availableUntil?: string;
     maxPurchasesPerUser?: number;
     sortOrder?: number;
+    cards?: { cardId: string; dropWeight: number }[];
+}
+
+export interface CreateBoosterCategoryDto {
+    name: string;
+    description?: string;
+    icon?: string;
+    sortOrder?: number;
+}
+
+export interface UpdateBoosterCategoryDto extends Partial<CreateBoosterCategoryDto> {
+    isActive?: boolean;
 }
 
 export interface UpdateBoosterPackDto extends Partial<CreateBoosterPackDto> {
@@ -179,7 +204,12 @@ function toCardDto(entity: CardEntity, owned?: number): CardDto {
     return dto;
 }
 
-function toBoosterPackDto(entity: BoosterPackEntity, totalCards: number, userPurchases?: number): BoosterPackDto {
+function toBoosterPackDto(
+    entity: BoosterPackEntity,
+    totalCards: number,
+    userPurchases?: number,
+    categoryName?: string | null
+): BoosterPackDto {
     const dto: BoosterPackDto = {
         id: entity.id,
         name: entity.name,
@@ -189,6 +219,8 @@ function toBoosterPackDto(entity: BoosterPackEntity, totalCards: number, userPur
         cardsPerPack: entity.cardsPerPack,
         guaranteedRarity: entity.guaranteedRarity as CardRarity | null,
         series: entity.series,
+        categoryId: entity.categoryId ?? null,
+        categoryName: categoryName ?? entity.category?.name ?? null,
         availableFrom: entity.availableFrom ? entity.availableFrom.toISOString() : null,
         availableUntil: entity.availableUntil ? entity.availableUntil.toISOString() : null,
         maxPurchasesPerUser: entity.maxPurchasesPerUser,
@@ -216,6 +248,8 @@ export class TcgService implements OnModuleInit {
         private readonly boosterPackRepo: Repository<BoosterPackEntity>,
         @InjectRepository(BoosterPackCardEntity)
         private readonly boosterPackCardRepo: Repository<BoosterPackCardEntity>,
+        @InjectRepository(BoosterCategoryEntity)
+        private readonly boosterCategoryRepo: Repository<BoosterCategoryEntity>,
         @InjectRepository(UserCardEntity)
         private readonly userCardRepo: Repository<UserCardEntity>,
         @InjectRepository(UserBoosterEntity)
@@ -223,7 +257,7 @@ export class TcgService implements OnModuleInit {
         @InjectRepository(MarketListingEntity)
         private readonly listingRepo: Repository<MarketListingEntity>,
         @InjectRepository(MarketCategoryEntity)
-        private readonly categoryRepo: Repository<MarketCategoryEntity>,
+        private readonly marketCategoryRepo: Repository<MarketCategoryEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly creditService: CreditService,
@@ -240,11 +274,11 @@ export class TcgService implements OnModuleInit {
 
     /** Find or create the "Trading Cards" category in the community marketplace. */
     private async ensureTcgCategory(): Promise<void> {
-        let category = await this.categoryRepo.findOne({
+        let category = await this.marketCategoryRepo.findOne({
             where: { name: TCG_CATEGORY_NAME, parentId: IsNull() }
         });
         if (!category) {
-            category = this.categoryRepo.create({
+            category = this.marketCategoryRepo.create({
                 name: TCG_CATEGORY_NAME,
                 description: "Sammelkarten aus dem Trading Card Game",
                 icon: TCG_CATEGORY_ICON,
@@ -252,7 +286,7 @@ export class TcgService implements OnModuleInit {
                 requiresApproval: false,
                 isActive: true
             });
-            category = await this.categoryRepo.save(category);
+            category = await this.marketCategoryRepo.save(category);
             this.logger.log(`Created marketplace category "${TCG_CATEGORY_NAME}" (${category.id})`);
         }
         this.tcgCategoryId = category.id;
@@ -906,6 +940,7 @@ export class TcgService implements OnModuleInit {
 
     async adminGetAllBoosters(): Promise<AdminBoosterDetailDto[]> {
         const boosters = await this.boosterPackRepo.find({
+            relations: ["category"],
             order: { sortOrder: "ASC", createdAt: "DESC" }
         });
 
@@ -938,13 +973,29 @@ export class TcgService implements OnModuleInit {
             cardsPerPack: dto.cardsPerPack ?? 5,
             guaranteedRarity: dto.guaranteedRarity ?? null,
             series: dto.series,
+            categoryId: dto.categoryId ?? null,
             availableFrom: dto.availableFrom ? new Date(dto.availableFrom) : null,
             availableUntil: dto.availableUntil ? new Date(dto.availableUntil) : null,
             maxPurchasesPerUser: dto.maxPurchasesPerUser ?? null,
             sortOrder: dto.sortOrder ?? 0
         });
         const saved = await this.boosterPackRepo.save(booster);
-        return toBoosterPackDto(saved, 0);
+
+        if (dto.cards && dto.cards.length > 0) {
+            for (const cardEntry of dto.cards) {
+                const card = await this.cardRepo.findOneBy({ id: cardEntry.cardId });
+                if (!card) continue;
+                const packCard = this.boosterPackCardRepo.create({
+                    boosterPackId: saved.id,
+                    cardId: cardEntry.cardId,
+                    dropWeight: cardEntry.dropWeight
+                });
+                await this.boosterPackCardRepo.save(packCard);
+            }
+        }
+
+        const totalCards = dto.cards?.length ?? 0;
+        return toBoosterPackDto(saved, totalCards);
     }
 
     async adminUpdateBooster(id: string, dto: UpdateBoosterPackDto): Promise<BoosterPackDto> {
@@ -960,6 +1011,7 @@ export class TcgService implements OnModuleInit {
         if (dto.cardsPerPack !== undefined) booster.cardsPerPack = dto.cardsPerPack;
         if (dto.guaranteedRarity !== undefined) booster.guaranteedRarity = dto.guaranteedRarity ?? null;
         if (dto.series !== undefined) booster.series = dto.series;
+        if (dto.categoryId !== undefined) booster.categoryId = dto.categoryId ?? null;
         if (dto.availableFrom !== undefined)
             booster.availableFrom = dto.availableFrom ? new Date(dto.availableFrom) : null;
         if (dto.availableUntil !== undefined)
@@ -1026,6 +1078,71 @@ export class TcgService implements OnModuleInit {
         }
         packCard.dropWeight = dropWeight;
         await this.boosterPackCardRepo.save(packCard);
+    }
+
+    // ─── Admin: Booster Categories ─────────────────────────────────────────────
+
+    async adminGetAllCategories(): Promise<BoosterCategoryDto[]> {
+        const categories = await this.boosterCategoryRepo.find({
+            order: { sortOrder: "ASC", name: "ASC" }
+        });
+        return categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            icon: c.icon,
+            isActive: c.isActive,
+            sortOrder: c.sortOrder
+        }));
+    }
+
+    async adminCreateCategory(dto: CreateBoosterCategoryDto): Promise<BoosterCategoryDto> {
+        const category = this.boosterCategoryRepo.create({
+            name: dto.name,
+            description: dto.description ?? null,
+            icon: dto.icon ?? null,
+            sortOrder: dto.sortOrder ?? 0
+        });
+        const saved = await this.boosterCategoryRepo.save(category);
+        return {
+            id: saved.id,
+            name: saved.name,
+            description: saved.description,
+            icon: saved.icon,
+            isActive: saved.isActive,
+            sortOrder: saved.sortOrder
+        };
+    }
+
+    async adminUpdateCategory(id: string, dto: UpdateBoosterCategoryDto): Promise<BoosterCategoryDto> {
+        const category = await this.boosterCategoryRepo.findOneBy({ id });
+        if (!category) {
+            throw new NotFoundException("Category not found");
+        }
+        if (dto.name !== undefined) category.name = dto.name;
+        if (dto.description !== undefined) category.description = dto.description ?? null;
+        if (dto.icon !== undefined) category.icon = dto.icon ?? null;
+        if (dto.isActive !== undefined) category.isActive = dto.isActive;
+        if (dto.sortOrder !== undefined) category.sortOrder = dto.sortOrder;
+
+        const saved = await this.boosterCategoryRepo.save(category);
+        return {
+            id: saved.id,
+            name: saved.name,
+            description: saved.description,
+            icon: saved.icon,
+            isActive: saved.isActive,
+            sortOrder: saved.sortOrder
+        };
+    }
+
+    async adminDeleteCategory(id: string): Promise<void> {
+        const category = await this.boosterCategoryRepo.findOneBy({ id });
+        if (!category) {
+            throw new NotFoundException("Category not found");
+        }
+        await this.boosterPackRepo.update({ categoryId: id }, { categoryId: null });
+        await this.boosterCategoryRepo.remove(category);
     }
 
     // ─── Private helpers ──────────────────────────────────────────────────────

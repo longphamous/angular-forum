@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { PushNotificationNew } from "../push/push-event.types";
 import { PushService } from "../push/push.service";
+import { PushNotificationNew } from "../push/push-event.types";
 import { NotificationEntity, NotificationType } from "./entities/notification.entity";
 
 @Injectable()

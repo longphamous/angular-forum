@@ -1,4 +1,12 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException, OnModuleInit } from "@nestjs/common";
+import {
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    OnModuleInit
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -26,18 +34,56 @@ import {
 } from "./models/lotto.model";
 
 /**
- * Prize amounts per class (in virtual credits).
+ * Prize pool distribution — modeled after German Lotto 6 aus 49.
+ *
+ * 50% of ticket revenue goes into the prize pool.
+ * The pool is split across classes 1-8 by percentage.
+ * Within each class, the amount is divided equally among all winners.
+ * Class 9 has a fixed payout (5 credits per winner).
+ *
+ * If a class has no winners, its share rolls into the jackpot.
+ */
+const POOL_SHARE: Record<string, number> = {
+    class1: 0.128, // 12.8%
+    class2: 0.1, // 10.0%
+    class3: 0.05, //  5.0%
+    class4: 0.15, // 15.0%
+    class5: 0.05, //  5.0%
+    class6: 0.1, // 10.0%
+    class7: 0.1, // 10.0%
+    class8: 0.322 // 32.2% (remainder)
+};
+
+/** Class 9 always pays a fixed amount per winner. */
+const CLASS_9_FIXED = 5;
+
+/** Minimum payout per winner in each class (safety net). */
+const MIN_PAYOUT: Record<string, number> = {
+    class1: 100_000,
+    class2: 10_000,
+    class3: 1_000,
+    class4: 100,
+    class5: 50,
+    class6: 20,
+    class7: 10,
+    class8: 5,
+    class9: CLASS_9_FIXED,
+    no_win: 0
+};
+
+/**
+ * Legacy fixed table — used as fallback when there are 0 tickets (no pool).
  */
 const PRIZE_TABLE: Record<LottoPrizeClass, number> = {
-    class1: 10_000_000,
-    class2: 500_000,
-    class3: 100_000,
-    class4: 5_000,
-    class5: 500,
-    class6: 50,
-    class7: 20,
-    class8: 10,
-    class9: 5,
+    class1: 0,
+    class2: 0,
+    class3: 0,
+    class4: 0,
+    class5: 0,
+    class6: 0,
+    class7: 0,
+    class8: 0,
+    class9: CLASS_9_FIXED,
     no_win: 0
 };
 
@@ -157,7 +203,10 @@ export class LottoService implements OnModuleInit {
             throw new BadRequestException("drawHourUtc must be between 0 and 23");
         if (partial.drawMinuteUtc !== undefined && (partial.drawMinuteUtc < 0 || partial.drawMinuteUtc > 59))
             throw new BadRequestException("drawMinuteUtc must be between 0 and 59");
-        if (partial.rolloverPercentage !== undefined && (partial.rolloverPercentage < 0 || partial.rolloverPercentage > 100))
+        if (
+            partial.rolloverPercentage !== undefined &&
+            (partial.rolloverPercentage < 0 || partial.rolloverPercentage > 100)
+        )
             throw new BadRequestException("rolloverPercentage must be between 0 and 100");
         if (partial.baseJackpot !== undefined && partial.baseJackpot <= 0)
             throw new BadRequestException("baseJackpot must be greater than 0");
@@ -194,8 +243,13 @@ export class LottoService implements OnModuleInit {
 
     async getAllDraws(): Promise<LottoDraw[]> {
         const entities = await this.drawRepo.find({ order: { drawDate: "DESC" } });
+        // Self-healing: ensure at least one pending draw exists
+        if (!entities.some((e) => e.status === "pending")) {
+            await this.scheduleNextDraw();
+        }
+        const all = entities.length > 0 ? entities : await this.drawRepo.find({ order: { drawDate: "DESC" } });
         const result: LottoDraw[] = [];
-        for (const e of entities) {
+        for (const e of all) {
             const count = await this.ticketRepo.count({ where: { drawId: e.id } });
             result.push(drawEntityToModel(e, count));
         }
@@ -210,8 +264,13 @@ export class LottoService implements OnModuleInit {
     }
 
     async getNextDraw(): Promise<LottoDraw | null> {
-        const entity = await this.drawRepo.findOne({ where: { status: "pending" }, order: { drawDate: "ASC" } });
-        if (!entity) return null;
+        let entity = await this.drawRepo.findOne({ where: { status: "pending" }, order: { drawDate: "ASC" } });
+        if (!entity) {
+            // Self-healing: create a draw if none exists
+            const created = await this.scheduleNextDraw();
+            entity = await this.drawRepo.findOneBy({ id: created.id });
+            if (!entity) return null;
+        }
         const count = await this.ticketRepo.count({ where: { drawId: entity.id } });
         return drawEntityToModel(entity, count);
     }
@@ -236,33 +295,167 @@ export class LottoService implements OnModuleInit {
         const ticketEntities = await this.ticketRepo.find({ where: { drawId } });
         const drawModel = drawEntityToModel(draw);
         const ticketModels = ticketEntities.map(ticketEntityToModel);
-        const allResults = ticketModels.map((t) => this.evaluateTicket(t, drawModel));
+
+        // ── Pool-based prize calculation (like real Lotto 6aus49) ──────────
+        // Step 1: Determine prize class for each field of each ticket
+        const allFieldResults: {
+            ticket: LottoTicket;
+            fieldIndex: number;
+            nums: number[];
+            pc: LottoPrizeClass;
+            matched: number[];
+            superMatched: boolean;
+        }[] = [];
+        for (const ticket of ticketModels) {
+            const superMatched = ticket.superNumber === drawModel.superNumber;
+            for (let fi = 0; fi < ticket.fields.length; fi++) {
+                const nums = ticket.fields[fi];
+                const matched = nums.filter((n) => drawModel.winningNumbers.includes(n));
+                const pc = this.determinePrizeClass(matched.length, superMatched);
+                allFieldResults.push({ ticket, fieldIndex: fi, nums, pc, matched, superMatched });
+            }
+        }
+
+        // Step 2: Count winners per class
+        const winnersPerClass = new Map<LottoPrizeClass, number>();
+        for (const fr of allFieldResults) {
+            if (fr.pc !== "no_win") {
+                winnersPerClass.set(fr.pc, (winnersPerClass.get(fr.pc) ?? 0) + 1);
+            }
+        }
+
+        // ── Pool-based prize calculation (like German Lotto 6aus49) ──────
+        //
+        // Revenue pool = 50% of ticket revenue (this draw's sales only).
+        // Jackpot = separate accumulated pot, only used for class 1.
+        // Classes 2-8 are paid from the revenue pool only.
+        // Class 9 = fixed amount per winner (always 5 credits).
+        //
+        // If a class has no winners, its revenue-pool share rolls into the
+        // jackpot for the next draw. The jackpot itself also rolls if not won.
+
+        const totalRevenue = ticketModels.reduce((sum, t) => sum + t.cost, 0);
+        const revenuePool = Math.floor(totalRevenue * (this.configCache.rolloverPercentage / 100));
+
+        // Step 4: Calculate payout per winner in each class
+        const payoutPerWinner = new Map<LottoPrizeClass, number>();
+        let unclaimedPool = 0; // from classes 2-8 with no winners
+
+        // Class 1 (Jackpot): winners get the accumulated jackpot + class 1's share of revenue
+        const class1Revenue = Math.floor(revenuePool * (POOL_SHARE["class1"] ?? 0));
+        const class1Total = draw.jackpot + class1Revenue;
+        const class1Winners = winnersPerClass.get("class1" as LottoPrizeClass) ?? 0;
+        if (class1Winners > 0) {
+            payoutPerWinner.set("class1" as LottoPrizeClass, Math.floor(class1Total / class1Winners));
+        }
+        // If not won, the entire class1Total rolls over (handled below)
+
+        // Classes 2-8: paid from revenue pool only
+        for (const [cls, share] of Object.entries(POOL_SHARE)) {
+            if (cls === "class1") continue; // already handled
+            const classPool = Math.floor(revenuePool * share);
+            const winnerCount = winnersPerClass.get(cls as LottoPrizeClass) ?? 0;
+            if (winnerCount > 0) {
+                const perWinner = Math.max(MIN_PAYOUT[cls] ?? 1, Math.floor(classPool / winnerCount));
+                payoutPerWinner.set(cls as LottoPrizeClass, perWinner);
+            } else {
+                unclaimedPool += classPool;
+            }
+        }
+        // Class 9: fixed
+        payoutPerWinner.set("class9", CLASS_9_FIXED);
+
+        this.logger.log(
+            `Pool calculation: revenue=${totalRevenue}, revenuePool=${revenuePool}, ` +
+                `jackpot=${draw.jackpot}, class1Total=${class1Total}, unclaimed=${unclaimedPool}`
+        );
+
+        // Step 5: Build results with calculated amounts
+        const ticketResults = new Map<string, LottoResult>();
+        for (const fr of allFieldResults) {
+            const amount = fr.pc === "no_win" ? 0 : (payoutPerWinner.get(fr.pc) ?? 0);
+            let result = ticketResults.get(fr.ticket.id);
+            if (!result) {
+                result = {
+                    ticketId: fr.ticket.id,
+                    userId: fr.ticket.userId,
+                    drawId: drawModel.id,
+                    matchedNumbers: fr.matched,
+                    matchedCount: fr.matched.length,
+                    superNumberMatched: fr.superMatched,
+                    prizeClass: fr.pc,
+                    prizeAmount: 0,
+                    fieldResults: []
+                };
+                ticketResults.set(fr.ticket.id, result);
+            }
+            result.fieldResults.push({
+                fieldIndex: fr.fieldIndex,
+                numbers: fr.nums,
+                matchedNumbers: fr.matched,
+                matchedCount: fr.matched.length,
+                superNumberMatched: fr.superMatched,
+                prizeClass: fr.pc,
+                prizeAmount: amount
+            });
+            result.prizeAmount += amount;
+            // Track best field for summary
+            if (fr.matched.length > result.matchedCount || (fr.matched.length === result.matchedCount && amount > 0)) {
+                result.matchedNumbers = fr.matched;
+                result.matchedCount = fr.matched.length;
+                result.prizeClass = fr.pc;
+            }
+        }
+
+        const allResults = [...ticketResults.values()];
         const winners = allResults.filter((r) => r.prizeAmount > 0);
         const totalPrizesPaid = winners.reduce((sum, r) => sum + r.prizeAmount, 0);
 
-        this.logger.log(`Draw "${drawId}" completed. Winners: ${winners.length}`);
+        this.logger.log(
+            `Draw "${drawId}" completed. RevenuePool: ${revenuePool}, Winners: ${winners.length}, Paid: ${totalPrizesPaid}, Unclaimed: ${unclaimedPool}`
+        );
 
+        // ── Credit winners ────────────────────────────────────────────────
         for (const winner of winners) {
             try {
-                await this.creditService.addCredits(winner.userId, winner.prizeAmount, "lotto_win",
-                    `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`);
-                await this.notificationsService.create(winner.userId, "coins_received",
-                    "Lottogewinn!", `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`, "/lotto");
+                await this.creditService.addCredits(
+                    winner.userId,
+                    winner.prizeAmount,
+                    "lotto_win",
+                    `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`
+                );
+                await this.notificationsService.create(
+                    winner.userId,
+                    "coins_received",
+                    "Lottogewinn!",
+                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
+                );
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
         }
 
-        const hasJackpotWinner = allResults.some((r) => r.prizeClass === "class1");
-        if (!hasJackpotWinner) {
-            const totalRevenue = ticketModels.reduce((sum, t) => sum + t.cost, 0);
-            const rolloverAmount = Math.floor(totalRevenue * (this.configCache.rolloverPercentage / 100));
-            await this.scheduleNextDraw(draw.jackpot + rolloverAmount);
+        // ── Schedule next draw with rollover ──────────────────────────────
+        // If jackpot WON:   next = baseJackpot + unclaimed (fresh start)
+        // If jackpot NOT won: next = old jackpot + class1Revenue + unclaimed (accumulates)
+        const hasJackpotWinner = class1Winners > 0;
+        let nextJackpot: number;
+        if (hasJackpotWinner) {
+            // Jackpot was won — reset to base + any unclaimed from other classes
+            nextJackpot = this.configCache.baseJackpot + unclaimedPool;
         } else {
-            await this.scheduleNextDraw(this.configCache.baseJackpot);
+            // Jackpot not won — old jackpot carries over + new revenue share + unclaimed
+            nextJackpot = draw.jackpot + class1Revenue + unclaimedPool;
         }
+        this.logger.log(
+            hasJackpotWinner
+                ? `Jackpot WON! Next: base=${this.configCache.baseJackpot} + unclaimed=${unclaimedPool} = ${nextJackpot}`
+                : `No jackpot winner. Next: oldJackpot=${draw.jackpot} + class1Rev=${class1Revenue} + unclaimed=${unclaimedPool} = ${nextJackpot}`
+        );
+        await this.scheduleNextDraw(nextJackpot);
 
-        // Persist stats incrementally
+        // Persist stats
         await this.updateStatsAfterDraw(draw.winningNumbers, draw.jackpot, ticketModels.length, totalPrizesPaid);
 
         return { draw: drawModel, totalTickets: ticketModels.length, winners, totalPrizesPaid };
@@ -270,11 +463,26 @@ export class LottoService implements OnModuleInit {
 
     async scheduleNextDraw(jackpot?: number): Promise<LottoDraw> {
         const effectiveJackpot = jackpot ?? this.configCache.baseJackpot;
-        const nextDate = this.nextDrawDate();
-        const id = `draw-${nextDate.toISOString().replace(/[:T]/g, "-").slice(0, 16)}`;
 
-        const existing = await this.drawRepo.findOneBy({ id });
-        if (existing) return drawEntityToModel(existing);
+        // Check if there's already a pending draw — just update its jackpot
+        const existingPending = await this.drawRepo.findOne({
+            where: { status: "pending" },
+            order: { drawDate: "ASC" }
+        });
+        if (existingPending) {
+            // Only update if the new jackpot is higher (rollover grows)
+            // or if explicitly provided (from performWeeklyDraw with exact value)
+            if (jackpot !== undefined && existingPending.jackpot !== effectiveJackpot) {
+                existingPending.jackpot = effectiveJackpot;
+                await this.drawRepo.save(existingPending);
+                this.logger.log(`Updated jackpot on "${existingPending.id}" to ${effectiveJackpot}`);
+            }
+            return drawEntityToModel(existingPending);
+        }
+
+        // No pending draw — create a new one
+        const nextDate = this.nextDrawDate();
+        const id = `draw-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
         const entity = this.drawRepo.create({
             id,
@@ -285,7 +493,7 @@ export class LottoService implements OnModuleInit {
             status: "pending"
         });
         await this.drawRepo.save(entity);
-        this.logger.log(`Next draw scheduled: "${id}" with jackpot ${effectiveJackpot}`);
+        this.logger.log(`Next draw scheduled: "${id}" on ${nextDate.toISOString()} with jackpot ${effectiveJackpot}`);
         return drawEntityToModel(entity);
     }
 
@@ -309,13 +517,20 @@ export class LottoService implements OnModuleInit {
         const fieldCount = fields.length;
         const totalCost = this.configCache.ticketCost * fieldCount * Math.max(1, repeatWeeks);
 
-        await this.creditService.deductCredits(userId, totalCost, "lotto_ticket",
-            `Lotto Ticket (${fieldCount} Felder, ${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"})`);
+        await this.creditService.deductCredits(
+            userId,
+            totalCost,
+            "lotto_ticket",
+            `Lotto Ticket (${fieldCount} Felder, ${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"})`
+        );
 
-        await this.notificationsService.create(userId, "system",
+        await this.notificationsService.create(
+            userId,
+            "system",
             "Lottoticket gekauft",
             `Du hast ein Ticket mit ${fieldCount} Feld${fieldCount > 1 ? "ern" : ""} gekauft.`,
-            "/lotto");
+            "/lotto"
+        );
 
         const sortedFields = fields.map((nums) => [...nums].sort((a, b) => a - b));
         const created: LottoTicket[] = [];
@@ -324,7 +539,8 @@ export class LottoService implements OnModuleInit {
         for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
             const draw = await this.drawRepo.findOneBy({ id: currentDrawId });
             if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
-            if (draw.status === "drawn") throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
+            if (draw.status === "drawn")
+                throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
 
             const entity = this.ticketRepo.create({
                 id: `ticket-${Date.now()}-${week}-${Math.random().toString(36).slice(2, 8)}`,
@@ -368,7 +584,12 @@ export class LottoService implements OnModuleInit {
         const ticketModels = ticketEntities.map(ticketEntityToModel);
         const results = ticketModels.map((t) => this.evaluateTicket(t, drawModel));
         const winners = results.filter((r) => r.prizeAmount > 0);
-        return { draw: drawModel, totalTickets: ticketModels.length, winners, totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0) };
+        return {
+            draw: drawModel,
+            totalTickets: ticketModels.length,
+            winners,
+            totalPrizesPaid: winners.reduce((s, r) => s + r.prizeAmount, 0)
+        };
     }
 
     async getDrawHistory(): Promise<DrawHistoryEntry[]> {
@@ -383,16 +604,23 @@ export class LottoService implements OnModuleInit {
             history.push(this.buildHistoryEntry(draw.id, "regular", drawModel, ticketEntities.length, winners));
         }
 
-        const drawnSpecials = await this.specialDrawRepo.find({ where: { status: "drawn" }, order: { drawDate: "DESC" } });
+        const drawnSpecials = await this.specialDrawRepo.find({
+            where: { status: "drawn" },
+            order: { drawDate: "DESC" }
+        });
         for (const sd of drawnSpecials) {
             const sdModel = specialEntityToModel(sd);
-            const ticketEntities = sd.ticketMode === "all_current"
-                ? await this.ticketRepo.find()
-                : await this.ticketRepo.find({ where: { drawId: sd.id } });
+            const ticketEntities =
+                sd.ticketMode === "all_current"
+                    ? await this.ticketRepo.find()
+                    : await this.ticketRepo.find({ where: { drawId: sd.id } });
             const mockDraw: LottoDraw = {
-                id: sd.id, drawDate: sd.drawDate.toISOString(),
-                winningNumbers: sd.winningNumbers ?? [], superNumber: sd.superNumber ?? 0,
-                jackpot: sd.customJackpot ?? 0, status: "drawn"
+                id: sd.id,
+                drawDate: sd.drawDate.toISOString(),
+                winningNumbers: sd.winningNumbers ?? [],
+                superNumber: sd.superNumber ?? 0,
+                jackpot: sd.customJackpot ?? 0,
+                status: "drawn"
             };
             const results = ticketEntities.map(ticketEntityToModel).map((t) => this.evaluateSpecialTicket(t, sdModel));
             const winners = results.filter((r) => r.prizeAmount > 0);
@@ -446,7 +674,7 @@ export class LottoService implements OnModuleInit {
 
     /** Ensure the singleton stats row exists. If not, rebuild from DB. */
     private async ensureStats(): Promise<void> {
-        let stats = await this.statsRepo.findOneBy({ id: "default" });
+        const stats = await this.statsRepo.findOneBy({ id: "default" });
         if (!stats) {
             this.logger.log("Stats row missing — rebuilding from historical data...");
             await this.rebuildStats();
@@ -506,7 +734,9 @@ export class LottoService implements OnModuleInit {
             numberFrequency
         });
 
-        this.logger.log(`Stats rebuilt: ${drawnDraws.length + drawnSpecials.length} draws, ${ticketCount} tickets, ${totalPrizePaid} paid`);
+        this.logger.log(
+            `Stats rebuilt: ${drawnDraws.length + drawnSpecials.length} draws, ${ticketCount} tickets, ${totalPrizePaid} paid`
+        );
     }
 
     /** Incrementally update stats after a single draw completes. */
@@ -597,9 +827,10 @@ export class LottoService implements OnModuleInit {
         const entities = await this.specialDrawRepo.find({ order: { drawDate: "DESC" } });
         const result: SpecialDraw[] = [];
         for (const e of entities) {
-            const count = e.ticketMode === "all_current"
-                ? await this.ticketRepo.count()
-                : await this.ticketRepo.count({ where: { drawId: e.id } });
+            const count =
+                e.ticketMode === "all_current"
+                    ? await this.ticketRepo.count()
+                    : await this.ticketRepo.count({ where: { drawId: e.id } });
             result.push(specialEntityToModel(e, count));
         }
         return result;
@@ -616,9 +847,10 @@ export class LottoService implements OnModuleInit {
         await this.specialDrawRepo.save(draw);
 
         const sdModel = specialEntityToModel(draw);
-        const ticketEntities = draw.ticketMode === "all_current"
-            ? await this.ticketRepo.find()
-            : await this.ticketRepo.find({ where: { drawId } });
+        const ticketEntities =
+            draw.ticketMode === "all_current"
+                ? await this.ticketRepo.find()
+                : await this.ticketRepo.find({ where: { drawId } });
         const ticketModels = ticketEntities.map(ticketEntityToModel);
         const allResults = ticketModels.map((t) => this.evaluateSpecialTicket(t, sdModel));
         const winners = allResults.filter((r) => r.prizeAmount > 0);
@@ -626,33 +858,58 @@ export class LottoService implements OnModuleInit {
 
         for (const winner of winners) {
             try {
-                await this.creditService.addCredits(winner.userId, winner.prizeAmount, "lotto_special_win",
-                    `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass}`);
-                await this.notificationsService.create(winner.userId, "coins_received",
-                    "Sonderziehung Gewinn!", `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`, "/lotto");
+                await this.creditService.addCredits(
+                    winner.userId,
+                    winner.prizeAmount,
+                    "lotto_special_win",
+                    `Sonderziehung Gewinn "${draw.name}": ${winner.prizeClass}`
+                );
+                await this.notificationsService.create(
+                    winner.userId,
+                    "coins_received",
+                    "Sonderziehung Gewinn!",
+                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
+                );
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
         }
 
         // Persist stats incrementally
-        await this.updateStatsAfterDraw(draw.winningNumbers ?? [], draw.customJackpot ?? 0, ticketModels.length, totalPrizesPaid);
+        await this.updateStatsAfterDraw(
+            draw.winningNumbers ?? [],
+            draw.customJackpot ?? 0,
+            ticketModels.length,
+            totalPrizesPaid
+        );
 
         return { draw: sdModel, totalTickets: ticketModels.length, winners, totalPrizesPaid };
     }
 
-    async purchaseSpecialTicket(userId: string, fields: number[][], superNumber: number, drawId: string): Promise<LottoTicket> {
+    async purchaseSpecialTicket(
+        userId: string,
+        fields: number[][],
+        superNumber: number,
+        drawId: string
+    ): Promise<LottoTicket> {
         if (!fields.length || fields.length > 12) throw new BadRequestException("1 to 12 fields required");
         for (const nums of fields) this.validateNumbers(nums, superNumber);
 
         const draw = await this.specialDrawRepo.findOneBy({ id: drawId });
         if (!draw) throw new NotFoundException(`Special draw "${drawId}" not found`);
         if (draw.status === "drawn") throw new BadRequestException("Special draw has already been drawn");
-        if (draw.ticketMode !== "separate") throw new BadRequestException("This special draw uses all existing tickets");
+        if (draw.ticketMode !== "separate")
+            throw new BadRequestException("This special draw uses all existing tickets");
 
         const costPerField = draw.ticketCost ?? this.configCache.ticketCost;
         const totalCost = costPerField * fields.length;
-        await this.creditService.deductCredits(userId, totalCost, "lotto_special_ticket", `Sonderziehung Ticket "${draw.name}"`);
+        await this.creditService.deductCredits(
+            userId,
+            totalCost,
+            "lotto_special_ticket",
+            `Sonderziehung Ticket "${draw.name}"`
+        );
 
         const entity = this.ticketRepo.create({
             id: `sticket-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -670,8 +927,12 @@ export class LottoService implements OnModuleInit {
     // ─── Private helpers ─────────────────────────────────────────────────────
 
     private buildHistoryEntry(
-        id: string, type: "regular" | "special", draw: LottoDraw,
-        totalTickets: number, winners: LottoResult[], name?: string
+        id: string,
+        type: "regular" | "special",
+        draw: LottoDraw,
+        totalTickets: number,
+        winners: LottoResult[],
+        name?: string
     ): DrawHistoryEntry {
         const classCounts = new Map<LottoPrizeClass, { count: number; amount: number }>();
         for (const r of winners) {
@@ -681,7 +942,9 @@ export class LottoService implements OnModuleInit {
             classCounts.set(r.prizeClass, entry);
         }
         return {
-            id, type, name,
+            id,
+            type,
+            name,
             drawDate: draw.drawDate,
             winningNumbers: draw.winningNumbers,
             superNumber: draw.superNumber,
@@ -699,9 +962,12 @@ export class LottoService implements OnModuleInit {
             const matched = nums.filter((n) => draw.winningNumbers.includes(n));
             const pc = this.determinePrizeClass(matched.length, superMatched);
             return {
-                fieldIndex: idx, numbers: nums,
-                matchedNumbers: matched, matchedCount: matched.length,
-                superNumberMatched: superMatched, prizeClass: pc,
+                fieldIndex: idx,
+                numbers: nums,
+                matchedNumbers: matched,
+                matchedCount: matched.length,
+                superNumberMatched: superMatched,
+                prizeClass: pc,
                 prizeAmount: pc === "class1" ? draw.jackpot : PRIZE_TABLE[pc]
             };
         });
@@ -710,10 +976,15 @@ export class LottoService implements OnModuleInit {
         const best = fieldResults.reduce((a, b) => (b.prizeAmount > a.prizeAmount ? b : a), fieldResults[0]);
 
         return {
-            ticketId: ticket.id, userId: ticket.userId, drawId: draw.id,
-            matchedNumbers: best.matchedNumbers, matchedCount: best.matchedCount,
-            superNumberMatched: superMatched, prizeClass: best.prizeClass,
-            prizeAmount: totalPrize, fieldResults
+            ticketId: ticket.id,
+            userId: ticket.userId,
+            drawId: draw.id,
+            matchedNumbers: best.matchedNumbers,
+            matchedCount: best.matchedCount,
+            superNumberMatched: superMatched,
+            prizeClass: best.prizeClass,
+            prizeAmount: totalPrize,
+            fieldResults
         };
     }
 
@@ -733,9 +1004,13 @@ export class LottoService implements OnModuleInit {
             }
 
             return {
-                fieldIndex: idx, numbers: nums,
-                matchedNumbers: matched, matchedCount: matched.length,
-                superNumberMatched: superMatched, prizeClass: pc, prizeAmount: amount
+                fieldIndex: idx,
+                numbers: nums,
+                matchedNumbers: matched,
+                matchedCount: matched.length,
+                superNumberMatched: superMatched,
+                prizeClass: pc,
+                prizeAmount: amount
             };
         });
 
@@ -743,10 +1018,15 @@ export class LottoService implements OnModuleInit {
         const best = fieldResults.reduce((a, b) => (b.prizeAmount > a.prizeAmount ? b : a), fieldResults[0]);
 
         return {
-            ticketId: ticket.id, userId: ticket.userId, drawId: draw.id,
-            matchedNumbers: best.matchedNumbers, matchedCount: best.matchedCount,
-            superNumberMatched: superMatched, prizeClass: best.prizeClass,
-            prizeAmount: totalPrize, fieldResults
+            ticketId: ticket.id,
+            userId: ticket.userId,
+            drawId: draw.id,
+            matchedNumbers: best.matchedNumbers,
+            matchedCount: best.matchedCount,
+            superNumberMatched: superMatched,
+            prizeClass: best.prizeClass,
+            prizeAmount: totalPrize,
+            fieldResults
         };
     }
 

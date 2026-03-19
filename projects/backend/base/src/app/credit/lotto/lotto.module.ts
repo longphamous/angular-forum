@@ -16,7 +16,13 @@ import { LottoService } from "./lotto.service";
     imports: [
         ScheduleModule.forRoot(),
         forwardRef(() => CreditModule),
-        TypeOrmModule.forFeature([LottoDrawEntity, LottoTicketEntity, LottoSpecialDrawEntity, LottoConfigEntity, LottoStatsEntity])
+        TypeOrmModule.forFeature([
+            LottoDrawEntity,
+            LottoTicketEntity,
+            LottoSpecialDrawEntity,
+            LottoConfigEntity,
+            LottoStatsEntity
+        ])
     ],
     controllers: [LottoController],
     providers: [LottoService, LottoScheduler],

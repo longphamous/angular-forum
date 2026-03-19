@@ -19,6 +19,15 @@ export interface Card {
     owned?: number;
 }
 
+export interface BoosterCategory {
+    id: string;
+    name: string;
+    description: string | null;
+    icon: string | null;
+    isActive: boolean;
+    sortOrder: number;
+}
+
 export interface BoosterPack {
     id: string;
     name: string;
@@ -28,6 +37,8 @@ export interface BoosterPack {
     cardsPerPack: number;
     guaranteedRarity: CardRarity | null;
     series: string;
+    categoryId: string | null;
+    categoryName: string | null;
     availableFrom: string | null;
     availableUntil: string | null;
     maxPurchasesPerUser: number | null;
@@ -107,9 +118,18 @@ export interface CreateBoosterPackDto {
     cardsPerPack?: number;
     guaranteedRarity?: CardRarity;
     series: string;
+    categoryId?: string;
     availableFrom?: string;
     availableUntil?: string;
     maxPurchasesPerUser?: number;
+    sortOrder?: number;
+    cards?: { cardId: string; dropWeight: number }[];
+}
+
+export interface CreateBoosterCategoryDto {
+    name: string;
+    description?: string;
+    icon?: string;
     sortOrder?: number;
 }
 

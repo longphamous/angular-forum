@@ -373,6 +373,12 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-tcg/admin-tcg").then((c) => c.AdminTcg)
+            },
+            {
+                path: "admin/logs",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-logs/admin-logs").then((c) => c.AdminLogs)
             }
         ]
     }

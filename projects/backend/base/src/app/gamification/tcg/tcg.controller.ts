@@ -4,14 +4,17 @@ import { Public, Roles } from "../../auth/auth.decorators";
 import { RolesGuard } from "../../auth/guards/roles.guard";
 import {
     AdminBoosterDetailDto,
+    BoosterCategoryDto,
     BoosterPackDto,
     CardDto,
     CardListingDto,
     CollectionProgressDto,
+    CreateBoosterCategoryDto,
     CreateBoosterPackDto,
     CreateCardDto,
     OpenBoosterResultDto,
     TcgService,
+    UpdateBoosterCategoryDto,
     UpdateBoosterPackDto,
     UpdateCardDto,
     UserBoosterDto,
@@ -107,7 +110,7 @@ export class TcgController {
         return this.tcgService.buyListing(req.user.userId, id);
     }
 
-    // ─── Admin ────────────────────────────────────────────────────────────────
+    // ─── Admin: Cards ─────────────────────────────────────────────────────────
 
     @UseGuards(RolesGuard)
     @Roles("admin")
@@ -136,6 +139,8 @@ export class TcgController {
     adminDeleteCard(@Param("id") id: string): Promise<void> {
         return this.tcgService.adminDeleteCard(id);
     }
+
+    // ─── Admin: Boosters ──────────────────────────────────────────────────────
 
     @UseGuards(RolesGuard)
     @Roles("admin")
@@ -191,5 +196,35 @@ export class TcgController {
         @Body() body: { dropWeight: number }
     ): Promise<void> {
         return this.tcgService.adminUpdateCardDropWeight(id, cardId, body.dropWeight);
+    }
+
+    // ─── Admin: Booster Categories ────────────────────────────────────────────
+
+    @UseGuards(RolesGuard)
+    @Roles("admin")
+    @Get("admin/categories")
+    adminGetAllCategories(): Promise<BoosterCategoryDto[]> {
+        return this.tcgService.adminGetAllCategories();
+    }
+
+    @UseGuards(RolesGuard)
+    @Roles("admin")
+    @Post("admin/categories")
+    adminCreateCategory(@Body() body: CreateBoosterCategoryDto): Promise<BoosterCategoryDto> {
+        return this.tcgService.adminCreateCategory(body);
+    }
+
+    @UseGuards(RolesGuard)
+    @Roles("admin")
+    @Put("admin/categories/:id")
+    adminUpdateCategory(@Param("id") id: string, @Body() body: UpdateBoosterCategoryDto): Promise<BoosterCategoryDto> {
+        return this.tcgService.adminUpdateCategory(id, body);
+    }
+
+    @UseGuards(RolesGuard)
+    @Roles("admin")
+    @Delete("admin/categories/:id")
+    adminDeleteCategory(@Param("id") id: string): Promise<void> {
+        return this.tcgService.adminDeleteCategory(id);
     }
 }

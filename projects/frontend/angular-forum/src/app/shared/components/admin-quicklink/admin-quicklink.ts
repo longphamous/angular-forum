@@ -23,17 +23,17 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
     imports: [ButtonModule, RouterModule, TooltipModule, TranslocoModule],
     template: `
         @if (authFacade.isAdmin()) {
-        <a *transloco="let t" [routerLink]="route()" class="no-underline">
-            <p-button
-                [pTooltip]="t('common.adminSettings')"
-                icon="pi pi-cog"
-                [rounded]="true"
-                [text]="true"
-                severity="secondary"
-                size="small"
-                tooltipPosition="bottom"
-            />
-        </a>
+            <a class="no-underline" *transloco="let t" [routerLink]="route()">
+                <p-button
+                    [pTooltip]="t('common.adminSettings')"
+                    [rounded]="true"
+                    [text]="true"
+                    icon="pi pi-cog"
+                    severity="secondary"
+                    size="small"
+                    tooltipPosition="bottom"
+                />
+            </a>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush

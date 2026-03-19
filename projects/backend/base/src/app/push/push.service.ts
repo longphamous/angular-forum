@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 
-import { PushEventType } from "./push-event.types";
 import { PushGateway } from "./push.gateway";
+import { PushEventType } from "./push-event.types";
 
 /**
  * Global service for broadcasting real-time push events.

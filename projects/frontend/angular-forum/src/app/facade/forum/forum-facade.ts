@@ -228,10 +228,7 @@ export class ForumFacade {
     // ── Thread moderation ─────────────────────────────────────────────────
 
     updateThread(threadId: string, payload: Partial<Thread>): Observable<Thread> {
-        return this.http.patch<Thread>(
-            `${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.update(threadId)}`,
-            payload
-        );
+        return this.http.patch<Thread>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.update(threadId)}`, payload);
     }
 
     deleteThread(threadId: string): Observable<{ success: boolean }> {

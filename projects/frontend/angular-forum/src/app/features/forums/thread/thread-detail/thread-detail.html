@@ -45,53 +45,60 @@
     <!-- Moderator Actions -->
     @if (authFacade.isModerator() && facade.currentThread()) {
     <div class="card flex flex-wrap items-center gap-2 py-3">
-        <span class="text-surface-500 mr-2 text-sm font-semibold"><i class="pi pi-shield mr-1"></i>{{ t('threadDetail.moderation.label') }}</span>
+        <span class="text-surface-500 mr-2 text-sm font-semibold"
+            ><i class="pi pi-shield mr-1"></i>{{ t('threadDetail.moderation.label') }}</span
+        >
 
         <p-button
             (onClick)="togglePin()"
-            [label]="facade.currentThread()!.isPinned ? t('threadDetail.moderation.unpin') : t('threadDetail.moderation.pin')"
             [icon]="facade.currentThread()!.isPinned ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"
+            [label]="facade.currentThread()!.isPinned ? t('threadDetail.moderation.unpin') : t('threadDetail.moderation.pin')"
             [outlined]="true"
-            size="small"
             [severity]="facade.currentThread()!.isPinned ? 'warn' : 'secondary'"
+            size="small"
         />
         <p-button
             (onClick)="toggleSticky()"
-            [label]="facade.currentThread()!.isSticky ? t('threadDetail.moderation.unsticky') : t('threadDetail.moderation.sticky')"
             [icon]="facade.currentThread()!.isSticky ? 'pi pi-star-fill' : 'pi pi-star'"
+            [label]="facade.currentThread()!.isSticky ? t('threadDetail.moderation.unsticky') : t('threadDetail.moderation.sticky')"
             [outlined]="true"
-            size="small"
             [severity]="facade.currentThread()!.isSticky ? 'info' : 'secondary'"
+            size="small"
         />
         <p-button
             (onClick)="toggleLock()"
-            [label]="facade.currentThread()!.isLocked ? t('threadDetail.moderation.unlock') : t('threadDetail.moderation.lock')"
             [icon]="facade.currentThread()!.isLocked ? 'pi pi-lock-open' : 'pi pi-lock'"
+            [label]="facade.currentThread()!.isLocked ? t('threadDetail.moderation.unlock') : t('threadDetail.moderation.lock')"
             [outlined]="true"
-            size="small"
             [severity]="facade.currentThread()!.isLocked ? 'success' : 'danger'"
+            size="small"
         />
         <p-button
             (onClick)="openMoveDialog()"
             [label]="t('threadDetail.moderation.move')"
-            icon="pi pi-arrow-right-arrow-left"
             [outlined]="true"
-            size="small"
+            icon="pi pi-arrow-right-arrow-left"
             severity="secondary"
+            size="small"
         />
         <p-button
             (onClick)="confirmDelete()"
             [label]="t('threadDetail.moderation.delete')"
-            icon="pi pi-trash"
             [outlined]="true"
-            size="small"
+            icon="pi pi-trash"
             severity="danger"
+            size="small"
         />
     </div>
     }
 
     <!-- Move Thread Dialog -->
-    <p-dialog [header]="t('threadDetail.moderation.moveDialog.header')" [(visible)]="moveDialogVisible" [modal]="true" [style]="{ width: '28rem' }">
+    <p-dialog
+        [(visible)]="moveDialogVisible"
+        [header]="t('threadDetail.moderation.moveDialog.header')"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+    >
         <div class="flex flex-col gap-3">
             <label class="text-sm font-medium">{{ t('threadDetail.moderation.moveDialog.selectForum') }}</label>
             <select
@@ -99,43 +106,44 @@
                 [(ngModel)]="moveTargetForumId"
             >
                 @for (forum of availableForums(); track forum.id) {
-                <option [value]="forum.id" [disabled]="forum.id === facade.currentThread()?.forumId">
-                    {{ forum.name }} @if (forum.id === facade.currentThread()?.forumId) { {{ t('threadDetail.moderation.moveDialog.current') }} }
+                <option [disabled]="forum.id === facade.currentThread()?.forumId" [value]="forum.id">
+                    {{ forum.name }} @if (forum.id === facade.currentThread()?.forumId) { {{
+                    t('threadDetail.moderation.moveDialog.current') }} }
                 </option>
                 }
             </select>
         </div>
         <ng-template #footer>
-            <p-button label="Abbrechen" (onClick)="moveDialogVisible.set(false)" [text]="true" severity="secondary" />
+            <p-button (onClick)="moveDialogVisible.set(false)" [text]="true" label="Abbrechen" severity="secondary" />
             <p-button
-                label="Verschieben"
-                icon="pi pi-arrow-right-arrow-left"
                 (onClick)="moveThread()"
                 [disabled]="!moveTargetForumId || moveTargetForumId === facade.currentThread()?.forumId"
+                icon="pi pi-arrow-right-arrow-left"
+                label="Verschieben"
             />
         </ng-template>
     </p-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <p-dialog [header]="t('threadDetail.moderation.deleteDialog.header')" [(visible)]="deleteDialogVisible" [modal]="true" [style]="{ width: '24rem' }">
+    <p-dialog
+        [(visible)]="deleteDialogVisible"
+        [header]="t('threadDetail.moderation.deleteDialog.header')"
+        [modal]="true"
+        [style]="{ width: '24rem' }"
+    >
         <p class="text-surface-600 dark:text-surface-400">
             {{ t('threadDetail.moderation.deleteDialog.message', { title: facade.currentThread()?.title }) }}
         </p>
         <ng-template #footer>
-            <p-button
-                label="Abbrechen"
-                (onClick)="deleteDialogVisible.set(false)"
-                [text]="true"
-                severity="secondary"
-            />
-            <p-button label="Löschen" icon="pi pi-trash" (onClick)="deleteThread()" severity="danger" />
+            <p-button (onClick)="deleteDialogVisible.set(false)" [text]="true" label="Abbrechen" severity="secondary" />
+            <p-button (onClick)="deleteThread()" icon="pi pi-trash" label="Löschen" severity="danger" />
         </ng-template>
     </p-dialog>
 
     <!-- Poll Edit Dialog -->
     <p-dialog
-        [header]="t('threadDetail.poll.editDialog.header')"
         [(visible)]="pollEditDialogVisible"
+        [header]="t('threadDetail.poll.editDialog.header')"
         [modal]="true"
         [style]="{ width: '36rem', maxWidth: '95vw' }"
     >
@@ -161,11 +169,15 @@
                 }
                 <div class="flex items-center gap-2">
                     <p-checkbox [(ngModel)]="pollEditAllowVoteChange" [binary]="true" inputId="pe-change" />
-                    <label class="text-sm" for="pe-change">{{ t('threadDetail.poll.editDialog.allowVoteChange') }}</label>
+                    <label class="text-sm" for="pe-change"
+                        >{{ t('threadDetail.poll.editDialog.allowVoteChange') }}</label
+                    >
                 </div>
                 @if (pollEditAllowVoteChange) {
                 <div class="flex flex-col gap-1 pl-7">
-                    <label class="text-surface-400 text-xs" for="pe-deadline">{{ t('threadDetail.poll.editDialog.changeDeadline') }}</label>
+                    <label class="text-surface-400 text-xs" for="pe-deadline"
+                        >{{ t('threadDetail.poll.editDialog.changeDeadline') }}</label
+                    >
                     <input
                         class="w-full max-w-xs"
                         id="pe-deadline"
@@ -181,7 +193,9 @@
                 </div>
                 @if (!pollEditIsClosed) {
                 <div class="flex flex-col gap-1 pl-7">
-                    <label class="text-surface-400 text-xs" for="pe-closes">{{ t('threadDetail.poll.editDialog.closesAt') }}</label>
+                    <label class="text-surface-400 text-xs" for="pe-closes"
+                        >{{ t('threadDetail.poll.editDialog.closesAt') }}</label
+                    >
                     <input
                         class="w-full max-w-xs"
                         id="pe-closes"
@@ -195,25 +209,25 @@
 
             <!-- New options -->
             <div class="flex flex-col gap-3">
-                <div class="text-surface-500 text-sm font-medium">{{ t('threadDetail.poll.editDialog.addOptionsHeader') }}</div>
+                <div class="text-surface-500 text-sm font-medium">
+                    {{ t('threadDetail.poll.editDialog.addOptionsHeader') }}
+                </div>
                 @for (opt of pollEditNewOptions; track $index) {
-                <div
-                    class="border-surface-200 dark:border-surface-700 flex items-start gap-2 rounded-lg border p-3"
-                >
+                <div class="border-surface-200 dark:border-surface-700 flex items-start gap-2 rounded-lg border p-3">
                     <div class="flex flex-1 flex-col gap-2">
                         <input
-                            [ngModel]="opt.text"
                             (ngModelChange)="pollEditNewOptions[$index] = { text: $event, imageUrl: opt.imageUrl }"
-                            pInputText
+                            [ngModel]="opt.text"
                             [placeholder]="t('threadDetail.poll.editDialog.newOptionPlaceholder', { index: $index + 1 })"
+                            pInputText
                             type="text"
                         />
                         <div class="flex items-center gap-2">
                             <i class="pi pi-image text-surface-400 text-xs"></i>
                             <input
                                 class="text-surface-500 flex-1 border-none bg-transparent text-xs outline-none"
-                                [ngModel]="opt.imageUrl"
                                 (ngModelChange)="pollEditNewOptions[$index] = { text: opt.text, imageUrl: $event }"
+                                [ngModel]="opt.imageUrl"
                                 [placeholder]="t('threadDetail.poll.editDialog.imageUrlPlaceholder')"
                                 type="text"
                             />
@@ -232,9 +246,9 @@
                 }
                 <p-button
                     (onClick)="addPollEditOption()"
+                    [label]="t('threadDetail.poll.editDialog.addOption')"
                     [text]="true"
                     icon="pi pi-plus"
-                    [label]="t('threadDetail.poll.editDialog.addOption')"
                     severity="secondary"
                     size="small"
                 />
@@ -242,60 +256,57 @@
         </div>
         <ng-template #footer>
             <p-button
-                label="Abbrechen"
                 (onClick)="pollEditDialogVisible.set(false)"
                 [text]="true"
+                label="Abbrechen"
                 severity="secondary"
             />
             <p-button
-                label="Speichern"
-                icon="pi pi-check"
                 (onClick)="submitPollEdit()"
                 [loading]="pollEditSubmitting"
+                icon="pi pi-check"
+                label="Speichern"
             />
         </ng-template>
     </p-dialog>
 
     <!-- Edit Post Dialog -->
     <p-dialog
-        [header]="t('threadDetail.editDialog.header')"
         [(visible)]="editDialogVisible"
+        [header]="t('threadDetail.editDialog.header')"
         [modal]="true"
         [style]="{ width: '50rem', maxWidth: '95vw' }"
     >
         <div class="flex flex-col gap-4">
             <p-editor [(ngModel)]="editContent" [style]="{ height: '250px' }" />
             <div class="flex flex-col gap-1">
-                <label class="text-surface-500 text-xs font-medium">{{ t('threadDetail.editDialog.reasonLabel') }}</label>
+                <label class="text-surface-500 text-xs font-medium"
+                    >{{ t('threadDetail.editDialog.reasonLabel') }}</label
+                >
                 <input
                     [(ngModel)]="editReason"
-                    pInputText
                     [placeholder]="t('threadDetail.editDialog.reasonPlaceholder')"
+                    pInputText
                     type="text"
                 />
             </div>
         </div>
         <ng-template #footer>
+            <p-button (onClick)="editDialogVisible.set(false)" [text]="true" label="Abbrechen" severity="secondary" />
             <p-button
-                label="Abbrechen"
-                (onClick)="editDialogVisible.set(false)"
-                [text]="true"
-                severity="secondary"
-            />
-            <p-button
-                label="Speichern"
-                icon="pi pi-check"
                 (onClick)="submitEdit()"
-                [loading]="editSubmitting"
                 [disabled]="!editContent.trim()"
+                [loading]="editSubmitting"
+                icon="pi pi-check"
+                label="Speichern"
             />
         </ng-template>
     </p-dialog>
 
     <!-- Edit History Dialog -->
     <p-dialog
-        [header]="t('threadDetail.historyDialog.header')"
         [(visible)]="historyDialogVisible"
+        [header]="t('threadDetail.historyDialog.header')"
         [modal]="true"
         [style]="{ width: '40rem', maxWidth: '95vw' }"
     >
@@ -309,7 +320,10 @@
                     <span class="text-surface-400">— {{ entry.reason }}</span>
                     }
                 </div>
-                <div class="text-surface-600 dark:text-surface-400 post-content max-h-40 overflow-y-auto text-sm" [innerHTML]="entry.content"></div>
+                <div
+                    class="text-surface-600 dark:text-surface-400 post-content max-h-40 overflow-y-auto text-sm"
+                    [innerHTML]="entry.content"
+                ></div>
             </div>
             } @empty {
             <p class="text-surface-400 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
@@ -327,8 +341,7 @@
     <div class="card">
         <div class="mb-4 flex items-center justify-between">
             <h3 class="flex items-center gap-2 text-lg font-semibold">
-                <i class="pi pi-chart-bar"></i>{{ poll.question }}
-                @if (poll.isAnonymous) {
+                <i class="pi pi-chart-bar"></i>{{ poll.question }} @if (poll.isAnonymous) {
                 <span
                     class="bg-surface-100 dark:bg-surface-700 text-surface-500 rounded-full px-2 py-0.5 text-[10px] font-normal"
                     ><i class="pi pi-eye-slash mr-1"></i>{{ t('threadDetail.poll.anonymous') }}</span
@@ -338,9 +351,9 @@
             @if (canEditPoll()) {
             <p-button
                 (onClick)="openPollEditDialog()"
-                icon="pi pi-pencil"
                 [label]="t('threadDetail.poll.editBtn')"
                 [text]="true"
+                icon="pi pi-pencil"
                 severity="secondary"
                 size="small"
             />
@@ -353,15 +366,15 @@
             @for (option of poll.options; track option.index) {
             <div
                 class="border-surface-200 dark:border-surface-700 group relative flex flex-col items-center overflow-hidden rounded-xl border transition-all"
+                (click)="votePoll(option.index)"
                 [class.border-primary]="poll.myVote === option.index"
-                [class.ring-2]="poll.myVote === option.index"
-                [class.ring-primary/30]="poll.myVote === option.index"
-                [class.shadow-md]="poll.myVote === option.index"
                 [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
                 [class.hover:border-primary/50]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
                 [class.hover:shadow-sm]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
                 [class.opacity-60]="poll.myVote !== null && poll.myVote !== option.index"
-                (click)="votePoll(option.index)"
+                [class.ring-2]="poll.myVote === option.index"
+                [class.ring-primary/30]="poll.myVote === option.index"
+                [class.shadow-md]="poll.myVote === option.index"
             >
                 <!-- Image -->
                 <div class="relative w-full pt-[100%]">
@@ -380,7 +393,9 @@
                     }
                     <!-- Vote check overlay -->
                     @if (poll.myVote === option.index) {
-                    <div class="bg-primary absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full">
+                    <div
+                        class="bg-primary absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full"
+                    >
                         <i class="pi pi-check text-xs text-white"></i>
                     </div>
                     }
@@ -408,13 +423,12 @@
                     <!-- Voter avatars -->
                     @if (option.voters && option.voters.length > 0) {
                     <div class="mt-1 flex -space-x-1.5">
-                        @for (voter of option.voters.slice(0, 5); track voter.userId) {
-                        @if (voter.avatarUrl) {
+                        @for (voter of option.voters.slice(0, 5); track voter.userId) { @if (voter.avatarUrl) {
                         <img
                             class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
                             [alt]="voter.username"
-                            [src]="voter.avatarUrl"
                             [pTooltip]="voter.username"
+                            [src]="voter.avatarUrl"
                         />
                         } @else {
                         <div
@@ -423,9 +437,7 @@
                         >
                             {{ voter.username.charAt(0).toUpperCase() }}
                         </div>
-                        }
-                        }
-                        @if (option.voters.length > 5) {
+                        } } @if (option.voters.length > 5) {
                         <div
                             class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
                         >
@@ -444,10 +456,10 @@
             @for (option of poll.options; track option.index) {
             <div
                 class="border-surface-200 dark:border-surface-700 relative overflow-hidden rounded-lg border p-3 transition-colors"
-                [class.border-primary]="poll.myVote === option.index"
-                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
-                [class.cursor-not-allowed]="poll.isClosed || poll.myVote !== null"
                 (click)="votePoll(option.index)"
+                [class.border-primary]="poll.myVote === option.index"
+                [class.cursor-not-allowed]="poll.isClosed || poll.myVote !== null"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
             >
                 <div
                     class="bg-primary/10 absolute top-0 left-0 h-full transition-all"
@@ -457,19 +469,17 @@
                     <span class="text-sm font-medium">
                         @if (poll.myVote === option.index) {
                         <i class="pi pi-check-circle text-primary mr-1"></i>
-                        }
-                        {{ option.text }}
+                        } {{ option.text }}
                     </span>
                     <div class="flex items-center gap-2">
                         @if (option.voters && option.voters.length > 0) {
                         <div class="flex -space-x-1.5">
-                            @for (voter of option.voters.slice(0, 3); track voter.userId) {
-                            @if (voter.avatarUrl) {
+                            @for (voter of option.voters.slice(0, 3); track voter.userId) { @if (voter.avatarUrl) {
                             <img
                                 class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
                                 [alt]="voter.username"
-                                [src]="voter.avatarUrl"
                                 [pTooltip]="voter.username"
+                                [src]="voter.avatarUrl"
                             />
                             } @else {
                             <div
@@ -478,9 +488,7 @@
                             >
                                 {{ voter.username.charAt(0).toUpperCase() }}
                             </div>
-                            }
-                            }
-                            @if (option.voters.length > 3) {
+                            } } @if (option.voters.length > 3) {
                             <div
                                 class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
                             >
@@ -502,7 +510,9 @@
             @if (poll.isClosed) {
             <span class="text-orange-500"><i class="pi pi-lock mr-1"></i>{{ t('threadDetail.poll.closed') }}</span>
             } @else if (poll.myVote === null) {
-            <span class="text-primary"><i class="pi pi-info-circle mr-1"></i>{{ t('threadDetail.poll.clickToVote') }}</span>
+            <span class="text-primary"
+                ><i class="pi pi-info-circle mr-1"></i>{{ t('threadDetail.poll.clickToVote') }}</span
+            >
             } @else if (poll.myVote !== null && poll.canChangeVote) {
             <span class="text-green-500"><i class="pi pi-check mr-1"></i>{{ t('threadDetail.poll.voted') }}</span>
             <span class="text-primary text-xs">— {{ t('threadDetail.poll.changeVoteHint') }}</span>
@@ -699,9 +709,9 @@
                         <p-tag [value]="t('threadDetail.firstPost')" severity="info" styleClass="text-xs" />
                         } @if (post.isEdited) {
                         <span class="text-surface-400 text-xs italic">
-                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }}
-                            @if (post.editReason) { — {{ post.editReason }} }
-                            @if (post.editHistory && post.editHistory.length > 0) {
+                            {{ t('threadDetail.edited') }} {{ post.editedAt ? formatRelative(post.editedAt) : '' }} @if
+                            (post.editReason) { — {{ post.editReason }} } @if (post.editHistory &&
+                            post.editHistory.length > 0) {
                             <button
                                 class="text-primary ml-1 cursor-pointer border-none bg-transparent text-xs underline"
                                 (click)="openHistoryDialog(post)"
@@ -812,7 +822,13 @@
             <i class="pi pi-bolt mr-1"></i>
             {{ t('threadDetail.newPostHint', { author: newPostHint()!.authorName }) }}
         </span>
-        <p-button (onClick)="loadNewPosts()" [label]="t('threadDetail.newPostShow')" [text]="true" size="small" icon="pi pi-refresh" />
+        <p-button
+            (onClick)="loadNewPosts()"
+            [label]="t('threadDetail.newPostShow')"
+            [text]="true"
+            icon="pi pi-refresh"
+            size="small"
+        />
     </div>
     }
 

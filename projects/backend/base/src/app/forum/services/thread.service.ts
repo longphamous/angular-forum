@@ -278,7 +278,7 @@ export class ThreadService {
         const myVote = userId && poll.voterMap[userId] !== undefined ? poll.voterMap[userId] : null;
 
         // Resolve voter names if showVoterNames is enabled and poll is not anonymous
-        let votersByOption = new Map<number, PollVoterDto[]>();
+        const votersByOption = new Map<number, PollVoterDto[]>();
         if (poll.showVoterNames && !poll.isAnonymous) {
             const voterEntries = Object.entries(poll.voterMap);
             if (voterEntries.length > 0) {

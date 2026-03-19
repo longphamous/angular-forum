@@ -18,6 +18,9 @@
   - [Anime Features](#anime-features)
   - [Shop](#shop)
   - [Lotto](#lotto)
+  - [Trading Card Game (TCG)](#trading-card-game-tcg)
+  - [Dynamic Market](#dynamic-market)
+  - [Friends](#friends)
   - [Calendar](#calendar)
   - [Messages](#messages)
   - [Dashboard](#dashboard)
@@ -58,6 +61,9 @@ Aniverse is designed as a complete community hub. Every feature is built around 
 - **Anime Tracking** — Browse the anime database and maintain a personal watchlist
 - **Gamification** — XP system, levels, and achievements for participation
 - **Coin Economy** — Earn and spend virtual coins across the platform
+- **Trading Card Game** — Booster packs, collectible cards, and trading
+- **Friends** — Social connections with friend requests and status tracking
+- **Real-time Push** — WebSocket-based notifications via Socket.IO
 - **Community Bot** — Automate greetings, re-engagement messages, and announcements
 - **Admin Panel** — Centralized administration for all modules
 
@@ -369,6 +375,54 @@ The lotto is a community lottery powered by coins.
 2. When the draw happens, a winner is selected randomly from all ticket holders
 3. The prize (in coins) is transferred to the winner's wallet automatically
 4. All participants are notified of the result
+
+---
+
+### Trading Card Game (TCG)
+
+**Route:** `/tcg`
+
+The TCG module brings a collectible card game experience to the platform.
+
+#### Booster Packs
+
+- Browse available booster packs organized by categories
+- Each booster pack has a rarity tier, price (in coins), and card count
+- Purchase and open boosters to reveal randomized cards
+
+#### Cards
+
+- Cards have attributes like name, image, rarity, and description
+- View your full card collection and track progress
+- Trade cards with other community members via card listings
+
+#### Admin Management (`/admin/tcg`)
+
+- Create and manage booster pack categories
+- Define booster packs with card pools and rarity distributions
+- Create individual cards with attributes and rarity
+- Monitor card distribution and trading activity
+
+---
+
+### Dynamic Market
+
+**Route:** `/dynamic-market`
+
+An economy simulation feature where item prices fluctuate based on supply and demand, creating a dynamic trading experience for community members.
+
+---
+
+### Friends
+
+**Route:** `/friends`
+
+A social networking feature that lets community members connect:
+
+- Send and receive **friend requests**
+- View your friends list
+- See friends' online status and recent activity
+- Visit friends' profiles directly from the friends list
 
 ---
 
@@ -749,8 +803,8 @@ A dashboard of platform-wide statistics:
 
 | Tool | Version |
 |------|---------|
-| [Node.js](https://nodejs.org/) | 18 or higher |
-| [pnpm](https://pnpm.io/) | 8 or higher |
+| [Node.js](https://nodejs.org/) | 24 or higher |
+| [pnpm](https://pnpm.io/) | 10 or higher |
 | [PostgreSQL](https://www.postgresql.org/) | 14 or higher |
 
 ### 1. Clone and Install

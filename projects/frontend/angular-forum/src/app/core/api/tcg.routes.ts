@@ -22,5 +22,7 @@ export const TCG_ROUTES = {
     adminBoosterById: (id: string) => `/gamification/tcg/admin/boosters/${id}`,
     adminBoosterCards: (id: string) => `/gamification/tcg/admin/boosters/${id}/cards`,
     adminBoosterCard: (boosterId: string, cardId: string) =>
-        `/gamification/tcg/admin/boosters/${boosterId}/cards/${cardId}`
+        `/gamification/tcg/admin/boosters/${boosterId}/cards/${cardId}`,
+    adminCategories: () => "/gamification/tcg/admin/categories",
+    adminCategoryById: (id: string) => `/gamification/tcg/admin/categories/${id}`
 } as const;

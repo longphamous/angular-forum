@@ -235,7 +235,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "copper_ingot",
-        name: "Kupferbarren", description: "Hergestellt aus 3x Kupfererz.",
+        name: "Kupferbarren",
+        description: "Hergestellt aus 3x Kupfererz.",
         groupKey: "mining",
         basePrice: 75,
         minPrice: 30,
@@ -290,7 +291,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "steel_ingot",
-        name: "Stahlbarren", description: "Hergestellt aus 3x Eisenerz.",
+        name: "Stahlbarren",
+        description: "Hergestellt aus 3x Eisenerz.",
         groupKey: "mining",
         basePrice: 90,
         minPrice: 36,
@@ -347,7 +349,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "gold_ingot",
-        name: "Goldbarren", description: "Hergestellt aus 3x Golderz.",
+        name: "Goldbarren",
+        description: "Hergestellt aus 3x Golderz.",
         groupKey: "mining",
         basePrice: 220,
         minPrice: 88,
@@ -389,7 +392,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "jade_polished",
-        name: "Polierte Jade", description: "Hergestellt aus 2x Rohjade.",
+        name: "Polierte Jade",
+        description: "Hergestellt aus 2x Rohjade.",
         groupKey: "mining",
         basePrice: 180,
         minPrice: 72,
@@ -430,7 +434,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "crystal_lens",
-        name: "Kristalllinse", description: "Hergestellt aus 3x Rohkristall.",
+        name: "Kristalllinse",
+        description: "Hergestellt aus 3x Rohkristall.",
         groupKey: "mining",
         basePrice: 140,
         minPrice: 56,
@@ -473,7 +478,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "bamboo_planks",
-        name: "Bambusbretter", description: "Hergestellt aus 4x Bambus.",
+        name: "Bambusbretter",
+        description: "Hergestellt aus 4x Bambus.",
         groupKey: "nature",
         basePrice: 65,
         minPrice: 26,
@@ -513,7 +519,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "sakura_extract",
-        name: "Sakura-Extrakt", description: "Hergestellt aus 5x Sakura-Blüten.",
+        name: "Sakura-Extrakt",
+        description: "Hergestellt aus 5x Sakura-Blüten.",
         groupKey: "nature",
         basePrice: 120,
         minPrice: 48,
@@ -554,7 +561,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "matcha_powder",
-        name: "Matcha-Pulver", description: "Hergestellt aus 5x Teeblätter.",
+        name: "Matcha-Pulver",
+        description: "Hergestellt aus 5x Teeblätter.",
         groupKey: "nature",
         basePrice: 70,
         minPrice: 28,
@@ -594,7 +602,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "lotus_blossom",
-        name: "Lotusblüte", description: "Hergestellt aus 3x Lotussamen.",
+        name: "Lotusblüte",
+        description: "Hergestellt aus 3x Lotussamen.",
         groupKey: "nature",
         basePrice: 95,
         minPrice: 38,
@@ -635,7 +644,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "silk",
-        name: "Seide", description: "Hergestellt aus 4x Seidenraupe.",
+        name: "Seide",
+        description: "Hergestellt aus 4x Seidenraupe.",
         groupKey: "nature",
         basePrice: 110,
         minPrice: 44,
@@ -678,7 +688,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "onigiri",
-        name: "Onigiri", description: "Hergestellt aus 3x Reis.",
+        name: "Onigiri",
+        description: "Hergestellt aus 3x Reis.",
         groupKey: "food",
         basePrice: 40,
         minPrice: 16,
@@ -718,7 +729,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "noodle_dough",
-        name: "Nudelteig", description: "Hergestellt aus 3x Mehl.",
+        name: "Nudelteig",
+        description: "Hergestellt aus 3x Mehl.",
         groupKey: "food",
         basePrice: 35,
         minPrice: 14,
@@ -758,7 +770,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "sashimi",
-        name: "Sashimi", description: "Hergestellt aus 2x Frischer Fisch.",
+        name: "Sashimi",
+        description: "Hergestellt aus 2x Frischer Fisch.",
         groupKey: "food",
         basePrice: 70,
         minPrice: 28,
@@ -799,7 +812,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "anko_paste",
-        name: "Anko-Paste", description: "Hergestellt aus 4x Azuki-Bohnen.",
+        name: "Anko-Paste",
+        description: "Hergestellt aus 4x Azuki-Bohnen.",
         groupKey: "food",
         basePrice: 50,
         minPrice: 20,
@@ -839,7 +853,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "sake",
-        name: "Sake", description: "Hergestellt aus 5x Sake-Reis.",
+        name: "Sake",
+        description: "Hergestellt aus 5x Sake-Reis.",
         groupKey: "food",
         basePrice: 80,
         minPrice: 32,
@@ -882,7 +897,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "manga_volume",
-        name: "Manga Band", description: "Hergestellt aus 5x Druckpapier.",
+        name: "Manga Band",
+        description: "Hergestellt aus 5x Druckpapier.",
         groupKey: "otaku",
         basePrice: 55,
         minPrice: 22,
@@ -937,7 +953,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "figure_base",
-        name: "Rohfigur", description: "Hergestellt aus 4x Rohmaterial.",
+        name: "Rohfigur",
+        description: "Hergestellt aus 4x Rohmaterial.",
         groupKey: "otaku",
         basePrice: 60,
         minPrice: 24,
@@ -993,7 +1010,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "cosplay_piece",
-        name: "Cosplay-Teil", description: "Hergestellt aus 4x Stoff.",
+        name: "Cosplay-Teil",
+        description: "Hergestellt aus 4x Stoff.",
         groupKey: "otaku",
         basePrice: 80,
         minPrice: 32,
@@ -1051,7 +1069,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "mithril_ingot",
-        name: "Mithrilbarren", description: "Hergestellt aus 4x Mithrilstaub.",
+        name: "Mithrilbarren",
+        description: "Hergestellt aus 4x Mithrilstaub.",
         groupKey: "rare",
         basePrice: 550,
         minPrice: 220,
@@ -1109,7 +1128,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "dragon_armor",
-        name: "Drachenpanzer", description: "Hergestellt aus 4x Drachenschuppe.",
+        name: "Drachenpanzer",
+        description: "Hergestellt aus 4x Drachenschuppe.",
         groupKey: "rare",
         basePrice: 2500,
         minPrice: 1000,
@@ -1137,7 +1157,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "phoenix_cloak",
-        name: "Phönixumhang", description: "Hergestellt aus 3x Phönixfeder.",
+        name: "Phönixumhang",
+        description: "Hergestellt aus 3x Phönixfeder.",
         groupKey: "rare",
         basePrice: 3800,
         minPrice: 1520,
@@ -1165,7 +1186,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "moonstone_amulet",
-        name: "Mondstein-Amulett", description: "Hergestellt aus 3x Mondstein.",
+        name: "Mondstein-Amulett",
+        description: "Hergestellt aus 3x Mondstein.",
         groupKey: "rare",
         basePrice: 1600,
         minPrice: 640,
@@ -1208,7 +1230,8 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
     {
         slug: "spirit_shield",
-        name: "Geisterschild", description: "Hergestellt aus 3x Geisteressenz.",
+        name: "Geisterschild",
+        description: "Hergestellt aus 3x Geisteressenz.",
         groupKey: "rare",
         basePrice: 2800,
         minPrice: 1120,

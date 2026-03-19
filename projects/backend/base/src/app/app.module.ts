@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
+import { AdminLogsModule } from "./admin-logs/admin-logs.module";
 import { AnimeModule } from "./anime/anime.module";
 import { AnimeListModule } from "./anime/anime-list.module";
 import { AppController } from "./app.controller";
@@ -37,6 +38,7 @@ import { UserModule } from "./user/user.module";
             envFilePath: ["projects/backend/base/.env", ".env"]
         }),
         DatabaseModule,
+        AdminLogsModule,
         AuthModule,
         GamificationModule,
         CreditModule,

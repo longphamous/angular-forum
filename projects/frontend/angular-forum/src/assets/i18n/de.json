@@ -104,7 +104,9 @@
     "adminUsers": "Benutzer & Rechte",
     "adminCommunity": "Community",
     "adminGamification": "Gamification",
-    "adminAppearance": "Darstellung"
+    "adminAppearance": "Darstellung",
+    "adminSystem": "System",
+    "adminLogs": "Systemprotokoll"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -1063,6 +1065,12 @@
     "noDrawPending": "Keine bevorstehende Ziehung geplant.",
     "buyFor": "Ziehung",
     "noTickets": "Du hast noch keine Tickets gekauft.",
+    "upcomingDraws": "Aktuelle Ziehungen",
+    "pastDraws": "Vergangene Ziehungen",
+    "ticketCount": "{{count}} Ticket(s)",
+    "totalWinnings": "Gewinne",
+    "noUpcomingTickets": "Keine Tickets für kommende Ziehungen.",
+    "noPastTickets": "Keine vergangenen Tickets.",
     "pending": "Ausstehend",
     "noWin": "Kein Gewinn",
     "matches": "Treffer",
@@ -1700,7 +1708,8 @@
     "title": "Trading Card Game Verwaltung",
     "tabs": {
       "cards": "Karten",
-      "boosters": "Booster Packs"
+      "boosters": "Booster Packs",
+      "categories": "Kategorien"
     },
     "card": {
       "create": "Neue Karte",
@@ -1711,7 +1720,6 @@
       "imageUrl": "Bild-URL",
       "rarity": "Seltenheit",
       "series": "Serie",
-      "element": "Element",
       "attack": "Angriff",
       "defense": "Verteidigung",
       "hp": "HP",
@@ -1731,6 +1739,7 @@
       "cardsPerPack": "Karten pro Pack",
       "guaranteedRarity": "Garantierte Seltenheit",
       "series": "Serie",
+      "category": "Kategorie",
       "availableFrom": "Verfügbar ab",
       "availableUntil": "Verfügbar bis",
       "maxPurchases": "Max. Käufe pro User",
@@ -1742,7 +1751,18 @@
       "dropWeight": "Drop-Gewicht",
       "cardName": "Kartenname",
       "cardRarity": "Seltenheit",
+      "cards": "Karten",
       "noCards": "Keine Karten zugewiesen"
+    },
+    "category": {
+      "create": "Neue Kategorie",
+      "edit": "Kategorie bearbeiten",
+      "delete": "Kategorie löschen",
+      "name": "Name",
+      "description": "Beschreibung",
+      "icon": "Icon",
+      "sortOrder": "Reihenfolge",
+      "active": "Aktiv"
     },
     "save": "Speichern",
     "cancel": "Abbrechen",
@@ -1772,5 +1792,35 @@
     "confirmRemove": "Freundschaft wirklich beenden?",
     "mutualFriends": "Gemeinsame Freunde",
     "requestReceived": "Möchte mit dir befreundet sein"
+  },
+  "adminLogs": {
+    "title": "Systemprotokoll",
+    "subtitle": "Systemweite Aktivitätsprotokolle, Benutzeraktionen und Fehlerberichte anzeigen",
+    "cleanup": "Alte Logs bereinigen",
+    "stats": {
+      "total": "Gesamt",
+      "info": "Info",
+      "warnings": "Warnungen",
+      "errors": "Fehler"
+    },
+    "filter": {
+      "level": "Level",
+      "category": "Kategorie",
+      "from": "Von",
+      "to": "Bis",
+      "search": "Suche",
+      "searchPlaceholder": "In Nachrichten, Aktionen, Benutzernamen suchen...",
+      "apply": "Filtern",
+      "clear": "Zurücksetzen"
+    },
+    "table": {
+      "timestamp": "Zeitstempel",
+      "level": "Level",
+      "category": "Kategorie",
+      "action": "Aktion",
+      "message": "Nachricht",
+      "user": "Benutzer",
+      "ip": "IP-Adresse"
+    }
   }
 }

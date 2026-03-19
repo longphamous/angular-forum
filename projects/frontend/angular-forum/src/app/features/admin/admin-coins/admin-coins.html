@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
+    <p-tabs (valueChange)="onTabChange($any($event))" [value]="activeTab()">
         <p-tablist>
             <p-tab value="0"><i class="pi pi-cog mr-2"></i>Einstellungen</p-tab>
             <p-tab value="1"><i class="pi pi-send mr-2"></i>Moderative Überweisung</p-tab>

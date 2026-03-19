@@ -94,6 +94,12 @@ export interface MyTicketWithResult {
     result?: LottoResult;
 }
 
+export interface TicketDrawGroup {
+    draw: LottoDraw;
+    tickets: MyTicketWithResult[];
+    totalPrize: number;
+}
+
 export interface PrizeClassInfo {
     label: string;
     description: string;

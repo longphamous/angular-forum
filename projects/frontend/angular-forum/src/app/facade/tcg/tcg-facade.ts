@@ -5,10 +5,12 @@ import { TCG_ROUTES } from "../../core/api/tcg.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import type {
     AdminBoosterDetail,
+    BoosterCategory,
     BoosterPack,
     Card,
     CardListing,
     CollectionProgress,
+    CreateBoosterCategoryDto,
     CreateBoosterPackDto,
     CreateCardDto,
     OpenBoosterResult,
@@ -43,6 +45,7 @@ export class TcgFacade {
     // ─── Admin state ─────────────────────────────────────────────────────────
     readonly adminCards = signal<Card[]>([]);
     readonly adminBoosters = signal<AdminBoosterDetail[]>([]);
+    readonly adminCategories = signal<BoosterCategory[]>([]);
     readonly adminLoading = signal(false);
     readonly adminSaving = signal(false);
 
@@ -316,5 +319,47 @@ export class TcgFacade {
                 },
                 error: () => this.adminSaving.set(false)
             });
+    }
+
+    // ─── Admin: Booster Categories ───────────────────────────────────────────
+
+    loadAdminCategories(): void {
+        this.adminLoading.set(true);
+        this.http.get<BoosterCategory[]>(`${this.base}${TCG_ROUTES.adminCategories()}`).subscribe({
+            next: (data) => {
+                this.adminCategories.set(data);
+                this.adminLoading.set(false);
+            },
+            error: () => this.adminLoading.set(false)
+        });
+    }
+
+    createCategory(dto: CreateBoosterCategoryDto): void {
+        this.adminSaving.set(true);
+        this.http.post<BoosterCategory>(`${this.base}${TCG_ROUTES.adminCategories()}`, dto).subscribe({
+            next: () => {
+                this.adminSaving.set(false);
+                this.loadAdminCategories();
+            },
+            error: () => this.adminSaving.set(false)
+        });
+    }
+
+    updateCategory(id: string, dto: Partial<CreateBoosterCategoryDto> & { isActive?: boolean }): void {
+        this.adminSaving.set(true);
+        this.http.put<BoosterCategory>(`${this.base}${TCG_ROUTES.adminCategoryById(id)}`, dto).subscribe({
+            next: () => {
+                this.adminSaving.set(false);
+                this.loadAdminCategories();
+            },
+            error: () => this.adminSaving.set(false)
+        });
+    }
+
+    deleteCategory(id: string): void {
+        this.http.delete<void>(`${this.base}${TCG_ROUTES.adminCategoryById(id)}`).subscribe({
+            next: () => this.loadAdminCategories(),
+            error: () => undefined
+        });
     }
 }

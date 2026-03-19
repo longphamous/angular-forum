@@ -1,4 +1,3 @@
-
 import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslocoService } from "@jsverse/transloco";
@@ -13,15 +12,15 @@ import { AppMenuitem } from "./app.menuitem";
     standalone: true,
     imports: [AppMenuitem, RouterModule],
     template: `<ul class="layout-menu">
-          @for (item of model; track item; let i = $index) {
+        @for (item of model; track item; let i = $index) {
             @if (!item.separator) {
-              <li [index]="i" [item]="item" [root]="true" app-menuitem></li>
+                <li [index]="i" [item]="item" [root]="true" app-menuitem></li>
             }
             @if (item.separator) {
-              <li class="menu-separator"></li>
+                <li class="menu-separator"></li>
             }
-          }
-        </ul>`
+        }
+    </ul>`
 })
 export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
@@ -215,6 +214,17 @@ export class AppMenu implements OnInit, OnDestroy {
                                 label: this.t("nav.slideshow"),
                                 icon: "pi pi-fw pi-images",
                                 routerLink: ["/admin/slideshow"]
+                            }
+                        ]
+                    },
+                    {
+                        label: this.t("nav.adminSystem"),
+                        icon: "pi pi-fw pi-cog",
+                        items: [
+                            {
+                                label: this.t("nav.adminLogs"),
+                                icon: "pi pi-fw pi-list-check",
+                                routerLink: ["/admin/logs"]
                             }
                         ]
                     }

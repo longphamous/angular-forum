@@ -17,7 +17,6 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { MESSAGES_ROUTES } from "../../../core/api/messages.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     ComposePayload,
     Conversation,
@@ -26,6 +25,7 @@ import {
     Message,
     SaveDraftPayload
 } from "../../../core/models/messages/messages";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 type ActiveTab = "conversations" | "drafts" | "sent";

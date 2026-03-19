@@ -20,7 +20,6 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { WALLET_ROUTES } from "../../../core/api/wallet.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     AdminWalletEntry,
     CoinEarnConfig,
@@ -28,6 +27,7 @@ import {
     RecalculateReport,
     WalletTransaction
 } from "../../../core/models/wallet/wallet";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 
 interface UserOption {
     id: string;

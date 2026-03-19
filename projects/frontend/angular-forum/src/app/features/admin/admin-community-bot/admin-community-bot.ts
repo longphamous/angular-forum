@@ -17,7 +17,6 @@ import { ToastModule } from "primeng/toast";
 import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { TooltipModule } from "primeng/tooltip";
 
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import {
     ActionConfig,
     BotAction,
@@ -28,6 +27,7 @@ import {
     CreateBotPayload,
     TriggerConfig
 } from "../../../core/models/community-bot/community-bot";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { CommunityBotFacade } from "../../../facade/community-bot/community-bot-facade";
 
 @Component({

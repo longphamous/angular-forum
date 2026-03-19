@@ -2,7 +2,9 @@
     <!-- Header -->
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-            <h1 class="flex items-center gap-2 text-2xl font-bold dark:text-white">{{ t('tcg.title') }} <admin-quicklink route="/admin/tcg" /></h1>
+            <h1 class="flex items-center gap-2 text-2xl font-bold dark:text-white">
+                {{ t('tcg.title') }} <admin-quicklink route="/admin/tcg" />
+            </h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('tcg.subtitle') }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -23,7 +25,7 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
+    <p-tabs (valueChange)="onTabChange($any($event))" [value]="activeTab()">
         <p-tablist>
             <p-tab value="boosters"> <i class="pi pi-box mr-2"></i>{{ t('tcg.tabs.boosters') }} </p-tab>
             <p-tab value="collection"> <i class="pi pi-th-large mr-2"></i>{{ t('tcg.tabs.collection') }} </p-tab>

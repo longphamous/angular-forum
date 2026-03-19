@@ -5,9 +5,9 @@ import { DataSource, In, MoreThanOrEqual, Repository } from "typeorm";
 
 import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
-import { PushService } from "../push/push.service";
 import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
+import { PushService } from "../push/push.service";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
 import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
 import { LoginDto } from "./dto/login.dto";

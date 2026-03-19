@@ -2,7 +2,9 @@
     <!-- Header -->
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-            <h1 class="flex items-center gap-2 text-2xl font-bold dark:text-white">{{ t('dynamicMarket.title') }} <admin-quicklink route="/admin/market" /></h1>
+            <h1 class="flex items-center gap-2 text-2xl font-bold dark:text-white">
+                {{ t('dynamicMarket.title') }} <admin-quicklink route="/admin/market" />
+            </h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('dynamicMarket.subtitle') }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -231,7 +233,12 @@
                         (click)="selectResource(resource)"
                         [class.selected-row]="selectedResource()?.slug === resource.slug"
                     >
-                        <td class="resource-name-cell" [pTooltip]="getResourceTooltip(resource)" tooltipPosition="right" [escape]="false">
+                        <td
+                            class="resource-name-cell"
+                            [escape]="false"
+                            [pTooltip]="getResourceTooltip(resource)"
+                            tooltipPosition="right"
+                        >
                             <div class="flex items-center gap-2">
                                 @if (resource.imageUrl) {
                                 <div class="resource-img-wrapper">
@@ -242,9 +249,10 @@
                                 }
                                 <div>
                                     <div class="flex items-center gap-1.5 font-semibold dark:text-white">
-                                        {{ resource.name }}
-                                        @if (resource.tier > 0) {
-                                        <span class="text-[9px] font-normal opacity-50">{{ '★'.repeat(resource.tier) }}</span>
+                                        {{ resource.name }} @if (resource.tier > 0) {
+                                        <span class="text-[9px] font-normal opacity-50"
+                                            >{{ '★'.repeat(resource.tier) }}</span
+                                        >
                                         }
                                     </div>
                                     <div class="text-xs text-gray-400">{{ resource.slug }}</div>

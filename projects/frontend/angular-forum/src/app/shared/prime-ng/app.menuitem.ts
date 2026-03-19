@@ -14,91 +14,97 @@ import { LayoutService } from "./service/layout.service";
     imports: [CommonModule, RouterModule, RippleModule],
     template: `
         <ng-container>
-          <!-- Root section header (clickable toggle, no routerLink) -->
-          @if (root && item.visible !== false) {
-            <div
-              class="layout-menuitem-root-text"
-              (click)="rootToggle($event)"
-              (keydown.enter)="rootToggle($event)"
-              role="button"
-              tabindex="0"
-              >
-              <span>{{ item.label }}</span>
-              <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
-            </div>
-          }
-        
-          <!-- Non-root item with submenu (no routerLink, has children) -->
-          @if (!root && !item.routerLink && item.items && item.visible !== false) {
-            <a
-              [attr.href]="item.url"
-              [attr.target]="item.target"
-              [ngClass]="item.styleClass"
-              (click)="itemClick($event)"
-              pRipple
-              tabindex="0"
-              >
-              <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-              <span class="layout-menuitem-text">{{ item.label }}</span>
-              <i class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
-            </a>
-          }
-        
-          <!-- Non-root item with no children and no routerLink (plain link) -->
-          @if (!root && !item.routerLink && !item.items && item.visible !== false) {
-            <a
-              [attr.href]="item.url"
-              [attr.target]="item.target"
-              [ngClass]="item.styleClass"
-              (click)="itemClick($event)"
-              pRipple
-              tabindex="0"
-              >
-              <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-              <span class="layout-menuitem-text">{{ item.label }}</span>
-            </a>
-          }
-        
-          <!-- Non-root item with routerLink (leaf navigation) -->
-          @if (!root && item.routerLink && !item.items && item.visible !== false) {
-            <a
-              [attr.target]="item.target"
-              [fragment]="item.fragment"
-              [ngClass]="item.styleClass"
-              [preserveFragment]="item.preserveFragment"
-              [queryParams]="item.queryParams"
-              [queryParamsHandling]="item.queryParamsHandling"
-              [replaceUrl]="item.replaceUrl"
-              [routerLink]="item.routerLink"
-                [routerLinkActiveOptions]="
-                    item.routerLinkActiveOptions || {
-                        paths: 'exact',
-                        queryParams: 'ignored',
-                        matrixParams: 'ignored',
-                        fragment: 'ignored'
-                    }
-                "
-            [skipLocationChange]="item.skipLocationChange"
-            [state]="item.state"
-            (click)="itemClick($event)"
-            pRipple
-            routerLinkActive="active-route"
-            tabindex="0"
-            >
-            <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-          </a>
-        }
-        
-        @if (item.items && item.visible !== false) {
-          <ul [@children]="submenuAnimation" style="overflow: hidden;">
-            @for (child of item.items; track child; let i = $index) {
-              <li [class]="child['badgeClass']" [index]="i" [item]="child" [parentKey]="key" app-menuitem></li>
+            <!-- Root section header (clickable toggle, no routerLink) -->
+            @if (root && item.visible !== false) {
+                <div
+                    class="layout-menuitem-root-text"
+                    (click)="rootToggle($event)"
+                    (keydown.enter)="rootToggle($event)"
+                    role="button"
+                    tabindex="0"
+                >
+                    <span>{{ item.label }}</span>
+                    <i class="pi pi-angle-down layout-section-toggler" [class.rotated]="!active"></i>
+                </div>
             }
-          </ul>
-        }
+
+            <!-- Non-root item with submenu (no routerLink, has children) -->
+            @if (!root && !item.routerLink && item.items && item.visible !== false) {
+                <a
+                    [attr.href]="item.url"
+                    [attr.target]="item.target"
+                    [ngClass]="item.styleClass"
+                    (click)="itemClick($event)"
+                    pRipple
+                    tabindex="0"
+                >
+                    <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+                    <span class="layout-menuitem-text">{{ item.label }}</span>
+                    <i class="pi pi-fw pi-angle-down layout-submenu-toggler"></i>
+                </a>
+            }
+
+            <!-- Non-root item with no children and no routerLink (plain link) -->
+            @if (!root && !item.routerLink && !item.items && item.visible !== false) {
+                <a
+                    [attr.href]="item.url"
+                    [attr.target]="item.target"
+                    [ngClass]="item.styleClass"
+                    (click)="itemClick($event)"
+                    pRipple
+                    tabindex="0"
+                >
+                    <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+                    <span class="layout-menuitem-text">{{ item.label }}</span>
+                </a>
+            }
+
+            <!-- Non-root item with routerLink (leaf navigation) -->
+            @if (!root && item.routerLink && !item.items && item.visible !== false) {
+                <a
+                    [attr.target]="item.target"
+                    [fragment]="item.fragment"
+                    [ngClass]="item.styleClass"
+                    [preserveFragment]="item.preserveFragment"
+                    [queryParams]="item.queryParams"
+                    [queryParamsHandling]="item.queryParamsHandling"
+                    [replaceUrl]="item.replaceUrl"
+                    [routerLink]="item.routerLink"
+                    [routerLinkActiveOptions]="
+                        item.routerLinkActiveOptions || {
+                            paths: 'exact',
+                            queryParams: 'ignored',
+                            matrixParams: 'ignored',
+                            fragment: 'ignored'
+                        }
+                    "
+                    [skipLocationChange]="item.skipLocationChange"
+                    [state]="item.state"
+                    (click)="itemClick($event)"
+                    pRipple
+                    routerLinkActive="active-route"
+                    tabindex="0"
+                >
+                    <i class="layout-menuitem-icon" [ngClass]="item.icon"></i>
+                    <span class="layout-menuitem-text">{{ item.label }}</span>
+                </a>
+            }
+
+            @if (item.items && item.visible !== false) {
+                <ul [@children]="submenuAnimation" style="overflow: hidden;">
+                    @for (child of item.items; track child; let i = $index) {
+                        <li
+                            [class]="child['badgeClass']"
+                            [index]="i"
+                            [item]="child"
+                            [parentKey]="key"
+                            app-menuitem
+                        ></li>
+                    }
+                </ul>
+            }
         </ng-container>
-        `,
+    `,
     styles: [
         `
             .layout-menuitem-root-text {

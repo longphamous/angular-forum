@@ -30,7 +30,6 @@ import { Subscription } from "rxjs";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { SHOP_ROUTES } from "../../../core/api/shop.routes";
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AchievementCard } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
@@ -38,6 +37,7 @@ import { UserAchievement } from "../../../core/models/gamification/achievement";
 import { UserInventoryItem } from "../../../core/models/shop/shop";
 import { UserRole } from "../../../core/models/user/user";
 import { WalletTransaction } from "../../../core/models/wallet/wallet";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade, ChangePasswordPayload, UpdateProfilePayload } from "../../../facade/auth/auth-facade";
 import { WalletFacade } from "../../../facade/wallet/wallet-facade";
 

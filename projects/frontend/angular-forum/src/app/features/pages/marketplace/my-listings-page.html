@@ -19,7 +19,7 @@
     </div>
 
     <!-- Tabs -->
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($any($event))">
+    <p-tabs (valueChange)="onTabChange($any($event))" [value]="activeTab()">
         <p-tablist>
             <p-tab value="0">
                 <i class="pi pi-tag mr-2"></i>

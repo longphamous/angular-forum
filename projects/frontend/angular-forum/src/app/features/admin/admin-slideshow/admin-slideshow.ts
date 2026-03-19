@@ -21,8 +21,8 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { SLIDESHOW_ROUTES } from "../../../core/api/slideshow.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { TeaserSlide } from "../../../core/models/slideshow/teaser-slide";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 
 export interface SlideFormData {
     title: string;

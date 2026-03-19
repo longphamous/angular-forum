@@ -1,5 +1,15 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 
+import { BoosterCategoryEntity } from "./booster-category.entity";
 import { BoosterPackCardEntity } from "./booster-pack-card.entity";
 
 @Entity("tcg_booster_packs")
@@ -28,6 +38,9 @@ export class BoosterPackEntity {
     @Column({ length: 100 })
     series!: string;
 
+    @Column({ name: "category_id", type: "uuid", nullable: true })
+    categoryId!: string | null;
+
     @Column({ name: "available_from", type: "timestamptz", nullable: true })
     availableFrom!: Date | null;
 
@@ -48,6 +61,10 @@ export class BoosterPackEntity {
 
     @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
     updatedAt!: Date;
+
+    @ManyToOne(() => BoosterCategoryEntity, (cat) => cat.boosterPacks, { nullable: true, onDelete: "SET NULL" })
+    @JoinColumn({ name: "category_id" })
+    category?: BoosterCategoryEntity;
 
     @OneToMany(() => BoosterPackCardEntity, (bpc) => bpc.boosterPack)
     packCards?: BoosterPackCardEntity[];

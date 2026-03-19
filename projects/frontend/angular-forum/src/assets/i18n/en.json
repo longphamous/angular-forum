@@ -104,7 +104,9 @@
     "adminUsers": "Users & Permissions",
     "adminCommunity": "Community",
     "adminGamification": "Gamification",
-    "adminAppearance": "Appearance"
+    "adminAppearance": "Appearance",
+    "adminSystem": "System",
+    "adminLogs": "System Logs"
   },
   "login": {
     "title": "Welcome back",
@@ -1063,6 +1065,12 @@
     "noDrawPending": "No upcoming draw scheduled.",
     "buyFor": "Draw",
     "noTickets": "You have not bought any tickets yet.",
+    "upcomingDraws": "Upcoming Draws",
+    "pastDraws": "Past Draws",
+    "ticketCount": "{{count}} ticket(s)",
+    "totalWinnings": "Winnings",
+    "noUpcomingTickets": "No tickets for upcoming draws.",
+    "noPastTickets": "No past tickets.",
     "pending": "Pending",
     "noWin": "No win",
     "matches": "matches",
@@ -1700,7 +1708,8 @@
     "title": "Trading Card Game Management",
     "tabs": {
       "cards": "Cards",
-      "boosters": "Booster Packs"
+      "boosters": "Booster Packs",
+      "categories": "Categories"
     },
     "card": {
       "create": "New Card",
@@ -1711,7 +1720,6 @@
       "imageUrl": "Image URL",
       "rarity": "Rarity",
       "series": "Series",
-      "element": "Element",
       "attack": "Attack",
       "defense": "Defense",
       "hp": "HP",
@@ -1731,6 +1739,7 @@
       "cardsPerPack": "Cards per Pack",
       "guaranteedRarity": "Guaranteed Rarity",
       "series": "Series",
+      "category": "Category",
       "availableFrom": "Available From",
       "availableUntil": "Available Until",
       "maxPurchases": "Max Purchases per User",
@@ -1742,7 +1751,18 @@
       "dropWeight": "Drop Weight",
       "cardName": "Card Name",
       "cardRarity": "Rarity",
+      "cards": "Cards",
       "noCards": "No cards assigned"
+    },
+    "category": {
+      "create": "New Category",
+      "edit": "Edit Category",
+      "delete": "Delete Category",
+      "name": "Name",
+      "description": "Description",
+      "icon": "Icon",
+      "sortOrder": "Sort Order",
+      "active": "Active"
     },
     "save": "Save",
     "cancel": "Cancel",
@@ -1772,5 +1792,35 @@
     "confirmRemove": "Really end this friendship?",
     "mutualFriends": "Mutual Friends",
     "requestReceived": "Wants to be your friend"
+  },
+  "adminLogs": {
+    "title": "System Logs",
+    "subtitle": "View system-wide activity logs, user actions, and error reports",
+    "cleanup": "Cleanup old logs",
+    "stats": {
+      "total": "Total Logs",
+      "info": "Info",
+      "warnings": "Warnings",
+      "errors": "Errors"
+    },
+    "filter": {
+      "level": "Level",
+      "category": "Category",
+      "from": "From",
+      "to": "To",
+      "search": "Search",
+      "searchPlaceholder": "Search in messages, actions, usernames...",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "table": {
+      "timestamp": "Timestamp",
+      "level": "Level",
+      "category": "Category",
+      "action": "Action",
+      "message": "Message",
+      "user": "User",
+      "ip": "IP Address"
+    }
   }
 }

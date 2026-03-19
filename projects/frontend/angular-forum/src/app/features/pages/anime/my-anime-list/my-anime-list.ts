@@ -13,9 +13,9 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { USER_ROUTES } from "../../../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../../../core/config/api.config";
-import { TabPersistenceService } from "../../../../core/services/tab-persistence.service";
 import { AnimeListEntry, AnimeListStatus } from "../../../../core/models/anime/anime";
 import { UserProfile } from "../../../../core/models/user/user";
+import { TabPersistenceService } from "../../../../core/services/tab-persistence.service";
 import { AnimeFacade } from "../../../../facade/anime/anime-facade";
 import { AuthFacade } from "../../../../facade/auth/auth-facade";
 

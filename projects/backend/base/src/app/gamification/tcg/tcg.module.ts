@@ -5,6 +5,7 @@ import { CreditModule } from "../../credit/credit.module";
 import { MarketCategoryEntity } from "../../marketplace/entities/market-category.entity";
 import { MarketListingEntity } from "../../marketplace/entities/market-listing.entity";
 import { UserEntity } from "../../user/entities/user.entity";
+import { BoosterCategoryEntity } from "./entities/booster-category.entity";
 import { BoosterPackEntity } from "./entities/booster-pack.entity";
 import { BoosterPackCardEntity } from "./entities/booster-pack-card.entity";
 import { CardEntity } from "./entities/card.entity";
@@ -19,6 +20,7 @@ import { TcgService } from "./tcg.service";
             CardEntity,
             BoosterPackEntity,
             BoosterPackCardEntity,
+            BoosterCategoryEntity,
             UserCardEntity,
             UserBoosterEntity,
             UserEntity,
