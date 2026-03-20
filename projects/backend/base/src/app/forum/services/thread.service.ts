@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { ActivityService } from "../../activity/activity.service";
 import { GamificationService } from "../../gamification/gamification.service";
 import { UserXpData } from "../../gamification/level.config";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
@@ -83,7 +84,8 @@ export class ThreadService {
         private readonly pollRepo: Repository<ForumPollEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly gamificationService: GamificationService
+        private readonly gamificationService: GamificationService,
+        private readonly activityService: ActivityService
     ) {}
 
     async findByForum(forumId: string, query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
@@ -191,6 +193,15 @@ export class ThreadService {
 
         // Award XP for creating a thread
         void this.gamificationService.awardXp(authorId, "create_thread", thread.id);
+
+        void this.activityService.create(
+            authorId,
+            "thread_created",
+            dto.title,
+            `New thread in ${forum.name}`,
+            `/forum/threads/${thread.id}`,
+            { forumId, forumName: forum.name }
+        );
 
         return toDto(thread);
     }

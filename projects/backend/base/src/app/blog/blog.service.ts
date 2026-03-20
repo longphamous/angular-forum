@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { ActivityService } from "../activity/activity.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogCategoryEntity } from "./entities/blog-category.entity";
 import { BlogCommentEntity } from "./entities/blog-comment.entity";
@@ -51,7 +52,8 @@ export class BlogService {
         @InjectRepository(BlogCommentEntity)
         private readonly commentRepo: Repository<BlogCommentEntity>,
         @InjectRepository(UserEntity)
-        private readonly userRepo: Repository<UserEntity>
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly activityService: ActivityService
     ) {}
 
     async getPosts(options: {
@@ -134,6 +136,17 @@ export class BlogService {
             publishedAt: dto.status === "published" ? new Date() : null
         });
         const saved = await this.postRepo.save(post);
+
+        if (saved.status === "published") {
+            void this.activityService.create(
+                authorId,
+                "blog_published",
+                saved.title,
+                saved.excerpt ?? undefined,
+                `/blog/${saved.slug}`
+            );
+        }
+
         return this.enrichPost(saved, authorId);
     }
 

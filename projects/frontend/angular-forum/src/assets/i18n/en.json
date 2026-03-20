@@ -786,6 +786,8 @@
       "categories": "Categories"
     },
     "recentThreads": "Recent Threads",
+    "activityFeed": "Activity Feed",
+    "noActivity": "No activity yet.",
     "topPosters": "Top Posters",
     "topWealth": "Richest Members",
     "noWealth": "No data available.",
@@ -797,6 +799,18 @@
     "newestAnime": "Newest Anime",
     "posts": "Posts",
     "threads": "Threads"
+  },
+  "activity": {
+    "type": {
+      "thread_created": "created a thread",
+      "post_created": "posted a reply",
+      "blog_published": "published an article",
+      "achievement_unlocked": "unlocked an achievement",
+      "level_up": "leveled up",
+      "friend_added": "became friends with",
+      "profile_updated": "updated their profile",
+      "lexicon_published": "published a lexicon article"
+    }
   },
   "levelBadge": {
     "level": "Level {{level}}",

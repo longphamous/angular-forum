@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { ActivityService } from "../activity/activity.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushFriendAccepted, PushFriendRequest } from "../push/push-event.types";
@@ -50,7 +51,8 @@ export class FriendsService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly notificationsService: NotificationsService,
-        private readonly pushService: PushService
+        private readonly pushService: PushService,
+        private readonly activityService: ActivityService
     ) {}
 
     async sendRequest(requesterId: string, addresseeId: string): Promise<FriendRequestDto> {
@@ -166,6 +168,14 @@ export class FriendsService {
                 `/users/${addressee.id}`
             );
         }
+
+        void this.activityService.create(
+            userId,
+            "friend_added",
+            `${addressee?.displayName ?? ""} & ${requester?.displayName ?? ""}`,
+            undefined,
+            `/users/${requester?.id ?? friendship.requesterId}`
+        );
 
         return {
             id: requester?.id ?? friendship.requesterId,
