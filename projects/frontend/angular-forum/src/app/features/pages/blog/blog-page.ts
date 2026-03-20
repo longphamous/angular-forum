@@ -73,11 +73,18 @@ export class BlogPage implements OnInit {
         });
     });
 
-    protected readonly editorialPosts = computed(() =>
+    protected readonly featuredPosts = computed(() =>
         this.posts()
             .filter((p) => p.type === "editorial" || p.type === "news")
             .slice(0, 3)
     );
+
+    protected readonly recentPosts = computed(() => {
+        const featuredIds = new Set(this.featuredPosts().map((p) => p.id));
+        return this.posts()
+            .filter((p) => !featuredIds.has(p.id))
+            .slice(0, 4);
+    });
 
     private get apiBase(): string {
         return this.config.baseUrl;

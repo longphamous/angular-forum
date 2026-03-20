@@ -9,6 +9,7 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { ForumBreadcrumb } from "../../../../core/components/forum-breadcrumb/forum-breadcrumb";
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
@@ -19,6 +20,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
         RouterModule,
         AvatarModule,
         ButtonModule,
+        ForumBreadcrumb,
         LevelBadge,
         TagModule,
         SkeletonModule,

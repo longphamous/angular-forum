@@ -23,38 +23,38 @@ export class BlogController {
 
     @Get("posts")
     getPosts(
-        @Request() req: { user: { id: string; role: string } },
+        @Request() req: { user: { userId: string; role: string } },
         @Query("type") type?: BlogType,
         @Query("categoryId") categoryId?: string,
         @Query("authorId") authorId?: string,
         @Query("status") status?: BlogStatus
     ) {
         const isAdmin = req.user.role === "admin";
-        return this.blogService.getPosts({ userId: req.user.id, isAdmin, type, categoryId, authorId, status });
+        return this.blogService.getPosts({ userId: req.user.userId, isAdmin, type, categoryId, authorId, status });
     }
 
     @Post("posts")
-    createPost(@Request() req: { user: { id: string } }, @Body() dto: CreatePostDto) {
-        return this.blogService.createPost(req.user.id, dto);
+    createPost(@Request() req: { user: { userId: string } }, @Body() dto: CreatePostDto) {
+        return this.blogService.createPost(req.user.userId, dto);
     }
 
     @Get("posts/:slug")
-    getPost(@Param("slug") slug: string, @Request() req: { user: { id: string; role: string } }) {
-        return this.blogService.getPostBySlug(slug, req.user.id, req.user.role === "admin");
+    getPost(@Param("slug") slug: string, @Request() req: { user: { userId: string; role: string } }) {
+        return this.blogService.getPostBySlug(slug, req.user.userId, req.user.role === "admin");
     }
 
     @Put("posts/:id")
     updatePost(
         @Param("id") id: string,
-        @Request() req: { user: { id: string; role: string } },
+        @Request() req: { user: { userId: string; role: string } },
         @Body() dto: UpdatePostDto
     ) {
-        return this.blogService.updatePost(id, req.user.id, req.user.role === "admin", dto);
+        return this.blogService.updatePost(id, req.user.userId, req.user.role === "admin", dto);
     }
 
     @Delete("posts/:id")
-    deletePost(@Param("id") id: string, @Request() req: { user: { id: string; role: string } }) {
-        return this.blogService.deletePost(id, req.user.id, req.user.role === "admin");
+    deletePost(@Param("id") id: string, @Request() req: { user: { userId: string; role: string } }) {
+        return this.blogService.deletePost(id, req.user.userId, req.user.role === "admin");
     }
 
     @Get("categories")
@@ -92,14 +92,14 @@ export class BlogController {
     @Post("posts/:postId/comments")
     addComment(
         @Param("postId") postId: string,
-        @Request() req: { user: { id: string } },
+        @Request() req: { user: { userId: string } },
         @Body() body: { content: string; parentId?: string }
     ) {
-        return this.blogService.addComment(postId, req.user.id, body.content, body.parentId);
+        return this.blogService.addComment(postId, req.user.userId, body.content, body.parentId);
     }
 
     @Delete("comments/:id")
-    deleteComment(@Param("id") id: string, @Request() req: { user: { id: string; role: string } }) {
-        return this.blogService.deleteComment(id, req.user.id, req.user.role === "admin");
+    deleteComment(@Param("id") id: string, @Request() req: { user: { userId: string; role: string } }) {
+        return this.blogService.deleteComment(id, req.user.userId, req.user.role === "admin");
     }
 }

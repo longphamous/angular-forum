@@ -1,14 +1,16 @@
 <div class="flex flex-col gap-4" *transloco="let t">
+    <!-- Breadcrumb -->
+    @if (facade.currentThread()) {
+        <app-forum-breadcrumb [items]="[
+            { label: '', icon: 'pi-home', routerLink: '/forum' },
+            { label: facade.currentForum()?.name ?? '...', routerLink: '/forum/forums/' + facade.currentThread()!.forumId },
+            { label: facade.currentThread()!.title }
+        ]" />
+    }
+
     <!-- Header -->
     <div class="card">
         <div class="mb-4 flex items-start gap-3">
-            <p-button
-                (onClick)="navHistory.back('/forum')"
-                [label]="navHistory.backLabel()"
-                [text]="true"
-                icon="pi pi-arrow-left"
-            />
-
             <div class="flex-1">
                 @if (facade.loading() && !facade.currentThread()) {
                 <p-skeleton height="2rem" styleClass="mb-2 w-2/3" />

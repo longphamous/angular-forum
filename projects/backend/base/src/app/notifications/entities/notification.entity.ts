@@ -8,6 +8,8 @@ export type NotificationType =
     | "coins_received"
     | "xp_gained"
     | "mention"
+    | "friend_request"
+    | "friend_accepted"
     | "system";
 
 @Entity("notifications")

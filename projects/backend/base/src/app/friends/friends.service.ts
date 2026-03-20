@@ -96,10 +96,11 @@ export class FriendsService {
 
         await this.notificationsService.create(
             addresseeId,
-            "system",
+            "friend_request",
             "Freundschaftsanfrage",
             `${requester.displayName} möchte mit dir befreundet sein.`,
-            `/users/${requester.id}`
+            `/users/${requester.id}`,
+            { friendshipId: saved.id }
         );
 
         // Push real-time friend request
@@ -159,7 +160,7 @@ export class FriendsService {
         if (addressee) {
             await this.notificationsService.create(
                 friendship.requesterId,
-                "system",
+                "friend_accepted",
                 "Anfrage angenommen",
                 `${addressee.displayName} hat deine Freundschaftsanfrage angenommen.`,
                 `/users/${addressee.id}`

@@ -12,12 +12,14 @@ import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 import { ToggleSwitchModule } from "primeng/toggleswitch";
 
+import { ForumBreadcrumb } from "../../../../core/components/forum-breadcrumb/forum-breadcrumb";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 
 @Component({
     selector: "thread-create",
     imports: [
         FormsModule,
+        ForumBreadcrumb,
         InputTextModule,
         Chip,
         ButtonModule,
@@ -66,6 +68,9 @@ export class ThreadCreate implements OnInit {
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
             this.forumId = params["forumId"] as string;
+            if (!this.facade.currentForum() || this.facade.currentForum()!.id !== this.forumId) {
+                this.facade.loadForum(this.forumId);
+            }
         });
     }
 

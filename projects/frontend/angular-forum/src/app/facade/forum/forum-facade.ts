@@ -127,6 +127,9 @@ export class ForumFacade {
             next: (thread) => {
                 this._currentThread.set(thread);
                 this._loading.set(false);
+                if (thread.forumId && !this._currentForum()) {
+                    this.loadForum(thread.forumId);
+                }
             },
             error: () => {
                 this._error.set("Fehler beim Laden des Threads.");

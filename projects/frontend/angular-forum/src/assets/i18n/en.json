@@ -1136,7 +1136,18 @@
     "title": "Notifications",
     "markAllRead": "Mark all as read",
     "empty": "No notifications",
+    "emptyFriends": "No friend notifications",
+    "emptySystem": "No system notifications",
     "delete": "Delete notification",
+    "tabs": {
+      "all": "All",
+      "friends": "Friends",
+      "system": "System"
+    },
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline"
+    },
     "type": {
       "new_message": "New Message",
       "thread_reply": "New Reply",
@@ -1145,6 +1156,8 @@
       "coins_received": "Coins received",
       "xp_gained": "XP gained",
       "mention": "Mentioned",
+      "friend_request": "Friend Request",
+      "friend_accepted": "Friend Accepted",
       "system": "System"
     }
   },
@@ -1337,6 +1350,8 @@
   "blog": {
     "title": "Blog",
     "subtitle": "Community Articles & News",
+    "featuredArticles": "Featured Articles",
+    "recentArticles": "Recent Articles",
     "allPosts": "All Posts",
     "noPosts": "No posts found.",
     "noPostsYet": "No posts published yet.",

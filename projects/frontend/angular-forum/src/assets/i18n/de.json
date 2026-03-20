@@ -1136,7 +1136,18 @@
     "title": "Benachrichtigungen",
     "markAllRead": "Alle als gelesen markieren",
     "empty": "Keine Benachrichtigungen",
+    "emptyFriends": "Keine Freundes-Benachrichtigungen",
+    "emptySystem": "Keine System-Benachrichtigungen",
     "delete": "Benachrichtigung löschen",
+    "tabs": {
+      "all": "Alle",
+      "friends": "Freunde",
+      "system": "System"
+    },
+    "actions": {
+      "accept": "Annehmen",
+      "decline": "Ablehnen"
+    },
     "type": {
       "new_message": "Neue Nachricht",
       "thread_reply": "Neue Antwort",
@@ -1145,6 +1156,8 @@
       "coins_received": "Coins erhalten",
       "xp_gained": "XP erhalten",
       "mention": "Erwähnt",
+      "friend_request": "Freundschaftsanfrage",
+      "friend_accepted": "Anfrage angenommen",
       "system": "System"
     }
   },
@@ -1337,6 +1350,8 @@
   "blog": {
     "title": "Blog",
     "subtitle": "Community-Artikel & Neuigkeiten",
+    "featuredArticles": "Ausgewählte Artikel",
+    "recentArticles": "Neueste Artikel",
     "allPosts": "Alle Beiträge",
     "noPosts": "Keine Beiträge gefunden.",
     "noPostsYet": "Noch keine Artikel veröffentlicht.",

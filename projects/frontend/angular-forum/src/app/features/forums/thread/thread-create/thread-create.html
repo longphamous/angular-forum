@@ -1,7 +1,14 @@
 <p-fluid *transloco="let t">
+    @if (facade.currentForum()) {
+        <app-forum-breadcrumb class="mb-4 block" [items]="[
+            { label: '', icon: 'pi-home', routerLink: '/forum' },
+            { label: facade.currentForum()!.name, routerLink: '/forum/forums/' + facade.currentForum()!.id },
+            { label: t('threadCreate.title') }
+        ]" />
+    }
+
     <div class="card">
         <div class="mb-6 flex items-center gap-3">
-            <p-button (onClick)="cancel()" [text]="true" icon="pi pi-arrow-left" />
             <h1 class="text-xl font-semibold">{{ t('threadCreate.title') }}</h1>
         </div>
 

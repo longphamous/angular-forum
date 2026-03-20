@@ -24,6 +24,7 @@ import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 import { Subscription } from "rxjs";
 
+import { ForumBreadcrumb } from "../../../../core/components/forum-breadcrumb/forum-breadcrumb";
 import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
 import { Post, PostEditHistoryEntry } from "../../../../core/models/forum/post";
 import { PushThreadNewPost } from "../../../../core/models/push/push-events";
@@ -42,6 +43,7 @@ import { OnlineIndicator } from "../../../../shared/components/online-indicator/
         DialogModule,
         DividerModule,
         EditorModule,
+        ForumBreadcrumb,
         InputTextModule,
         LevelBadge,
         OnlineIndicator,
