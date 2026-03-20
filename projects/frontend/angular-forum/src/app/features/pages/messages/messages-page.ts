@@ -6,11 +6,12 @@ import { MessageService } from "primeng/api";
 import { AvatarModule } from "primeng/avatar";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
+import { IconFieldModule } from "primeng/iconfield";
+import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
 import { SkeletonModule } from "primeng/skeleton";
-import { TabsModule } from "primeng/tabs";
-import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
@@ -28,7 +29,9 @@ import {
 import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
-type ActiveTab = "conversations" | "drafts" | "sent";
+type ActiveTab = "inbox" | "starred" | "drafts" | "important" | "sent" | "archive" | "trash";
+
+const PAGE_SIZE = 15;
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,12 +39,13 @@ type ActiveTab = "conversations" | "drafts" | "sent";
         AvatarModule,
         BadgeModule,
         ButtonModule,
+        CheckboxModule,
         DialogModule,
         FormsModule,
+        IconFieldModule,
+        InputIconModule,
         InputTextModule,
         SkeletonModule,
-        TabsModule,
-        TagModule,
         TextareaModule,
         ToastModule,
         TooltipModule,
@@ -63,9 +67,17 @@ export class MessagesPage implements OnInit {
     protected readonly conversations = signal<Conversation[]>([]);
     protected readonly drafts = signal<Draft[]>([]);
     protected readonly selectedDetail = signal<ConversationDetail | null>(null);
-    protected readonly activeTab = signal<ActiveTab>(this.tabService.get("conversations") as ActiveTab);
+    protected readonly activeTab = signal<ActiveTab>((this.tabService.get("inbox") as ActiveTab) || "inbox");
     protected readonly loadingDetail = signal(false);
     protected readonly sending = signal(false);
+
+    // ─── Search & pagination ──────────────────────────────────────────────────
+    protected readonly searchQuery = signal("");
+    protected readonly currentPage = signal(0);
+
+    // ─── Selection & starring ─────────────────────────────────────────────────
+    protected readonly selectedIds = signal<Set<string>>(new Set());
+    protected readonly starredIds = signal<Set<string>>(new Set());
 
     // ─── Compose dialog ───────────────────────────────────────────────────────
     protected readonly composeVisible = signal(false);
@@ -79,14 +91,50 @@ export class MessagesPage implements OnInit {
     // ─── Computed ─────────────────────────────────────────────────────────────
     protected readonly currentUserId = computed(() => this.authFacade.currentUser()?.id ?? "");
 
-    protected readonly sentConversations = computed(() =>
-        this.conversations().filter((c) => c.initiatedByUserId === this.currentUserId())
+    protected readonly unreadTotal = computed(() =>
+        this.conversations().reduce((sum, c) => sum + c.unreadCount, 0)
     );
 
-    protected readonly activeConversations = computed(() => {
+    protected readonly filteredConversations = computed(() => {
         const tab = this.activeTab();
-        if (tab === "sent") return this.sentConversations();
-        return this.conversations();
+        let list = this.conversations();
+
+        if (tab === "sent") {
+            list = list.filter((c) => c.initiatedByUserId === this.currentUserId());
+        } else if (tab === "starred") {
+            const starred = this.starredIds();
+            list = list.filter((c) => starred.has(c.id));
+        }
+
+        const query = this.searchQuery().trim().toLowerCase();
+        if (query) {
+            list = list.filter((c) => {
+                const other = this.getOtherParticipant(c);
+                return (
+                    other.displayName.toLowerCase().includes(query) ||
+                    (c.subject?.toLowerCase().includes(query) ?? false) ||
+                    c.lastMessage.toLowerCase().includes(query)
+                );
+            });
+        }
+
+        return list;
+    });
+
+    protected readonly totalPages = computed(() =>
+        Math.max(1, Math.ceil(this.filteredConversations().length / PAGE_SIZE))
+    );
+
+    protected readonly paginatedConversations = computed(() => {
+        const start = this.currentPage() * PAGE_SIZE;
+        return this.filteredConversations().slice(start, start + PAGE_SIZE);
+    });
+
+    protected readonly allSelected = computed(() => {
+        const page = this.paginatedConversations();
+        if (page.length === 0) return false;
+        const ids = this.selectedIds();
+        return page.every((c) => ids.has(c.id));
     });
 
     protected readonly canCompose = computed(
@@ -116,6 +164,63 @@ export class MessagesPage implements OnInit {
         });
     }
 
+    // ─── Tab navigation ───────────────────────────────────────────────────────
+
+    protected setActiveTab(tab: ActiveTab): void {
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+        this.currentPage.set(0);
+        this.selectedIds.set(new Set());
+        this.selectedDetail.set(null);
+    }
+
+    // ─── Selection ────────────────────────────────────────────────────────────
+
+    protected toggleSelection(id: string): void {
+        this.selectedIds.update((set) => {
+            const next = new Set(set);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }
+
+    protected toggleSelectAll(checked: boolean): void {
+        if (checked) {
+            const ids = new Set(this.paginatedConversations().map((c) => c.id));
+            this.selectedIds.set(ids);
+        } else {
+            this.selectedIds.set(new Set());
+        }
+    }
+
+    // ─── Starring ─────────────────────────────────────────────────────────────
+
+    protected toggleStar(id: string): void {
+        this.starredIds.update((set) => {
+            const next = new Set(set);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }
+
+    // ─── Pagination ───────────────────────────────────────────────────────────
+
+    protected prevPage(): void {
+        this.currentPage.update((p) => Math.max(0, p - 1));
+    }
+
+    protected nextPage(): void {
+        this.currentPage.update((p) => Math.min(this.totalPages() - 1, p + 1));
+    }
+
     // ─── Conversation actions ─────────────────────────────────────────────────
 
     protected selectConversation(conv: Conversation): void {
@@ -126,7 +231,6 @@ export class MessagesPage implements OnInit {
         this.http.get<ConversationDetail>(`${base}${MESSAGES_ROUTES.conversation(conv.id)}`).subscribe({
             next: (detail) => {
                 this.selectedDetail.set(detail);
-                // Mark as read locally
                 this.conversations.set(
                     this.conversations().map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
                 );
@@ -134,6 +238,10 @@ export class MessagesPage implements OnInit {
             },
             error: () => this.loadingDetail.set(false)
         });
+    }
+
+    protected closeDetail(): void {
+        this.selectedDetail.set(null);
     }
 
     protected sendReply(): void {
@@ -253,13 +361,6 @@ export class MessagesPage implements OnInit {
             hour: "2-digit",
             minute: "2-digit"
         });
-    }
-
-    protected setActiveTab(value: string | number | undefined): void {
-        if (value === "conversations" || value === "drafts" || value === "sent") {
-            this.activeTab.set(value);
-            this.tabService.set(value);
-        }
     }
 
     protected avatarLabel(name: string): string {
