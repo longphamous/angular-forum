@@ -1,0 +1,311 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="flex flex-col gap-4 p-4">
+    <h1 class="text-2xl font-bold m-0">{{ 'nav.lexiconManagement' | transloco }}</h1>
+
+    <p-tabs [value]="activeTab()" (valueChange)="setActiveTab($any($event))">
+        <p-tablist>
+            <p-tab value="categories">{{ 'lexicon.categories' | transloco }}</p-tab>
+            <p-tab value="pending">{{ 'lexicon.pending' | transloco }}</p-tab>
+            <p-tab value="reports">{{ 'lexicon.reports' | transloco }}</p-tab>
+            <p-tab value="terms">{{ 'lexicon.termsOfUse' | transloco }}</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <!-- Categories Tab -->
+            <p-tabpanel value="categories">
+                <div class="flex justify-end mb-3">
+                    <p-button
+                        [label]="'lexicon.createCategory' | transloco"
+                        icon="pi pi-plus"
+                        (onClick)="openCreateCategory()"
+                    />
+                </div>
+
+                <p-table [value]="facade.categories()" [tableStyle]="{ 'min-width': '40rem' }">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ 'common.name' | transloco }}</th>
+                            <th>{{ 'common.description' | transloco }}</th>
+                            <th>{{ 'lexicon.articles' | transloco }}</th>
+                            <th>{{ 'lexicon.customFields' | transloco }}</th>
+                            <th>{{ 'common.position' | transloco }}</th>
+                            <th style="width: 10rem">{{ 'common.actions' | transloco }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-cat>
+                        <tr>
+                            <td class="font-semibold">{{ cat.name }}</td>
+                            <td class="text-color-secondary text-sm">{{ cat.description ?? '–' }}</td>
+                            <td>{{ cat.articleCount }}</td>
+                            <td>{{ cat.customFields?.length ?? 0 }}</td>
+                            <td>{{ cat.position }}</td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEditCategory(cat)" />
+                                    <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="deleteCategory(cat)" />
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="6" class="text-center text-color-secondary py-8">
+                                {{ 'lexicon.noCategories' | transloco }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Pending Articles Tab -->
+            <p-tabpanel value="pending">
+                <p-table [value]="facade.pendingArticles()" [tableStyle]="{ 'min-width': '50rem' }">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ 'common.title' | transloco }}</th>
+                            <th>{{ 'common.author' | transloco }}</th>
+                            <th>{{ 'lexicon.category' | transloco }}</th>
+                            <th>{{ 'lexicon.language' | transloco }}</th>
+                            <th>{{ 'common.date' | transloco }}</th>
+                            <th style="width: 14rem">{{ 'common.actions' | transloco }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-article>
+                        <tr>
+                            <td class="font-semibold cursor-pointer" (click)="viewArticle(article)">{{ article.title }}</td>
+                            <td>{{ article.authorName }}</td>
+                            <td>{{ article.categoryName ?? '–' }}</td>
+                            <td class="uppercase font-mono">{{ article.language }}</td>
+                            <td class="text-sm">{{ formatDate(article.createdAt) }}</td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <p-button icon="pi pi-eye" [text]="true" (onClick)="viewArticle(article)" />
+                                    <p-button icon="pi pi-check" [text]="true" severity="success" (onClick)="approveArticle(article)" />
+                                    <p-button icon="pi pi-times" [text]="true" severity="danger" (onClick)="openRejectDialog(article)" />
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="6" class="text-center text-color-secondary py-8">
+                                {{ 'lexicon.noPending' | transloco }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Reports Tab -->
+            <p-tabpanel value="reports">
+                <p-table [value]="facade.reports()" [tableStyle]="{ 'min-width': '40rem' }">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ 'lexicon.article' | transloco }}</th>
+                            <th>{{ 'common.reportedBy' | transloco }}</th>
+                            <th>{{ 'lexicon.reportReason' | transloco }}</th>
+                            <th>{{ 'common.date' | transloco }}</th>
+                            <th style="width: 12rem">{{ 'common.actions' | transloco }}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-report>
+                        <tr>
+                            <td class="font-semibold cursor-pointer" (click)="viewReportedArticle(report)">
+                                {{ report.articleTitle }}
+                            </td>
+                            <td>{{ report.reporterName }}</td>
+                            <td class="text-sm">{{ report.reason }}</td>
+                            <td class="text-sm">{{ formatDate(report.createdAt) }}</td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <p-button icon="pi pi-check" [text]="true" severity="success" (onClick)="resolveReport(report, 'resolved')" />
+                                    <p-button icon="pi pi-ban" [text]="true" severity="secondary" (onClick)="resolveReport(report, 'dismissed')" />
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="5" class="text-center text-color-secondary py-8">
+                                {{ 'lexicon.noReports' | transloco }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Terms of Use Tab -->
+            <p-tabpanel value="terms">
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <label class="font-semibold">{{ 'lexicon.language' | transloco }}:</label>
+                        <p-select
+                            [options]="languageOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            [ngModel]="termsLanguage()"
+                            (ngModelChange)="onTermsLanguageChange($event)"
+                            styleClass="w-40"
+                        />
+                    </div>
+                    <p-editor
+                        [ngModel]="termsContent()"
+                        (ngModelChange)="termsContent.set($event)"
+                        [style]="{ height: '300px' }"
+                    />
+                    <div class="flex justify-end">
+                        <p-button [label]="'common.save' | transloco" icon="pi pi-save" (onClick)="saveTerms()" />
+                    </div>
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>
+
+<!-- Category Dialog -->
+<p-dialog
+    [header]="(editingCategory() ? 'lexicon.editCategory' : 'lexicon.createCategory') | transloco"
+    [(visible)]="categoryDialogVisible"
+    [modal]="true"
+    [style]="{ width: '40rem' }"
+>
+    <div class="flex flex-col gap-4">
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'common.name' | transloco }} *</label>
+            <input
+                type="text"
+                pInputText
+                class="w-full"
+                [ngModel]="categoryForm().name"
+                (ngModelChange)="setCategoryName($event)"
+            />
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'common.description' | transloco }}</label>
+            <textarea
+                pTextarea
+                [rows]="3"
+                class="w-full"
+                [ngModel]="categoryForm().description"
+                (ngModelChange)="setCategoryDescription($event)"
+            ></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'common.position' | transloco }}</label>
+            <input
+                type="number"
+                pInputText
+                class="w-24"
+                [ngModel]="categoryForm().position"
+                (ngModelChange)="setCategoryPosition($event)"
+            />
+        </div>
+
+        <!-- Custom Fields -->
+        <div class="border-t border-surface pt-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold m-0">{{ 'lexicon.customFields' | transloco }}</h3>
+                <p-button icon="pi pi-plus" [text]="true" (onClick)="openAddField()" />
+            </div>
+            @if ((categoryForm().customFields ?? []).length > 0) {
+                <div class="flex flex-col gap-2">
+                    @for (field of categoryForm().customFields ?? []; track field.key) {
+                        <div class="flex items-center justify-between p-2 bg-emphasis rounded">
+                            <div>
+                                <span class="font-semibold">{{ field.label }}</span>
+                                <span class="text-color-secondary text-sm ml-2">({{ field.type }})</span>
+                                @if (field.required) {
+                                    <span class="text-red-500 text-sm ml-1">*</span>
+                                }
+                            </div>
+                            <div class="flex gap-1">
+                                <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEditField(field)" />
+                                <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeField(field.key)" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <p class="text-color-secondary text-sm m-0">{{ 'lexicon.noCustomFields' | transloco }}</p>
+            }
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button [label]="'common.cancel' | transloco" severity="secondary" [text]="true" (onClick)="categoryDialogVisible.set(false)" />
+        <p-button [label]="'common.save' | transloco" icon="pi pi-save" (onClick)="saveCategory()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Custom Field Dialog -->
+<p-dialog
+    [header]="(editingField() ? 'lexicon.editField' : 'lexicon.addField') | transloco"
+    [(visible)]="fieldDialogVisible"
+    [modal]="true"
+    [style]="{ width: '36rem' }"
+    [contentStyle]="{ overflow: 'visible' }"
+>
+    <div class="flex flex-col gap-3">
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'lexicon.key' | transloco }} *</label>
+            <input type="text" pInputText class="w-full" [ngModel]="fieldForm().key" (ngModelChange)="setFieldKey($event)" />
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'lexicon.label' | transloco }} *</label>
+            <input type="text" pInputText class="w-full" [ngModel]="fieldForm().label" (ngModelChange)="setFieldLabel($event)" />
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">{{ 'common.type' | transloco }}</label>
+            <p-select
+                [options]="fieldTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="fieldForm().type"
+                (ngModelChange)="setFieldType($event)"
+                appendTo="body"
+                styleClass="w-full"
+            />
+        </div>
+        @if (fieldForm().type === 'select') {
+            <div>
+                <label class="block text-sm font-semibold mb-1">{{ 'lexicon.options' | transloco }}</label>
+                <input
+                    type="text"
+                    pInputText
+                    class="w-full"
+                    [placeholder]="'lexicon.optionsPlaceholder' | transloco"
+                    [ngModel]="fieldOptionsInput()"
+                    (ngModelChange)="fieldOptionsInput.set($event)"
+                />
+                <small class="text-color-secondary">{{ 'lexicon.optionsHint' | transloco }}</small>
+            </div>
+        }
+        <div class="flex items-center gap-2">
+            <p-toggleSwitch [ngModel]="fieldForm().required" (ngModelChange)="setFieldRequired($event)" />
+            <label>{{ 'common.required' | transloco }}</label>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button [label]="'common.cancel' | transloco" severity="secondary" [text]="true" (onClick)="fieldDialogVisible.set(false)" />
+        <p-button [label]="'common.save' | transloco" icon="pi pi-save" (onClick)="saveField()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Reject Dialog -->
+<p-dialog
+    [header]="'lexicon.reject' | transloco"
+    [(visible)]="rejectDialogVisible"
+    [modal]="true"
+    [style]="{ width: '30rem' }"
+>
+    <div class="flex flex-col gap-3">
+        <label class="font-semibold">{{ 'lexicon.rejectReason' | transloco }}</label>
+        <textarea pTextarea [rows]="4" [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)"></textarea>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button [label]="'common.cancel' | transloco" severity="secondary" [text]="true" (onClick)="rejectDialogVisible.set(false)" />
+        <p-button [label]="'lexicon.reject' | transloco" icon="pi pi-times" severity="danger" (onClick)="submitReject()" />
+    </ng-template>
+</p-dialog>

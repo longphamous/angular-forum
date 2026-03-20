@@ -1,297 +1,398 @@
 <p-toast />
 
-<div class="flex h-full flex-col gap-4">
-    <!-- Header -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h1 class="m-0 text-2xl font-bold">{{ 'messages.title' | transloco }}</h1>
-            <p class="text-surface-500 mt-1 mb-0">{{ 'messages.subtitle' | transloco }}</p>
+<div class="flex" style="height: calc(100vh - 120px)">
+    <!-- Left sidebar navigation -->
+    <div class="flex flex-col border-r border-surface w-56 shrink-0">
+        <!-- Header with title + compose -->
+        <div class="flex items-center justify-between p-4">
+            <h2 class="m-0 text-xl font-bold">{{ 'messages.title' | transloco }}</h2>
+            <p-button
+                icon="pi pi-plus"
+                [rounded]="true"
+                size="small"
+                (onClick)="openCompose()"
+                [pTooltip]="'messages.compose' | transloco"
+            />
         </div>
-        <p-button (click)="openCompose()" [label]="'messages.compose' | transloco" icon="pi pi-pencil" />
+
+        <!-- Navigation -->
+        <nav class="flex flex-col gap-1 px-3">
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'inbox' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('inbox')"
+            >
+                <i class="pi pi-inbox text-base" style="width: 1.25rem"></i>
+                {{ 'messages.inbox' | transloco }}
+                @if (unreadTotal() > 0) {
+                    <p-badge [value]="unreadTotal().toString()" severity="danger" styleClass="ml-auto" />
+                }
+            </button>
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'starred' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('starred')"
+            >
+                <i class="pi pi-star text-base" style="width: 1.25rem"></i>
+                {{ 'messages.starred' | transloco }}
+            </button>
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'drafts' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('drafts')"
+            >
+                <i class="pi pi-file-edit text-base" style="width: 1.25rem"></i>
+                {{ 'messages.drafts' | transloco }}
+            </button>
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'important' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('important')"
+            >
+                <i class="pi pi-bookmark text-base" style="width: 1.25rem"></i>
+                {{ 'messages.important' | transloco }}
+            </button>
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'sent' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('sent')"
+            >
+                <i class="pi pi-send text-base" style="width: 1.25rem"></i>
+                {{ 'messages.sent' | transloco }}
+            </button>
+
+            <div class="border-t border-surface my-2"></div>
+
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'archive' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('archive')"
+            >
+                <i class="pi pi-box text-base" style="width: 1.25rem"></i>
+                {{ 'messages.archive' | transloco }}
+            </button>
+            <button
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 text-left border-none cursor-pointer"
+                [class]="activeTab() === 'trash' ? 'bg-primary text-primary-contrast' : 'bg-transparent text-color hover:bg-emphasis'"
+                (click)="setActiveTab('trash')"
+            >
+                <i class="pi pi-trash text-base" style="width: 1.25rem"></i>
+                {{ 'messages.trash' | transloco }}
+            </button>
+        </nav>
     </div>
 
-    <!-- Main layout -->
-    <div class="flex min-h-0 flex-1 flex-col gap-4 md:flex-row" style="height: calc(100vh - 220px)">
-        <!-- Left sidebar: conversation list -->
-        <div class="flex flex-col gap-3 md:w-80 md:shrink-0">
-            <div class="card flex flex-1 flex-col overflow-hidden p-0">
-                <!-- Tabs -->
-                <p-tabs class="border-bottom" (valueChange)="setActiveTab($event)" [value]="activeTab()">
-                    <p-tablist>
-                        <p-tab value="conversations">{{ 'messages.conversations' | transloco }}</p-tab>
-                        <p-tab value="drafts">{{ 'messages.drafts' | transloco }}</p-tab>
-                        <p-tab value="sent">{{ 'messages.sent' | transloco }}</p-tab>
-                    </p-tablist>
-                </p-tabs>
-
-                <!-- Loading skeleton -->
-                @if (loading()) {
-                <div class="flex flex-col gap-3 p-3">
-                    @for (i of [1,2,3]; track i) {
-                    <div class="flex items-center gap-3">
-                        <p-skeleton shape="circle" size="2.5rem" />
-                        <div class="flex-1">
-                            <p-skeleton height="0.875rem" styleClass="mb-2" width="60%" />
-                            <p-skeleton height="0.75rem" width="90%" />
-                        </div>
-                    </div>
-                    }
+    <!-- Main content area -->
+    <div class="flex flex-1 flex-col min-w-0">
+        @if (!selectedDetail()) {
+            <!-- Toolbar -->
+            <div class="flex items-center gap-3 border-b border-surface px-4 py-2">
+                <div class="flex items-center gap-2">
+                    <p-checkbox
+                        [binary]="true"
+                        [ngModel]="allSelected()"
+                        (ngModelChange)="toggleSelectAll($event)"
+                    />
+                    <p-button icon="pi pi-box" [text]="true" severity="secondary" size="small" [pTooltip]="'messages.archive' | transloco" [disabled]="selectedIds().size === 0" />
+                    <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small" [pTooltip]="'messages.trash' | transloco" [disabled]="selectedIds().size === 0" />
                 </div>
-                }
 
-                <!-- Conversations tab -->
-                @if (!loading() && activeTab() === 'conversations') {
-                <div class="flex flex-1 flex-col overflow-y-auto">
-                    @if (conversations().length === 0) {
-                    <div class="text-surface-500 p-6 text-center">
-                        <i class="pi pi-inbox mb-3 block text-4xl"></i>
-                        <p class="m-0">{{ 'messages.noConversations' | transloco }}</p>
-                    </div>
-                    } @for (conv of conversations(); track conv.id) {
-                    <div
-                        class="hover:bg-surface-50 border-bottom flex cursor-pointer gap-3 p-3 transition-colors duration-150"
-                        (click)="selectConversation(conv)"
-                        (keydown.enter)="selectConversation(conv)"
-                        [class.bg-primary-50]="selectedDetail()?.conversation?.id === conv.id"
-                        role="button"
-                        tabindex="0"
-                    >
-                        <p-avatar
-                            [label]="avatarLabel(getOtherParticipant(conv).displayName)"
-                            shape="circle"
-                            size="normal"
-                            styleClass="flex-shrink-0"
-                        />
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between">
-                                <span class="truncate text-sm font-semibold">
-                                    {{ getOtherParticipant(conv).displayName }}
-                                </span>
-                                <span class="text-surface-400 ml-2 flex-shrink-0 text-xs">
-                                    {{ formatTime(conv.lastMessageAt) }}
-                                </span>
-                            </div>
-                            @if (conv.subject) {
-                            <p class="text-surface-600 m-0 truncate text-xs font-medium">{{ conv.subject }}</p>
-                            }
-                            <p class="text-surface-500 m-0 truncate text-xs">{{ conv.lastMessage }}</p>
-                        </div>
-                        @if (conv.unreadCount > 0) {
-                        <p-badge [value]="conv.unreadCount.toString()" severity="danger" styleClass="flex-shrink-0" />
-                        }
-                    </div>
-                    }
-                </div>
-                }
+                <div class="flex-1"></div>
 
-                <!-- Drafts tab -->
-                @if (!loading() && activeTab() === 'drafts') {
-                <div class="flex flex-1 flex-col overflow-y-auto">
-                    @if (drafts().length === 0) {
-                    <div class="text-surface-500 p-6 text-center">
-                        <i class="pi pi-file-edit mb-3 block text-4xl"></i>
-                        <p class="m-0">{{ 'messages.noDrafts' | transloco }}</p>
-                    </div>
-                    } @for (draft of drafts(); track draft.id) {
-                    <div class="border-bottom flex items-start gap-3 p-3">
-                        <i class="pi pi-file-edit text-surface-400 mt-1"></i>
-                        <div class="min-w-0 flex-1">
-                            @if (draft.subject) {
-                            <p class="m-0 truncate text-sm font-medium">{{ draft.subject }}</p>
-                            }
-                            <p class="text-surface-500 m-0 truncate text-xs">{{ draft.content }}</p>
-                            <p class="text-surface-400 m-0 mt-1 text-xs">{{ formatTime(draft.updatedAt) }}</p>
-                        </div>
-                        <p-button
-                            (click)="deleteDraft(draft.id)"
-                            [pTooltip]="'messages.deleteDraft' | transloco"
-                            [text]="true"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            size="small"
-                        />
-                    </div>
-                    }
-                </div>
-                }
+                <!-- Search -->
+                <p-iconfield>
+                    <p-inputicon styleClass="pi pi-search" />
+                    <input
+                        type="text"
+                        pInputText
+                        [placeholder]="'messages.searchPlaceholder' | transloco"
+                        [ngModel]="searchQuery()"
+                        (ngModelChange)="searchQuery.set($event)"
+                        class="w-48"
+                    />
+                </p-iconfield>
 
-                <!-- Sent tab -->
-                @if (!loading() && activeTab() === 'sent') {
-                <div class="flex flex-1 flex-col overflow-y-auto">
-                    @if (sentConversations().length === 0) {
-                    <div class="text-surface-500 p-6 text-center">
-                        <i class="pi pi-send mb-3 block text-4xl"></i>
-                        <p class="m-0">{{ 'messages.noSent' | transloco }}</p>
+                <!-- Pagination -->
+                @if (totalPages() > 0) {
+                    <div class="flex items-center gap-1 text-sm text-color-secondary">
+                        <span>{{ 'messages.pageOf' | transloco: { current: currentPage() + 1, total: totalPages() } }}</span>
+                        <p-button icon="pi pi-chevron-left" [text]="true" severity="secondary" size="small" [disabled]="currentPage() === 0" (onClick)="prevPage()" />
+                        <p-button icon="pi pi-chevron-right" [text]="true" severity="secondary" size="small" [disabled]="currentPage() >= totalPages() - 1" (onClick)="nextPage()" />
                     </div>
-                    } @for (conv of sentConversations(); track conv.id) {
-                    <div
-                        class="hover:bg-surface-50 border-bottom flex cursor-pointer gap-3 p-3 transition-colors duration-150"
-                        (click)="selectConversation(conv)"
-                        (keydown.enter)="selectConversation(conv)"
-                        [class.bg-primary-50]="selectedDetail()?.conversation?.id === conv.id"
-                        role="button"
-                        tabindex="0"
-                    >
-                        <p-avatar
-                            [label]="avatarLabel(getOtherParticipant(conv).displayName)"
-                            shape="circle"
-                            size="normal"
-                            styleClass="flex-shrink-0"
-                        />
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between">
-                                <span class="truncate text-sm font-semibold">
-                                    {{ getOtherParticipant(conv).displayName }}
-                                </span>
-                                <span class="text-surface-400 ml-2 flex-shrink-0 text-xs">
-                                    {{ formatTime(conv.lastMessageAt) }}
-                                </span>
-                            </div>
-                            @if (conv.subject) {
-                            <p class="text-surface-600 m-0 truncate text-xs font-medium">{{ conv.subject }}</p>
-                            }
-                            <p class="text-surface-500 m-0 truncate text-xs">{{ conv.lastMessage }}</p>
-                        </div>
-                    </div>
-                    }
-                </div>
                 }
             </div>
-        </div>
 
-        <!-- Right panel: message thread -->
-        <div class="min-w-0 flex-1">
-            <div class="card flex h-full flex-col overflow-hidden p-0">
-                @if (loadingDetail()) {
-                <div class="flex flex-1 flex-col gap-3 p-4">
-                    @for (i of [1,2,3]; track i) {
-                    <p-skeleton height="3rem" />
+            <!-- Loading -->
+            @if (loading()) {
+                <div class="flex flex-col">
+                    @for (i of [1,2,3,4,5]; track i) {
+                        <div class="flex items-center gap-4 px-4 py-3 border-b border-surface">
+                            <p-skeleton width="1.25rem" height="1.25rem" />
+                            <p-skeleton width="1.25rem" height="1.25rem" />
+                            <p-skeleton shape="circle" size="2rem" />
+                            <p-skeleton width="8rem" height="0.875rem" />
+                            <p-skeleton styleClass="flex-1" height="0.875rem" />
+                            <p-skeleton width="4rem" height="0.75rem" />
+                        </div>
                     }
                 </div>
-                } @if (!loadingDetail() && !selectedDetail()) {
-                <div class="text-surface-400 flex flex-1 flex-col items-center justify-center gap-3">
-                    <i class="pi pi-comments" style="font-size: 3rem"></i>
-                    <p class="m-0">{{ 'messages.noSelection' | transloco }}</p>
-                </div>
-                } @if (!loadingDetail() && selectedDetail(); as detail) {
-                <!-- Conversation header -->
-                <div class="border-bottom flex items-center gap-3 p-4">
-                    <p-avatar
-                        [label]="avatarLabel(getOtherParticipant(detail.conversation).displayName)"
-                        shape="circle"
-                        size="large"
-                    />
-                    <div>
-                        <p class="m-0 font-bold">{{ getOtherParticipant(detail.conversation).displayName }}</p>
-                        @if (detail.conversation.subject) {
-                        <p class="text-surface-500 m-0 text-sm">{{ detail.conversation.subject }}</p>
-                        }
-                    </div>
-                </div>
+            }
 
-                <!-- Messages -->
-                <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-                    @if (detail.messages.length === 0) {
-                    <div class="text-surface-400 text-center">
+            <!-- Message list (inbox / starred / important / archive / trash) -->
+            @if (!loading() && activeTab() !== 'drafts') {
+                <div class="flex-1 overflow-y-auto">
+                    @if (paginatedConversations().length === 0) {
+                        <div class="flex flex-col items-center justify-center gap-3 py-20 text-color-secondary">
+                            <i class="pi pi-inbox text-5xl"></i>
+                            <p class="m-0">
+                                @if (searchQuery()) {
+                                    {{ 'messages.noResults' | transloco }}
+                                } @else {
+                                    {{ activeTab() === 'sent' ? ('messages.noSent' | transloco) : ('messages.noConversations' | transloco) }}
+                                }
+                            </p>
+                        </div>
+                    }
+                    @for (conv of paginatedConversations(); track conv.id) {
+                        <div
+                            class="flex items-center gap-3 px-4 py-2.5 border-b border-surface cursor-pointer transition-colors duration-100 hover:bg-emphasis group"
+                            [class.font-bold]="conv.unreadCount > 0"
+                            (click)="selectConversation(conv)"
+                            (keydown.enter)="selectConversation(conv)"
+                            role="button"
+                            tabindex="0"
+                        >
+                            <!-- Checkbox -->
+                            <p-checkbox
+                                [binary]="true"
+                                [ngModel]="selectedIds().has(conv.id)"
+                                (ngModelChange)="toggleSelection(conv.id)"
+                                (click)="$event.stopPropagation()"
+                            />
+
+                            <!-- Star -->
+                            <button
+                                class="border-none bg-transparent cursor-pointer p-0 text-color-secondary hover:text-yellow-500 transition-colors"
+                                (click)="toggleStar(conv.id); $event.stopPropagation()"
+                            >
+                                <i [class]="starredIds().has(conv.id) ? 'pi pi-star-fill text-yellow-500' : 'pi pi-star'"></i>
+                            </button>
+
+                            <!-- Avatar -->
+                            <p-avatar
+                                [label]="avatarLabel(getOtherParticipant(conv).displayName)"
+                                [image]="getOtherParticipant(conv).avatarUrl ?? ''"
+                                shape="circle"
+                                size="normal"
+                                styleClass="shrink-0"
+                            />
+
+                            <!-- Sender name -->
+                            <span class="w-36 shrink-0 truncate text-sm" [class.font-bold]="conv.unreadCount > 0">
+                                {{ getOtherParticipant(conv).displayName }}
+                            </span>
+
+                            <!-- Subject + preview -->
+                            <div class="flex-1 min-w-0 flex items-baseline gap-2 truncate">
+                                @if (conv.subject) {
+                                    <span class="text-sm truncate" [class.font-semibold]="conv.unreadCount > 0">{{ conv.subject }}</span>
+                                    <span class="text-color-secondary text-sm truncate">{{ conv.lastMessage }}</span>
+                                } @else {
+                                    <span class="text-sm truncate" [class.font-semibold]="conv.unreadCount > 0">{{ conv.lastMessage }}</span>
+                                }
+                            </div>
+
+                            <!-- Unread indicator -->
+                            @if (conv.unreadCount > 0) {
+                                <span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+                            }
+
+                            <!-- Date -->
+                            <span class="text-xs text-color-secondary shrink-0 w-20 text-right">
+                                {{ formatTime(conv.lastMessageAt) }}
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Drafts list -->
+            @if (!loading() && activeTab() === 'drafts') {
+                <div class="flex-1 overflow-y-auto">
+                    @if (drafts().length === 0) {
+                        <div class="flex flex-col items-center justify-center gap-3 py-20 text-color-secondary">
+                            <i class="pi pi-file-edit text-5xl"></i>
+                            <p class="m-0">{{ 'messages.noDrafts' | transloco }}</p>
+                        </div>
+                    }
+                    @for (draft of drafts(); track draft.id) {
+                        <div class="flex items-center gap-3 px-4 py-2.5 border-b border-surface hover:bg-emphasis transition-colors duration-100">
+                            <i class="pi pi-file-edit text-color-secondary"></i>
+                            <p-avatar
+                                [label]="draft.recipientName ? avatarLabel(draft.recipientName) : '?'"
+                                shape="circle"
+                                size="normal"
+                                styleClass="shrink-0"
+                            />
+                            <span class="w-36 shrink-0 truncate text-sm text-color-secondary">
+                                {{ draft.recipientName ?? '—' }}
+                            </span>
+                            <div class="flex-1 min-w-0 flex items-baseline gap-2 truncate">
+                                @if (draft.subject) {
+                                    <span class="text-sm truncate">{{ draft.subject }}</span>
+                                    <span class="text-color-secondary text-sm truncate">{{ draft.content }}</span>
+                                } @else {
+                                    <span class="text-sm text-color-secondary truncate">{{ draft.content }}</span>
+                                }
+                            </div>
+                            <span class="text-xs text-color-secondary shrink-0 w-20 text-right">
+                                {{ formatTime(draft.updatedAt) }}
+                            </span>
+                            <p-button
+                                icon="pi pi-trash"
+                                [text]="true"
+                                severity="danger"
+                                size="small"
+                                (onClick)="deleteDraft(draft.id)"
+                                [pTooltip]="'messages.deleteDraft' | transloco"
+                            />
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        <!-- Conversation detail view -->
+        @if (selectedDetail(); as detail) {
+            <!-- Detail header -->
+            <div class="flex items-center gap-3 border-b border-surface px-4 py-3">
+                <p-button
+                    icon="pi pi-arrow-left"
+                    [text]="true"
+                    severity="secondary"
+                    (onClick)="closeDetail()"
+                    [pTooltip]="'messages.backToList' | transloco"
+                />
+                <p-avatar
+                    [label]="avatarLabel(getOtherParticipant(detail.conversation).displayName)"
+                    [image]="getOtherParticipant(detail.conversation).avatarUrl ?? ''"
+                    shape="circle"
+                    size="large"
+                />
+                <div>
+                    <p class="m-0 font-bold">{{ getOtherParticipant(detail.conversation).displayName }}</p>
+                    @if (detail.conversation.subject) {
+                        <p class="text-color-secondary m-0 text-sm">{{ detail.conversation.subject }}</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Messages thread -->
+            <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+                @if (detail.messages.length === 0) {
+                    <div class="text-color-secondary text-center py-10">
                         <p class="m-0">{{ 'messages.noMessages' | transloco }}</p>
                     </div>
-                    } @for (msg of detail.messages; track msg.id) {
+                }
+                @for (msg of detail.messages; track msg.id) {
                     <div class="flex gap-3" [class.flex-row-reverse]="msg.senderId === currentUserId()">
                         <p-avatar
                             [label]="avatarLabel(msg.senderName)"
                             shape="circle"
                             size="normal"
-                            styleClass="flex-shrink-0"
+                            styleClass="shrink-0"
                         />
-                        <div
-                            class="max-w-lg"
-                            [class.items-end]="msg.senderId === currentUserId()"
-                            style="display: flex; flex-direction: column"
-                        >
+                        <div class="flex flex-col max-w-lg" [class.items-end]="msg.senderId === currentUserId()">
                             <div
                                 class="rounded-xl px-4 py-2 text-sm"
                                 [class.bg-primary]="msg.senderId === currentUserId()"
-                                [class.bg-surface-100]="msg.senderId !== currentUserId()"
-                                [class.text-white]="msg.senderId === currentUserId()"
+                                [class.text-primary-contrast]="msg.senderId === currentUserId()"
+                                [class.bg-emphasis]="msg.senderId !== currentUserId()"
                             >
                                 {{ msg.content }}
                             </div>
-                            <span class="text-surface-400 mt-1 px-1 text-xs">
+                            <span class="text-color-secondary mt-1 px-1 text-xs">
                                 {{ formatDateTime(msg.createdAt) }}
                             </span>
                         </div>
                     </div>
-                    }
-                </div>
-
-                <!-- Reply input -->
-                <div class="border-top flex items-end gap-3 p-4">
-                    <textarea
-                        class="flex-1"
-                        (ngModelChange)="replyContent.set($event)"
-                        [ngModel]="replyContent()"
-                        [placeholder]="'messages.replyPlaceholder' | transloco"
-                        pTextarea
-                        rows="3"
-                        style="resize: none"
-                    ></textarea>
-                    <p-button
-                        (click)="sendReply()"
-                        [disabled]="!canReply()"
-                        [label]="'messages.send' | transloco"
-                        [loading]="sending()"
-                        icon="pi pi-send"
-                    />
-                </div>
                 }
             </div>
-        </div>
+
+            <!-- Reply input -->
+            <div class="flex items-end gap-3 border-t border-surface p-4">
+                <textarea
+                    class="flex-1"
+                    pTextarea
+                    rows="3"
+                    style="resize: none"
+                    [placeholder]="'messages.replyPlaceholder' | transloco"
+                    [ngModel]="replyContent()"
+                    (ngModelChange)="replyContent.set($event)"
+                ></textarea>
+                <p-button
+                    icon="pi pi-send"
+                    [label]="'messages.send' | transloco"
+                    [disabled]="!canReply()"
+                    [loading]="sending()"
+                    (onClick)="sendReply()"
+                />
+            </div>
+        }
+
+        @if (loadingDetail()) {
+            <div class="flex flex-1 flex-col gap-3 p-4">
+                @for (i of [1,2,3]; track i) {
+                    <p-skeleton height="3rem" />
+                }
+            </div>
+        }
     </div>
 </div>
 
 <!-- Compose dialog -->
 <p-dialog
-    (visibleChange)="composeVisible.set($event)"
-    [draggable]="false"
     [header]="'messages.compose' | transloco"
-    [modal]="true"
-    [style]="{ width: '40rem' }"
     [visible]="composeVisible()"
+    (visibleChange)="composeVisible.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '40rem' }"
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium" for="compose-recipient">{{ 'messages.recipient' | transloco }}</label>
             <input
                 id="compose-recipient"
-                (ngModelChange)="composeRecipient.set($event)"
-                [ngModel]="composeRecipient()"
-                [placeholder]="'messages.recipientPlaceholder' | transloco"
                 pInputText
+                [ngModel]="composeRecipient()"
+                (ngModelChange)="composeRecipient.set($event)"
+                [placeholder]="'messages.recipientPlaceholder' | transloco"
             />
         </div>
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium" for="compose-subject">
                 {{ 'messages.subject' | transloco }}
-                <span class="text-surface-400 font-normal">({{ 'common.optional' | transloco }})</span>
+                <span class="text-color-secondary font-normal">({{ 'common.optional' | transloco }})</span>
             </label>
             <input
                 id="compose-subject"
-                (ngModelChange)="composeSubject.set($event)"
-                [ngModel]="composeSubject()"
-                [placeholder]="'messages.subjectPlaceholder' | transloco"
                 pInputText
+                [ngModel]="composeSubject()"
+                (ngModelChange)="composeSubject.set($event)"
+                [placeholder]="'messages.subjectPlaceholder' | transloco"
             />
         </div>
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium" for="compose-content">{{ 'messages.message' | transloco }}</label>
             <textarea
                 id="compose-content"
-                (ngModelChange)="composeContent.set($event)"
-                [ngModel]="composeContent()"
-                [placeholder]="'messages.messagePlaceholder' | transloco"
                 pTextarea
                 rows="6"
                 style="resize: none"
+                [ngModel]="composeContent()"
+                (ngModelChange)="composeContent.set($event)"
+                [placeholder]="'messages.messagePlaceholder' | transloco"
             ></textarea>
         </div>
     </div>
@@ -299,17 +400,17 @@
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
             <p-button
-                (click)="saveDraft()"
-                [label]="'messages.saveDraft' | transloco"
                 icon="pi pi-save"
+                [label]="'messages.saveDraft' | transloco"
                 severity="secondary"
+                (onClick)="saveDraft()"
             />
             <p-button
-                (click)="sendNewMessage()"
-                [disabled]="!canCompose()"
-                [label]="'messages.send' | transloco"
-                [loading]="sending()"
                 icon="pi pi-send"
+                [label]="'messages.send' | transloco"
+                [disabled]="!canCompose()"
+                [loading]="sending()"
+                (onClick)="sendNewMessage()"
             />
         </div>
     </ng-template>

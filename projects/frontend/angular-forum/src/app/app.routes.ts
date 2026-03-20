@@ -107,6 +107,7 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/pages/profile/profile-page").then((c) => c.ProfilePage)
             },
+            { path: "admin", redirectTo: "admin/overview", pathMatch: "full" },
             {
                 path: "admin/overview",
                 data: { requiredGroups: ["Admin"] },
@@ -221,6 +222,48 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-gallery/admin-gallery").then((c) => c.AdminGallery)
+            },
+            {
+                path: "lexicon",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/lexicon/lexicon-page").then((c) => c.LexiconPage)
+            },
+            {
+                path: "lexicon/create",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/lexicon/lexicon-create-page").then((c) => c.LexiconCreatePage)
+            },
+            {
+                path: "lexicon/:slug/edit",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/lexicon/lexicon-create-page").then((c) => c.LexiconCreatePage)
+            },
+            {
+                path: "lexicon/:slug/history",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/lexicon/lexicon-history-page").then((c) => c.LexiconHistoryPage)
+            },
+            {
+                path: "lexicon/:slug",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/lexicon/lexicon-article-page").then((c) => c.LexiconArticlePage)
+            },
+            {
+                path: "admin/lexicon",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-lexicon/admin-lexicon").then((c) => c.AdminLexicon)
             },
             {
                 path: "blog",

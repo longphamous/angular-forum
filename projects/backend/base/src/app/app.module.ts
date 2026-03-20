@@ -21,6 +21,7 @@ import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
 import { TcgModule } from "./gamification/tcg/tcg.module";
 import { GroupModule } from "./group/group.module";
+import { LexiconModule } from "./lexicon/lexicon.module";
 import { LinkDatabaseModule } from "./link-database/link-database.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MessagesModule } from "./messages/messages.module";
@@ -61,6 +62,7 @@ import { UserModule } from "./user/user.module";
         FeedModule,
         FriendsModule,
         CommunityBotModule,
+        LexiconModule,
         LinkDatabaseModule,
         TcgModule
     ],
