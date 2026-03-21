@@ -39,6 +39,7 @@
     "created": "Created",
     "deleted": "Deleted",
     "more": "More",
+    "showAll": "Show all",
     "reset": "Reset",
     "adminSettings": "Settings",
     "title": "Title",
@@ -764,6 +765,7 @@
     "notFound": "User not found.",
     "editProfile": "Edit profile",
     "changeCover": "Change cover photo",
+    "coverUrl": "Cover image URL",
     "tabInfo": "Info",
     "tabChronik": "Chronicle",
     "roles": {
@@ -840,6 +842,12 @@
       "social": "Social",
       "milestones": "Milestones"
     }
+  },
+  "session": {
+    "expiredTitle": "Session Expired",
+    "expiredMessage": "Your session has expired. Please log in again to continue.",
+    "inactivityMessage": "You have been logged out due to inactivity. Please log in again.",
+    "loginAgain": "Log in again"
   },
   "levelBadge": {
     "level": "Level {{level}}",
@@ -1591,6 +1599,8 @@
     "noEntries": "Nothing here yet.",
     "noFollowingEntries": "No posts from people you follow.",
     "writeComment": "Write a comment...",
+    "commentPlaceholder": "Write a comment...",
+    "replyPlaceholder": "Write a reply...",
     "submit": "Submit",
     "entries": "Posts",
     "follower": "Follower",

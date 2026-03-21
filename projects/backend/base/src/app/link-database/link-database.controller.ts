@@ -89,6 +89,11 @@ export class LinkDatabaseController {
         return this.service.addComment(id, req.user.id, body.content);
     }
 
+    @Patch("comments/:id")
+    updateComment(@Param("id") id: string, @Request() req: AuthReq, @Body() body: { content: string }) {
+        return this.service.updateComment(id, req.user.id, req.user.role === "admin", body.content);
+    }
+
     @Delete("comments/:id")
     deleteComment(@Param("id") id: string, @Request() req: AuthReq) {
         return this.service.deleteComment(id, req.user.id, req.user.role === "admin");

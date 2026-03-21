@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from "@nestjs/common";
 
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AddMediaDto, CreateAlbumDto, GalleryService } from "./gallery.service";
@@ -68,6 +68,16 @@ export class GalleryController {
         @Body() body: { content: string }
     ) {
         return this.galleryService.addComment(mediaId, req.user.id, body.content);
+    }
+
+    @Patch("comments/:id")
+    updateComment(
+        @Param("id") id: string,
+        @Request() req: { user: { id: string; role: string } },
+        @Body() body: { content: string }
+    ) {
+        const isAdmin = req.user.role === "admin";
+        return this.galleryService.updateComment(id, req.user.id, isAdmin, body.content);
     }
 
     @Delete("comments/:id")

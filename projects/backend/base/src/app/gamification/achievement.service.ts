@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushAchievementUnlocked } from "../push/push-event.types";
+import { AchievementCategoryEntity } from "./entities/achievement-category.entity";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
@@ -27,6 +28,31 @@ export interface AchievementDto {
 }
 
 export interface UserAchievementDto extends AchievementDto {
+    earnedAt: string;
+    source: "auto" | "manual";
+    grantedBy: string | null;
+}
+
+export interface AchievementCategoryDto {
+    id: string;
+    key: string;
+    name: string;
+    description?: string;
+    icon: string;
+    position: number;
+}
+
+export interface AchievementHistoryDto {
+    id: string;
+    achievementId: string;
+    achievementName: string;
+    achievementIcon: string;
+    userId: string;
+    username: string;
+    displayName: string;
+    source: "auto" | "manual";
+    grantedBy: string | null;
+    grantedByName: string | null;
     earnedAt: string;
 }
 
@@ -68,6 +94,8 @@ export class AchievementService {
         private readonly xpEventRepo: Repository<XpEventEntity>,
         @InjectRepository(UserXpEntity)
         private readonly userXpRepo: Repository<UserXpEntity>,
+        @InjectRepository(AchievementCategoryEntity)
+        private readonly categoryRepo: Repository<AchievementCategoryEntity>,
         private readonly notificationsService: NotificationsService,
         private readonly pushService: PushService
     ) {}
@@ -118,7 +146,12 @@ export class AchievementService {
             .map((e) => {
                 const a = achievementMap.get(e.achievementId);
                 if (!a) return null;
-                return { ...this.toDto(a), earnedAt: e.earnedAt.toISOString() };
+                return {
+                    ...this.toDto(a),
+                    earnedAt: e.earnedAt.toISOString(),
+                    source: e.source ?? "auto",
+                    grantedBy: e.grantedBy ?? null
+                };
             })
             .filter((a): a is UserAchievementDto => a !== null)
             .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime());
@@ -243,6 +276,140 @@ export class AchievementService {
     }
 
     // ── Private ────────────────────────────────────────────────────────────────
+
+    // ── Manual Grant / Revoke ──────────────────────────────────────────────
+
+    async grantAchievement(userId: string, achievementId: string, grantedByUserId: string): Promise<UserAchievementDto> {
+        const achievement = await this.achievementRepo.findOneBy({ id: achievementId });
+        if (!achievement) throw new NotFoundException("Achievement not found");
+
+        const existing = await this.userAchievementRepo.findOneBy({ userId, achievementId });
+        if (existing) throw new BadRequestException("User already has this achievement");
+
+        const entity = this.userAchievementRepo.create({
+            userId,
+            achievementId,
+            source: "manual",
+            grantedBy: grantedByUserId
+        });
+        await this.userAchievementRepo.save(entity);
+
+        if (achievement.xpReward > 0) {
+            await this.awardAchievementXp(userId, achievement.xpReward);
+        }
+
+        void this.notificationsService.create(
+            userId,
+            "achievement_unlocked",
+            `Achievement: ${achievement.name}`,
+            achievement.description ?? `Du hast "${achievement.name}" erhalten!`,
+            "/achievements",
+            { achievementId: achievement.id, icon: achievement.icon, rarity: achievement.rarity }
+        );
+
+        const pushPayload: PushAchievementUnlocked = {
+            achievementId: achievement.id,
+            name: achievement.name,
+            description: achievement.description ?? "",
+            icon: achievement.icon,
+            rarity: achievement.rarity,
+            xpReward: achievement.xpReward
+        };
+        this.pushService.sendToUser(userId, "achievement:unlocked", pushPayload);
+
+        return {
+            ...this.toDto(achievement),
+            earnedAt: entity.earnedAt.toISOString(),
+            source: "manual",
+            grantedBy: grantedByUserId
+        };
+    }
+
+    async revokeAchievement(userId: string, achievementId: string): Promise<void> {
+        const result = await this.userAchievementRepo.delete({ userId, achievementId });
+        if (!result.affected) throw new NotFoundException("User achievement not found");
+    }
+
+    // ── Categories ──────────────────────────────────────────────────────────
+
+    async getCategories(): Promise<AchievementCategoryDto[]> {
+        const rows = await this.categoryRepo.find({ order: { position: "ASC", name: "ASC" } });
+        return rows.map((r) => ({
+            id: r.id,
+            key: r.key,
+            name: r.name,
+            description: r.description,
+            icon: r.icon,
+            position: r.position
+        }));
+    }
+
+    async createCategory(dto: { key: string; name: string; description?: string; icon?: string; position?: number }): Promise<AchievementCategoryDto> {
+        const entity = this.categoryRepo.create({
+            key: dto.key,
+            name: dto.name,
+            description: dto.description,
+            icon: dto.icon ?? "pi pi-folder",
+            position: dto.position ?? 0
+        });
+        const saved = await this.categoryRepo.save(entity);
+        return { id: saved.id, key: saved.key, name: saved.name, description: saved.description, icon: saved.icon, position: saved.position };
+    }
+
+    async updateCategory(id: string, dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): Promise<AchievementCategoryDto> {
+        const entity = await this.categoryRepo.findOneBy({ id });
+        if (!entity) throw new NotFoundException("Category not found");
+        Object.assign(entity, dto);
+        const saved = await this.categoryRepo.save(entity);
+        return { id: saved.id, key: saved.key, name: saved.name, description: saved.description, icon: saved.icon, position: saved.position };
+    }
+
+    async deleteCategory(id: string): Promise<void> {
+        const result = await this.categoryRepo.delete(id);
+        if (!result.affected) throw new NotFoundException("Category not found");
+    }
+
+    // ── History ──────────────────────────────────────────────────────────────
+
+    async getHistory(limit = 50): Promise<AchievementHistoryDto[]> {
+        const earned = await this.userAchievementRepo.find({
+            order: { earnedAt: "DESC" },
+            take: limit
+        });
+        if (!earned.length) return [];
+
+        const achievementIds = [...new Set(earned.map((e) => e.achievementId))];
+        const userIds = [...new Set([...earned.map((e) => e.userId), ...earned.filter((e) => e.grantedBy).map((e) => e.grantedBy!)])];
+
+        const achievements = await this.achievementRepo.find({ where: { id: In(achievementIds) } });
+        const achMap = new Map(achievements.map((a) => [a.id, a]));
+
+        const { UserEntity } = await import("../user/entities/user.entity");
+        const userRepo = this.userAchievementRepo.manager.getRepository(UserEntity);
+        const users = userIds.length ? await userRepo.find({ where: { id: In(userIds) } }) : [];
+        const userMap = new Map(users.map((u) => [u.id, u]));
+
+        return earned.map((e) => {
+            const ach = achMap.get(e.achievementId);
+            const user = userMap.get(e.userId);
+            const granter = e.grantedBy ? userMap.get(e.grantedBy) : null;
+            return {
+                id: e.id,
+                achievementId: e.achievementId,
+                achievementName: ach?.name ?? "Unknown",
+                achievementIcon: ach?.icon ?? "pi pi-trophy",
+                userId: e.userId,
+                username: user?.username ?? "unknown",
+                displayName: user?.displayName ?? "Unknown",
+                source: e.source ?? "auto",
+                grantedBy: e.grantedBy ?? null,
+                grantedByName: granter?.displayName ?? granter?.username ?? null,
+                earnedAt: e.earnedAt.toISOString()
+            };
+        });
+    }
+
+    // ── Private ────────────────────────────────────────────────────────────
 
     private async awardAchievementXp(userId: string, xpAmount: number): Promise<void> {
         const { getLevelForXp } = await import("./level.config");

@@ -174,6 +174,16 @@ export class MarketplaceController {
         return this.marketplaceService.addComment(id, dto, user.userId);
     }
 
+    @Patch("listings/:id/comments/:commentId")
+    updateComment(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Param("commentId", ParseUUIDPipe) commentId: string,
+        @Body() body: { content: string },
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<MarketCommentDto> {
+        return this.marketplaceService.updateComment(id, commentId, user.userId, user.role === "admin", body.content);
+    }
+
     @Delete("listings/:id/comments/:commentId")
     async deleteComment(
         @Param("id", ParseUUIDPipe) id: string,

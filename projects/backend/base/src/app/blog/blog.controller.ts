@@ -5,6 +5,7 @@ import {
     ForbiddenException,
     Get,
     Param,
+    Patch,
     Post,
     Put,
     Query,
@@ -96,6 +97,15 @@ export class BlogController {
         @Body() body: { content: string; parentId?: string }
     ) {
         return this.blogService.addComment(postId, req.user.userId, body.content, body.parentId);
+    }
+
+    @Patch("comments/:id")
+    updateComment(
+        @Param("id") id: string,
+        @Request() req: { user: { userId: string; role: string } },
+        @Body() body: { content: string }
+    ) {
+        return this.blogService.updateComment(id, req.user.userId, req.user.role === "admin", body.content);
     }
 
     @Delete("comments/:id")

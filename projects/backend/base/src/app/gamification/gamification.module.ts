@@ -4,6 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AchievementController } from "./achievement.controller";
 import { AchievementService } from "./achievement.service";
 import { DynamicMarketModule } from "./dynamic-market/dynamic-market.module";
+import { AchievementCategoryEntity } from "./entities/achievement-category.entity";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
@@ -15,6 +16,7 @@ import { GamificationService } from "./gamification.service";
 @Module({
     imports: [
         TypeOrmModule.forFeature([
+            AchievementCategoryEntity,
             AchievementEntity,
             UserAchievementEntity,
             UserXpEntity,

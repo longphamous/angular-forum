@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -22,6 +23,7 @@ export class UserController {
      * Registers a new user. Returns the public profile (no token yet).
      */
     @Public()
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
     @Post("register")
     register(@Body() dto: RegisterDto): Promise<UserProfile> {
         return this.userService.register(dto);
@@ -32,6 +34,7 @@ export class UserController {
      * Authenticates a user. Returns a JWT access + refresh token pair and the public profile.
      */
     @Public()
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
     @Post("login")
     login(@Body() dto: LoginDto): Promise<{ session: AuthSession; profile: UserProfile }> {
         return this.userService.login(dto);
@@ -94,10 +97,20 @@ export class UserController {
     /**
      * GET /user/profile/:userId
      * Returns the public profile of any user.
+     * Sensitive fields (email, lastLoginAt) are stripped for non-owners.
      */
     @Get("profile/:userId")
-    getProfile(@Param("userId") userId: string): Promise<UserProfile> {
-        return this.userService.getProfile(userId);
+    async getProfile(
+        @Param("userId") userId: string,
+        @CurrentUser() currentUser?: AuthenticatedUser
+    ): Promise<UserProfile> {
+        const profile = await this.userService.getProfile(userId);
+        const isOwner = currentUser?.userId === userId;
+        const isAdmin = currentUser?.role === "admin";
+        if (!isOwner && !isAdmin) {
+            return { ...profile, email: "" };
+        }
+        return profile;
     }
 
     /**

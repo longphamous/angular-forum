@@ -13,8 +13,21 @@ async function bootstrap(): Promise<void> {
             logger: ["error", "warn", "log", "debug"]
         });
 
-        // Global middleware
-        app.enableCors({ origin: true, credentials: true });
+        // Validate critical env vars
+        const jwtSecret = process.env["JWT_SECRET"];
+        if (!jwtSecret || jwtSecret.length < 16) {
+            logger.warn("JWT_SECRET is missing or too short (< 16 chars). Set it in .env for production!");
+        }
+
+        // CORS - restrict to configured origins
+        const corsOrigins = process.env["CORS_ORIGINS"]?.split(",").map((o) => o.trim()) ?? [];
+        app.enableCors({
+            origin: corsOrigins.length > 0 ? corsOrigins : true,
+            credentials: true,
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"]
+        });
+
         app.useStaticAssets(join(process.cwd(), "uploads"), { prefix: "/uploads" });
         app.enableShutdownHooks();
 

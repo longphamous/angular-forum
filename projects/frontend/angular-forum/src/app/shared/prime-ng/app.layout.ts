@@ -4,6 +4,8 @@ import { NavigationEnd, Router, RouterModule } from "@angular/router";
 import { filter, Subscription } from "rxjs";
 
 import { AchievementToast } from "../../core/components/achievement-toast/achievement-toast";
+import { SessionExpiredDialog } from "../../core/components/session-expired-dialog/session-expired-dialog";
+import { SessionService } from "../../core/services/session.service";
 import { AppFooter } from "./app.footer";
 import { AppSidebar } from "./app.sidebar";
 import { AppTopbar } from "./app.topbar";
@@ -12,7 +14,7 @@ import { LayoutService } from "./service/layout.service";
 @Component({
     selector: "app-layout",
     standalone: true,
-    imports: [CommonModule, AchievementToast, AppTopbar, AppSidebar, RouterModule, AppFooter],
+    imports: [CommonModule, AchievementToast, SessionExpiredDialog, AppTopbar, AppSidebar, RouterModule, AppFooter],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
@@ -24,6 +26,7 @@ import { LayoutService } from "./service/layout.service";
         </div>
         <div class="layout-mask animate-fadein"></div>
         <app-achievement-toast />
+        <app-session-expired-dialog />
     </div> `
 })
 export class AppLayout implements OnDestroy {
@@ -36,8 +39,10 @@ export class AppLayout implements OnDestroy {
     layoutService = inject(LayoutService);
     renderer = inject(Renderer2);
     router = inject(Router);
+    private readonly sessionService = inject(SessionService);
 
     constructor() {
+        this.sessionService.start();
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
                 this.menuOutsideClickListener = this.renderer.listen("document", "click", (event) => {

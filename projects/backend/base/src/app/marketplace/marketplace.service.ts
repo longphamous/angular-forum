@@ -447,6 +447,16 @@ export class MarketplaceService {
         return this.toCommentDto(comment);
     }
 
+    async updateComment(listingId: string, commentId: string, userId: string, isAdmin: boolean, content: string): Promise<MarketCommentDto> {
+        const comment = await this.commentRepo.findOne({ where: { id: commentId, listingId } });
+        if (!comment) throw new NotFoundException("Kommentar nicht gefunden");
+        if (!isAdmin && comment.authorId !== userId) throw new ForbiddenException("Kein Zugriff");
+        comment.content = content;
+        comment.isEdited = true;
+        const saved = await this.commentRepo.save(comment);
+        return this.toCommentDto(saved);
+    }
+
     async deleteComment(listingId: string, commentId: string, userId: string): Promise<void> {
         const comment = await this.commentRepo.findOne({ where: { id: commentId, listingId } });
         if (!comment) throw new NotFoundException("Kommentar nicht gefunden");

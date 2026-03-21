@@ -177,6 +177,15 @@ export class LexiconController {
         return this.lexiconService.addComment(id, req.user.userId, dto);
     }
 
+    @Patch("comments/:id")
+    updateComment(
+        @Param("id") id: string,
+        @Request() req: { user: { userId: string; role: string } },
+        @Body() body: { content: string }
+    ) {
+        return this.lexiconService.updateComment(id, req.user.userId, req.user.role === "admin", body.content);
+    }
+
     @Delete("comments/:id")
     deleteComment(@Param("id") id: string, @Request() req: { user: { userId: string; role: string } }) {
         return this.lexiconService.deleteComment(id, req.user.userId, req.user.role === "admin");

@@ -44,13 +44,14 @@ export class GamificationService implements OnModuleInit {
         private readonly achievementService: AchievementService
     ) {}
 
-    async onModuleInit(): Promise<void> {
-        try {
-            const result = await this.recalculateAllUserXp();
-            this.logger.log(`XP recalculated on startup: ${result.updatedUsers} users updated`);
-        } catch (err) {
-            this.logger.warn("XP recalculation on startup failed — will retry on next trigger");
-        }
+    onModuleInit(): void {
+        // Delay recalculation to run after all modules have fully initialized,
+        // avoiding concurrent query warnings from pg.
+        setTimeout(() => {
+            this.recalculateAllUserXp()
+                .then((result) => this.logger.log(`XP recalculated on startup: ${result.updatedUsers} users updated`))
+                .catch(() => this.logger.warn("XP recalculation on startup failed — will retry on next trigger"));
+        }, 3000);
     }
 
     // ── XP Config ─────────────────────────────────────────────────────────────

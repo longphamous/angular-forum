@@ -194,6 +194,25 @@ export class GalleryService {
         return this.commentRepo.save(comment);
     }
 
+    async updateComment(id: string, userId: string, isAdmin: boolean, content: string): Promise<object> {
+        const comment = await this.commentRepo.findOne({ where: { id } });
+        if (!comment) throw new NotFoundException("Comment not found");
+        if (!isAdmin && comment.authorId !== userId) throw new ForbiddenException("Access denied");
+        comment.content = content;
+        const saved = await this.commentRepo.save(comment);
+        const author = await this.userRepo.findOne({ where: { id: saved.authorId } });
+        return {
+            id: saved.id,
+            mediaId: saved.mediaId,
+            authorId: saved.authorId,
+            authorName: author ? author.displayName || author.username : "Unknown",
+            authorAvatar: author?.avatarUrl ?? null,
+            content: saved.content,
+            createdAt: saved.createdAt,
+            updatedAt: saved.updatedAt
+        };
+    }
+
     async deleteComment(id: string, userId: string, isAdmin: boolean): Promise<void> {
         const comment = await this.commentRepo.findOne({ where: { id } });
         if (!comment) throw new NotFoundException("Comment not found");

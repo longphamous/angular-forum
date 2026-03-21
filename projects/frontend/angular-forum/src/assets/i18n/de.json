@@ -39,6 +39,7 @@
     "created": "Erstellt",
     "deleted": "Gelöscht",
     "more": "Mehr",
+    "showAll": "Alle anzeigen",
     "reset": "Zurücksetzen",
     "adminSettings": "Einstellungen",
     "title": "Titel",
@@ -764,6 +765,7 @@
     "notFound": "Benutzer nicht gefunden.",
     "editProfile": "Profil bearbeiten",
     "changeCover": "Titelbild ändern",
+    "coverUrl": "Titelbild-URL",
     "tabInfo": "Info",
     "tabChronik": "Chronik",
     "roles": {
@@ -840,6 +842,12 @@
       "social": "Sozial",
       "milestones": "Meilensteine"
     }
+  },
+  "session": {
+    "expiredTitle": "Sitzung abgelaufen",
+    "expiredMessage": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "inactivityMessage": "Du wurdest wegen Inaktivität abgemeldet. Bitte melde dich erneut an.",
+    "loginAgain": "Erneut anmelden"
   },
   "levelBadge": {
     "level": "Level {{level}}",
@@ -1591,6 +1599,8 @@
     "noEntries": "Noch nichts hier.",
     "noFollowingEntries": "Keine Beiträge von Personen, denen du folgst.",
     "writeComment": "Kommentar schreiben...",
+    "commentPlaceholder": "Kommentar schreiben...",
+    "replyPlaceholder": "Antwort schreiben...",
     "submit": "Senden",
     "entries": "Beiträge",
     "follower": "Follower",

@@ -463,7 +463,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
 
     // ═══ Natur / Nature ═════════════════════════════════════════════════════
-    // Bambus-Kette: Bambus → Bambusbretter → Bambusmöbel
+    // Bamboo chain: Bamboo → Bamboo boards → Bamboo furniture
     {
         slug: "bamboo",
         name: "Bambus",
@@ -504,7 +504,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
         craftCost: 3,
         sortOrder: 2
     },
-    // Sakura-Kette: Sakurablüten → Sakura-Extrakt → Sakura-Parfüm
+    // Sakura chain: Sakura blossoms → Sakura extract → Sakura perfume
     {
         slug: "sakura_petals",
         name: "Sakura-Blüten",
@@ -546,7 +546,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
         volatility: 1.3,
         sortOrder: 5
     },
-    // Tee-Kette: Teeblätter → Matcha-Pulver → Premium-Matcha-Set
+    // Tea chain: Tea leaves → Matcha powder → Premium matcha set
     {
         slug: "tea_leaves",
         name: "Teeblätter",
@@ -587,7 +587,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
         craftCost: 3,
         sortOrder: 8
     },
-    // Lotus-Kette: Lotussamen → Lotusblüte → Lotusessenz
+    // Lotus chain: Lotus seeds → Lotus flower → Lotus essence
     {
         slug: "lotus_seed",
         name: "Lotussamen",
@@ -881,7 +881,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
         sortOrder: 14
     },
 
-    // ═══ Otaku / Sammlerstücke ══════════════════════════════════════════════
+    // ═══ Otaku / Collectibles ═══════════════════════════════════════════════
     // Manga-Kette: Papier → Manga → Sammelband → Collector's Edition
     {
         slug: "blank_paper",
@@ -1053,7 +1053,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
     },
 
     // ═══ Mythisch / Rare ════════════════════════════════════════════════════
-    // Mithril-Kette: Mithrilstaub → Mithrilbarren → Mithrilklinge → Mithrilrüstung
+    // Mithril chain: Mithril dust → Mithril ingot → Mithril blade → Mithril armor
     {
         slug: "mithril_dust",
         name: "Mithrilstaub",
@@ -1141,7 +1141,7 @@ const DEFAULT_RESOURCES: CreateMarketResourceDto[] = [
         volatility: 2.2,
         sortOrder: 5
     },
-    // Phönix-Kette: Phönixfeder → Phönixumhang
+    // Phoenix chain: Phoenix feather → Phoenix cloak
     {
         slug: "phoenix_feather",
         name: "Phönixfeder",

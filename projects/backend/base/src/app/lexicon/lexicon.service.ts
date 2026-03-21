@@ -375,6 +375,15 @@ export class LexiconService {
         return this.enrichComment(saved);
     }
 
+    async updateComment(id: string, userId: string, isAdmin: boolean, content: string): Promise<EnrichedComment> {
+        const comment = await this.commentRepo.findOne({ where: { id } });
+        if (!comment) throw new NotFoundException("Comment not found");
+        if (!isAdmin && comment.authorId !== userId) throw new ForbiddenException("Access denied");
+        comment.content = content;
+        const saved = await this.commentRepo.save(comment);
+        return this.enrichComment(saved);
+    }
+
     async deleteComment(id: string, userId: string, isAdmin: boolean): Promise<void> {
         const comment = await this.commentRepo.findOne({ where: { id } });
         if (!comment) throw new NotFoundException("Comment not found");

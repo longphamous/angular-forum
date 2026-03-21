@@ -1,12 +1,45 @@
 <div class="flex flex-col gap-6" *transloco="let t">
     <!-- Header -->
     <div class="card">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="m-0 text-2xl font-bold">{{ t('adminAchievements.title') }}</h2>
                 <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminAchievements.subtitle') }}</p>
             </div>
-            <p-button (onClick)="openCreate()" [label]="t('adminAchievements.createAchievement')" icon="pi pi-plus" />
+            <div class="flex gap-2">
+                <p-button (onClick)="openGrantDialog()" label="Grant" icon="pi pi-gift" severity="secondary" [outlined]="true" />
+                <p-button (onClick)="openCreate()" [label]="t('adminAchievements.createAchievement')" icon="pi pi-plus" />
+            </div>
+        </div>
+        <!-- Tabs -->
+        <div class="flex gap-1 border-b border-surface">
+            <button
+                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                [class]="activeTab() === 'achievements' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
+                [style.border-bottom]="activeTab() === 'achievements' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
+                (click)="onTabChange('achievements')"
+                type="button"
+            >
+                <i class="pi pi-trophy mr-1"></i> Achievements
+            </button>
+            <button
+                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                [class]="activeTab() === 'categories' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
+                [style.border-bottom]="activeTab() === 'categories' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
+                (click)="onTabChange('categories')"
+                type="button"
+            >
+                <i class="pi pi-folder mr-1"></i> {{ t('adminAchievements.dialog.category') }}
+            </button>
+            <button
+                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                [class]="activeTab() === 'history' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
+                [style.border-bottom]="activeTab() === 'history' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
+                (click)="onTabChange('history')"
+                type="button"
+            >
+                <i class="pi pi-history mr-1"></i> Historie
+            </button>
         </div>
     </div>
 
@@ -16,7 +49,8 @@
     <p-message [text]="successMsg()!" severity="success" styleClass="w-full" />
     }
 
-    <!-- Table -->
+    <!-- Achievements Table -->
+    @if (activeTab() === 'achievements') {
     <div class="card">
         @if (loading()) {
         <div class="flex flex-col gap-3">
@@ -110,6 +144,87 @@
         </p-table>
         }
     </div>
+
+    }
+
+    <!-- Categories Tab -->
+    @if (activeTab() === 'categories') {
+    <div class="card">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="m-0 text-lg font-semibold">Achievement-Kategorien</h3>
+            <p-button (onClick)="openCreateCategory()" label="Kategorie erstellen" icon="pi pi-plus" size="small" />
+        </div>
+        @if (categories().length === 0) {
+            <p class="text-color-secondary text-sm">Keine Kategorien vorhanden.</p>
+        } @else {
+            <div class="flex flex-col gap-2">
+                @for (cat of categories(); track cat.id) {
+                    <div class="flex items-center gap-3 rounded-lg border border-surface p-3">
+                        <i [class]="cat.icon + ' text-primary text-lg'" style="width: 1.5rem"></i>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm">{{ cat.name }}</div>
+                            <div class="text-color-secondary text-xs">{{ cat.key }} &middot; Position: {{ cat.position }}</div>
+                            @if (cat.description) {
+                                <div class="text-color-secondary text-xs mt-0.5">{{ cat.description }}</div>
+                            }
+                        </div>
+                        <div class="flex gap-1">
+                            <p-button icon="pi pi-pencil" [text]="true" severity="secondary" size="small" (onClick)="openEditCategory(cat)" />
+                            <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small" (onClick)="deleteCategory(cat)" />
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    }
+
+    <!-- History Tab -->
+    @if (activeTab() === 'history') {
+    <div class="card">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="m-0 text-lg font-semibold">Vergabe-Historie</h3>
+            <p-button icon="pi pi-refresh" [text]="true" severity="secondary" (onClick)="loadHistory()" [loading]="historyLoading()" />
+        </div>
+        @if (historyLoading()) {
+            <div class="flex flex-col gap-3">
+                @for (_ of [1,2,3,4,5]; track $index) {
+                    <p-skeleton height="3rem" />
+                }
+            </div>
+        } @else if (history().length === 0) {
+            <p class="text-color-secondary text-sm">Keine Vergabe-Historie vorhanden.</p>
+        } @else {
+            <div class="flex flex-col">
+                @for (h of history(); track h.id) {
+                    <div class="flex items-center gap-3 py-2.5 border-b border-surface last:border-b-0">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emphasis">
+                            <i [class]="h.achievementIcon + ' text-primary text-sm'"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm">
+                                <span class="font-semibold">{{ h.displayName }}</span>
+                                <span class="text-color-secondary mx-1">&rarr;</span>
+                                <span class="font-medium">{{ h.achievementName }}</span>
+                            </div>
+                            <div class="text-color-secondary text-xs mt-0.5">
+                                {{ formatDate(h.earnedAt) }}
+                                @if (h.grantedByName) {
+                                    &middot; vergeben von {{ h.grantedByName }}
+                                }
+                            </div>
+                        </div>
+                        @if (h.source === 'manual') {
+                            <p-tag value="Manuell" severity="warn" styleClass="text-xs" />
+                        } @else {
+                            <p-tag value="Automatisch" severity="info" styleClass="text-xs" />
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    }
 
     <!-- Confirm Dialog -->
     <p-confirmDialog />
@@ -306,5 +421,79 @@
             [loading]="saving()"
             icon="pi pi-check"
         />
+    </ng-template>
+</p-dialog>
+
+<!-- Category Dialog -->
+<p-dialog
+    [(visible)]="categoryDialogVisible"
+    [closable]="!saving()"
+    [header]="editingCategoryId() ? 'Kategorie bearbeiten' : 'Kategorie erstellen'"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Key *</label>
+            <input pInputText class="w-full" [ngModel]="categoryForm().key" (ngModelChange)="updateCategoryForm({ key: $event })" [disabled]="!!editingCategoryId()" placeholder="z.B. community" />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Name *</label>
+            <input pInputText class="w-full" [ngModel]="categoryForm().name" (ngModelChange)="updateCategoryForm({ name: $event })" placeholder="z.B. Community" />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Beschreibung</label>
+            <input pInputText class="w-full" [ngModel]="categoryForm().description" (ngModelChange)="updateCategoryForm({ description: $event })" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Icon</label>
+                <div class="flex items-center gap-2">
+                    <i [class]="categoryForm().icon + ' text-primary'" style="width: 1.25rem"></i>
+                    <input pInputText class="flex-1" [ngModel]="categoryForm().icon" (ngModelChange)="updateCategoryForm({ icon: $event })" />
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Position</label>
+                <p-inputnumber [ngModel]="categoryForm().position" (ngModelChange)="updateCategoryForm({ position: $event })" [min]="0" [showButtons]="true" styleClass="w-full" />
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button (onClick)="categoryDialogVisible.set(false)" [disabled]="saving()" label="Abbrechen" [text]="true" severity="secondary" />
+        <p-button (onClick)="saveCategory()" [disabled]="!categoryForm().key || !categoryForm().name" [loading]="saving()" label="Speichern" icon="pi pi-check" />
+    </ng-template>
+</p-dialog>
+
+<!-- Grant Dialog -->
+<p-dialog
+    [(visible)]="grantDialogVisible"
+    [closable]="!saving()"
+    header="Achievement manuell vergeben"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">User-ID *</label>
+            <input pInputText class="w-full" [ngModel]="grantUserId()" (ngModelChange)="grantUserId.set($event)" placeholder="UUID des Benutzers" />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Achievement *</label>
+            <p-select
+                [options]="achievements()"
+                optionLabel="name"
+                optionValue="id"
+                [ngModel]="grantAchievementId()"
+                (ngModelChange)="grantAchievementId.set($event)"
+                placeholder="Achievement auswahlen"
+                styleClass="w-full"
+                appendTo="body"
+            />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button (onClick)="grantDialogVisible.set(false)" [disabled]="saving()" label="Abbrechen" [text]="true" severity="secondary" />
+        <p-button (onClick)="grantAchievement()" [disabled]="!grantUserId() || !grantAchievementId()" [loading]="saving()" label="Vergeben" icon="pi pi-gift" />
     </ng-template>
 </p-dialog>

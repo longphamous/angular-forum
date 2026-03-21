@@ -18,6 +18,31 @@ export interface Achievement {
 
 export interface UserAchievement extends Achievement {
     earnedAt: string;
+    source?: "auto" | "manual";
+    grantedBy?: string | null;
+}
+
+export interface AchievementCategory {
+    id: string;
+    key: string;
+    name: string;
+    description?: string;
+    icon: string;
+    position: number;
+}
+
+export interface AchievementHistory {
+    id: string;
+    achievementId: string;
+    achievementName: string;
+    achievementIcon: string;
+    userId: string;
+    username: string;
+    displayName: string;
+    source: "auto" | "manual";
+    grantedBy: string | null;
+    grantedByName: string | null;
+    earnedAt: string;
 }
 
 export interface AchievementProgress extends Achievement {

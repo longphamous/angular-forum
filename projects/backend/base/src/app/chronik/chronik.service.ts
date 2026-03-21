@@ -327,6 +327,36 @@ export class ChronikService {
         return this.mapCommentToDto(withAuthor, authorId, new Set<string>(), []);
     }
 
+    async updateEntry(entryId: string, userId: string, content: string): Promise<ChronikEntryDto> {
+        const entry = await this.entryRepo.findOne({ where: { id: entryId } });
+        if (!entry) throw new NotFoundException("Entry not found");
+        if (entry.authorId !== userId) throw new ForbiddenException("You are not allowed to edit this entry");
+        entry.content = content;
+        const saved = await this.entryRepo.save(entry);
+        const withAuthor = await this.entryRepo.findOne({
+            where: { id: saved.id },
+            relations: ["author"]
+        });
+        if (!withAuthor) throw new NotFoundException("Entry not found after update");
+        return this.mapEntryToDto(withAuthor, userId, new Set<string>(), new Set<string>());
+    }
+
+    async updateComment(commentId: string, userId: string, content: string): Promise<ChronikCommentDto> {
+        const comment = await this.commentRepo.findOne({
+            where: { id: commentId }
+        });
+        if (!comment) throw new NotFoundException("Comment not found");
+        if (comment.authorId !== userId) throw new ForbiddenException("You are not allowed to edit this comment");
+        comment.content = content;
+        const saved = await this.commentRepo.save(comment);
+        const withAuthor = await this.commentRepo.findOne({
+            where: { id: saved.id },
+            relations: ["author"]
+        });
+        if (!withAuthor) throw new NotFoundException("Comment not found after update");
+        return this.mapCommentToDto(withAuthor, userId, new Set<string>(), []);
+    }
+
     async deleteComment(userId: string, commentId: string): Promise<void> {
         const comment = await this.commentRepo.findOne({
             where: { id: commentId }

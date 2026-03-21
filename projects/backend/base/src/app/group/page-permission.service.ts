@@ -110,9 +110,9 @@ export class PagePermissionService implements OnModuleInit {
                 category: "Gamification",
                 defaultGroup: "Registrierte Benutzer"
             },
-            // Marktplatz
+            // Marketplace
             { route: "marketplace", name: "Marktplatz", category: "Marktplatz", defaultGroup: "Registrierte Benutzer" },
-            // Benutzer
+            // User
             {
                 route: "profile",
                 name: "Profil bearbeiten",
@@ -120,7 +120,7 @@ export class PagePermissionService implements OnModuleInit {
                 defaultGroup: "Registrierte Benutzer"
             },
             { route: "dashboard", name: "Dashboard", category: "Benutzer", defaultGroup: "Registrierte Benutzer" },
-            // Administration
+            // Admin
             { route: "admin/overview", name: "Admin Übersicht", category: "Administration", defaultGroup: "Admin" },
             { route: "admin/forum", name: "Forum Verwaltung", category: "Administration", defaultGroup: "Admin" },
             { route: "admin/users", name: "Benutzer Verwaltung", category: "Administration", defaultGroup: "Admin" },

@@ -19,7 +19,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { Achievement, AchievementRarity } from "../../../core/models/gamification/achievement";
+import { Achievement, AchievementCategory, AchievementHistory, AchievementRarity } from "../../../core/models/gamification/achievement";
 
 type TagSeverity = "secondary" | "info" | "warn" | "danger" | "success" | "contrast";
 
@@ -108,8 +108,23 @@ export class AdminAchievements implements OnInit {
     readonly achievements = signal<Achievement[]>([]);
     readonly dialogVisible = signal(false);
     readonly editingId = signal<string | null>(null);
-
     readonly form = signal<AchievementFormData>({ ...EMPTY_FORM });
+
+    // Categories
+    readonly categories = signal<AchievementCategory[]>([]);
+    readonly categoryDialogVisible = signal(false);
+    readonly editingCategoryId = signal<string | null>(null);
+    readonly categoryForm = signal({ key: "", name: "", description: "", icon: "pi pi-folder", position: 0 });
+
+    // Manual grant
+    readonly grantDialogVisible = signal(false);
+    readonly grantUserId = signal("");
+    readonly grantAchievementId = signal("");
+
+    // History
+    readonly history = signal<AchievementHistory[]>([]);
+    readonly historyLoading = signal(false);
+    readonly activeTab = signal<"achievements" | "categories" | "history">("achievements");
 
     get rarityOptions() {
         return (["bronze", "silver", "gold", "platinum"] as AchievementRarity[]).map((v) => ({
@@ -119,6 +134,10 @@ export class AdminAchievements implements OnInit {
     }
 
     get categoryOptions() {
+        const cats = this.categories();
+        if (cats.length > 0) {
+            return cats.map((c) => ({ label: c.name, value: c.key }));
+        }
         return ["general", "community", "content", "social", "milestones"].map((v) => ({
             label: this.translocoService.translate(`achievements.categories.${v}`),
             value: v
@@ -134,6 +153,7 @@ export class AdminAchievements implements OnInit {
 
     ngOnInit(): void {
         this.loadAchievements();
+        this.loadCategories();
     }
 
     private loadAchievements(): void {
@@ -268,5 +288,123 @@ export class AdminAchievements implements OnInit {
 
     updateForm(patch: Partial<AchievementFormData>): void {
         this.form.update((f) => ({ ...f, ...patch }));
+    }
+
+    updateCategoryForm(patch: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): void {
+        this.categoryForm.update((f) => ({ ...f, ...patch }));
+    }
+
+    // ── Categories ──────────────────────────────────────────────────────────
+
+    loadCategories(): void {
+        this.http.get<AchievementCategory[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.categories()}`).subscribe({
+            next: (data) => this.categories.set(data)
+        });
+    }
+
+    openCreateCategory(): void {
+        this.editingCategoryId.set(null);
+        this.categoryForm.set({ key: "", name: "", description: "", icon: "pi pi-folder", position: 0 });
+        this.categoryDialogVisible.set(true);
+    }
+
+    openEditCategory(cat: AchievementCategory): void {
+        this.editingCategoryId.set(cat.id);
+        this.categoryForm.set({ key: cat.key, name: cat.name, description: cat.description ?? "", icon: cat.icon, position: cat.position });
+        this.categoryDialogVisible.set(true);
+    }
+
+    saveCategory(): void {
+        const f = this.categoryForm();
+        if (!f.key || !f.name) return;
+        this.saving.set(true);
+
+        const id = this.editingCategoryId();
+        const req = id
+            ? this.http.patch<AchievementCategory>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.updateCategory(id)}`, f)
+            : this.http.post<AchievementCategory>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.createCategory()}`, f);
+
+        req.subscribe({
+            next: () => {
+                this.saving.set(false);
+                this.categoryDialogVisible.set(false);
+                this.loadCategories();
+                this.successMsg.set(id ? "Category updated" : "Category created");
+            },
+            error: () => {
+                this.saving.set(false);
+                this.error.set("Failed to save category");
+            }
+        });
+    }
+
+    deleteCategory(cat: AchievementCategory): void {
+        this.confirmationService.confirm({
+            message: `Delete category "${cat.name}"?`,
+            header: "Delete Category",
+            icon: "pi pi-trash",
+            acceptLabel: this.translocoService.translate("common.delete"),
+            rejectLabel: this.translocoService.translate("common.cancel"),
+            acceptButtonProps: { severity: "danger" },
+            accept: () => {
+                this.http.delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.deleteCategory(cat.id)}`).subscribe({
+                    next: () => {
+                        this.loadCategories();
+                        this.successMsg.set("Category deleted");
+                    },
+                    error: () => this.error.set("Failed to delete category")
+                });
+            }
+        });
+    }
+
+    // ── Manual Grant ────────────────────────────────────────────────────────
+
+    openGrantDialog(): void {
+        this.grantUserId.set("");
+        this.grantAchievementId.set("");
+        this.grantDialogVisible.set(true);
+    }
+
+    grantAchievement(): void {
+        const userId = this.grantUserId().trim();
+        const achievementId = this.grantAchievementId();
+        if (!userId || !achievementId) return;
+
+        this.saving.set(true);
+        this.http.post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId }).subscribe({
+            next: () => {
+                this.saving.set(false);
+                this.grantDialogVisible.set(false);
+                this.successMsg.set("Achievement granted");
+                if (this.activeTab() === "history") this.loadHistory();
+            },
+            error: (err) => {
+                this.saving.set(false);
+                this.error.set(err.error?.message ?? "Failed to grant achievement");
+            }
+        });
+    }
+
+    // ── History ─────────────────────────────────────────────────────────────
+
+    loadHistory(): void {
+        this.historyLoading.set(true);
+        this.http.get<AchievementHistory[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.history()}`).subscribe({
+            next: (data) => {
+                this.history.set(data);
+                this.historyLoading.set(false);
+            },
+            error: () => this.historyLoading.set(false)
+        });
+    }
+
+    onTabChange(tab: "achievements" | "categories" | "history"): void {
+        this.activeTab.set(tab);
+        if (tab === "history" && this.history().length === 0) this.loadHistory();
+    }
+
+    formatDate(dateStr: string): string {
+        return new Date(dateStr).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
     }
 }

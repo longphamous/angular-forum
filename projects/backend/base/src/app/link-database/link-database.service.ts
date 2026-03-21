@@ -295,6 +295,16 @@ export class LinkDatabaseService {
         return this.toCommentDto(full!);
     }
 
+    async updateComment(id: string, userId: string, isAdmin: boolean, content: string): Promise<LinkCommentDto> {
+        const comment = await this.commentRepo.findOne({ where: { id }, relations: ["author"] });
+        if (!comment) throw new NotFoundException("Comment not found");
+        if (!isAdmin && comment.authorId !== userId) throw new NotFoundException("Comment not found");
+        comment.content = content;
+        const saved = await this.commentRepo.save(comment);
+        const full = await this.commentRepo.findOne({ where: { id: saved.id }, relations: ["author"] });
+        return this.toCommentDto(full!);
+    }
+
     async deleteComment(id: string, userId: string, isAdmin: boolean): Promise<void> {
         const comment = await this.commentRepo.findOne({ where: { id } });
         if (!comment) return;

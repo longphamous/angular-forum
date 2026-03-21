@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -35,6 +35,15 @@ export class ChronikController {
     @Post()
     async createEntry(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateEntryDto): Promise<ChronikEntryDto> {
         return this.chronikService.createEntry(user.userId, dto);
+    }
+
+    @Patch(":id")
+    async updateEntry(
+        @CurrentUser() user: AuthenticatedUser,
+        @Param("id") id: string,
+        @Body() body: { content: string }
+    ): Promise<ChronikEntryDto> {
+        return this.chronikService.updateEntry(id, user.userId, body.content);
     }
 
     @Delete(":id")
@@ -75,6 +84,15 @@ export class ChronikController {
         @Body() dto: CreateCommentDto
     ): Promise<ChronikCommentDto> {
         return this.chronikService.createComment(user.userId, id, dto);
+    }
+
+    @Patch("comments/:commentId")
+    async updateComment(
+        @CurrentUser() user: AuthenticatedUser,
+        @Param("commentId") commentId: string,
+        @Body() body: { content: string }
+    ): Promise<ChronikCommentDto> {
+        return this.chronikService.updateComment(commentId, user.userId, body.content);
     }
 
     @Delete("comments/:commentId")

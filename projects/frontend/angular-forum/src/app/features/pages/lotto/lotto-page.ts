@@ -246,7 +246,22 @@ export class LottoPage implements OnInit, OnDestroy {
     }
 
     private groupTicketsByDraw(status: "pending" | "drawn"): TicketDrawGroup[] {
-        const items = this.myTicketsWithResults().filter((t) => t.draw.status === status);
+        let items = this.myTicketsWithResults().filter((t) => t.draw.status === status);
+
+        // For pending tickets: show only the nearest draw per group
+        if (status === "pending") {
+            const shownGroups = new Set<string>();
+            items = items
+                .sort((a, b) => new Date(a.draw.drawDate).getTime() - new Date(b.draw.drawDate).getTime())
+                .filter((item) => {
+                    const gid = item.ticket.groupId;
+                    if (!gid) return true;
+                    if (shownGroups.has(gid)) return false;
+                    shownGroups.add(gid);
+                    return true;
+                });
+        }
+
         const map = new Map<string, TicketDrawGroup>();
         for (const item of items) {
             let group = map.get(item.draw.id);
@@ -341,9 +356,12 @@ export class LottoPage implements OnInit, OnDestroy {
         const totalCost = this.ticketCost();
 
         this.http.post<LottoTicket[]>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.purchaseTicket()}`, payload).subscribe({
-            next: (tickets) => {
+            next: () => {
                 this.purchasing.set(false);
-                this.myTickets.update((t) => [...t, ...tickets]);
+                // Reload tickets to get correct remainingDraws from server
+                this.http.get<LottoTicket[]>(`${this.apiConfig.baseUrl}${LOTTO_ROUTES.myTickets()}`).subscribe({
+                    next: (t) => this.myTickets.set(t)
+                });
                 this.wallet.update((w) => (w ? { ...w, balance: w.balance - totalCost } : w));
                 this.clearSelection();
                 const fieldCount = filledFields.length;

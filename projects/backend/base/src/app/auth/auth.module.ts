@@ -1,7 +1,9 @@
 import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
 import { JWT_EXPIRES_IN, JWT_SECRET } from "./auth.constants";
 import { AuthService } from "./auth.service";
@@ -12,14 +14,25 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
-        JwtModule.register({ secret: JWT_SECRET, signOptions: { expiresIn: JWT_EXPIRES_IN } })
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                secret: config.get<string>("JWT_SECRET") ?? JWT_SECRET,
+                signOptions: { expiresIn: JWT_EXPIRES_IN }
+            })
+        }),
+        // Rate limiting: 60 requests per 60 seconds per IP by default
+        ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }])
     ],
     providers: [
         AuthService,
         JwtStrategy,
-        // Both guards are registered globally – every route is protected by default.
-        // Use @Public() to opt out of JWT validation.
-        // Use @Roles('admin') etc. to restrict by role.
+        // Guards registered globally (order matters):
+        // 1. Rate limiter — blocks excessive requests first
+        // 2. JWT auth — validates token
+        // 3. Roles — checks authorization
+        { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: JwtAuthGuard },
         { provide: APP_GUARD, useClass: RolesGuard }
     ],

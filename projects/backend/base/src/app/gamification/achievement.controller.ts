@@ -1,8 +1,10 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Request } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import {
+    AchievementCategoryDto,
     AchievementDto,
+    AchievementHistoryDto,
     AchievementProgressDto,
     AchievementService,
     CreateAchievementDto,
@@ -88,5 +90,62 @@ export class AchievementController {
     @HttpCode(204)
     delete(@Param("id") id: string): Promise<void> {
         return this.achievementService.deleteAchievement(id);
+    }
+
+    // ── Manual Grant / Revoke ──────────────────────────────────────────────
+
+    @Roles("admin")
+    @Post("admin/grant")
+    grant(
+        @Body() body: { userId: string; achievementId: string },
+        @Request() req: { user: { userId: string } }
+    ): Promise<UserAchievementDto> {
+        if (!body.userId || !body.achievementId) {
+            throw new BadRequestException("userId and achievementId are required");
+        }
+        return this.achievementService.grantAchievement(body.userId, body.achievementId, req.user.userId);
+    }
+
+    @Roles("admin")
+    @Delete("admin/revoke/:userId/:achievementId")
+    @HttpCode(204)
+    revoke(@Param("userId") userId: string, @Param("achievementId") achievementId: string): Promise<void> {
+        return this.achievementService.revokeAchievement(userId, achievementId);
+    }
+
+    // ── Categories ─────────────────────────────────────────────────────────
+
+    @Public()
+    @Get("categories")
+    getCategories(): Promise<AchievementCategoryDto[]> {
+        return this.achievementService.getCategories();
+    }
+
+    @Roles("admin")
+    @Post("categories")
+    createCategory(@Body() dto: { key: string; name: string; description?: string; icon?: string; position?: number }): Promise<AchievementCategoryDto> {
+        if (!dto.key || !dto.name) throw new BadRequestException("key and name are required");
+        return this.achievementService.createCategory(dto);
+    }
+
+    @Roles("admin")
+    @Patch("categories/:id")
+    updateCategory(@Param("id") id: string, @Body() dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): Promise<AchievementCategoryDto> {
+        return this.achievementService.updateCategory(id, dto);
+    }
+
+    @Roles("admin")
+    @Delete("categories/:id")
+    @HttpCode(204)
+    deleteCategory(@Param("id") id: string): Promise<void> {
+        return this.achievementService.deleteCategory(id);
+    }
+
+    // ── History ────────────────────────────────────────────────────────────
+
+    @Roles("admin")
+    @Get("admin/history")
+    getHistory(@Query("limit") limit?: string): Promise<AchievementHistoryDto[]> {
+        return this.achievementService.getHistory(Math.min(Number(limit) || 50, 200));
     }
 }
