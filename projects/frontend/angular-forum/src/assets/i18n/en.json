@@ -530,6 +530,8 @@
       "triggerValue": "Threshold",
       "isActive": "Active",
       "isActiveLabel": "Achievement active (visible and achievable for users)",
+      "xpReward": "XP Reward",
+      "category": "Category",
       "submit": "Save"
     },
     "createSuccess": "\"{{name}}\" created.",
@@ -812,6 +814,33 @@
       "lexicon_published": "published a lexicon article"
     }
   },
+  "achievements": {
+    "title": "Achievements",
+    "subtitle": "Track your progress and earn rewards",
+    "earned": "Achievements earned",
+    "unlocked": "Achievement Unlocked!",
+    "noResults": "No achievements found.",
+    "filterAll": "All",
+    "filterEarned": "Earned",
+    "filterInProgress": "In Progress",
+    "filterLocked": "Locked",
+    "sortRarity": "Sort by Rarity",
+    "sortProgress": "Sort by Progress",
+    "sortName": "Sort by Name",
+    "rarity": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "categories": {
+      "general": "General",
+      "community": "Community",
+      "content": "Content",
+      "social": "Social",
+      "milestones": "Milestones"
+    }
+  },
   "levelBadge": {
     "level": "Level {{level}}",
     "xpToNextLevel": "{{xp}} XP until next level",
@@ -1086,8 +1115,9 @@
     "field": "Field",
     "filledFields": "{{count}} of 12 fields filled",
     "yourNumbers": "Your numbers",
-    "repeatWeeks": "Play for multiple weeks",
-    "repeatWeeksHint": "The same numbers are entered for the selected number of weeks.",
+    "drawCount": "Number of draws",
+    "drawCountHint": "The same numbers will be entered for the selected number of draws.",
+    "remainingDraws": "{{count}} draw(s) remaining",
     "totalCost": "Total cost",
     "buyTicket": "Buy Ticket",
     "insufficientBalance": "Insufficient balance",

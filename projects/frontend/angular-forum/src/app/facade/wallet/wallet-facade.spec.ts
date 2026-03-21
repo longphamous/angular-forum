@@ -72,9 +72,9 @@ describe("WalletFacade", () => {
 
         it("should have zero totals and no loading", () => {
             expect(facade.transactionsTotal()).toBe(0);
-            expect(facade.walletLoading()).toBeFalse();
-            expect(facade.transactionsLoading()).toBeFalse();
-            expect(facade.transferring()).toBeFalse();
+            expect(facade.walletLoading()).toBe(false);
+            expect(facade.transactionsLoading()).toBe(false);
+            expect(facade.transferring()).toBe(false);
         });
     });
 
@@ -89,13 +89,13 @@ describe("WalletFacade", () => {
             req.flush(mockWallet);
 
             expect(facade.wallet()).toEqual(mockWallet);
-            expect(facade.walletLoading()).toBeFalse();
+            expect(facade.walletLoading()).toBe(false);
         });
 
         it("should set walletLoading to true during the request", () => {
             facade.loadWallet();
 
-            expect(facade.walletLoading()).toBeTrue();
+            expect(facade.walletLoading()).toBe(true);
 
             httpMock.expectOne(`${BASE}/credit/wallet`).flush(mockWallet);
         });
@@ -105,7 +105,7 @@ describe("WalletFacade", () => {
 
             httpMock.expectOne(`${BASE}/credit/wallet`).flush("Error", { status: 500, statusText: "Error" });
 
-            expect(facade.walletLoading()).toBeFalse();
+            expect(facade.walletLoading()).toBe(false);
             expect(facade.wallet()).toBeNull();
         });
     });
@@ -120,9 +120,9 @@ describe("WalletFacade", () => {
             expect(req.request.method).toBe("GET");
             req.flush(mockPaginated);
 
-            expect(facade.transactions()).toHaveSize(1);
+            expect(facade.transactions()).toHaveLength(1);
             expect(facade.transactionsTotal()).toBe(1);
-            expect(facade.transactionsLoading()).toBeFalse();
+            expect(facade.transactionsLoading()).toBe(false);
         });
 
         it("should pass custom page and limit as query params", () => {
@@ -130,7 +130,7 @@ describe("WalletFacade", () => {
 
             httpMock.expectOne(`${BASE}/credit/transactions?page=2&limit=10`).flush(mockPaginated);
 
-            expect(facade.transactions()).toHaveSize(1);
+            expect(facade.transactions()).toHaveLength(1);
             expect(facade.transactionsTotal()).toBe(1);
         });
 
@@ -141,7 +141,7 @@ describe("WalletFacade", () => {
                 .expectOne(`${BASE}/credit/transactions?page=1&limit=20`)
                 .flush("Error", { status: 500, statusText: "Error" });
 
-            expect(facade.transactionsLoading()).toBeFalse();
+            expect(facade.transactionsLoading()).toBe(false);
         });
     });
 
@@ -161,18 +161,18 @@ describe("WalletFacade", () => {
             httpMock.expectOne(`${BASE}/credit/wallet`).flush(mockWallet);
             httpMock.expectOne(`${BASE}/credit/transactions?page=1&limit=20`).flush(mockPaginated);
 
-            expect(facade.transferring()).toBeFalse();
+            expect(facade.transferring()).toBe(false);
         });
 
         it("should set transferring to false on error", () => {
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             facade.transfer("user-2", 50).subscribe({ error: () => {} });
 
-            expect(facade.transferring()).toBeTrue();
+            expect(facade.transferring()).toBe(true);
 
             httpMock.expectOne(`${BASE}/credit/transfer`).flush("Error", { status: 400, statusText: "Bad Request" });
 
-            expect(facade.transferring()).toBeFalse();
+            expect(facade.transferring()).toBe(false);
         });
 
         it("should return an Observable of WalletTransaction", () => {

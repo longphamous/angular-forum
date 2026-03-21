@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
+import { AchievementEntity } from "./entities/achievement.entity";
+import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { AchievementService } from "./achievement.service";
 import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpConfigEntity } from "./entities/xp-config.entity";
@@ -18,7 +20,9 @@ export interface XpConfigDto {
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class GamificationService {
+export class GamificationService implements OnModuleInit {
+    private readonly logger = new Logger(GamificationService.name);
+
     // Simple in-memory cache for XP config (refreshed on update or after TTL)
     private configCache: Map<string, number> | null = null;
     private configCacheAt = 0;
@@ -31,10 +35,23 @@ export class GamificationService {
         private readonly xpEventRepo: Repository<XpEventEntity>,
         @InjectRepository(XpConfigEntity)
         private readonly xpConfigRepo: Repository<XpConfigEntity>,
+        @InjectRepository(AchievementEntity)
+        private readonly achievementRepo: Repository<AchievementEntity>,
+        @InjectRepository(UserAchievementEntity)
+        private readonly userAchievementRepo: Repository<UserAchievementEntity>,
         @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly achievementService: AchievementService
     ) {}
+
+    async onModuleInit(): Promise<void> {
+        try {
+            const result = await this.recalculateAllUserXp();
+            this.logger.log(`XP recalculated on startup: ${result.updatedUsers} users updated`);
+        } catch (err) {
+            this.logger.warn("XP recalculation on startup failed — will retry on next trigger");
+        }
+    }
 
     // ── XP Config ─────────────────────────────────────────────────────────────
 
@@ -108,7 +125,8 @@ export class GamificationService {
         const receiveXp = config.get("receive_reaction") ?? 3;
         const giveXp = config.get("give_reaction") ?? 1;
 
-        const result = await this.dataSource.query<{ user_id: string; total_xp: number }[]>(
+        // 1. Calculate activity-based XP per user
+        const activityResult = await this.dataSource.query<{ user_id: string; total_xp: number }[]>(
             `
             WITH
             thread_counts AS (
@@ -146,16 +164,39 @@ export class GamificationService {
             [threadXp, postXp, receiveXp, giveXp]
         );
 
-        for (const row of result) {
-            const xp = Number(row.total_xp);
-            const level = getLevelForXp(xp).level;
-            await this.userXpRepo.upsert({ userId: row.user_id, xp, level }, { conflictPaths: ["userId"] });
+        // 2. Calculate achievement-based XP per user
+        const achievementXpMap = new Map<string, number>();
+        const achievements = await this.achievementRepo.find({ where: { isActive: true } });
+        const achievementXpLookup = new Map(achievements.map((a) => [a.id, a.xpReward]));
+
+        const allUserAchievements = await this.userAchievementRepo.find();
+        for (const ua of allUserAchievements) {
+            const xpReward = achievementXpLookup.get(ua.achievementId) ?? 0;
+            if (xpReward > 0) {
+                achievementXpMap.set(ua.userId, (achievementXpMap.get(ua.userId) ?? 0) + xpReward);
+            }
         }
 
-        // Clear xp_events and re-insert summary events so history is consistent
-        // (optional: skip if event history is not important for recalculation)
+        // 3. Merge and upsert
+        for (const row of activityResult) {
+            const activityXp = Number(row.total_xp);
+            const achievementXp = achievementXpMap.get(row.user_id) ?? 0;
+            const totalXp = activityXp + achievementXp;
+            const level = getLevelForXp(totalXp).level;
+            await this.userXpRepo.upsert({ userId: row.user_id, xp: totalXp, level }, { conflictPaths: ["userId"] });
+        }
 
-        return { updatedUsers: result.length };
+        // Handle users who only have achievements but no activity rows
+        for (const [userId, xp] of achievementXpMap) {
+            if (!activityResult.some((r) => r.user_id === userId)) {
+                const level = getLevelForXp(xp).level;
+                await this.userXpRepo.upsert({ userId, xp, level }, { conflictPaths: ["userId"] });
+            }
+        }
+
+        return { updatedUsers: activityResult.length + [...achievementXpMap.keys()].filter(
+            (uid) => !activityResult.some((r) => r.user_id === uid)
+        ).length };
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

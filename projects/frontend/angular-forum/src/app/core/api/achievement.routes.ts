@@ -1,6 +1,7 @@
 export const ACHIEVEMENT_ROUTES = {
     all: () => "/gamification/achievements",
     user: (userId: string) => `/gamification/achievements/user/${userId}`,
+    progress: (userId: string) => `/gamification/achievements/progress/${userId}`,
     admin: {
         list: () => "/gamification/achievements/admin",
         create: () => "/gamification/achievements/admin",

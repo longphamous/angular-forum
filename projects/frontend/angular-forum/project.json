@@ -115,19 +115,10 @@
       "command": "transloco-keys-manager find --project angular-forum"
     },
     "test": {
-      "executor": "@angular/build:karma",
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "polyfills": ["zone.js", "zone.js/testing"],
-        "tsConfig": "projects/frontend/angular-forum/tsconfig.spec.json",
-        "inlineStyleLanguage": "scss",
-        "assets": [
-          {
-            "glob": "**/*",
-            "input": "public"
-          }
-        ],
-        "styles": ["projects/frontend/angular-forum/src/styles.scss"],
-        "scripts": []
+        "reportsDirectory": "../../../coverage/projects/frontend/angular-forum"
       }
     },
     "lint": {

@@ -530,6 +530,8 @@
       "triggerValue": "Schwellenwert",
       "isActive": "Aktiv",
       "isActiveLabel": "Achievement aktiv (für Benutzer sichtbar und erreichbar)",
+      "xpReward": "XP-Belohnung",
+      "category": "Kategorie",
       "submit": "Speichern"
     },
     "createSuccess": "\"{{name}}\" erstellt.",
@@ -812,6 +814,33 @@
       "lexicon_published": "hat einen Lexikon-Artikel veröffentlicht"
     }
   },
+  "achievements": {
+    "title": "Achievements",
+    "subtitle": "Verfolge deinen Fortschritt und verdiene Belohnungen",
+    "earned": "Achievements erreicht",
+    "unlocked": "Achievement freigeschaltet!",
+    "noResults": "Keine Achievements gefunden.",
+    "filterAll": "Alle",
+    "filterEarned": "Erreicht",
+    "filterInProgress": "In Bearbeitung",
+    "filterLocked": "Gesperrt",
+    "sortRarity": "Nach Seltenheit",
+    "sortProgress": "Nach Fortschritt",
+    "sortName": "Nach Name",
+    "rarity": {
+      "bronze": "Bronze",
+      "silver": "Silber",
+      "gold": "Gold",
+      "platinum": "Platin"
+    },
+    "categories": {
+      "general": "Allgemein",
+      "community": "Community",
+      "content": "Inhalte",
+      "social": "Sozial",
+      "milestones": "Meilensteine"
+    }
+  },
   "levelBadge": {
     "level": "Level {{level}}",
     "xpToNextLevel": "{{xp}} XP bis nächstes Level",
@@ -1086,8 +1115,9 @@
     "field": "Feld",
     "filledFields": "{{count}} von 12 Feldern ausgefüllt",
     "yourNumbers": "Deine Zahlen",
-    "repeatWeeks": "Mehrere Wochen spielen",
-    "repeatWeeksHint": "Die gleichen Zahlen werden für die ausgewählte Anzahl an Wochen eingetragen.",
+    "drawCount": "Anzahl Ziehungen",
+    "drawCountHint": "Die gleichen Zahlen werden für die ausgewählte Anzahl an Ziehungen eingetragen.",
+    "remainingDraws": "Noch {{count}} Ziehung(en)",
     "totalCost": "Gesamtkosten",
     "buyTicket": "Ticket kaufen",
     "insufficientBalance": "Guthaben nicht ausreichend",

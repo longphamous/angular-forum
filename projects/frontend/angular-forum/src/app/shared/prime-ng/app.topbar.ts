@@ -143,18 +143,22 @@ import { LayoutService } from "./service/layout.service";
         <p-popover #userMenu>
             @if (authFacade.isAuthenticated()) {
                 <div class="flex min-w-44 flex-col gap-1">
-                    <div class="flex items-center gap-3 px-1 pb-2">
+                    <a
+                        class="flex items-center gap-3 px-1 pb-2 no-underline text-inherit cursor-pointer"
+                        (click)="userMenu.hide()"
+                        [routerLink]="['/users', authFacade.currentUser()?.id]"
+                    >
                         <p-avatar [label]="userInitial()" shape="circle" size="large" styleClass="font-semibold" />
                         <div class="flex flex-col">
                             <span class="text-sm font-semibold">{{ authFacade.currentUser()?.displayName }}</span>
                             <span class="text-surface-500 text-xs">{{ authFacade.currentUser()?.username }}</span>
                         </div>
-                    </div>
+                    </a>
                     <p-divider styleClass="my-0" />
                     <a
                         class="hover:bg-surface-100 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-inherit no-underline"
                         (click)="userMenu.hide()"
-                        routerLink="/profile"
+                        [routerLink]="['/users', authFacade.currentUser()?.id]"
                     >
                         <i class="pi pi-user text-surface-500"></i>
                         <span>{{ t("nav.profile") }}</span>

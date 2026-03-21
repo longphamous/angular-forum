@@ -15,6 +15,7 @@ export const PUSH_EVENTS = [
     "thread:postEdited",
     "thread:locked",
     "presence:update",
+    "achievement:unlocked",
     "presence:userOnline",
     "presence:userOffline"
 ] as const;
@@ -87,6 +88,15 @@ export interface PushThreadPostEdited {
 export interface PushThreadLocked {
     threadId: string;
     locked: boolean;
+}
+
+export interface PushAchievementUnlocked {
+    achievementId: string;
+    name: string;
+    description: string;
+    icon: string;
+    rarity: string;
+    xpReward: number;
 }
 
 export interface PushPresenceUserOnline {

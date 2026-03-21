@@ -29,7 +29,9 @@ export interface LottoTicket {
     drawId: string;
     purchasedAt: string;
     cost: number;
-    repeatWeeks?: number;
+    totalDraws?: number;
+    groupId?: string;
+    remainingDraws?: number;
 }
 
 export interface LottoDraw {

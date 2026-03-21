@@ -26,6 +26,12 @@ export class AchievementEntity {
     @Column({ name: "trigger_value", type: "int" })
     triggerValue!: number;
 
+    @Column({ name: "xp_reward", type: "int", default: 0 })
+    xpReward!: number;
+
+    @Column({ type: "varchar", length: 50, nullable: true })
+    category!: string | null;
+
     @Column({ name: "is_active", default: true })
     isActive!: boolean;
 

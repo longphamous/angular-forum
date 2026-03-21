@@ -84,7 +84,7 @@ export class LottoPage implements OnInit, OnDestroy {
     protected fields = signal<number[][]>(Array.from({ length: 12 }, () => []));
     protected activeField = signal(0);
     protected selectedSuperNumber = signal<number | null>(null);
-    protected repeatWeeks = signal(1);
+    protected drawCount = signal(1);
 
     /** Shortcut: the numbers of the currently active field. */
     protected selectedNumbers = computed(() => this.fields()[this.activeField()] ?? []);
@@ -107,7 +107,7 @@ export class LottoPage implements OnInit, OnDestroy {
     protected readonly filledFieldCount = computed(() => this.fields().filter((f) => f.length === 6).length);
 
     protected readonly ticketCost = computed(
-        () => (this.config()?.ticketCost ?? 2) * Math.max(1, this.filledFieldCount()) * this.repeatWeeks()
+        () => (this.config()?.ticketCost ?? 2) * Math.max(1, this.filledFieldCount()) * this.drawCount()
     );
 
     protected readonly canBuy = computed(
@@ -336,7 +336,7 @@ export class LottoPage implements OnInit, OnDestroy {
             fields: filledFields,
             superNumber: this.selectedSuperNumber()!,
             drawId: next.id,
-            repeatWeeks: this.repeatWeeks()
+            drawCount: this.drawCount()
         };
         const totalCost = this.ticketCost();
 

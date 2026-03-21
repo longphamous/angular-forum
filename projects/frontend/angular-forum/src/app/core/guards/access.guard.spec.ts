@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { provideRouter } from "@angular/router";
@@ -15,10 +16,10 @@ describe("accessGuard", () => {
     let router: Router;
 
     const mockAuthFacade = {
-        isAuthenticated: jasmine.createSpy("isAuthenticated").and.returnValue(false),
-        isAdmin: jasmine.createSpy("isAdmin").and.returnValue(false),
-        isModerator: jasmine.createSpy("isModerator").and.returnValue(false),
-        currentUser: jasmine.createSpy("currentUser").and.returnValue(null)
+        isAuthenticated: vi.fn().mockReturnValue(false),
+        isAdmin: vi.fn().mockReturnValue(false),
+        isModerator: vi.fn().mockReturnValue(false),
+        currentUser: vi.fn().mockReturnValue(null)
     };
 
     function runGuard(requiredGroups: string[]): boolean | UrlTree {
@@ -34,27 +35,27 @@ describe("accessGuard", () => {
 
         router = TestBed.inject(Router);
 
-        mockAuthFacade.isAuthenticated.and.returnValue(false);
-        mockAuthFacade.isAdmin.and.returnValue(false);
-        mockAuthFacade.isModerator.and.returnValue(false);
-        mockAuthFacade.currentUser.and.returnValue(null);
+        mockAuthFacade.isAuthenticated.mockReturnValue(false);
+        mockAuthFacade.isAdmin.mockReturnValue(false);
+        mockAuthFacade.isModerator.mockReturnValue(false);
+        mockAuthFacade.currentUser.mockReturnValue(null);
     });
 
     it("should allow access when requiredGroups is empty", () => {
-        expect(runGuard([])).toBeTrue();
+        expect(runGuard([])).toBe(true);
     });
 
     it("should allow access when 'Jeder' is in requiredGroups", () => {
-        expect(runGuard(["Jeder"])).toBeTrue();
+        expect(runGuard(["Jeder"])).toBe(true);
     });
 
     it("should allow guest-only route when user is not authenticated", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(false);
-        expect(runGuard(["Gast"])).toBeTrue();
+        mockAuthFacade.isAuthenticated.mockReturnValue(false);
+        expect(runGuard(["Gast"])).toBe(true);
     });
 
     it("should redirect to /dashboard on guest-only route when user is authenticated", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
 
         const result = runGuard(["Gast"]);
 
@@ -63,7 +64,7 @@ describe("accessGuard", () => {
     });
 
     it("should redirect to /login when not authenticated for registered-user route", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(false);
+        mockAuthFacade.isAuthenticated.mockReturnValue(false);
 
         const result = runGuard(["Registrierte Benutzer"]);
 
@@ -72,24 +73,24 @@ describe("accessGuard", () => {
     });
 
     it("should allow access for 'Registrierte Benutzer' when authenticated", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: [] });
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: [] });
 
-        expect(runGuard(["Registrierte Benutzer"])).toBeTrue();
+        expect(runGuard(["Registrierte Benutzer"])).toBe(true);
     });
 
     it("should allow Admin route when user is admin", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: [] });
-        mockAuthFacade.isAdmin.and.returnValue(true);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: [] });
+        mockAuthFacade.isAdmin.mockReturnValue(true);
 
-        expect(runGuard(["Admin"])).toBeTrue();
+        expect(runGuard(["Admin"])).toBe(true);
     });
 
     it("should redirect to /dashboard on Admin route when user is not admin", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: [] });
-        mockAuthFacade.isAdmin.and.returnValue(false);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: [] });
+        mockAuthFacade.isAdmin.mockReturnValue(false);
 
         const result = runGuard(["Admin"]);
 
@@ -98,17 +99,17 @@ describe("accessGuard", () => {
     });
 
     it("should allow Moderator route when user is moderator", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: [] });
-        mockAuthFacade.isModerator.and.returnValue(true);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: [] });
+        mockAuthFacade.isModerator.mockReturnValue(true);
 
-        expect(runGuard(["Moderator"])).toBeTrue();
+        expect(runGuard(["Moderator"])).toBe(true);
     });
 
     it("should redirect to /dashboard on Moderator route when user is not moderator", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: [] });
-        mockAuthFacade.isModerator.and.returnValue(false);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: [] });
+        mockAuthFacade.isModerator.mockReturnValue(false);
 
         const result = runGuard(["Moderator"]);
 
@@ -117,15 +118,15 @@ describe("accessGuard", () => {
     });
 
     it("should allow access when user is in the required custom group", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: ["vip", "beta-testers"] });
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: ["vip", "beta-testers"] });
 
-        expect(runGuard(["vip"])).toBeTrue();
+        expect(runGuard(["vip"])).toBe(true);
     });
 
     it("should redirect to /dashboard when user is not in the required custom group", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue({ id: "u1", groups: ["member"] });
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue({ id: "u1", groups: ["member"] });
 
         const result = runGuard(["vip"]);
 
@@ -134,7 +135,7 @@ describe("accessGuard", () => {
     });
 
     it("should redirect to /login when not authenticated for any restricted route", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(false);
+        mockAuthFacade.isAuthenticated.mockReturnValue(false);
 
         const result = runGuard(["some-group"]);
 
@@ -143,8 +144,8 @@ describe("accessGuard", () => {
     });
 
     it("should redirect to /login when currentUser is null despite isAuthenticated being true", () => {
-        mockAuthFacade.isAuthenticated.and.returnValue(true);
-        mockAuthFacade.currentUser.and.returnValue(null);
+        mockAuthFacade.isAuthenticated.mockReturnValue(true);
+        mockAuthFacade.currentUser.mockReturnValue(null);
 
         const result = runGuard(["some-group"]);
 

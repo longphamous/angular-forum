@@ -4,6 +4,7 @@
   "projectType": "application",
   "sourceRoot": "projects/backend/base/src",
   "tags": ["scope:backend", "type:app"],
+  "implicitDependencies": ["contracts", "push"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
@@ -16,41 +17,28 @@
       },
       "configurations": {
         "production": {},
-        "development": {
-          "sourceMap": true
-        }
+        "development": { "sourceMap": true }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "options": {
-        "buildTarget": "base:build"
-      },
+      "options": { "buildTarget": "base:build" },
       "configurations": {
-        "development": {
-          "buildTarget": "base:build:development"
-        },
-        "production": {
-          "buildTarget": "base:build:production"
-        }
+        "development": { "buildTarget": "base:build:development" },
+        "production": { "buildTarget": "base:build:production" }
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/projects/backend/base"],
-      "options": {
-        "jestConfig": "projects/backend/base/jest.config.ts"
-      }
+      "options": { "jestConfig": "projects/backend/base/jest.config.ts" }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["projects/backend/base/**/*.ts"]
-      }
+      "options": { "lintFilePatterns": ["projects/backend/base/**/*.ts"] }
     }
   }
 }
-

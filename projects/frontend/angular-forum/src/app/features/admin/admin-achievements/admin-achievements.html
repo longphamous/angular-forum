@@ -245,6 +245,40 @@
             </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-4">
+            <!-- XP Reward -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-xpReward">{{ t('adminAchievements.dialog.xpReward') }}</label>
+                <p-inputnumber
+                    (ngModelChange)="updateForm({ xpReward: $event })"
+                    [max]="99999"
+                    [min]="0"
+                    [ngModel]="form().xpReward"
+                    [showButtons]="true"
+                    buttonLayout="horizontal"
+                    decrementButtonIcon="pi pi-minus"
+                    incrementButtonIcon="pi pi-plus"
+                    inputId="ach-xpReward"
+                    inputStyleClass="w-16 text-center"
+                    styleClass="w-full"
+                />
+            </div>
+            <!-- Category -->
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium" for="ach-category">{{ t('adminAchievements.dialog.category') }}</label>
+                <p-select
+                    (ngModelChange)="updateForm({ category: $event })"
+                    [ngModel]="form().category"
+                    [options]="categoryOptions"
+                    appendTo="body"
+                    inputId="ach-category"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                />
+            </div>
+        </div>
+
         <!-- Active -->
         <div class="flex items-center gap-2">
             <p-checkbox

@@ -168,6 +168,13 @@ export const routes: Routes = [
                 loadComponent: () => import("./features/admin/admin-shop/admin-shop").then((c) => c.AdminShop)
             },
             {
+                path: "achievements",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/achievements/achievements-page").then((c) => c.AchievementsPage)
+            },
+            {
                 path: "shop",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],

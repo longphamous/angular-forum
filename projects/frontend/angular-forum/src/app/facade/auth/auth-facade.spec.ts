@@ -66,14 +66,14 @@ describe("AuthFacade", () => {
 
     describe("initial state", () => {
         it("should be unauthenticated with no user", () => {
-            expect(facade.isAuthenticated()).toBeFalse();
+            expect(facade.isAuthenticated()).toBe(false);
             expect(facade.currentUser()).toBeNull();
             expect(facade.accessToken).toBeNull();
         });
 
         it("should not be admin or moderator when unauthenticated", () => {
-            expect(facade.isAdmin()).toBeFalse();
-            expect(facade.isModerator()).toBeFalse();
+            expect(facade.isAdmin()).toBe(false);
+            expect(facade.isModerator()).toBe(false);
         });
     });
 
@@ -87,13 +87,13 @@ describe("AuthFacade", () => {
             // Re-create the facade to trigger _restoreFromStorage
             const restoredFacade = TestBed.runInInjectionContext(() => new AuthFacade());
 
-            expect(restoredFacade.isAuthenticated()).toBeTrue();
+            expect(restoredFacade.isAuthenticated()).toBe(true);
             expect(restoredFacade.currentUser()?.username).toBe("alice");
             expect(restoredFacade.accessToken).toBe("stored-token");
         });
 
         it("should remain unauthenticated when storage is empty", () => {
-            expect(facade.isAuthenticated()).toBeFalse();
+            expect(facade.isAuthenticated()).toBe(false);
         });
 
         it("should clear storage and remain unauthenticated on corrupt profile JSON", () => {
@@ -122,9 +122,9 @@ describe("AuthFacade", () => {
 
             req.flush({ session: mockSession, profile: mockProfile });
 
-            expect(completed).toBeTrue();
+            expect(completed).toBe(true);
 
-            expect(facade.isAuthenticated()).toBeTrue();
+            expect(facade.isAuthenticated()).toBe(true);
             expect(facade.currentUser()?.username).toBe("alice");
             expect(facade.accessToken).toBe("access-abc");
         });
@@ -155,7 +155,7 @@ describe("AuthFacade", () => {
 
             facade.logout();
 
-            expect(facade.isAuthenticated()).toBeFalse();
+            expect(facade.isAuthenticated()).toBe(false);
             expect(facade.currentUser()).toBeNull();
             expect(facade.accessToken).toBeNull();
             expect(localStorage.getItem("aniverse_access_token")).toBeNull();
@@ -178,20 +178,20 @@ describe("AuthFacade", () => {
 
         it("should be admin and moderator for admin role", () => {
             loginAs("admin");
-            expect(facade.isAdmin()).toBeTrue();
-            expect(facade.isModerator()).toBeTrue();
+            expect(facade.isAdmin()).toBe(true);
+            expect(facade.isModerator()).toBe(true);
         });
 
         it("should be moderator but not admin for moderator role", () => {
             loginAs("moderator");
-            expect(facade.isAdmin()).toBeFalse();
-            expect(facade.isModerator()).toBeTrue();
+            expect(facade.isAdmin()).toBe(false);
+            expect(facade.isModerator()).toBe(true);
         });
 
         it("should be neither admin nor moderator for member role", () => {
             loginAs("member");
-            expect(facade.isAdmin()).toBeFalse();
-            expect(facade.isModerator()).toBeFalse();
+            expect(facade.isAdmin()).toBe(false);
+            expect(facade.isModerator()).toBe(false);
         });
     });
 

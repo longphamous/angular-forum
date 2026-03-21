@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/projects/backend/push"
+  },
+  "exclude": ["**/*.spec.ts", "jest.config.ts"]
+}

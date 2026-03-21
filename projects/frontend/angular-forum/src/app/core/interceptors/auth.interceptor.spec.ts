@@ -47,7 +47,7 @@ describe("authInterceptor", () => {
         httpClient.get("/api/test").subscribe();
 
         const req = httpMock.expectOne("/api/test");
-        expect(req.request.headers.has("Authorization")).toBeFalse();
+        expect(req.request.headers.has("Authorization")).toBe(false);
         req.flush({});
     });
 
@@ -73,6 +73,6 @@ describe("authInterceptor", () => {
         const req = httpMock.expectOne("/api/data");
         req.flush({ ok: true });
 
-        expect(responseReceived).toBeTrue();
+        expect(responseReceived).toBe(true);
     });
 });

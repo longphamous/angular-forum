@@ -26,6 +26,21 @@ CREATE TABLE IF NOT EXISTS user_achievements (
 
 CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
 
+-- ── New columns (idempotent) ─────────────────────────────────────────────────
+ALTER TABLE achievements ADD COLUMN IF NOT EXISTS xp_reward INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE achievements ADD COLUMN IF NOT EXISTS category VARCHAR(50);
+
+-- Set default categories for existing achievements
+UPDATE achievements SET category = 'content'   WHERE category IS NULL AND trigger_type IN ('post_count', 'thread_count');
+UPDATE achievements SET category = 'social'     WHERE category IS NULL AND trigger_type IN ('reaction_received_count', 'reaction_given_count');
+UPDATE achievements SET category = 'milestones' WHERE category IS NULL AND trigger_type IN ('level_reached', 'xp_total');
+
+-- Set default XP rewards based on rarity
+UPDATE achievements SET xp_reward = 10  WHERE xp_reward = 0 AND rarity = 'bronze';
+UPDATE achievements SET xp_reward = 25  WHERE xp_reward = 0 AND rarity = 'silver';
+UPDATE achievements SET xp_reward = 50  WHERE xp_reward = 0 AND rarity = 'gold';
+UPDATE achievements SET xp_reward = 100 WHERE xp_reward = 0 AND rarity = 'platinum';
+
 -- ── Seed Achievements ──────────────────────────────────────────────────────────
 
 INSERT INTO achievements (key, name, description, icon, rarity, trigger_type, trigger_value) VALUES

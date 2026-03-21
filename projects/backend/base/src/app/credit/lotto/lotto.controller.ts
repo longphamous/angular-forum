@@ -113,7 +113,7 @@ export class LottoController {
     @Post("tickets")
     purchaseTicket(
         @Req() req: Request,
-        @Body() body: { fields: number[][]; superNumber: number; drawId: string; repeatWeeks?: number }
+        @Body() body: { fields: number[][]; superNumber: number; drawId: string; drawCount?: number }
     ): Promise<LottoTicket[]> {
         const user = req.user as { userId: string } | undefined;
         if (!user?.userId) throw new Error("Unauthorized");
@@ -122,7 +122,7 @@ export class LottoController {
             body.fields,
             body.superNumber,
             body.drawId,
-            body.repeatWeeks ?? 1
+            body.drawCount ?? 1
         );
     }
 

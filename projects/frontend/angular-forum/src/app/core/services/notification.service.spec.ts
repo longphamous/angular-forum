@@ -60,7 +60,7 @@ describe("NotificationService", () => {
         });
 
         it("should not be loading", () => {
-            expect(service.loading()).toBeFalse();
+            expect(service.loading()).toBe(false);
         });
     });
 
@@ -75,9 +75,9 @@ describe("NotificationService", () => {
             const req = httpMock.expectOne(`${BASE}/notifications`);
             req.flush(notifs);
 
-            expect(service.notifications()).toHaveSize(3);
+            expect(service.notifications()).toHaveLength(3);
             expect(service.unreadCount()).toBe(2);
-            expect(service.loading()).toBeFalse();
+            expect(service.loading()).toBe(false);
         });
 
         it("should set loading to false on error", () => {
@@ -86,7 +86,7 @@ describe("NotificationService", () => {
             const req = httpMock.expectOne(`${BASE}/notifications`);
             req.flush("Error", { status: 500, statusText: "Server Error" });
 
-            expect(service.loading()).toBeFalse();
+            expect(service.loading()).toBe(false);
         });
     });
 
@@ -109,7 +109,7 @@ describe("NotificationService", () => {
             req.flush({});
 
             const n1 = service.notifications().find((n) => n.id === "n1");
-            expect(n1?.isRead).toBeTrue();
+            expect(n1?.isRead).toBe(true);
             expect(service.unreadCount()).toBe(1);
         });
 
@@ -157,7 +157,7 @@ describe("NotificationService", () => {
             req.flush({});
 
             expect(service.unreadCount()).toBe(0);
-            expect(service.notifications().every((n) => n.isRead)).toBeTrue();
+            expect(service.notifications().every((n) => n.isRead)).toBe(true);
         });
     });
 
@@ -176,7 +176,7 @@ describe("NotificationService", () => {
             expect(req.request.method).toBe("DELETE");
             req.flush({});
 
-            expect(service.notifications()).toHaveSize(1);
+            expect(service.notifications()).toHaveLength(1);
             expect(service.notifications()[0].id).toBe("n2");
         });
 

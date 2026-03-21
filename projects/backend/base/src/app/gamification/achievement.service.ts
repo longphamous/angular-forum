@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { NotificationsService } from "../notifications/notifications.service";
+import { PushService } from "../push/push.service";
+import { PushAchievementUnlocked } from "../push/push-event.types";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
@@ -16,6 +19,8 @@ export interface AchievementDto {
     rarity: string;
     triggerType: string;
     triggerValue: number;
+    xpReward: number;
+    category: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -23,6 +28,13 @@ export interface AchievementDto {
 
 export interface UserAchievementDto extends AchievementDto {
     earnedAt: string;
+}
+
+export interface AchievementProgressDto extends AchievementDto {
+    earned: boolean;
+    earnedAt: string | null;
+    currentValue: number;
+    progressPercent: number;
 }
 
 export interface CreateAchievementDto {
@@ -33,6 +45,8 @@ export interface CreateAchievementDto {
     rarity: string;
     triggerType: string;
     triggerValue: number;
+    xpReward?: number;
+    category?: string;
     isActive?: boolean;
 }
 
@@ -53,7 +67,9 @@ export class AchievementService {
         @InjectRepository(XpEventEntity)
         private readonly xpEventRepo: Repository<XpEventEntity>,
         @InjectRepository(UserXpEntity)
-        private readonly userXpRepo: Repository<UserXpEntity>
+        private readonly userXpRepo: Repository<UserXpEntity>,
+        private readonly notificationsService: NotificationsService,
+        private readonly pushService: PushService
     ) {}
 
     // ── Admin CRUD ─────────────────────────────────────────────────────────────
@@ -108,6 +124,53 @@ export class AchievementService {
             .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime());
     }
 
+    // ── Progress (all achievements with user progress) ────────────────────────
+
+    async getUserProgress(userId: string): Promise<AchievementProgressDto[]> {
+        const allActive = await this.achievementRepo.find({
+            where: { isActive: true },
+            order: { category: "ASC", rarity: "ASC", triggerValue: "ASC" }
+        });
+        if (!allActive.length) return [];
+
+        const earned = await this.userAchievementRepo.findBy({ userId });
+        const earnedMap = new Map(earned.map((e) => [e.achievementId, e.earnedAt]));
+
+        const userXp = await this.userXpRepo.findOneBy({ userId });
+        const currentXp = userXp?.xp ?? 0;
+        const currentLevel = userXp?.level ?? 1;
+
+        const countMap: Record<string, number> = {
+            level_reached: currentLevel,
+            xp_total: currentXp
+        };
+
+        const eventTypes: { trigger: string; event: string }[] = [
+            { trigger: "post_count", event: "create_post" },
+            { trigger: "thread_count", event: "create_thread" },
+            { trigger: "reaction_received_count", event: "receive_reaction" },
+            { trigger: "reaction_given_count", event: "give_reaction" }
+        ];
+        for (const { trigger, event } of eventTypes) {
+            if (allActive.some((a) => a.triggerType === trigger)) {
+                countMap[trigger] = await this.xpEventRepo.countBy({ userId, eventType: event as XpEventType });
+            }
+        }
+
+        return allActive.map((a) => {
+            const isEarned = earnedMap.has(a.id);
+            const currentValue = countMap[a.triggerType] ?? 0;
+            const progressPercent = Math.min(100, Math.round((currentValue / a.triggerValue) * 100));
+            return {
+                ...this.toDto(a),
+                earned: isEarned,
+                earnedAt: isEarned ? earnedMap.get(a.id)!.toISOString() : null,
+                currentValue,
+                progressPercent
+            };
+        });
+    }
+
     // ── Check & Award ──────────────────────────────────────────────────────────
 
     async checkAndAward(userId: string, eventType: XpEventType): Promise<void> {
@@ -151,11 +214,46 @@ export class AchievementService {
                 await this.userAchievementRepo.save(
                     this.userAchievementRepo.create({ userId, achievementId: achievement.id })
                 );
+                if (achievement.xpReward > 0) {
+                    await this.awardAchievementXp(userId, achievement.xpReward);
+                }
+
+                // Send notification
+                void this.notificationsService.create(
+                    userId,
+                    "achievement_unlocked",
+                    `Achievement: ${achievement.name}`,
+                    achievement.description ?? `Du hast "${achievement.name}" freigeschaltet!`,
+                    "/achievements",
+                    { achievementId: achievement.id, icon: achievement.icon, rarity: achievement.rarity }
+                );
+
+                // Send real-time push event for animated overlay
+                const pushPayload: PushAchievementUnlocked = {
+                    achievementId: achievement.id,
+                    name: achievement.name,
+                    description: achievement.description ?? "",
+                    icon: achievement.icon,
+                    rarity: achievement.rarity,
+                    xpReward: achievement.xpReward
+                };
+                this.pushService.sendToUser(userId, "achievement:unlocked", pushPayload);
             }
         }
     }
 
     // ── Private ────────────────────────────────────────────────────────────────
+
+    private async awardAchievementXp(userId: string, xpAmount: number): Promise<void> {
+        const { getLevelForXp } = await import("./level.config");
+        let record = await this.userXpRepo.findOneBy({ userId });
+        if (!record) {
+            record = this.userXpRepo.create({ userId, xp: 0, level: 1 });
+        }
+        record.xp += xpAmount;
+        record.level = getLevelForXp(record.xp).level;
+        await this.userXpRepo.save(record);
+    }
 
     private toDto(a: AchievementEntity): AchievementDto {
         return {
@@ -167,6 +265,8 @@ export class AchievementService {
             rarity: a.rarity,
             triggerType: a.triggerType,
             triggerValue: a.triggerValue,
+            xpReward: a.xpReward,
+            category: a.category,
             isActive: a.isActive,
             createdAt: a.createdAt?.toISOString(),
             updatedAt: a.updatedAt?.toISOString()

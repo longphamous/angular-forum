@@ -1,6 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { getDataSourceToken, getRepositoryToken } from "@nestjs/typeorm";
 
+import { NotificationsService } from "../notifications/notifications.service";
+import { PushService } from "../push/push.service";
 import { AchievementService } from "./achievement.service";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
@@ -37,7 +39,9 @@ describe("GamificationController", () => {
                 { provide: getRepositoryToken(XpConfigEntity), useValue: mockXpConfigRepo },
                 { provide: getRepositoryToken(AchievementEntity), useValue: mockAchievementRepo },
                 { provide: getRepositoryToken(UserAchievementEntity), useValue: mockUserAchievementRepo },
-                { provide: getDataSourceToken(), useValue: mockDataSource }
+                { provide: getDataSourceToken(), useValue: mockDataSource },
+                { provide: NotificationsService, useValue: { create: jest.fn() } },
+                { provide: PushService, useValue: { sendToUser: jest.fn() } }
             ]
         }).compile();
 

@@ -27,7 +27,8 @@ import {
     ChronikVisibility,
     CreateChronikEntry
 } from "../../../core/models/chronik/chronik";
-import { FriendshipStatusResult } from "../../../core/models/friends/friends";
+import { FRIENDS_ROUTES } from "../../../core/api/friends.routes";
+import { FriendshipStatusResult, FriendUser } from "../../../core/models/friends/friends";
 import { UserAchievement } from "../../../core/models/gamification/achievement";
 import { UserProfile, UserRole } from "../../../core/models/user/user";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
@@ -69,6 +70,7 @@ export class UserProfilePage implements OnInit {
     protected readonly loading = signal(true);
     protected readonly profile = signal<UserProfile | null>(null);
     protected readonly achievements = signal<UserAchievement[]>([]);
+    protected readonly friends = signal<FriendUser[]>([]);
 
     // Friend status
     protected readonly friendStatus = signal<FriendshipStatusResult | null>(null);
@@ -101,7 +103,7 @@ export class UserProfilePage implements OnInit {
     protected readonly replyingTo = signal<Map<string, string>>(new Map());
 
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
-    private readonly authFacade = inject(AuthFacade);
+    readonly authFacade = inject(AuthFacade);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly http = inject(HttpClient);
     private readonly profileUserId = signal<string | null>(null);
@@ -115,8 +117,20 @@ export class UserProfilePage implements OnInit {
     ];
 
     ngOnInit(): void {
-        const userId = this.route.snapshot.paramMap.get("userId")!;
+        this.route.params.subscribe((params) => {
+            const userId = params["userId"] as string;
+            this.loadProfile(userId);
+        });
+    }
+
+    private loadProfile(userId: string): void {
         this.profileUserId.set(userId);
+        this.loading.set(true);
+        this.profile.set(null);
+        this.achievements.set([]);
+        this.friends.set([]);
+        this.friendStatus.set(null);
+
         this.http.get<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.publicProfile(userId)}`).subscribe({
             next: (p) => {
                 this.profile.set(p);
@@ -131,6 +145,15 @@ export class UserProfilePage implements OnInit {
         this.http.get<UserAchievement[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.user(userId)}`).subscribe({
             next: (data) => {
                 this.achievements.set(data);
+                this.cd.markForCheck();
+            },
+            error: () => undefined
+        });
+
+        // Load friends list
+        this.http.get<FriendUser[]>(`${this.apiConfig.baseUrl}${FRIENDS_ROUTES.list()}?userId=${userId}`).subscribe({
+            next: (data) => {
+                this.friends.set(data);
                 this.cd.markForCheck();
             },
             error: () => undefined

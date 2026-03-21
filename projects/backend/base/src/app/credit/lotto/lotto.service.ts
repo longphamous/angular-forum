@@ -121,7 +121,8 @@ function ticketEntityToModel(e: LottoTicketEntity): LottoTicket {
         drawId: e.drawId,
         purchasedAt: e.purchasedAt.toISOString(),
         cost: e.cost,
-        repeatWeeks: e.repeatWeeks ?? undefined
+        totalDraws: e.totalDraws ?? undefined,
+        groupId: e.groupId ?? undefined
     };
 }
 
@@ -499,9 +500,25 @@ export class LottoService implements OnModuleInit {
 
     // ─── Tickets ─────────────────────────────────────────────────────────────
 
-    async getTicketsByUser(userId: string): Promise<LottoTicket[]> {
+    async getTicketsByUser(userId: string): Promise<(LottoTicket & { remainingDraws?: number })[]> {
         const entities = await this.ticketRepo.find({ where: { userId }, order: { purchasedAt: "DESC" } });
-        return entities.map(ticketEntityToModel);
+        const tickets = entities.map(ticketEntityToModel);
+
+        // Calculate remaining draws for grouped tickets
+        const groupPendingCounts = new Map<string, number>();
+        for (const entity of entities) {
+            if (entity.groupId) {
+                const draw = await this.drawRepo.findOneBy({ id: entity.drawId });
+                if (draw && draw.status === "pending") {
+                    groupPendingCounts.set(entity.groupId, (groupPendingCounts.get(entity.groupId) ?? 0) + 1);
+                }
+            }
+        }
+
+        return tickets.map((t) => ({
+            ...t,
+            remainingDraws: t.groupId ? (groupPendingCounts.get(t.groupId) ?? 0) : undefined
+        }));
     }
 
     async purchaseTicket(
@@ -509,58 +526,63 @@ export class LottoService implements OnModuleInit {
         fields: number[][],
         superNumber: number,
         drawId: string,
-        repeatWeeks = 1
+        drawCount = 1
     ): Promise<LottoTicket[]> {
         if (!fields.length || fields.length > 12) throw new BadRequestException("1 to 12 fields required");
         for (const nums of fields) this.validateNumbers(nums, superNumber);
 
         const fieldCount = fields.length;
-        const totalCost = this.configCache.ticketCost * fieldCount * Math.max(1, repeatWeeks);
+        const totalCost = this.configCache.ticketCost * fieldCount * Math.max(1, drawCount);
 
         await this.creditService.deductCredits(
             userId,
             totalCost,
             "lotto_ticket",
-            `Lotto Ticket (${fieldCount} Felder, ${repeatWeeks > 1 ? `${repeatWeeks} Wochen` : "1 Woche"})`
+            `Lotto Ticket (${fieldCount} Felder, ${drawCount} Ziehung${drawCount > 1 ? "en" : ""})`
         );
 
         await this.notificationsService.create(
             userId,
             "system",
             "Lottoticket gekauft",
-            `Du hast ein Ticket mit ${fieldCount} Feld${fieldCount > 1 ? "ern" : ""} gekauft.`,
+            `Du hast ein Ticket mit ${fieldCount} Feld${fieldCount > 1 ? "ern" : ""} für ${drawCount} Ziehung${drawCount > 1 ? "en" : ""} gekauft.`,
             "/lotto"
         );
 
         const sortedFields = fields.map((nums) => [...nums].sort((a, b) => a - b));
         const created: LottoTicket[] = [];
         let currentDrawId = drawId;
+        const groupId = drawCount > 1 ? `group-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` : undefined;
 
-        for (let week = 0; week < Math.max(1, repeatWeeks); week++) {
+        for (let i = 0; i < Math.max(1, drawCount); i++) {
             const draw = await this.drawRepo.findOneBy({ id: currentDrawId });
             if (!draw) throw new BadRequestException(`Draw "${currentDrawId}" not found`);
             if (draw.status === "drawn")
                 throw new BadRequestException(`Draw "${currentDrawId}" has already taken place`);
 
             const entity = this.ticketRepo.create({
-                id: `ticket-${Date.now()}-${week}-${Math.random().toString(36).slice(2, 8)}`,
+                id: `ticket-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
                 userId,
                 fields: sortedFields,
                 superNumber,
                 drawId: currentDrawId,
                 cost: this.configCache.ticketCost * fieldCount,
-                repeatWeeks: repeatWeeks > 1 ? repeatWeeks : undefined
+                totalDraws: drawCount > 1 ? drawCount : undefined,
+                groupId
             });
             await this.ticketRepo.save(entity);
             created.push(ticketEntityToModel(entity));
 
-            if (week < repeatWeeks - 1) {
-                const nextDrawDate = new Date(draw.drawDate);
-                const subsequent = await this.drawRepo.findOne({
-                    where: { status: "pending" },
-                    order: { drawDate: "ASC" }
-                });
-                if (subsequent && new Date(subsequent.drawDate) > nextDrawDate) {
+            if (i < drawCount - 1) {
+                const currentDrawDate = new Date(draw.drawDate);
+                const subsequent = await this.drawRepo
+                    .createQueryBuilder("d")
+                    .where("d.status = :status", { status: "pending" })
+                    .andWhere("d.draw_date > :date", { date: currentDrawDate.toISOString() })
+                    .andWhere("d.id != :currentId", { currentId: currentDrawId })
+                    .orderBy("d.draw_date", "ASC")
+                    .getOne();
+                if (subsequent) {
                     currentDrawId = subsequent.id;
                 } else {
                     const scheduled = await this.scheduleNextDraw();

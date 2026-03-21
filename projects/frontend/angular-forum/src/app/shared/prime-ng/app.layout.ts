@@ -3,6 +3,7 @@ import { Component, inject, OnDestroy, Renderer2, ViewChild } from "@angular/cor
 import { NavigationEnd, Router, RouterModule } from "@angular/router";
 import { filter, Subscription } from "rxjs";
 
+import { AchievementToast } from "../../core/components/achievement-toast/achievement-toast";
 import { AppFooter } from "./app.footer";
 import { AppSidebar } from "./app.sidebar";
 import { AppTopbar } from "./app.topbar";
@@ -11,7 +12,7 @@ import { LayoutService } from "./service/layout.service";
 @Component({
     selector: "app-layout",
     standalone: true,
-    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
+    imports: [CommonModule, AchievementToast, AppTopbar, AppSidebar, RouterModule, AppFooter],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
@@ -22,6 +23,7 @@ import { LayoutService } from "./service/layout.service";
             <app-footer></app-footer>
         </div>
         <div class="layout-mask animate-fadein"></div>
+        <app-achievement-toast />
     </div> `
 })
 export class AppLayout implements OnDestroy {

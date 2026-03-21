@@ -21,8 +21,11 @@ export class LottoTicketEntity {
     @Column({ type: "int" })
     cost!: number;
 
-    @Column({ name: "repeat_weeks", type: "int", nullable: true })
-    repeatWeeks?: number;
+    @Column({ name: "total_draws", type: "int", nullable: true })
+    totalDraws?: number;
+
+    @Column({ name: "group_id", type: "varchar", length: 100, nullable: true })
+    groupId?: string;
 
     @CreateDateColumn({ name: "purchased_at", type: "timestamptz" })
     purchasedAt!: Date;

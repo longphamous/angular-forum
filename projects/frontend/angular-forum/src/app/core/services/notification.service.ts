@@ -4,22 +4,45 @@ import { inject, Injectable, signal } from "@angular/core";
 import { NOTIFICATIONS_ROUTES } from "../api/notifications.routes";
 import { API_CONFIG, ApiConfig } from "../config/api.config";
 import { AppNotification } from "../models/notifications/notification";
+import { PushNotificationNew } from "../models/push/push-events";
+import { PushService } from "./push.service";
 
 @Injectable({ providedIn: "root" })
 export class NotificationService {
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
+    private readonly pushService = inject(PushService);
 
     readonly unreadCount = signal(0);
     readonly notifications = signal<AppNotification[]>([]);
     readonly loading = signal(false);
 
     private pollInterval: ReturnType<typeof setInterval> | null = null;
+    private pushListening = false;
 
     startPolling(): void {
         this.fetchUnreadCount();
         if (this.pollInterval !== null) return;
         this.pollInterval = setInterval(() => this.fetchUnreadCount(), 30_000);
+
+        // Listen for real-time push notifications
+        if (!this.pushListening) {
+            this.pushListening = true;
+            this.pushService.on<PushNotificationNew>("notification:new").subscribe((ev) => {
+                this.unreadCount.update((c) => c + 1);
+                const newNotif: AppNotification = {
+                    id: ev.id,
+                    userId: "",
+                    type: ev.type as AppNotification["type"],
+                    title: ev.title,
+                    body: ev.body,
+                    link: ev.link,
+                    isRead: false,
+                    createdAt: ev.createdAt
+                };
+                this.notifications.update((list) => [newNotif, ...list]);
+            });
+        }
     }
 
     stopPolling(): void {

@@ -1,7 +1,13 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
-import { AchievementDto, AchievementService, CreateAchievementDto, UserAchievementDto } from "./achievement.service";
+import {
+    AchievementDto,
+    AchievementProgressDto,
+    AchievementService,
+    CreateAchievementDto,
+    UserAchievementDto
+} from "./achievement.service";
 
 const VALID_RARITIES = ["bronze", "silver", "gold", "platinum"] as const;
 const VALID_TRIGGER_TYPES = [
@@ -47,6 +53,12 @@ export class AchievementController {
     @Get("user/:userId")
     getUserAchievements(@Param("userId") userId: string): Promise<UserAchievementDto[]> {
         return this.achievementService.getUserAchievements(userId);
+    }
+
+    @Public()
+    @Get("progress/:userId")
+    getUserProgress(@Param("userId") userId: string): Promise<AchievementProgressDto[]> {
+        return this.achievementService.getUserProgress(userId);
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────────

@@ -1528,11 +1528,12 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && /\/api\/credit\/lotto\/tickets$/.test(url)) {
-            const body = req.body as { fields: number[][]; superNumber: number; drawId: string; repeatWeeks?: number };
-            const repeatWeeks = Math.max(1, body.repeatWeeks ?? 1);
+            const body = req.body as { fields: number[][]; superNumber: number; drawId: string; drawCount?: number };
+            const drawCount = Math.max(1, body.drawCount ?? 1);
             const createdTickets: LottoTicket[] = [];
             let currentDrawId = body.drawId;
-            for (let w = 0; w < repeatWeeks; w++) {
+            const groupId = drawCount > 1 ? `group-${Date.now()}` : undefined;
+            for (let w = 0; w < drawCount; w++) {
                 const draw = mockLottoDraws.find((d) => d.id === currentDrawId);
                 if (!draw || draw.status === "drawn") break;
                 const ticket: LottoTicket = {
@@ -1543,22 +1544,20 @@ export class MockInterceptor implements HttpInterceptor {
                     drawId: currentDrawId,
                     purchasedAt: new Date().toISOString(),
                     cost: mockLottoConfig.ticketCost,
-                    repeatWeeks: repeatWeeks > 1 ? repeatWeeks : undefined
+                    totalDraws: drawCount > 1 ? drawCount : undefined,
+                    groupId
                 };
                 mockLottoTickets.push(ticket);
                 createdTickets.push(ticket);
-                // Each ticket contributes rolloverPercentage% of its cost to the draw's jackpot
                 const contrib = Math.floor(mockLottoConfig.ticketCost * (mockLottoConfig.rolloverPercentage / 100));
                 if (contrib > 0) draw.jackpot += contrib;
                 if (draw.totalTickets !== undefined) draw.totalTickets++;
-                // advance to next draw for next iteration
                 const nextDraw = mockLottoDraws.find((d) => d.status === "pending" && d.id !== currentDrawId);
                 if (nextDraw) currentDrawId = nextDraw.id;
                 else break;
             }
-            // deduct from mock wallet
             const wallet = mockWallets["00000000-0000-0000-0000-000000000001"];
-            if (wallet) wallet.balance -= mockLottoConfig.ticketCost * repeatWeeks;
+            if (wallet) wallet.balance -= mockLottoConfig.ticketCost * drawCount;
             return this.ok(createdTickets);
         }
 

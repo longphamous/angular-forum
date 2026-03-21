@@ -54,6 +54,8 @@ export interface AchievementFormData {
     rarity: AchievementRarity;
     triggerType: string;
     triggerValue: number;
+    xpReward: number;
+    category: string;
     isActive: boolean;
 }
 
@@ -65,6 +67,8 @@ const EMPTY_FORM: AchievementFormData = {
     rarity: "bronze",
     triggerType: "post_count",
     triggerValue: 1,
+    xpReward: 0,
+    category: "general",
     isActive: true
 };
 
@@ -114,6 +118,13 @@ export class AdminAchievements implements OnInit {
         }));
     }
 
+    get categoryOptions() {
+        return ["general", "community", "content", "social", "milestones"].map((v) => ({
+            label: this.translocoService.translate(`achievements.categories.${v}`),
+            value: v
+        }));
+    }
+
     get triggerTypeOptions() {
         return Object.entries(TRIGGER_TYPE_KEYS).map(([value, key]) => ({
             label: this.translocoService.translate(key),
@@ -157,6 +168,8 @@ export class AdminAchievements implements OnInit {
             rarity: achievement.rarity as AchievementRarity,
             triggerType: achievement.triggerType,
             triggerValue: achievement.triggerValue,
+            xpReward: achievement.xpReward ?? 0,
+            category: achievement.category ?? "general",
             isActive: achievement.isActive
         });
         this.error.set(null);
@@ -179,6 +192,8 @@ export class AdminAchievements implements OnInit {
             rarity: f.rarity,
             triggerType: f.triggerType,
             triggerValue: f.triggerValue,
+            xpReward: f.xpReward,
+            category: f.category || undefined,
             isActive: f.isActive
         };
 

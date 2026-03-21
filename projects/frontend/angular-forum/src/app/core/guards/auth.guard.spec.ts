@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { provideRouter } from "@angular/router";
@@ -9,8 +10,8 @@ describe("authGuard", () => {
     let router: Router;
 
     const mockAuthFacade = {
-        isAuthenticated: jasmine.createSpy("isAuthenticated"),
-        isAdmin: jasmine.createSpy("isAdmin")
+        isAuthenticated: vi.fn(),
+        isAdmin: vi.fn()
     };
 
     function runGuard(guard: typeof authGuard): boolean | UrlTree {
@@ -28,21 +29,21 @@ describe("authGuard", () => {
     });
 
     afterEach(() => {
-        mockAuthFacade.isAuthenticated.calls.reset();
-        mockAuthFacade.isAdmin.calls.reset();
+        mockAuthFacade.isAuthenticated.mockReset();
+        mockAuthFacade.isAdmin.mockReset();
     });
 
     describe("authGuard", () => {
         it("should return true when user is authenticated", () => {
-            mockAuthFacade.isAuthenticated.and.returnValue(true);
+            mockAuthFacade.isAuthenticated.mockReturnValue(true);
 
             const result = runGuard(authGuard);
 
-            expect(result).toBeTrue();
+            expect(result).toBe(true);
         });
 
         it("should return a UrlTree to /login when user is not authenticated", () => {
-            mockAuthFacade.isAuthenticated.and.returnValue(false);
+            mockAuthFacade.isAuthenticated.mockReturnValue(false);
 
             const result = runGuard(authGuard);
 
@@ -53,15 +54,15 @@ describe("authGuard", () => {
 
     describe("adminGuard", () => {
         it("should return true when user is admin", () => {
-            mockAuthFacade.isAdmin.and.returnValue(true);
+            mockAuthFacade.isAdmin.mockReturnValue(true);
 
             const result = runGuard(adminGuard);
 
-            expect(result).toBeTrue();
+            expect(result).toBe(true);
         });
 
         it("should return a UrlTree to /dashboard when user is not admin", () => {
-            mockAuthFacade.isAdmin.and.returnValue(false);
+            mockAuthFacade.isAdmin.mockReturnValue(false);
 
             const result = runGuard(adminGuard);
 
