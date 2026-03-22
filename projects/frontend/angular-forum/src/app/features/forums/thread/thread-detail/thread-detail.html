@@ -20,6 +20,16 @@
                     <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
                         {{ facade.currentThread()!.title }}
                     </h1>
+                    @if (facade.currentThread()!.authorId === authFacade.currentUser()?.id || authFacade.isModerator()) {
+                        <button
+                            class="border-none bg-transparent text-color-secondary hover:text-primary cursor-pointer transition-colors p-0"
+                            (click)="openTitleEdit()"
+                            [title]="t('common.edit')"
+                            type="button"
+                        >
+                            <i class="pi pi-pencil" style="font-size: 0.8rem"></i>
+                        </button>
+                    }
                     @if (facade.currentThread()!.isPinned) {
                     <p-tag [value]="t('threadDetail.pinned')" severity="warn" />
                     } @if (facade.currentThread()!.isSticky) {
@@ -280,7 +290,31 @@
         [style]="{ width: '50rem', maxWidth: '95vw' }"
     >
         <div class="flex flex-col gap-4">
-            <p-editor [(ngModel)]="editContent" [style]="{ height: '250px' }" />
+            <p-editor [(ngModel)]="editContent" [style]="{ height: '250px' }">
+                <ng-template pTemplate="header">
+                    <span class="ql-formats">
+                        <button class="ql-bold" type="button"></button>
+                        <button class="ql-italic" type="button"></button>
+                        <button class="ql-underline" type="button"></button>
+                        <button class="ql-strike" type="button"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-blockquote" type="button"></button>
+                        <button class="ql-code-block" type="button"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered" type="button"></button>
+                        <button class="ql-list" value="bullet" type="button"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-link" type="button"></button>
+                        <button class="ql-image" type="button"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-clean" type="button"></button>
+                    </span>
+                </ng-template>
+            </p-editor>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-500 text-xs font-medium"
                     >{{ t('threadDetail.editDialog.reasonLabel') }}</label
@@ -848,7 +882,31 @@
             [placeholder]="t('threadDetail.replyPlaceholder')"
             [readonly]="submittingReply"
             [style]="{ height: '200px' }"
-        />
+        >
+            <ng-template pTemplate="header">
+                <span class="ql-formats">
+                    <button class="ql-bold" type="button"></button>
+                    <button class="ql-italic" type="button"></button>
+                    <button class="ql-underline" type="button"></button>
+                    <button class="ql-strike" type="button"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-blockquote" type="button"></button>
+                    <button class="ql-code-block" type="button"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-list" value="ordered" type="button"></button>
+                    <button class="ql-list" value="bullet" type="button"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-link" type="button"></button>
+                    <button class="ql-image" type="button"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-clean" type="button"></button>
+                </span>
+            </ng-template>
+        </p-editor>
 
         <div class="mt-3 flex justify-end">
             <p-button
@@ -910,6 +968,23 @@
                 severity="warn"
             />
             }
+        </ng-template>
+    </p-dialog>
+
+    <!-- Title Edit Dialog -->
+    <p-dialog
+        [(visible)]="titleEditDialogVisible"
+        [header]="t('threadDetail.editTitle')"
+        [modal]="true"
+        [style]="{ width: '30rem' }"
+    >
+        <div class="flex flex-col gap-3 pt-2">
+            <label class="text-sm font-medium">{{ t('common.title') }}</label>
+            <input class="w-full" pInputText [(ngModel)]="editTitleValue" />
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button (onClick)="titleEditDialogVisible.set(false)" [label]="t('common.cancel')" [text]="true" severity="secondary" />
+            <p-button (onClick)="saveTitleEdit()" [disabled]="!editTitleValue.trim()" [label]="t('common.save')" icon="pi pi-check" />
         </ng-template>
     </p-dialog>
 </ng-container>

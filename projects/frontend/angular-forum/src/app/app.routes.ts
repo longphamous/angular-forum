@@ -128,6 +128,13 @@ export const routes: Routes = [
                 loadComponent: () => import("./features/admin/admin-users/admin-users").then((c) => c.AdminUsers)
             },
             {
+                path: "admin/moderation",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-moderation/admin-moderation").then((c) => c.AdminModeration)
+            },
+            {
                 path: "admin/groups",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],

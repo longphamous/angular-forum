@@ -5,13 +5,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "../auth/auth.module";
 import { GamificationModule } from "../gamification/gamification.module";
 import { GroupEntity } from "../group/entities/group.entity";
+import { ModerationModule } from "../moderation/moderation.module";
 import { UserEntity } from "./entities/user.entity";
 import { PresenceInterceptor } from "./presence.interceptor";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 
 @Module({
-    imports: [AuthModule, GamificationModule, TypeOrmModule.forFeature([UserEntity, GroupEntity])],
+    imports: [AuthModule, GamificationModule, ModerationModule, TypeOrmModule.forFeature([UserEntity, GroupEntity])],
     controllers: [UserController],
     providers: [UserService, { provide: APP_INTERCEPTOR, useClass: PresenceInterceptor }],
     exports: [UserService]

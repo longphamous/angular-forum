@@ -26,6 +26,7 @@ import { LexiconModule } from "./lexicon/lexicon.module";
 import { LinkDatabaseModule } from "./link-database/link-database.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MessagesModule } from "./messages/messages.module";
+import { ModerationModule } from "./moderation/moderation.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PushModule } from "./push/push.module";
 import { RecipesModule } from "./recipes/recipes.module";
@@ -61,6 +62,7 @@ import { WeatherModule } from "./weather/weather.module";
         NotificationsModule,
         PushModule.register(),
         MessagesModule,
+        ModerationModule,
         BlogModule,
         ChronikModule,
         MarketplaceModule,

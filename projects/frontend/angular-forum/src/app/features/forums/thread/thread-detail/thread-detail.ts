@@ -81,6 +81,8 @@ export class ThreadDetail implements OnInit, OnDestroy {
     readonly moveDialogVisible = signal(false);
     readonly deleteDialogVisible = signal(false);
     readonly editDialogVisible = signal(false);
+    readonly titleEditDialogVisible = signal(false);
+    editTitleValue = "";
     readonly historyDialogVisible = signal(false);
     readonly availableForums = signal<{ id: string; name: string }[]>([]);
     readonly editHistory = signal<PostEditHistoryEntry[]>([]);
@@ -245,7 +247,14 @@ export class ThreadDetail implements OnInit, OnDestroy {
     // ── Quote ─────────────────────────────────────────────────────────────────
 
     quotePost(post: Post): void {
-        const quote = `<blockquote><strong>${post.authorName} schrieb:</strong><br>${post.content}</blockquote><p><br></p>`;
+        // Strip nested blockquotes, HTML tags, and empty lines for a clean inline quote
+        const cleanContent = post.content
+            .replace(/<blockquote[\s\S]*?<\/blockquote>/gi, "")
+            .replace(/<\/?p>/gi, " ")
+            .replace(/<br\s*\/?>/gi, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        const quote = `<blockquote>${post.authorName}: ${cleanContent}</blockquote><p><br></p>`;
         this.replyContent = this.replyContent ? this.replyContent + quote : quote;
         const replyEl = document.getElementById("reply-section");
         if (replyEl) replyEl.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -401,6 +410,27 @@ export class ThreadDetail implements OnInit, OnDestroy {
     openHistoryDialog(post: Post): void {
         this.editHistory.set(post.editHistory ?? []);
         this.historyDialogVisible.set(true);
+    }
+
+    // ── Title editing ─────────────────────────────────────────────────────────
+
+    openTitleEdit(): void {
+        const thread = this.facade.currentThread();
+        if (!thread) return;
+        this.editTitleValue = thread.title;
+        this.titleEditDialogVisible.set(true);
+    }
+
+    saveTitleEdit(): void {
+        const title = this.editTitleValue.trim();
+        if (!title) return;
+        this.facade.updateThread(this.threadId, { title }).subscribe({
+            next: () => {
+                this.titleEditDialogVisible.set(false);
+                this.facade.loadThread(this.threadId);
+                this.cd.markForCheck();
+            }
+        });
     }
 
     // ── Moderation ─────────────────────────────────────────────────────────────

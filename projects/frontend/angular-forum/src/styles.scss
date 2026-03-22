@@ -2,3 +2,77 @@
 @use "./assets/layout/layout.scss";
 @use "primeicons/primeicons.css";
 @use "./assets/demo/demo.scss";
+
+// ── Global Blockquote / Quote Box ──────────────────────────────────────────
+// Quill renders each line in a blockquote as a separate <blockquote> element.
+// These styles visually merge consecutive blockquotes into one box.
+
+.post-content blockquote,
+.ql-editor blockquote {
+    display: block;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--surface-border);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 0.5rem;
+    background: var(--surface-ground);
+    font-style: normal;
+    color: var(--text-color-secondary);
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+// First blockquote in a sequence: add top margin
+.post-content blockquote:not(blockquote + blockquote),
+.ql-editor blockquote:not(blockquote + blockquote) {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+}
+
+// Last blockquote before a non-blockquote: add bottom margin
+.post-content blockquote:has(+ :not(blockquote)),
+.post-content blockquote:last-child,
+.ql-editor blockquote:has(+ :not(blockquote)),
+.ql-editor blockquote:last-child {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+// Consecutive blockquotes: remove borders/radius between them to merge visually
+.post-content blockquote + blockquote,
+.ql-editor blockquote + blockquote {
+    border-top: none;
+    border-radius: 0;
+    padding-top: 0;
+}
+
+// First in sequence: only round top corners
+.post-content blockquote:not(blockquote + blockquote),
+.ql-editor blockquote:not(blockquote + blockquote) {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+// Last in sequence: only round bottom corners
+.post-content blockquote:not(:has(+ blockquote)),
+.ql-editor blockquote:not(:has(+ blockquote)) {
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+// Single blockquote (not consecutive): round all corners
+.post-content blockquote:not(blockquote + blockquote):not(:has(+ blockquote)),
+.ql-editor blockquote:not(blockquote + blockquote):not(:has(+ blockquote)) {
+    border-radius: 0.5rem;
+}
+
+.post-content blockquote p,
+.ql-editor blockquote p {
+    margin: 0;
+}
+
+// Nested quotes
+.post-content blockquote blockquote {
+    margin: 0.5rem 0;
+    background: var(--surface-50);
+    border-color: var(--surface-200);
+    border-left-color: var(--surface-300);
+}

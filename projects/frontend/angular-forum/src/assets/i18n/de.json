@@ -78,6 +78,7 @@
     "forumStructure": "Forenstruktur",
     "userManagement": "Benutzerverwaltung",
     "groupManagement": "Gruppenverwaltung",
+    "moderation": "Profil-Moderation",
     "pagePermissions": "Seitenberechtigungen",
     "gamification": "Gamification",
     "achievements": "Achievements",
@@ -179,6 +180,7 @@
     "lastReply": "Letzte Antwort"
   },
   "threadDetail": {
+    "editTitle": "Thread-Titel bearbeiten",
     "views": "Aufrufe",
     "replies": "Antworten",
     "pinned": "Angepinnt",
@@ -1566,6 +1568,29 @@
       "approve": "Freigeben",
       "reject": "Ablehnen",
       "rejectReason": "Ablehnungsgrund"
+    }
+  },
+  "moderation": {
+    "title": "Profil-Moderation",
+    "subtitle": "Profiländerungen prüfen und freigeben",
+    "pending": "Ausstehend",
+    "pendingTab": "Ausstehende Prüfungen",
+    "historyTab": "Verlauf",
+    "noPending": "Keine ausstehenden Prüfungen. Alles erledigt!",
+    "noHistory": "Noch kein Prüfverlauf vorhanden.",
+    "approvedToday": "Heute genehmigt",
+    "rejectedToday": "Heute abgelehnt",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "note": "Notiz (optional)",
+    "notePlaceholder": "Notiz für den Benutzer hinzufügen...",
+    "old": "Aktuell",
+    "new": "Neu",
+    "types": {
+      "avatar": "Avatar",
+      "avatarUrl": "Avatar-URL",
+      "cover": "Titelbild",
+      "signature": "Signatur"
     }
   },
   "steam": {

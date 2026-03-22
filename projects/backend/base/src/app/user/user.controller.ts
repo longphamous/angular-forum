@@ -119,7 +119,10 @@ export class UserController {
      * Body: { displayName?, avatarUrl?, bio? }
      */
     @Patch("profile")
-    updateProfile(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto): Promise<UserProfile> {
+    updateProfile(
+        @CurrentUser() user: AuthenticatedUser,
+        @Body() dto: UpdateProfileDto
+    ): Promise<{ profile: UserProfile; pendingFields?: string[] }> {
         return this.userService.updateProfile(user.userId, dto);
     }
 

@@ -125,6 +125,11 @@ export class AppMenu implements OnInit, OnDestroy {
                                 routerLink: ["/admin/groups"]
                             },
                             {
+                                label: this.t("nav.moderation"),
+                                icon: "pi pi-fw pi-verified",
+                                routerLink: ["/admin/moderation"]
+                            },
+                            {
                                 label: this.t("nav.pagePermissions"),
                                 icon: "pi pi-fw pi-lock",
                                 routerLink: ["/admin/permissions"]

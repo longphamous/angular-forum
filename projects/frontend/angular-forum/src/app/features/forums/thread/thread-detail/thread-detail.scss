@@ -1,30 +1,60 @@
 .post-content {
-    line-height: 1.6;
+    line-height: 1.7;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 
-    :deep(p) {
+    p {
         margin: 0 0 0.75rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
-    :deep(img) {
+    img {
         max-width: 100%;
         height: auto;
+        border-radius: 0.5rem;
     }
 
-    :deep(a) {
+    a {
         color: var(--primary-color);
         text-decoration: underline;
     }
 
-    :deep(pre),
-    :deep(code) {
+    pre,
+    code {
         background-color: var(--surface-100);
         border-radius: 4px;
         padding: 0.2em 0.4em;
         font-family: monospace;
     }
 
-    :deep(pre) {
+    pre {
         padding: 1rem;
         overflow-x: auto;
+    }
+
+    ul,
+    ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+    }
+
+    li {
+        margin-bottom: 0.25rem;
+    }
+
+    h1,
+    h2,
+    h3 {
+        margin: 1rem 0 0.5rem;
+        line-height: 1.3;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid var(--surface-border);
+        margin: 1rem 0;
     }
 }

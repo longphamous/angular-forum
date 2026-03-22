@@ -7,6 +7,7 @@ import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
+import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../push/push.service";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
 import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
@@ -74,6 +75,7 @@ export class UserService {
         private readonly dataSource: DataSource,
         private readonly authService: AuthService,
         private readonly gamificationService: GamificationService,
+        private readonly moderationService: ModerationService,
         private readonly pushService: PushService
     ) {}
 
@@ -141,20 +143,55 @@ export class UserService {
         return toProfile(user, Number(count), xpData);
     }
 
-    async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserProfile> {
+    async updateProfile(
+        userId: string,
+        dto: UpdateProfileDto
+    ): Promise<{ profile: UserProfile; pendingFields?: string[] }> {
         const user = await this.findById(userId);
+        const exempt = await this.moderationService.isExempt(userId);
+        const pendingFields: string[] = [];
+
+        // Fields that require moderation for non-exempt users
+        const moderatedFields: { dtoKey: keyof UpdateProfileDto; type: "avatar_url" | "cover" | "signature"; userKey: keyof UserEntity }[] = [
+            { dtoKey: "avatarUrl", type: "avatar_url", userKey: "avatarUrl" },
+            { dtoKey: "coverUrl", type: "cover", userKey: "coverUrl" },
+            { dtoKey: "signature", type: "signature", userKey: "signature" }
+        ];
+
+        for (const { dtoKey, type, userKey } of moderatedFields) {
+            const newValue = dto[dtoKey];
+            if (newValue !== undefined) {
+                if (exempt) {
+                    (user as unknown as Record<string, unknown>)[userKey] = newValue;
+                } else {
+                    try {
+                        await this.moderationService.submitForApproval(
+                            userId,
+                            type,
+                            (user[userKey] as string | undefined) ?? null,
+                            newValue as string
+                        );
+                        pendingFields.push(dtoKey);
+                    } catch {
+                        // Already has a pending entry for this type — skip silently
+                        pendingFields.push(dtoKey);
+                    }
+                }
+            }
+        }
+
+        // Non-moderated fields — apply directly
         if (dto.displayName !== undefined) user.displayName = dto.displayName;
-        if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
-        if (dto.coverUrl !== undefined) user.coverUrl = dto.coverUrl;
         if (dto.bio !== undefined) user.bio = dto.bio;
         if (dto.birthday !== undefined) user.birthday = dto.birthday ? new Date(dto.birthday) : undefined;
         if (dto.gender !== undefined) user.gender = dto.gender;
         if (dto.location !== undefined) user.location = dto.location;
         if (dto.website !== undefined) user.website = dto.website;
-        if (dto.signature !== undefined) user.signature = dto.signature;
         if (dto.socialLinks !== undefined) user.socialLinks = dto.socialLinks;
+
         await this.userRepo.save(user);
-        return toProfile(user);
+        const profile = toProfile(user);
+        return pendingFields.length > 0 ? { profile, pendingFields } : { profile };
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────────

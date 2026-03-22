@@ -78,6 +78,7 @@
     "forumStructure": "Forum Structure",
     "userManagement": "User Management",
     "groupManagement": "Group Management",
+    "moderation": "Profile Moderation",
     "pagePermissions": "Page Permissions",
     "gamification": "Gamification",
     "achievements": "Achievements",
@@ -179,6 +180,7 @@
     "lastReply": "Latest reply"
   },
   "threadDetail": {
+    "editTitle": "Edit Thread Title",
     "views": "Views",
     "replies": "Replies",
     "pinned": "Pinned",
@@ -1566,6 +1568,29 @@
       "approve": "Approve",
       "reject": "Reject",
       "rejectReason": "Rejection reason"
+    }
+  },
+  "moderation": {
+    "title": "Profile Moderation",
+    "subtitle": "Review and approve profile changes",
+    "pending": "Pending",
+    "pendingTab": "Pending Reviews",
+    "historyTab": "History",
+    "noPending": "No pending reviews. All clear!",
+    "noHistory": "No review history yet.",
+    "approvedToday": "Approved today",
+    "rejectedToday": "Rejected today",
+    "approve": "Approve",
+    "reject": "Reject",
+    "note": "Note (optional)",
+    "notePlaceholder": "Add a note for the user...",
+    "old": "Current",
+    "new": "New",
+    "types": {
+      "avatar": "Avatar",
+      "avatarUrl": "Avatar URL",
+      "cover": "Cover Image",
+      "signature": "Signature"
     }
   },
   "steam": {
