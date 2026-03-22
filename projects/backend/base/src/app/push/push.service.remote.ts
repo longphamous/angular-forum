@@ -17,6 +17,7 @@ export class PushServiceRemote {
     }
 
     sendToUser(userId: string, event: PushEventType, payload: unknown): void {
+        this.logger.log(`→ ${event} → user:${userId.slice(0, 8)}… (via remote)`);
         void this.emit({ target: "user", targetId: userId, event, payload });
     }
 

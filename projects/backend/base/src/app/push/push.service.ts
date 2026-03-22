@@ -11,6 +11,9 @@ export class PushService {
     constructor(private readonly gateway: PushGateway) {}
 
     sendToUser(userId: string, event: PushEventType, payload: unknown): void {
+        const sockets = this.gateway.userSockets.get(userId);
+        const tabCount = sockets?.size ?? 0;
+        this.logger.log(`→ ${event} → user:${userId.slice(0, 8)}… (${tabCount} tab${tabCount !== 1 ? "s" : ""})`);
         try {
             this.gateway.server.to(`user:${userId}`).emit(event, payload);
         } catch (err) {
@@ -19,6 +22,7 @@ export class PushService {
     }
 
     sendToThread(threadId: string, event: PushEventType, payload: unknown): void {
+        this.logger.log(`→ ${event} → thread:${threadId.slice(0, 8)}…`);
         try {
             this.gateway.server.to(`thread:${threadId}`).emit(event, payload);
         } catch (err) {
@@ -27,6 +31,7 @@ export class PushService {
     }
 
     sendToConversation(conversationId: string, event: PushEventType, payload: unknown): void {
+        this.logger.log(`→ ${event} → conversation:${conversationId.slice(0, 8)}…`);
         try {
             this.gateway.server.to(`conversation:${conversationId}`).emit(event, payload);
         } catch (err) {
@@ -35,6 +40,7 @@ export class PushService {
     }
 
     broadcast(event: PushEventType, payload: unknown): void {
+        this.logger.log(`→ ${event} → broadcast (${this.getOnlineCount()} users)`);
         try {
             this.gateway.server.emit(event, payload);
         } catch (err) {

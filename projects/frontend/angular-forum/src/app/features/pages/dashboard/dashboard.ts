@@ -11,6 +11,7 @@ import { RecentThreadsWidget } from "./components/recent-threads-widget";
 import { TopPostersWidget } from "./components/top-posters-widget";
 import { TopWealthWidget } from "./components/top-wealth-widget";
 import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
+import { WeatherWidget } from "./components/weather-widget";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,7 +25,8 @@ import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
         RecentThreadsWidget,
         TopPostersWidget,
         TopWealthWidget,
-        UpcomingEventsWidget
+        UpcomingEventsWidget,
+        WeatherWidget
     ],
     selector: "app-dashboard",
     styles: `
@@ -50,7 +52,7 @@ import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
 
             <app-dashboard-stats-widget class="contents" />
 
-            <!-- Activity Feed (full width, scrollable) -->
+            <!-- Activity Feed -->
             <div class="col-span-12">
                 <app-activity-feed-widget />
             </div>
@@ -68,6 +70,7 @@ import { UpcomingEventsWidget } from "./components/upcoming-events-widget";
                 <app-recent-threads-widget />
             </div>
             <div class="col-span-12 flex flex-col gap-4 xl:col-span-4">
+                <app-weather-widget />
                 <app-upcoming-events-widget class="flex-1" />
                 <app-online-users-widget />
             </div>

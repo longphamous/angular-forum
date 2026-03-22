@@ -6,6 +6,8 @@ import { TranslocoModule } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
+import { IconFieldModule } from "primeng/iconfield";
+import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
 import { SkeletonModule } from "primeng/skeleton";
 import { TabsModule } from "primeng/tabs";
@@ -23,6 +25,8 @@ import { OnlineIndicator } from "../../../shared/components/online-indicator/onl
         ButtonModule,
         DatePipe,
         FormsModule,
+        IconFieldModule,
+        InputIconModule,
         InputTextModule,
         RouterModule,
         SkeletonModule,

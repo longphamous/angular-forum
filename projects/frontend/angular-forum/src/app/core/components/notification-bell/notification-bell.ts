@@ -56,11 +56,11 @@ export class NotificationBell implements OnInit, OnDestroy {
     );
 
     ngOnInit(): void {
-        this.notifService.startPolling();
+        this.notifService.start();
     }
 
     ngOnDestroy(): void {
-        this.notifService.stopPolling();
+        this.notifService.stop();
     }
 
     protected onOpen(): void {

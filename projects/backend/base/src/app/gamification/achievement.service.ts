@@ -100,6 +100,43 @@ export class AchievementService {
         private readonly pushService: PushService
     ) {}
 
+    // ── Detail ──────────────────────────────────────────────────────────────
+
+    async getAchievementDetail(achievementId: string): Promise<object> {
+        const achievement = await this.achievementRepo.findOneBy({ id: achievementId });
+        if (!achievement) throw new NotFoundException("Achievement not found");
+
+        const earned = await this.userAchievementRepo.find({
+            where: { achievementId },
+            order: { earnedAt: "DESC" }
+        });
+
+        const { UserEntity } = await import("../user/entities/user.entity");
+        const userRepo = this.userAchievementRepo.manager.getRepository(UserEntity);
+        const userIds = earned.map((e) => e.userId);
+        const users = userIds.length ? await userRepo.find({ where: { id: In(userIds) } }) : [];
+        const userMap = new Map(users.map((u) => [u.id, u]));
+
+        const recipients = earned.map((e) => {
+            const user = userMap.get(e.userId);
+            return {
+                userId: e.userId,
+                username: user?.username ?? "unknown",
+                displayName: user?.displayName ?? "Unknown",
+                avatarUrl: user?.avatarUrl ?? null,
+                source: e.source ?? "auto",
+                grantedBy: e.grantedBy ?? null,
+                earnedAt: e.earnedAt.toISOString()
+            };
+        });
+
+        return {
+            ...this.toDto(achievement),
+            totalGranted: earned.length,
+            recipients
+        };
+    }
+
     // ── Admin CRUD ─────────────────────────────────────────────────────────────
 
     async getAllAchievements(includeInactive = false): Promise<AchievementDto[]> {

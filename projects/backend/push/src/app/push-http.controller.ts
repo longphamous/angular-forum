@@ -20,6 +20,7 @@ export class PushHttpController {
     @Post("emit")
     @HttpCode(202)
     emit(@Body() body: EmitRequest): { accepted: boolean } {
+        this.logger.log(`← HTTP emit: ${body.event} → ${body.target}:${body.targetId ?? "all"}`);
         try {
             switch (body.target) {
                 case "user":

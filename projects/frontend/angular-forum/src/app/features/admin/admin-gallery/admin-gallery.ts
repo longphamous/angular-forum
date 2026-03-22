@@ -6,6 +6,8 @@ import { TranslocoModule } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { IconFieldModule } from "primeng/iconfield";
+import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
 import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
@@ -23,6 +25,8 @@ import { AlbumAccess, GalleryAlbum } from "../../../core/models/gallery/gallery"
         ButtonModule,
         CardModule,
         FormsModule,
+        IconFieldModule,
+        InputIconModule,
         InputTextModule,
         SkeletonModule,
         TableModule,

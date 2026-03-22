@@ -62,8 +62,8 @@
             <ng-template pTemplate="caption">
                 <div class="flex items-center justify-between">
                     <span class="font-semibold">{{ t("gallery.albumList") }}</span>
-                    <span class="p-input-icon-left">
-                        <i class="pi pi-search"></i>
+                    <p-iconfield>
+                        <p-inputicon styleClass="pi pi-search" />
                         <input
                             (ngModelChange)="globalFilter.set($event)"
                             [ngModel]="globalFilter()"
@@ -71,7 +71,7 @@
                             pInputText
                             type="text"
                         />
-                    </span>
+                    </p-iconfield>
                 </div>
             </ng-template>
 

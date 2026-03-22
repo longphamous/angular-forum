@@ -120,16 +120,66 @@ export class AuthFacade {
 
     private _restoreFromStorage(): void {
         const token = localStorage.getItem(STORAGE_TOKEN);
+        const refreshToken = localStorage.getItem(STORAGE_REFRESH);
         const raw = localStorage.getItem(STORAGE_PROFILE);
         if (!token || !raw) return;
+
+        // Check if access token is expired
+        if (this._isTokenExpired(token)) {
+            // Try to refresh silently
+            if (refreshToken) {
+                this.http
+                    .post<AuthSession>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.refresh()}`, { refreshToken })
+                    .subscribe({
+                        next: (session) => {
+                            this._accessToken.set(session.accessToken);
+                            localStorage.setItem(STORAGE_TOKEN, session.accessToken);
+                            localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
+                            try {
+                                this._currentUser.set(JSON.parse(raw) as UserProfile);
+                            } catch {
+                                // profile parse failed
+                            }
+                            this.pushService.connect(session.accessToken);
+                        },
+                        error: () => {
+                            // Refresh failed — clear everything, redirect to login
+                            this._clearStorage();
+                            this.router.navigate(["/login"]);
+                        }
+                    });
+            } else {
+                this._clearStorage();
+                this.router.navigate(["/login"]);
+            }
+            return;
+        }
+
         try {
             this._accessToken.set(token);
             this._currentUser.set(JSON.parse(raw) as UserProfile);
             this.pushService.connect(token);
         } catch {
-            localStorage.removeItem(STORAGE_TOKEN);
-            localStorage.removeItem(STORAGE_REFRESH);
-            localStorage.removeItem(STORAGE_PROFILE);
+            this._clearStorage();
         }
+    }
+
+    private _isTokenExpired(token: string): boolean {
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            const exp = payload.exp as number | undefined;
+            if (!exp) return false;
+            return Date.now() >= exp * 1000;
+        } catch {
+            return true;
+        }
+    }
+
+    private _clearStorage(): void {
+        this._accessToken.set(null);
+        this._currentUser.set(null);
+        localStorage.removeItem(STORAGE_TOKEN);
+        localStorage.removeItem(STORAGE_REFRESH);
+        localStorage.removeItem(STORAGE_PROFILE);
     }
 }

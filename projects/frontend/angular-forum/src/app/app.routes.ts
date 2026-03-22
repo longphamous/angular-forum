@@ -378,6 +378,20 @@ export const routes: Routes = [
                     import("./features/pages/link-database/link-detail-page").then((c) => c.LinkDetailPage)
             },
             {
+                path: "recipes",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/recipes/recipes-page").then((c) => c.RecipesPage)
+            },
+            {
+                path: "steam",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/steam/steam-page").then((c) => c.SteamPage)
+            },
+            {
                 path: "admin/link-database",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],

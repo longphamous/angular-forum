@@ -28,9 +28,12 @@ import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MessagesModule } from "./messages/messages.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PushModule } from "./push/push.module";
+import { RecipesModule } from "./recipes/recipes.module";
 import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
+import { SteamModule } from "./steam/steam.module";
 import { UserModule } from "./user/user.module";
+import { WeatherModule } from "./weather/weather.module";
 
 @Module({
     imports: [
@@ -66,7 +69,10 @@ import { UserModule } from "./user/user.module";
         CommunityBotModule,
         LexiconModule,
         LinkDatabaseModule,
-        TcgModule
+        RecipesModule,
+        SteamModule,
+        TcgModule,
+        WeatherModule
     ],
     controllers: [AppController],
     providers: [AppService]

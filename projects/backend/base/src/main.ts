@@ -34,8 +34,7 @@ async function bootstrap(): Promise<void> {
         // Global validation
         app.useGlobalPipes(
             new ValidationPipe({
-                whitelist: true,
-                forbidNonWhitelisted: false,
+                whitelist: false,
                 transform: true,
                 transformOptions: { enableImplicitConversion: true }
             })

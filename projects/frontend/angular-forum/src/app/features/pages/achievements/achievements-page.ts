@@ -17,6 +17,7 @@ import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { AchievementProgress, AchievementRarity, RARITY_STYLES } from "../../../core/models/gamification/achievement";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 type SortMode = "rarity" | "progress" | "name";
 type FilterMode = "all" | "earned" | "inProgress" | "locked";
@@ -26,6 +27,7 @@ type FilterMode = "all" | "earned" | "inProgress" | "locked";
     selector: "app-achievements-page",
     standalone: true,
     imports: [
+        AdminQuicklink,
         ButtonModule,
         FormsModule,
         KeyValuePipe,

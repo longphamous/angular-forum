@@ -13,6 +13,7 @@ import {
 
 const VALID_RARITIES = ["bronze", "silver", "gold", "platinum"] as const;
 const VALID_TRIGGER_TYPES = [
+    "manual",
     "post_count",
     "thread_count",
     "reaction_received_count",
@@ -25,7 +26,7 @@ function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): v
     if (requireAll && (!dto.key || !dto.name || !dto.icon || !dto.triggerType || dto.triggerValue == null)) {
         throw new BadRequestException("key, name, icon, triggerType and triggerValue are required");
     }
-    if (dto.triggerValue !== undefined && (!Number.isInteger(dto.triggerValue) || dto.triggerValue < 1)) {
+    if (dto.triggerValue !== undefined && dto.triggerType !== "manual" && (!Number.isInteger(dto.triggerValue) || dto.triggerValue < 1)) {
         throw new BadRequestException("triggerValue must be a positive integer");
     }
     if (dto.rarity !== undefined && !VALID_RARITIES.includes(dto.rarity as (typeof VALID_RARITIES)[number])) {
@@ -69,6 +70,12 @@ export class AchievementController {
     @Get("admin")
     getAllAdmin(): Promise<AchievementDto[]> {
         return this.achievementService.getAllAchievements(true);
+    }
+
+    @Roles("admin")
+    @Get("admin/:id/detail")
+    getDetail(@Param("id") id: string): Promise<object> {
+        return this.achievementService.getAchievementDetail(id);
     }
 
     @Roles("admin")

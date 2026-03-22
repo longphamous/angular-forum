@@ -164,6 +164,17 @@ export class UserService {
         return users.map((u) => toProfile(u));
     }
 
+    async autocompleteUsers(query: string): Promise<{ id: string; username: string; displayName: string; avatarUrl: string | null }[]> {
+        if (!query || query.length < 2) return [];
+        const users = await this.userRepo
+            .createQueryBuilder("u")
+            .where("u.username ILIKE :q OR u.display_name ILIKE :q", { q: `%${query}%` })
+            .orderBy("u.username", "ASC")
+            .take(10)
+            .getMany();
+        return users.map((u) => ({ id: u.id, username: u.username, displayName: u.displayName, avatarUrl: u.avatarUrl ?? null }));
+    }
+
     async searchUsers(query: string, limit: number): Promise<{ id: string; username: string; displayName: string }[]> {
         const users = await this.userRepo
             .createQueryBuilder("u")

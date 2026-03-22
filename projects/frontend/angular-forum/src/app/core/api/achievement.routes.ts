@@ -5,6 +5,7 @@ export const ACHIEVEMENT_ROUTES = {
     categories: () => "/gamification/achievements/categories",
     admin: {
         list: () => "/gamification/achievements/admin",
+        detail: (id: string) => `/gamification/achievements/admin/${id}/detail`,
         create: () => "/gamification/achievements/admin",
         update: (id: string) => `/gamification/achievements/admin/${id}`,
         delete: (id: string) => `/gamification/achievements/admin/${id}`,

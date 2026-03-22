@@ -17,8 +17,8 @@
 
         <!-- Filters -->
         <div class="mb-5 flex flex-wrap items-center gap-3">
-            <span class="p-input-icon-left min-w-48 flex-1">
-                <i class="pi pi-search"></i>
+            <p-iconfield class="min-w-48 flex-1">
+                <p-inputicon styleClass="pi pi-search" />
                 <input
                     class="w-full"
                     (ngModelChange)="searchQuery.set($event)"
@@ -27,7 +27,7 @@
                     pInputText
                     type="text"
                 />
-            </span>
+            </p-iconfield>
             @if (categories().length > 0) {
             <div class="flex flex-wrap gap-2">
                 <p-button

@@ -1,7 +1,9 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { AvatarModule } from "primeng/avatar";
 import { ConfirmationService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
@@ -20,6 +22,7 @@ import { TooltipModule } from "primeng/tooltip";
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { Achievement, AchievementCategory, AchievementHistory, AchievementRarity } from "../../../core/models/gamification/achievement";
+import { UserAutocomplete, UserSuggestion } from "../../../shared/components/user-autocomplete/user-autocomplete";
 
 type TagSeverity = "secondary" | "info" | "warn" | "danger" | "success" | "contrast";
 
@@ -38,6 +41,7 @@ const RARITY_KEYS: Record<AchievementRarity, string> = {
 };
 
 const TRIGGER_TYPE_KEYS: Record<string, string> = {
+    manual: "adminAchievements.triggerTypes.manual",
     post_count: "adminAchievements.triggerTypes.post_count",
     thread_count: "adminAchievements.triggerTypes.thread_count",
     reaction_received_count: "adminAchievements.triggerTypes.reaction_received_count",
@@ -76,6 +80,7 @@ const EMPTY_FORM: AchievementFormData = {
     selector: "admin-achievements",
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        AvatarModule,
         ButtonModule,
         CheckboxModule,
         ConfirmDialogModule,
@@ -84,13 +89,15 @@ const EMPTY_FORM: AchievementFormData = {
         InputNumberModule,
         InputTextModule,
         MessageModule,
+        RouterModule,
         SelectModule,
         SkeletonModule,
         TableModule,
         TagModule,
         TextareaModule,
         TooltipModule,
-        TranslocoModule
+        TranslocoModule,
+        UserAutocomplete
     ],
     providers: [ConfirmationService],
     templateUrl: "./admin-achievements.html"
@@ -118,8 +125,15 @@ export class AdminAchievements implements OnInit {
 
     // Manual grant
     readonly grantDialogVisible = signal(false);
-    readonly grantUserId = signal("");
+    readonly grantSelectedUser = signal<UserSuggestion | null>(null);
     readonly grantAchievementId = signal("");
+
+    // Detail
+    readonly detailDialogVisible = signal(false);
+    readonly detailAchievementId = signal<string | null>(null);
+    readonly detailData = signal<{ name: string; icon: string; rarity: string; totalGranted: number; recipients: { userId: string; username: string; displayName: string; avatarUrl: string | null; source: string; earnedAt: string }[] } | null>(null);
+    readonly detailLoading = signal(false);
+    readonly detailGrantUser = signal<UserSuggestion | null>(null);
 
     // History
     readonly history = signal<AchievementHistory[]>([]);
@@ -287,11 +301,90 @@ export class AdminAchievements implements OnInit {
     }
 
     updateForm(patch: Partial<AchievementFormData>): void {
-        this.form.update((f) => ({ ...f, ...patch }));
+        this.form.update((f) => {
+            const updated = { ...f, ...patch };
+            // Auto-generate key from name (only in create mode)
+            if (patch.name !== undefined && !this.editingId()) {
+                updated.key = this.generateKey(patch.name);
+            }
+            // Set triggerValue to 0 for manual trigger type
+            if (patch.triggerType === "manual") {
+                updated.triggerValue = 0;
+            }
+            return updated;
+        });
+    }
+
+    private generateKey(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[äöüß]/g, (c) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" })[c] ?? c)
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_|_$/g, "");
     }
 
     updateCategoryForm(patch: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): void {
         this.categoryForm.update((f) => ({ ...f, ...patch }));
+    }
+
+    // ── Detail ──────────────────────────────────────────────────────────
+
+    openDetail(achievement: Achievement): void {
+        this.detailAchievementId.set(achievement.id);
+        this.detailGrantUser.set(null);
+        this.loadDetail(achievement.id);
+        this.detailDialogVisible.set(true);
+    }
+
+    private loadDetail(achievementId: string): void {
+        this.detailLoading.set(true);
+        this.detailData.set(null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.http.get<any>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.detail(achievementId)}`).subscribe({
+            next: (data) => {
+                this.detailData.set(data);
+                this.detailLoading.set(false);
+            },
+            error: () => this.detailLoading.set(false)
+        });
+    }
+
+    grantFromDetail(): void {
+        const userId = this.detailGrantUser()?.id;
+        const achievementId = this.detailAchievementId();
+        if (!userId || !achievementId) return;
+
+        this.saving.set(true);
+        this.http.post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId }).subscribe({
+            next: () => {
+                this.saving.set(false);
+                this.detailGrantUser.set(null);
+                this.loadDetail(achievementId);
+                this.successMsg.set("Achievement vergeben");
+            },
+            error: (err) => {
+                this.saving.set(false);
+                this.error.set(err.error?.message ?? "Fehler beim Vergeben");
+            }
+        });
+    }
+
+    revokeFromDetail(userId: string): void {
+        const achievementId = this.detailAchievementId();
+        if (!achievementId) return;
+
+        this.http.delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.revoke(userId, achievementId)}`).subscribe({
+            next: () => {
+                this.loadDetail(achievementId);
+                this.successMsg.set("Achievement zurückgezogen");
+            },
+            error: () => this.error.set("Fehler beim Zurückziehen")
+        });
+    }
+
+    getCategoryName(key: string): string {
+        const cat = this.categories().find((c) => c.key === key);
+        return cat?.name ?? key;
     }
 
     // ── Categories ──────────────────────────────────────────────────────────
@@ -361,13 +454,17 @@ export class AdminAchievements implements OnInit {
     // ── Manual Grant ────────────────────────────────────────────────────────
 
     openGrantDialog(): void {
-        this.grantUserId.set("");
+        this.grantSelectedUser.set(null);
         this.grantAchievementId.set("");
         this.grantDialogVisible.set(true);
     }
 
+    onGrantUserSelected(user: UserSuggestion | null): void {
+        this.grantSelectedUser.set(user);
+    }
+
     grantAchievement(): void {
-        const userId = this.grantUserId().trim();
+        const userId = this.grantSelectedUser()?.id;
         const achievementId = this.grantAchievementId();
         if (!userId || !achievementId) return;
 

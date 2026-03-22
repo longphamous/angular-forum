@@ -35,8 +35,8 @@
             <div class="pt-4">
                 <!-- Search -->
                 <div class="mb-4">
-                    <span class="p-input-icon-left w-full sm:w-80">
-                        <i class="pi pi-search"></i>
+                    <p-iconfield class="w-full sm:w-80">
+                        <p-inputicon styleClass="pi pi-search" />
                         <input
                             class="w-full"
                             (ngModelChange)="searchQuery.set($event)"
@@ -45,7 +45,7 @@
                             pInputText
                             type="text"
                         />
-                    </span>
+                    </p-iconfield>
                 </div>
 
                 <!-- Loading -->

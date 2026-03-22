@@ -79,8 +79,8 @@
                         optionValue="value"
                     />
                     <div class="flex items-center gap-2">
-                        <span class="p-input-icon-left flex-1">
-                            <i class="pi pi-search"></i>
+                        <p-iconfield class="flex-1">
+                            <p-inputicon styleClass="pi pi-search" />
                             <input
                                 class="w-full"
                                 (keyup.enter)="onSearch()"
@@ -89,7 +89,7 @@
                                 pInputText
                                 type="text"
                             />
-                        </span>
+                        </p-iconfield>
                         <p-button (onClick)="onSearch()" icon="pi pi-search" severity="secondary" />
                     </div>
                 </div>

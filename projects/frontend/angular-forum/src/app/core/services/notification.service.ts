@@ -1,5 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable, signal } from "@angular/core";
+import { Subscription } from "rxjs";
 
 import { NOTIFICATIONS_ROUTES } from "../api/notifications.routes";
 import { API_CONFIG, ApiConfig } from "../config/api.config";
@@ -17,18 +18,25 @@ export class NotificationService {
     readonly notifications = signal<AppNotification[]>([]);
     readonly loading = signal(false);
 
-    private pollInterval: ReturnType<typeof setInterval> | null = null;
-    private pushListening = false;
+    private pushSub?: Subscription;
+    private started = false;
 
-    startPolling(): void {
+    /**
+     * Initialize push-based notification listening.
+     * Fetches current unread count once, then relies entirely on
+     * WebSocket push events for real-time updates.
+     */
+    start(): void {
+        if (this.started) return;
+        this.started = true;
+
+        // One-time initial load of unread count
         this.fetchUnreadCount();
-        if (this.pollInterval !== null) return;
-        this.pollInterval = setInterval(() => this.fetchUnreadCount(), 30_000);
 
         // Listen for real-time push notifications
-        if (!this.pushListening) {
-            this.pushListening = true;
-            this.pushService.on<PushNotificationNew>("notification:new").subscribe((ev) => {
+        this.pushSub = this.pushService
+            .on<PushNotificationNew>("notification:new")
+            .subscribe((ev) => {
                 this.unreadCount.update((c) => c + 1);
                 const newNotif: AppNotification = {
                     id: ev.id,
@@ -42,14 +50,22 @@ export class NotificationService {
                 };
                 this.notifications.update((list) => [newNotif, ...list]);
             });
-        }
     }
 
+    /** @deprecated Use start() instead. Kept for backwards compatibility. */
+    startPolling(): void {
+        this.start();
+    }
+
+    stop(): void {
+        this.pushSub?.unsubscribe();
+        this.pushSub = undefined;
+        this.started = false;
+    }
+
+    /** @deprecated Use stop() instead. */
     stopPolling(): void {
-        if (this.pollInterval !== null) {
-            clearInterval(this.pollInterval);
-            this.pollInterval = null;
-        }
+        this.stop();
     }
 
     loadNotifications(): void {

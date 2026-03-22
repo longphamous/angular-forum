@@ -118,7 +118,7 @@ export class UserController {
      * Updates the profile of the currently authenticated user.
      * Body: { displayName?, avatarUrl?, bio? }
      */
-    @Put("profile")
+    @Patch("profile")
     updateProfile(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto): Promise<UserProfile> {
         return this.userService.updateProfile(user.userId, dto);
     }
@@ -129,6 +129,17 @@ export class UserController {
      * GET /user/search?q=<query>&limit=<n>
      * Searches users by username or display name. Requires admin role.
      */
+    /**
+     * GET /user/autocomplete?q=<query>
+     * Lightweight user search for autocomplete. Available to all authenticated users.
+     */
+    @Get("autocomplete")
+    autocompleteUsers(
+        @Query("q") q = ""
+    ): Promise<{ id: string; username: string; displayName: string; avatarUrl: string | null }[]> {
+        return this.userService.autocompleteUsers(q);
+    }
+
     @Roles("admin")
     @Get("search")
     searchUsers(

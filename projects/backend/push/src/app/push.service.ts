@@ -11,6 +11,8 @@ export class PushService {
     constructor(private readonly gateway: PushGateway) {}
 
     sendToUser(userId: string, event: PushEventType, payload: unknown): void {
+        const tabs = this.gateway.userSockets.get(userId)?.size ?? 0;
+        this.logger.log(`→ WS emit: ${event} → user:${userId} (${tabs} tab${tabs !== 1 ? "s" : ""})`);
         try {
             this.gateway.server.to(`user:${userId}`).emit(event, payload);
         } catch (err) {

@@ -17,6 +17,7 @@ import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
 
 import { MESSAGES_ROUTES } from "../../../core/api/messages.routes";
+import { UserAutocomplete, UserSuggestion } from "../../../shared/components/user-autocomplete/user-autocomplete";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import {
     ComposePayload,
@@ -49,7 +50,8 @@ const PAGE_SIZE = 15;
         TextareaModule,
         ToastModule,
         TooltipModule,
-        TranslocoModule
+        TranslocoModule,
+        UserAutocomplete
     ],
     providers: [MessageService],
     selector: "app-messages-page",
@@ -82,6 +84,7 @@ export class MessagesPage implements OnInit {
     // ─── Compose dialog ───────────────────────────────────────────────────────
     protected readonly composeVisible = signal(false);
     protected composeRecipient = signal("");
+    protected composeSelectedUser = signal<UserSuggestion | null>(null);
     protected composeSubject = signal("");
     protected composeContent = signal("");
 
@@ -138,7 +141,7 @@ export class MessagesPage implements OnInit {
     });
 
     protected readonly canCompose = computed(
-        () => this.composeRecipient().trim().length > 0 && this.composeContent().trim().length > 0
+        () => !!this.composeSelectedUser() && this.composeContent().trim().length > 0
     );
 
     protected readonly canReply = computed(() => this.replyContent().trim().length > 0 && !this.sending());
@@ -274,9 +277,15 @@ export class MessagesPage implements OnInit {
 
     protected openCompose(): void {
         this.composeRecipient.set("");
+        this.composeSelectedUser.set(null);
         this.composeSubject.set("");
         this.composeContent.set("");
         this.composeVisible.set(true);
+    }
+
+    protected onComposeUserSelected(user: UserSuggestion | null): void {
+        this.composeSelectedUser.set(user);
+        this.composeRecipient.set(user?.id ?? "");
     }
 
     protected sendNewMessage(): void {
@@ -285,7 +294,7 @@ export class MessagesPage implements OnInit {
         const base = this.apiConfig.baseUrl;
 
         const payload: ComposePayload = {
-            recipientId: this.composeRecipient().trim(),
+            recipientId: this.composeSelectedUser()?.id ?? "",
             subject: this.composeSubject().trim() || undefined,
             content: this.composeContent().trim()
         };

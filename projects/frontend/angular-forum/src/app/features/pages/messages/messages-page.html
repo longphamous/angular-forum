@@ -361,13 +361,10 @@
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium" for="compose-recipient">{{ 'messages.recipient' | transloco }}</label>
-            <input
-                id="compose-recipient"
-                pInputText
-                [ngModel]="composeRecipient()"
-                (ngModelChange)="composeRecipient.set($event)"
+            <label class="text-sm font-medium">{{ 'messages.recipient' | transloco }}</label>
+            <app-user-autocomplete
                 [placeholder]="'messages.recipientPlaceholder' | transloco"
+                (userSelected)="onComposeUserSelected($event)"
             />
         </div>
         <div class="flex flex-col gap-2">

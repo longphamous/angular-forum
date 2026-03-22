@@ -69,12 +69,13 @@
                         {{ t('adminAchievements.table.rarity') }} <p-sortIcon field="rarity" />
                     </th>
                     <th>{{ t('adminAchievements.table.trigger') }}</th>
+                    <th pSortableColumn="category">{{ t('adminAchievements.dialog.category') }} <p-sortIcon field="category" /></th>
                     <th class="w-20 text-center">{{ t('common.active') }}</th>
                     <th class="w-24 text-right">{{ t('common.actions') }}</th>
                 </tr>
             </ng-template>
             <ng-template #body let-a>
-                <tr>
+                <tr class="cursor-pointer hover:bg-emphasis transition-colors" (click)="openDetail(a)">
                     <td>
                         <div
                             class="bg-surface-100 dark:bg-surface-800 flex h-8 w-8 items-center justify-center rounded-full"
@@ -102,6 +103,13 @@
                         <span class="text-surface-400 mx-1">≥</span>
                         <span class="font-semibold">{{ a.triggerValue }}</span>
                     </td>
+                    <td class="text-sm">
+                        @if (a.category) {
+                            <span class="text-color-secondary">{{ getCategoryName(a.category) }}</span>
+                        } @else {
+                            <span class="text-color-secondary">—</span>
+                        }
+                    </td>
                     <td class="text-center">
                         @if (a.isActive) {
                         <i class="pi pi-check-circle text-green-500"></i>
@@ -109,7 +117,7 @@
                         <i class="pi pi-times-circle text-surface-300"></i>
                         }
                     </td>
-                    <td class="text-right">
+                    <td class="text-right" (click)="$event.stopPropagation()">
                         <div class="flex justify-end gap-1">
                             <p-button
                                 (onClick)="openEdit(a)"
@@ -135,7 +143,7 @@
             </ng-template>
             <ng-template #emptymessage>
                 <tr>
-                    <td class="text-surface-400 py-8 text-center" colspan="7">
+                    <td class="text-surface-400 py-8 text-center" colspan="8">
                         <i class="pi pi-trophy mb-2 block text-3xl"></i>
                         {{ t('adminAchievements.table.noAchievements') }}
                     </td>
@@ -240,36 +248,22 @@
     *transloco="let t"
 >
     <div class="flex flex-col gap-4 pt-2">
-        <div class="grid grid-cols-2 gap-4">
-            <!-- Name -->
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium" for="ach-name"
-                    >{{ t('adminAchievements.dialog.name') }} <span class="text-red-500">*</span></label
-                >
-                <input
-                    class="w-full"
-                    id="ach-name"
-                    (ngModelChange)="updateForm({ name: $event })"
-                    [ngModel]="form().name"
-                    pInputText
-                    placeholder="z.B. Erster Schritt"
-                />
-            </div>
-            <!-- Key -->
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium" for="ach-key"
-                    >{{ t('adminAchievements.dialog.key') }} <span class="text-red-500">*</span></label
-                >
-                <input
-                    class="w-full"
-                    id="ach-key"
-                    (ngModelChange)="updateForm({ key: $event })"
-                    [disabled]="!!editingId()"
-                    [ngModel]="form().key"
-                    pInputText
-                    placeholder="z.B. first_post"
-                />
-            </div>
+        <!-- Name -->
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium" for="ach-name"
+                >{{ t('adminAchievements.dialog.name') }} <span class="text-red-500">*</span></label
+            >
+            <input
+                class="w-full"
+                id="ach-name"
+                (ngModelChange)="updateForm({ name: $event })"
+                [ngModel]="form().name"
+                pInputText
+                placeholder="z.B. Erster Schritt"
+            />
+            @if (form().key) {
+                <small class="text-color-secondary">Key: {{ form().key }}</small>
+            }
         </div>
 
         <!-- Description -->
@@ -322,7 +316,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid gap-4" [class.grid-cols-2]="form().triggerType !== 'manual'" [class.grid-cols-1]="form().triggerType === 'manual'">
             <!-- Trigger Type -->
             <div class="flex flex-col gap-1">
                 <label class="text-sm font-medium" for="ach-triggerType"
@@ -338,8 +332,12 @@
                     optionValue="value"
                     styleClass="w-full"
                 />
+                @if (form().triggerType === 'manual') {
+                    <small class="text-color-secondary">{{ t('adminAchievements.dialog.manualHint') }}</small>
+                }
             </div>
-            <!-- Trigger Value -->
+            <!-- Trigger Value (hidden for manual) -->
+            @if (form().triggerType !== 'manual') {
             <div class="flex flex-col gap-1">
                 <label class="text-sm font-medium" for="ach-triggerValue"
                     >{{ t('adminAchievements.dialog.triggerValue') }}</label
@@ -358,6 +356,7 @@
                     styleClass="w-full"
                 />
             </div>
+            }
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -475,8 +474,11 @@
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium">User-ID *</label>
-            <input pInputText class="w-full" [ngModel]="grantUserId()" (ngModelChange)="grantUserId.set($event)" placeholder="UUID des Benutzers" />
+            <label class="text-sm font-medium">Benutzer *</label>
+            <app-user-autocomplete
+                placeholder="Username eingeben..."
+                (userSelected)="onGrantUserSelected($event)"
+            />
         </div>
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Achievement *</label>
@@ -494,6 +496,102 @@
     </div>
     <ng-template pTemplate="footer">
         <p-button (onClick)="grantDialogVisible.set(false)" [disabled]="saving()" label="Abbrechen" [text]="true" severity="secondary" />
-        <p-button (onClick)="grantAchievement()" [disabled]="!grantUserId() || !grantAchievementId()" [loading]="saving()" label="Vergeben" icon="pi pi-gift" />
+        <p-button (onClick)="grantAchievement()" [disabled]="!grantSelectedUser() || !grantAchievementId()" [loading]="saving()" label="Vergeben" icon="pi pi-gift" />
     </ng-template>
+</p-dialog>
+
+<!-- Detail Dialog -->
+<p-dialog
+    [(visible)]="detailDialogVisible"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    [header]="detailData()?.name ?? 'Achievement Details'"
+>
+    @if (detailLoading()) {
+        <div class="flex flex-col gap-3 py-4">
+            <p-skeleton height="2rem" width="60%" />
+            <p-skeleton height="1rem" width="40%" />
+            <p-skeleton height="3rem" />
+            <p-skeleton height="3rem" />
+        </div>
+    } @else if (detailData(); as d) {
+        <div class="flex flex-col gap-4 pt-2">
+            <!-- Achievement info -->
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emphasis">
+                    <i class="pi text-2xl text-primary" [class]="d.icon"></i>
+                </div>
+                <div>
+                    <div class="text-lg font-bold">{{ d.name }}</div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <p-tag [severity]="raritySeverity(d.rarity)" [value]="rarityLabel(d.rarity)" styleClass="text-xs" />
+                        <span class="text-color-secondary text-sm">{{ d.totalGranted }}x vergeben</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick grant in detail view -->
+            <div class="border-t border-surface pt-3">
+                <h4 class="m-0 mb-2 text-sm font-semibold">Vergeben an</h4>
+                <div class="flex gap-2">
+                    <app-user-autocomplete
+                        placeholder="Username eingeben..."
+                        styleClass="flex-1"
+                        (userSelected)="detailGrantUser.set($event)"
+                    />
+                    <p-button
+                        icon="pi pi-gift"
+                        label="Vergeben"
+                        size="small"
+                        [disabled]="!detailGrantUser()"
+                        [loading]="saving()"
+                        (onClick)="grantFromDetail()"
+                    />
+                </div>
+            </div>
+
+            <!-- Recipients list -->
+            <div class="border-t border-surface pt-3">
+                <h4 class="m-0 mb-2 text-sm font-semibold">Empfänger ({{ d.recipients.length }})</h4>
+                @if (d.recipients.length === 0) {
+                    <div class="text-color-secondary text-center py-4 text-sm">
+                        Noch an niemanden vergeben.
+                    </div>
+                } @else {
+                    <div class="flex flex-col gap-1" style="max-height: 300px; overflow-y: auto">
+                        @for (r of d.recipients; track r.userId) {
+                            <div class="flex items-center gap-3 rounded-lg p-2 hover:bg-emphasis transition-colors">
+                                <p-avatar
+                                    [label]="r.displayName.charAt(0).toUpperCase()"
+                                    [image]="r.avatarUrl ?? ''"
+                                    shape="circle"
+                                    size="normal"
+                                />
+                                <a class="flex-1 min-w-0 no-underline text-inherit" [routerLink]="['/users', r.userId]" (click)="detailDialogVisible.set(false)">
+                                    <div class="text-sm font-medium">{{ r.displayName }}</div>
+                                    <div class="text-color-secondary text-xs">@{{ r.username }}</div>
+                                </a>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <div class="flex flex-col items-end gap-0.5">
+                                        <span class="text-color-secondary text-xs">{{ formatDate(r.earnedAt) }}</span>
+                                        @if (r.source === 'manual') {
+                                            <p-tag value="Manuell" severity="warn" styleClass="text-xs" />
+                                        }
+                                    </div>
+                                    <p-button
+                                        icon="pi pi-times"
+                                        [text]="true"
+                                        severity="danger"
+                                        size="small"
+                                        [pTooltip]="'Zurückziehen'"
+                                        (onClick)="revokeFromDetail(r.userId)"
+                                    />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </p-dialog>

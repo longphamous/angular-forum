@@ -66,6 +66,7 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.calendar"), icon: "pi pi-fw pi-calendar", routerLink: ["/calendar"] },
                     { label: this.t("nav.lexicon"), icon: "pi pi-fw pi-book", routerLink: ["/lexicon"] },
                     { label: this.t("nav.linkDatabase"), icon: "pi pi-fw pi-link", routerLink: ["/links"] },
+                    { label: this.t("nav.recipes"), icon: "pi pi-fw pi-star", routerLink: ["/recipes"] },
                     { label: this.t("nav.messages"), icon: "pi pi-fw pi-envelope", routerLink: ["/messages"] },
                     { label: this.t("nav.friends"), icon: "pi pi-fw pi-users", routerLink: ["/friends"] }
                 ]
@@ -80,7 +81,8 @@ export class AppMenu implements OnInit, OnDestroy {
                         icon: "pi pi-fw pi-database",
                         routerLink: ["/anime-database"]
                     },
-                    { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }
+                    { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] },
+                    { label: this.t("nav.steam"), icon: "pi pi-fw pi-desktop", routerLink: ["/steam"] }
                 ]
             },
             // ── Gamification ──────────────────────────────────────────

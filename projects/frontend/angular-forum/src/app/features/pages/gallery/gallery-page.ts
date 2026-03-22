@@ -8,6 +8,8 @@ import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { ChipModule } from "primeng/chip";
 import { DialogModule } from "primeng/dialog";
+import { IconFieldModule } from "primeng/iconfield";
+import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
@@ -31,6 +33,8 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
         ChipModule,
         DialogModule,
         FormsModule,
+        IconFieldModule,
+        InputIconModule,
         InputTextModule,
         SelectModule,
         SkeletonModule,
