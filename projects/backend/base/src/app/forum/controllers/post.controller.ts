@@ -22,9 +22,10 @@ export class PostController {
     @Get("threads/:threadId/posts")
     findByThread(
         @Param("threadId", ParseUUIDPipe) threadId: string,
-        @Query() query: ForumQueryDto
+        @Query() query: ForumQueryDto,
+        @CurrentUser() user?: AuthenticatedUser
     ): Promise<PaginatedResult<PostDto>> {
-        return this.postService.findByThread(threadId, query);
+        return this.postService.findByThread(threadId, query, user?.userId);
     }
 
     /**

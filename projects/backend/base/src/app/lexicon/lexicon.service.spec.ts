@@ -218,11 +218,20 @@ describe("LexiconService", () => {
                 orderBy: jest.fn().mockReturnThis(),
                 getOne: jest.fn().mockResolvedValue(null)
             };
-            versionRepo.createQueryBuilder!.mockReturnValue(versionQb);
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([{ authorId: "user-1", versionCount: 1 }])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
             userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "Author", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
 
@@ -269,10 +278,19 @@ describe("LexiconService", () => {
                 orderBy: jest.fn().mockReturnThis(),
                 getOne: jest.fn().mockResolvedValue(null)
             };
-            versionRepo.createQueryBuilder!.mockReturnValue(versionQb);
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([{ authorId: "user-1", versionCount: 1 }])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
             userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "A", username: "a", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "A", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
 
@@ -295,6 +313,7 @@ describe("LexiconService", () => {
             articleRepo.findOne!.mockResolvedValue(article);
             articleRepo.save!.mockImplementation((a) => Promise.resolve(a));
             userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "A", username: "a", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "A", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
             categoryRepo.findOne!.mockResolvedValue(makeCategory());
@@ -304,7 +323,15 @@ describe("LexiconService", () => {
                 orderBy: jest.fn().mockReturnThis(),
                 getOne: jest.fn().mockResolvedValue(null)
             };
-            versionRepo.createQueryBuilder!.mockReturnValue(versionQb);
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([{ authorId: "user-1", versionCount: 1 }])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
@@ -345,6 +372,7 @@ describe("LexiconService", () => {
             articleRepo.findOne!.mockResolvedValue(article);
             articleRepo.save!.mockImplementation((a) => Promise.resolve(a));
             userRepo.findOne!.mockResolvedValue({ id: "admin", displayName: "Admin", username: "admin", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([{ id: "admin", displayName: "Admin", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
             categoryRepo.findOne!.mockResolvedValue(makeCategory());
@@ -354,7 +382,15 @@ describe("LexiconService", () => {
                 orderBy: jest.fn().mockReturnThis(),
                 getOne: jest.fn().mockResolvedValue(null)
             };
-            versionRepo.createQueryBuilder!.mockReturnValue(versionQb);
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([{ authorId: "admin", versionCount: 1 }])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
@@ -583,6 +619,158 @@ describe("LexiconService", () => {
             const result = await service.detectTerms("No matches here");
 
             expect(result).toEqual([]);
+        });
+    });
+
+    describe("enrichArticle - contributors", () => {
+        it("should include contributors from version history", async () => {
+            categoryRepo.findOne!.mockResolvedValue(makeCategory());
+            const article = makeArticle();
+            articleRepo.create!.mockReturnValue(article);
+            articleRepo.save!.mockResolvedValue(article);
+
+            const versionQb = {
+                where: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getOne: jest.fn().mockResolvedValue(null)
+            };
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([{ authorId: "user-1", versionCount: 2 }])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
+            versionRepo.create!.mockReturnValue({});
+            versionRepo.save!.mockResolvedValue({});
+
+            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "Author", avatarUrl: null }]);
+            commentRepo.count!.mockResolvedValue(0);
+            versionRepo.count!.mockResolvedValue(2);
+
+            const result = (await service.createArticle("user-1", {
+                title: "Test Article",
+                content: "Content",
+                categoryId: "cat-1"
+            })) as Record<string, unknown>;
+
+            expect(result.contributors).toEqual([
+                { id: "user-1", displayName: "Author", avatarUrl: null, versionCount: 2 }
+            ]);
+            expect(contributorQb.select).toHaveBeenCalled();
+            expect(contributorQb.addSelect).toHaveBeenCalled();
+            expect(contributorQb.groupBy).toHaveBeenCalled();
+            expect(contributorQb.getRawMany).toHaveBeenCalled();
+            expect(userRepo.find).toHaveBeenCalled();
+        });
+
+        it("should return empty contributors when no versions exist", async () => {
+            categoryRepo.findOne!.mockResolvedValue(makeCategory());
+            const article = makeArticle();
+            articleRepo.create!.mockReturnValue(article);
+            articleRepo.save!.mockResolvedValue(article);
+
+            const versionQb = {
+                where: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getOne: jest.fn().mockResolvedValue(null)
+            };
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
+            versionRepo.create!.mockReturnValue({});
+            versionRepo.save!.mockResolvedValue({});
+
+            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            commentRepo.count!.mockResolvedValue(0);
+            versionRepo.count!.mockResolvedValue(0);
+
+            const result = (await service.createArticle("user-1", {
+                title: "Test Article",
+                content: "Content",
+                categoryId: "cat-1"
+            })) as Record<string, unknown>;
+
+            expect(result.contributors).toEqual([]);
+            expect(userRepo.find).not.toHaveBeenCalled();
+        });
+
+        it("should handle multiple contributors sorted by version count", async () => {
+            categoryRepo.findOne!.mockResolvedValue(makeCategory());
+            const article = makeArticle();
+            articleRepo.create!.mockReturnValue(article);
+            articleRepo.save!.mockResolvedValue(article);
+
+            const versionQb = {
+                where: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getOne: jest.fn().mockResolvedValue(null)
+            };
+            const contributorQb = {
+                select: jest.fn().mockReturnThis(),
+                addSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getRawMany: jest.fn().mockResolvedValue([
+                    { authorId: "user-1", versionCount: 5 },
+                    { authorId: "user-2", versionCount: 3 },
+                    { authorId: "user-3", versionCount: 1 }
+                ])
+            };
+            versionRepo.createQueryBuilder!.mockReturnValueOnce(versionQb).mockReturnValueOnce(contributorQb);
+            versionRepo.create!.mockReturnValue({});
+            versionRepo.save!.mockResolvedValue({});
+
+            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.find!.mockResolvedValue([
+                { id: "user-1", displayName: "Author", avatarUrl: null },
+                { id: "user-2", displayName: "Contributor2", avatarUrl: "avatar2.png" },
+                { id: "user-3", displayName: "Contributor3", avatarUrl: null }
+            ]);
+            commentRepo.count!.mockResolvedValue(0);
+            versionRepo.count!.mockResolvedValue(9);
+
+            const result = (await service.createArticle("user-1", {
+                title: "Test Article",
+                content: "Content",
+                categoryId: "cat-1"
+            })) as Record<string, unknown>;
+
+            const contributors = result.contributors as Array<{
+                id: string;
+                displayName: string;
+                avatarUrl: string | null;
+                versionCount: number;
+            }>;
+            expect(contributors).toHaveLength(3);
+            expect(contributors[0]).toEqual({
+                id: "user-1",
+                displayName: "Author",
+                avatarUrl: null,
+                versionCount: 5
+            });
+            expect(contributors[1]).toEqual({
+                id: "user-2",
+                displayName: "Contributor2",
+                avatarUrl: "avatar2.png",
+                versionCount: 3
+            });
+            expect(contributors[2]).toEqual({
+                id: "user-3",
+                displayName: "Contributor3",
+                avatarUrl: null,
+                versionCount: 1
+            });
         });
     });
 });

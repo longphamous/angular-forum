@@ -23,6 +23,13 @@ export interface LexiconCategory {
     updatedAt: string;
 }
 
+export interface LexiconContributor {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    versionCount: number;
+}
+
 export interface LexiconArticle {
     id: string;
     title: string;
@@ -47,6 +54,7 @@ export interface LexiconArticle {
     linkedArticleId: string | null;
     linkedArticleSlug?: string | null;
     isOwner: boolean;
+    contributors?: LexiconContributor[];
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;

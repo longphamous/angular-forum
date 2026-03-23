@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 import { UserEntity } from "../user/entities/user.entity";
 import {
@@ -561,9 +561,12 @@ export class LexiconService {
     }
 
     private async enrichArticle(article: LexiconArticleEntity, userId: string): Promise<object> {
-        const author = await this.userRepo.findOne({ where: { id: article.authorId } });
-        const commentCount = await this.commentRepo.count({ where: { articleId: article.id } });
-        const versionCount = await this.versionRepo.count({ where: { articleId: article.id } });
+        const [author, commentCount, versionCount, contributors] = await Promise.all([
+            this.userRepo.findOne({ where: { id: article.authorId } }),
+            this.commentRepo.count({ where: { articleId: article.id } }),
+            this.versionRepo.count({ where: { articleId: article.id } }),
+            this.getContributors(article.id)
+        ]);
         const category =
             article.category ?? (article.categoryId ? await this.categoryRepo.findOne({ where: { id: article.categoryId } }) : null);
 
@@ -590,10 +593,43 @@ export class LexiconService {
             allowComments: article.allowComments,
             linkedArticleId: article.linkedArticleId,
             isOwner: article.authorId === userId,
+            contributors,
             publishedAt: article.publishedAt?.toISOString() ?? null,
             createdAt: article.createdAt.toISOString(),
             updatedAt: article.updatedAt.toISOString()
         };
+    }
+
+    private async getContributors(
+        articleId: string
+    ): Promise<{ id: string; displayName: string; avatarUrl: string | null; versionCount: number }[]> {
+        const rows = await this.versionRepo
+            .createQueryBuilder("v")
+            .select("v.author_id", "authorId")
+            .addSelect("COUNT(*)::int", "versionCount")
+            .where("v.article_id = :articleId", { articleId })
+            .groupBy("v.author_id")
+            .orderBy('"versionCount"', "DESC")
+            .getRawMany<{ authorId: string; versionCount: number }>();
+
+        if (rows.length === 0) return [];
+
+        const userIds = rows.map((r) => r.authorId);
+        const users = await this.userRepo.find({
+            where: { id: In(userIds) },
+            select: ["id", "displayName", "avatarUrl"]
+        });
+        const usersById = new Map(users.map((u) => [u.id, u]));
+
+        return rows.map((r) => {
+            const user = usersById.get(r.authorId);
+            return {
+                id: r.authorId,
+                displayName: user?.displayName ?? "Unknown",
+                avatarUrl: user?.avatarUrl ?? null,
+                versionCount: r.versionCount
+            };
+        });
     }
 
     private async enrichComment(comment: LexiconCommentEntity): Promise<EnrichedComment> {

@@ -4,6 +4,11 @@ import { GroupEntity } from "../../group/entities/group.entity";
 
 export type UserRole = "admin" | "moderator" | "member" | "guest";
 export type UserStatus = "active" | "inactive" | "banned" | "pending";
+export type FieldVisibility = "everyone" | "members" | "nobody";
+
+export interface ProfileFieldSettings {
+    gender?: FieldVisibility;
+}
 
 @Entity("users")
 export class UserEntity {
@@ -48,6 +53,9 @@ export class UserEntity {
 
     @Column({ name: "social_links", type: "jsonb", nullable: true })
     socialLinks?: Record<string, string>;
+
+    @Column({ name: "profile_field_settings", type: "jsonb", nullable: true })
+    profileFieldSettings?: ProfileFieldSettings;
 
     @Column({
         type: "enum",

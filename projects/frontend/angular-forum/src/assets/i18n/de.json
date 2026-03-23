@@ -798,6 +798,13 @@
       "female": "Weiblich",
       "other": "Divers",
       "prefer_not_to_say": "Keine Angabe"
+    },
+    "fieldVisibility": {
+      "title": "Profilfeld-Sichtbarkeit",
+      "gender": "Geschlecht-Sichtbarkeit",
+      "everyone": "Jeder",
+      "members": "Nur Mitglieder",
+      "nobody": "Niemand"
     }
   },
   "dashboard": {
@@ -2178,6 +2185,11 @@
       "loadArticle": "Fehler beim Laden des Artikels.",
       "saveArticle": "Fehler beim Speichern des Artikels.",
       "loadVersions": "Fehler beim Laden der Versionen."
+    },
+    "contributors": {
+      "title": "Mitwirkende",
+      "edit": "Bearbeitung",
+      "edits": "Bearbeitungen"
     }
   }
 }

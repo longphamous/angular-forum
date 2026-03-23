@@ -1,5 +1,10 @@
 export type UserRole = "admin" | "moderator" | "member" | "guest";
 export type UserStatus = "active" | "inactive" | "banned" | "pending";
+export type FieldVisibility = "everyone" | "members" | "nobody";
+
+export interface ProfileFieldSettings {
+    gender?: FieldVisibility;
+}
 
 export interface UserProfile {
     id: string;
@@ -15,6 +20,7 @@ export interface UserProfile {
     website?: string;
     signature?: string;
     socialLinks?: Record<string, string>;
+    profileFieldSettings?: ProfileFieldSettings;
     role: UserRole;
     status: UserStatus;
     groups: string[];

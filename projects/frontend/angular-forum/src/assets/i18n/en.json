@@ -798,6 +798,13 @@
       "female": "Female",
       "other": "Other",
       "prefer_not_to_say": "Prefer not to say"
+    },
+    "fieldVisibility": {
+      "title": "Profile field visibility",
+      "gender": "Gender visibility",
+      "everyone": "Everyone",
+      "members": "Members only",
+      "nobody": "Nobody"
     }
   },
   "dashboard": {
@@ -2178,6 +2185,11 @@
       "loadArticle": "Error loading article.",
       "saveArticle": "Error saving article.",
       "loadVersions": "Error loading versions."
+    },
+    "contributors": {
+      "title": "Contributors",
+      "edit": "edit",
+      "edits": "edits"
     }
   }
 }

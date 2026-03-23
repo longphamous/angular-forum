@@ -48,6 +48,7 @@ function toProfile(user: UserEntity, postCount = 0, xpData: UserXpData = DEFAULT
         website: user.website,
         signature: user.signature,
         socialLinks: user.socialLinks,
+        profileFieldSettings: user.profileFieldSettings,
         role: user.role,
         status: user.status,
         groups: user.groups?.map((g) => g.name) ?? [],
@@ -188,6 +189,7 @@ export class UserService {
         if (dto.location !== undefined) user.location = dto.location;
         if (dto.website !== undefined) user.website = dto.website;
         if (dto.socialLinks !== undefined) user.socialLinks = dto.socialLinks;
+        if (dto.profileFieldSettings !== undefined) user.profileFieldSettings = dto.profileFieldSettings;
 
         await this.userRepo.save(user);
         const profile = toProfile(user);

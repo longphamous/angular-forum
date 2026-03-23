@@ -1,6 +1,6 @@
-import { UserRole, UserStatus } from "../entities/user.entity";
+import { FieldVisibility, ProfileFieldSettings, UserRole, UserStatus } from "../entities/user.entity";
 
-export type { UserRole, UserStatus };
+export type { FieldVisibility, ProfileFieldSettings, UserRole, UserStatus };
 
 export interface UserProfile {
     id: string;
@@ -16,6 +16,7 @@ export interface UserProfile {
     website?: string;
     signature?: string;
     socialLinks?: Record<string, string>;
+    profileFieldSettings?: ProfileFieldSettings;
     role: UserRole;
     status: UserStatus;
     groups: string[];

@@ -136,7 +136,16 @@ export class UserController {
         }
 
         if (!isOwner && !isAdmin) {
-            return { ...profile, email: "" };
+            const genderSetting = profile.profileFieldSettings?.gender ?? "everyone";
+            const isAuthenticated = !!currentUser;
+            const showGender =
+                genderSetting === "everyone" ||
+                (genderSetting === "members" && isAuthenticated);
+            return {
+                ...profile,
+                email: "",
+                gender: showGender ? profile.gender : undefined
+            };
         }
         return profile;
     }

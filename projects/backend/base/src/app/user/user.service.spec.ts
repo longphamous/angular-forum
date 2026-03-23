@@ -8,6 +8,7 @@ import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
+import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../push/push.service";
 import { UserEntity } from "./entities/user.entity";
 import { UserService } from "./user.service";
@@ -41,6 +42,11 @@ const mockGamificationService = (): Partial<Record<keyof GamificationService, je
     getUserXpData: jest.fn()
 });
 
+const mockModerationService = (): Partial<Record<keyof ModerationService, jest.Mock>> => ({
+    isExempt: jest.fn(),
+    submitForApproval: jest.fn()
+});
+
 const mockPushService = (): Partial<Record<keyof PushService, jest.Mock>> => ({
     getOnlineUserIds: jest.fn()
 });
@@ -51,6 +57,7 @@ describe("UserService", () => {
     let groupRepo: ReturnType<typeof createMockRepo<GroupEntity>>;
     let authService: ReturnType<typeof mockAuthService>;
     let gamificationService: ReturnType<typeof mockGamificationService>;
+    let moderationService: ReturnType<typeof mockModerationService>;
     let pushService: ReturnType<typeof mockPushService>;
     let dataSource: { query: jest.Mock };
 
@@ -71,6 +78,7 @@ describe("UserService", () => {
         website: undefined,
         signature: undefined,
         socialLinks: undefined,
+        profileFieldSettings: undefined,
         role: "member",
         status: "active",
         groups: [],
@@ -88,6 +96,7 @@ describe("UserService", () => {
         groupRepo = createMockRepo<GroupEntity>();
         authService = mockAuthService();
         gamificationService = mockGamificationService();
+        moderationService = mockModerationService();
         pushService = mockPushService();
         dataSource = { query: jest.fn() };
 
@@ -99,6 +108,7 @@ describe("UserService", () => {
                 { provide: getDataSourceToken(), useValue: dataSource },
                 { provide: AuthService, useValue: authService },
                 { provide: GamificationService, useValue: gamificationService },
+                { provide: ModerationService, useValue: moderationService },
                 { provide: PushService, useValue: pushService }
             ]
         }).compile();
@@ -226,6 +236,7 @@ describe("UserService", () => {
             const user = makeUser();
             userRepo.findOne!.mockResolvedValue(user);
             userRepo.save!.mockImplementation((u) => Promise.resolve(u));
+            moderationService.isExempt!.mockResolvedValue(true);
 
             const result = await service.updateProfile("user-1", {
                 displayName: "New Name",
@@ -234,6 +245,20 @@ describe("UserService", () => {
 
             expect(user.displayName).toBe("New Name");
             expect(user.bio).toBe("New bio");
+            expect(result).toBeDefined();
+        });
+
+        it("should update profileFieldSettings", async () => {
+            const user = makeUser();
+            userRepo.findOne!.mockResolvedValue(user);
+            userRepo.save!.mockImplementation((u) => Promise.resolve(u));
+            moderationService.isExempt!.mockResolvedValue(true);
+
+            const result = await service.updateProfile("user-1", {
+                profileFieldSettings: { gender: "members" }
+            });
+
+            expect(user.profileFieldSettings).toEqual({ gender: "members" });
             expect(result).toBeDefined();
         });
 

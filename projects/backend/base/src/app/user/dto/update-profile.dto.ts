@@ -1,4 +1,13 @@
-import { IsObject, IsOptional, IsString, Length, MaxLength } from "class-validator";
+import { IsIn, IsObject, IsOptional, IsString, Length, MaxLength, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
+
+import { FieldVisibility } from "../entities/user.entity";
+
+class ProfileFieldSettingsDto {
+    @IsOptional()
+    @IsIn(["everyone", "members", "nobody"])
+    gender?: FieldVisibility;
+}
 
 export class UpdateProfileDto {
     @IsOptional()
@@ -48,4 +57,9 @@ export class UpdateProfileDto {
     @IsOptional()
     @IsObject()
     socialLinks?: Record<string, string>;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => ProfileFieldSettingsDto)
+    profileFieldSettings?: ProfileFieldSettingsDto;
 }

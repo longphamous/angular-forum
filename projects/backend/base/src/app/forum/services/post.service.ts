@@ -7,7 +7,7 @@ import { GamificationService } from "../../gamification/gamification.service";
 import { UserXpData } from "../../gamification/level.config";
 import { PushService } from "../../push/push.service";
 import { PushThreadNewPost } from "../../push/push-event.types";
-import { UserEntity, UserRole } from "../../user/entities/user.entity";
+import { FieldVisibility, UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreatePostDto } from "../dto/create-post.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
 import { ReactPostDto } from "../dto/react-post.dto";
@@ -29,9 +29,21 @@ interface AuthorInfo {
     xpData?: UserXpData;
     balance?: number;
     gender?: string;
+    genderVisibility?: FieldVisibility;
 }
 
-function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
+function isFieldVisible(visibility: FieldVisibility | undefined, isAuthenticated: boolean): boolean {
+    const effective = visibility ?? "everyone";
+    if (effective === "nobody") return false;
+    if (effective === "members") return isAuthenticated;
+    return true;
+}
+
+function toDto(entity: ForumPostEntity, author?: AuthorInfo, isViewerAuthenticated = false): PostDto {
+    const genderVisible = author?.gender
+        ? isFieldVisible(author.genderVisibility, isViewerAuthenticated)
+        : false;
+
     return {
         id: entity.id,
         threadId: entity.threadId,
@@ -44,7 +56,7 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
         authorLevel: author?.xpData?.level ?? 1,
         authorLevelName: author?.xpData?.levelName ?? "Neuling",
         authorBalance: author?.balance,
-        authorGender: author?.gender,
+        authorGender: genderVisible ? author?.gender : undefined,
         content: entity.content,
         isFirstPost: entity.isFirstPost,
         isBestAnswer: entity.isBestAnswer,
@@ -96,7 +108,7 @@ export class PostService {
         private readonly pushService: PushService
     ) {}
 
-    async findByThread(threadId: string, query: ForumQueryDto): Promise<PaginatedResult<PostDto>> {
+    async findByThread(threadId: string, query: ForumQueryDto, viewerId?: string): Promise<PaginatedResult<PostDto>> {
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
         const skip = (page - 1) * limit;
@@ -113,7 +125,7 @@ export class PostService {
             authorIds.length
                 ? this.userRepo.find({
                       where: { id: In(authorIds) },
-                      select: ["id", "displayName", "role", "avatarUrl", "signature", "gender"]
+                      select: ["id", "displayName", "role", "avatarUrl", "signature", "gender", "profileFieldSettings"]
                   })
                 : Promise.resolve([]),
             authorIds.length
@@ -139,12 +151,14 @@ export class PostService {
                     signature: u.signature,
                     xpData: xpMap.get(u.id),
                     balance: balanceMap.get(u.id),
-                    gender: u.gender
+                    gender: u.gender,
+                    genderVisibility: u.profileFieldSettings?.gender
                 }
             ])
         );
 
-        return { data: posts.map((p) => toDto(p, userMap.get(p.authorId))), total, page, limit };
+        const isViewerAuthenticated = !!viewerId;
+        return { data: posts.map((p) => toDto(p, userMap.get(p.authorId), isViewerAuthenticated)), total, page, limit };
     }
 
     async findById(id: string): Promise<PostDto> {
