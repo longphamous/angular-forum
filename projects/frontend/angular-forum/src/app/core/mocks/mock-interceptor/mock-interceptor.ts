@@ -391,6 +391,7 @@ export class MockInterceptor implements HttpInterceptor {
                 content: payload.content,
                 isFirstPost: false,
                 isBestAnswer: false,
+                isHighlighted: false,
                 isEdited: false,
                 editCount: 0,
                 reactionCount: 0,

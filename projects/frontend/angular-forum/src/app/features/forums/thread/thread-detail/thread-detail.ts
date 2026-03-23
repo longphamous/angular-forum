@@ -72,6 +72,7 @@ export class ThreadDetail implements OnInit, OnDestroy {
     readonly pageSize = 20;
 
     replyContent = "";
+    replyKnowledgeSource = "";
     submittingReply = false;
     replyError: string | null = null;
 
@@ -165,9 +166,12 @@ export class ThreadDetail implements OnInit, OnDestroy {
         if (!this.replyContent.trim()) return;
         this.submittingReply = true;
         this.replyError = null;
-        this.facade.createPost(this.threadId, this.replyContent).subscribe({
+        this.facade
+            .createPost(this.threadId, this.replyContent, this.replyKnowledgeSource || undefined)
+            .subscribe({
             next: () => {
                 this.replyContent = "";
+                this.replyKnowledgeSource = "";
                 this.submittingReply = false;
                 const lastPage = Math.ceil((this.facade.postTotal() + 1) / this.pageSize);
                 this.facade.loadPosts(this.threadId, lastPage, this.pageSize);
@@ -491,6 +495,17 @@ export class ThreadDetail implements OnInit, OnDestroy {
                 this.deleteDialogVisible.set(false);
                 const thread = this.facade.currentThread();
                 this.router.navigate(["/forum", thread?.forumId ?? ""]);
+            }
+        });
+    }
+
+    // ── Highlight ──────────────────────────────────────────────────────────────
+
+    toggleHighlight(post: Post): void {
+        this.facade.toggleHighlight(post.id).subscribe({
+            next: () => {
+                this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
+                this.cd.markForCheck();
             }
         });
     }

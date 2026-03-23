@@ -180,8 +180,15 @@ export class ForumFacade {
         });
     }
 
-    createPost(threadId: string, content: string): Observable<Post> {
-        return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, { content });
+    createPost(threadId: string, content: string, knowledgeSource?: string): Observable<Post> {
+        return this.http.post<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.posts(threadId)}`, {
+            content,
+            ...(knowledgeSource?.trim() ? { knowledgeSource: knowledgeSource.trim() } : {})
+        });
+    }
+
+    toggleHighlight(postId: string): Observable<Post> {
+        return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.highlight(postId)}`, {});
     }
 
     getMyReactions(threadId: string): Observable<string[]> {

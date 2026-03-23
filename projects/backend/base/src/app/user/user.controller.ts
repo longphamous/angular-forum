@@ -4,6 +4,7 @@ import { Throttle } from "@nestjs/throttler";
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
+import { NotificationsService } from "../notifications/notifications.service";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
 import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -14,7 +15,14 @@ import { OnlineUserDto, UserService } from "./user.service";
 
 @Controller("user")
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    /** In-memory cache to throttle profile-visit notifications: key = "visitorId:profileId", value = timestamp */
+    private readonly profileVisitCache = new Map<string, number>();
+    private static readonly PROFILE_VISIT_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+    constructor(
+        private readonly userService: UserService,
+        private readonly notificationsService: NotificationsService
+    ) {}
 
     // ─── Auth (public – no token required) ───────────────────────────────────
 
@@ -107,6 +115,26 @@ export class UserController {
         const profile = await this.userService.getProfile(userId);
         const isOwner = currentUser?.userId === userId;
         const isAdmin = currentUser?.role === "admin";
+
+        // Send profile-visit notification (fire-and-forget, throttled to once per 24h per visitor)
+        if (currentUser && !isOwner) {
+            const cacheKey = `${currentUser.userId}:${userId}`;
+            const lastVisit = this.profileVisitCache.get(cacheKey);
+            const now = Date.now();
+            if (!lastVisit || now - lastVisit > UserController.PROFILE_VISIT_COOLDOWN_MS) {
+                this.profileVisitCache.set(cacheKey, now);
+                void this.notificationsService
+                    .create(
+                        userId,
+                        "system",
+                        "Profile visited",
+                        `${currentUser.username} has visited your profile.`,
+                        `/users/${currentUser.userId}`
+                    )
+                    .catch(() => undefined);
+            }
+        }
+
         if (!isOwner && !isAdmin) {
             return { ...profile, email: "" };
         }

@@ -103,6 +103,18 @@ export class PostController {
     }
 
     /**
+     * PATCH /forum/posts/:id/highlight
+     * Toggles the highlight flag on a post. Only admins/moderators may call this.
+     */
+    @Patch("posts/:id/highlight")
+    toggleHighlight(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PostDto> {
+        return this.postService.toggleHighlight(id, user.userId, user.role);
+    }
+
+    /**
      * POST /forum/posts/:id/react
      * Adds or updates a reaction on a post. Requires authentication.
      */

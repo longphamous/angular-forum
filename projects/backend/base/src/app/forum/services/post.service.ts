@@ -28,6 +28,7 @@ interface AuthorInfo {
     signature?: string;
     xpData?: UserXpData;
     balance?: number;
+    gender?: string;
 }
 
 function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
@@ -43,9 +44,13 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo): PostDto {
         authorLevel: author?.xpData?.level ?? 1,
         authorLevelName: author?.xpData?.levelName ?? "Neuling",
         authorBalance: author?.balance,
+        authorGender: author?.gender,
         content: entity.content,
         isFirstPost: entity.isFirstPost,
         isBestAnswer: entity.isBestAnswer,
+        isHighlighted: entity.isHighlighted,
+        highlightedBy: entity.highlightedBy,
+        knowledgeSource: entity.knowledgeSource,
         isEdited: entity.isEdited,
         editedAt: entity.editedAt?.toISOString(),
         editCount: entity.editCount,
@@ -108,7 +113,7 @@ export class PostService {
             authorIds.length
                 ? this.userRepo.find({
                       where: { id: In(authorIds) },
-                      select: ["id", "displayName", "role", "avatarUrl", "signature"]
+                      select: ["id", "displayName", "role", "avatarUrl", "signature", "gender"]
                   })
                 : Promise.resolve([]),
             authorIds.length
@@ -133,7 +138,8 @@ export class PostService {
                     avatarUrl: u.avatarUrl,
                     signature: u.signature,
                     xpData: xpMap.get(u.id),
-                    balance: balanceMap.get(u.id)
+                    balance: balanceMap.get(u.id),
+                    gender: u.gender
                 }
             ])
         );
@@ -153,7 +159,8 @@ export class PostService {
         const post = this.postRepo.create({
             threadId,
             authorId,
-            content: dto.content
+            content: dto.content,
+            ...(dto.knowledgeSource?.trim() ? { knowledgeSource: dto.knowledgeSource.trim() } : {})
         });
         await this.postRepo.save(post);
 
@@ -336,6 +343,21 @@ export class PostService {
                 reactionCount: Math.max(0, currentPost.reactionCount - 1)
             });
         }
+    }
+
+    /**
+     * Toggle the highlight flag on a post. Only admins/moderators may call this.
+     */
+    async toggleHighlight(postId: string, userId: string, userRole: UserRole): Promise<PostDto> {
+        if (userRole !== "admin" && userRole !== "moderator") {
+            throw new ForbiddenException("Only admins or moderators can highlight posts");
+        }
+
+        const entity = await this.findEntityById(postId);
+        entity.isHighlighted = !entity.isHighlighted;
+        entity.highlightedBy = entity.isHighlighted ? userId : undefined;
+        await this.postRepo.save(entity);
+        return toDto(entity);
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

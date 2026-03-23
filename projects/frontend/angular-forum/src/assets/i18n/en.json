@@ -268,6 +268,19 @@
         "imageUrlPlaceholder": "Image URL (optional)",
         "addOption": "Add option"
       }
+    },
+    "highlighted": "Interesting Post",
+    "highlight": "Highlight",
+    "unhighlight": "Remove Highlight",
+    "highlightTooltip": "Mark as interesting post",
+    "unhighlightTooltip": "Remove interesting post mark",
+    "knowledgeSource": "Source",
+    "knowledgeSourcePlaceholder": "Where do you know this from? (optional)",
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "diverse": "Diverse"
     }
   },
   "threadCreate": {

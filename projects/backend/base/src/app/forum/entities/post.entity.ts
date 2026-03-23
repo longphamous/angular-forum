@@ -56,6 +56,15 @@ export class ForumPostEntity {
     @Column({ name: "is_best_answer", default: false })
     isBestAnswer!: boolean;
 
+    @Column({ name: "is_highlighted", default: false })
+    isHighlighted!: boolean;
+
+    @Column({ name: "highlighted_by", type: "uuid", nullable: true })
+    highlightedBy?: string;
+
+    @Column({ name: "knowledge_source", type: "text", nullable: true })
+    knowledgeSource?: string;
+
     @OneToMany(() => ForumPostReactionEntity, (reaction) => reaction.post)
     reactions!: ForumPostReactionEntity[];
 

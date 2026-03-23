@@ -10,9 +10,13 @@ export interface Post {
     authorLevel: number;
     authorLevelName: string;
     authorBalance?: number;
+    authorGender?: string;
     content: string;
     isFirstPost: boolean;
     isBestAnswer: boolean;
+    isHighlighted: boolean;
+    highlightedBy?: string;
+    knowledgeSource?: string;
     isEdited: boolean;
     editedAt?: string;
     editCount: number;
