@@ -1,4 +1,3 @@
-import { DatePipe } from "@angular/common";
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -30,16 +29,7 @@ interface SortOption {
 
 @Component({
     selector: "feed-page",
-    imports: [
-        DatePipe,
-        FormsModule,
-        TranslocoModule,
-        ButtonModule,
-        SelectButtonModule,
-        SkeletonModule,
-        TagModule,
-        TooltipModule
-    ],
+    imports: [FormsModule, TranslocoModule, ButtonModule, SelectButtonModule, SkeletonModule, TagModule, TooltipModule],
     templateUrl: "./feed-page.html",
     styleUrl: "./feed-page.scss",
     changeDetection: ChangeDetectionStrategy.OnPush

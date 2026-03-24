@@ -1,6 +1,16 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-export type XpEventType = "create_thread" | "create_post" | "receive_reaction" | "give_reaction";
+export type XpEventType =
+    | "create_thread"
+    | "create_post"
+    | "receive_reaction"
+    | "give_reaction"
+    | "create_clip"
+    | "create_blog_post"
+    | "upload_gallery"
+    | "create_lexicon_article"
+    | "create_recipe"
+    | "buy_lotto_ticket";
 
 @Entity("xp_events")
 export class XpEventEntity {

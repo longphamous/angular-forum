@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { GalleryAlbumEntity } from "./entities/gallery-album.entity";
@@ -53,6 +54,7 @@ export class GalleryService {
         private readonly ratingRepo: Repository<GalleryRatingEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService
     ) {}
 
@@ -165,7 +167,9 @@ export class GalleryService {
             sortOrder: dto.sortOrder ?? 0
         });
 
-        return this.mediaRepo.save(media);
+        const saved = await this.mediaRepo.save(media);
+        void this.gamificationService.awardXp(ownerId, "upload_gallery", saved.id);
+        return saved;
     }
 
     async deleteMedia(id: string, userId: string, isAdmin: boolean): Promise<void> {

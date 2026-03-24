@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, IsNull, Repository } from "typeorm";
 
+import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { ClipCommentEntity } from "./entities/clip-comment.entity";
@@ -87,6 +88,7 @@ export class ClipsService {
         private readonly followRepo: Repository<ClipFollowEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService
     ) {}
 
@@ -175,6 +177,7 @@ export class ClipsService {
         }
 
         const saved = await this.clipRepo.save(clip);
+        void this.gamificationService.awardXp(authorId, "create_clip", saved.id);
         return this.enrichClip(saved, authorId);
     }
 

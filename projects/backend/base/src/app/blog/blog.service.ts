@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { ActivityService } from "../activity/activity.service";
+import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogCategoryEntity } from "./entities/blog-category.entity";
@@ -56,6 +57,7 @@ export class BlogService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly activityService: ActivityService,
+        private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService
     ) {}
 
@@ -146,6 +148,7 @@ export class BlogService {
         }
 
         const saved = await this.postRepo.save(post);
+        void this.gamificationService.awardXp(authorId, "create_blog_post", saved.id);
 
         if (saved.status === "published") {
             void this.activityService.create(

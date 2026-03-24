@@ -10,6 +10,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { GamificationService } from "../../gamification/gamification.service";
 import { NotificationsService } from "../../notifications/notifications.service";
 import { CreditService } from "../credit.service";
 import { LottoConfigEntity } from "./entities/lotto-config.entity";
@@ -154,6 +155,7 @@ export class LottoService implements OnModuleInit {
 
     constructor(
         @Inject(forwardRef(() => CreditService)) private readonly creditService: CreditService,
+        @Inject(forwardRef(() => GamificationService)) private readonly gamificationService: GamificationService,
         private readonly notificationsService: NotificationsService,
         @InjectRepository(LottoDrawEntity) private readonly drawRepo: Repository<LottoDrawEntity>,
         @InjectRepository(LottoTicketEntity) private readonly ticketRepo: Repository<LottoTicketEntity>,
@@ -611,6 +613,7 @@ export class LottoService implements OnModuleInit {
             }
         }
         await this.updateStatsTicketCount();
+        void this.gamificationService.awardXp(userId, "buy_lotto_ticket", created[0]?.id ?? "");
         return created;
     }
 

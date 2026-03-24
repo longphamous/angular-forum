@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { LexiconArticleEntity } from "./entities/lexicon-article.entity";
@@ -14,6 +15,7 @@ import { LexiconService } from "./lexicon.service";
 
 @Module({
     imports: [
+        GamificationModule,
         MediaModule,
         TypeOrmModule.forFeature([
             LexiconCategoryEntity,

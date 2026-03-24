@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
@@ -13,6 +14,7 @@ import { RecipesService } from "./recipes.service";
 
 @Module({
     imports: [
+        GamificationModule,
         MediaModule,
         TypeOrmModule.forFeature([
             RecipeEntity,

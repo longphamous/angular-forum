@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import {
@@ -51,6 +52,7 @@ export class LexiconService {
         private readonly termsRepo: Repository<LexiconTermsEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService
     ) {}
 
@@ -227,6 +229,7 @@ export class LexiconService {
         }
 
         const saved = await this.articleRepo.save(article);
+        void this.gamificationService.awardXp(userId, "create_lexicon_article", saved.id);
 
         await this.createVersion(saved, userId, dto.changeSummary ?? "Initial version");
 

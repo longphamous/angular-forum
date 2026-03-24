@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogController } from "./blog.controller";
@@ -10,7 +11,7 @@ import { BlogCommentEntity } from "./entities/blog-comment.entity";
 import { BlogPostEntity } from "./entities/blog-post.entity";
 
 @Module({
-    imports: [MediaModule, TypeOrmModule.forFeature([BlogPostEntity, BlogCategoryEntity, BlogCommentEntity, UserEntity])],
+    imports: [GamificationModule, MediaModule, TypeOrmModule.forFeature([BlogPostEntity, BlogCategoryEntity, BlogCommentEntity, UserEntity])],
     controllers: [BlogController],
     providers: [BlogService],
     exports: [BlogService]

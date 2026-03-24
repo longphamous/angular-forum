@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { ClipStatsController } from "./clip-stats.controller";
@@ -14,7 +15,7 @@ import { ClipLikeEntity } from "./entities/clip-like.entity";
 import { ClipViewEventEntity } from "./entities/clip-view-event.entity";
 
 @Module({
-    imports: [MediaModule, TypeOrmModule.forFeature([ClipEntity, ClipCommentEntity, ClipLikeEntity, ClipFollowEntity, ClipViewEventEntity, UserEntity])],
+    imports: [GamificationModule, MediaModule, TypeOrmModule.forFeature([ClipEntity, ClipCommentEntity, ClipLikeEntity, ClipFollowEntity, ClipViewEventEntity, UserEntity])],
     controllers: [ClipStatsController, ClipsController],
     providers: [ClipStatsService, ClipsService],
     exports: [ClipStatsService, ClipsService]

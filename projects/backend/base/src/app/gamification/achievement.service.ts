@@ -80,7 +80,13 @@ const EVENT_TO_TRIGGER: Partial<Record<XpEventType, string>> = {
     create_post: "post_count",
     create_thread: "thread_count",
     receive_reaction: "reaction_received_count",
-    give_reaction: "reaction_given_count"
+    give_reaction: "reaction_given_count",
+    create_clip: "clip_count",
+    create_blog_post: "blog_post_count",
+    upload_gallery: "gallery_upload_count",
+    create_lexicon_article: "lexicon_article_count",
+    create_recipe: "recipe_count",
+    buy_lotto_ticket: "lotto_ticket_count"
 };
 
 @Injectable()
@@ -264,17 +270,23 @@ export class AchievementService {
             xp_total: currentXp
         };
 
-        if (triggerType === "post_count") {
-            countMap["post_count"] = await this.xpEventRepo.countBy({ userId, eventType: "create_post" });
-        } else if (triggerType === "thread_count") {
-            countMap["thread_count"] = await this.xpEventRepo.countBy({ userId, eventType: "create_thread" });
-        } else if (triggerType === "reaction_received_count") {
-            countMap["reaction_received_count"] = await this.xpEventRepo.countBy({
-                userId,
-                eventType: "receive_reaction"
-            });
-        } else if (triggerType === "reaction_given_count") {
-            countMap["reaction_given_count"] = await this.xpEventRepo.countBy({ userId, eventType: "give_reaction" });
+        if (triggerType) {
+            const eventTypeForTrigger: Record<string, XpEventType> = {
+                post_count: "create_post",
+                thread_count: "create_thread",
+                reaction_received_count: "receive_reaction",
+                reaction_given_count: "give_reaction",
+                clip_count: "create_clip",
+                blog_post_count: "create_blog_post",
+                gallery_upload_count: "upload_gallery",
+                lexicon_article_count: "create_lexicon_article",
+                recipe_count: "create_recipe",
+                lotto_ticket_count: "buy_lotto_ticket"
+            };
+            const evType = eventTypeForTrigger[triggerType];
+            if (evType) {
+                countMap[triggerType] = await this.xpEventRepo.countBy({ userId, eventType: evType });
+            }
         }
 
         for (const achievement of relevant) {

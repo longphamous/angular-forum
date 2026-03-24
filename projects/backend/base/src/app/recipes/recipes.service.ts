@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
@@ -86,6 +87,7 @@ export class RecipesService {
         private readonly ratingRepo: Repository<RecipeRatingEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService
     ) {}
 
@@ -249,6 +251,7 @@ export class RecipesService {
         }
 
         const saved = await this.recipeRepo.save(recipe);
+        void this.gamificationService.awardXp(authorId, "create_recipe", saved.id);
         return this.enrichRecipe(saved, authorId);
     }
 

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { GalleryAlbumEntity } from "./entities/gallery-album.entity";
@@ -12,6 +13,7 @@ import { GalleryService } from "./gallery.service";
 
 @Module({
     imports: [
+        GamificationModule,
         MediaModule,
         TypeOrmModule.forFeature([
             GalleryAlbumEntity,

@@ -19,7 +19,13 @@ const VALID_TRIGGER_TYPES = [
     "reaction_received_count",
     "reaction_given_count",
     "level_reached",
-    "xp_total"
+    "xp_total",
+    "clip_count",
+    "blog_post_count",
+    "gallery_upload_count",
+    "lexicon_article_count",
+    "recipe_count",
+    "lotto_ticket_count"
 ] as const;
 
 function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): void {
