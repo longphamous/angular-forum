@@ -452,6 +452,14 @@ export class LottoPage implements OnInit, OnDestroy {
         return n.toLocaleString("de-DE") + " Coins";
     }
 
+    protected getWinnerCount(entry: DrawHistoryEntry, pc: LottoPrizeClass): number {
+        return entry.winnersByClass.find((w) => w.prizeClass === pc)?.count ?? 0;
+    }
+
+    protected getWinnerPrize(entry: DrawHistoryEntry, pc: LottoPrizeClass): number {
+        return entry.winnersByClass.find((w) => w.prizeClass === pc)?.amount ?? 0;
+    }
+
     protected prizeClassSeverity(pc: LottoPrizeClass): "success" | "warn" | "danger" | "info" | "secondary" {
         if (pc === "class1" || pc === "class2") return "success";
         if (pc === "class3" || pc === "class4") return "warn";

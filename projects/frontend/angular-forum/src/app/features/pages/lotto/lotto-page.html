@@ -869,33 +869,39 @@
                             </div>
                         </div>
 
-                        <!-- Winners by class -->
-                        @if (entry.winnersByClass.length > 0) {
+                        <!-- Prize breakdown table (Gewinnquoten) -->
                         <div class="mt-4">
                             <h4 class="text-surface-500 mb-2 text-xs font-semibold uppercase">
-                                {{ t('lotto.history.winnersByClass') }}
+                                {{ t('lotto.history.prizeBreakdown') }}
                             </h4>
-                            <div class="flex flex-wrap gap-2">
-                                @for (wc of entry.winnersByClass; track wc.prizeClass) {
-                                <div
-                                    class="border-surface-200 dark:border-surface-700 flex items-center gap-2 rounded-lg border px-3 py-2"
-                                >
-                                    <p-tag
-                                        [severity]="prizeClassSeverity(wc.prizeClass)"
-                                        [value]="t(prizeClassInfo[wc.prizeClass].label)"
-                                        styleClass="text-xs"
-                                    />
-                                    <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold"
-                                        >{{ wc.count }}x</span
-                                    >
-                                    <span class="text-surface-400 text-xs">{{ formatCredits(wc.amount) }}</span>
+                            <div class="border-surface-200 dark:border-surface-700 overflow-hidden rounded-lg border">
+                                <!-- Table header -->
+                                <div class="bg-surface-50 dark:bg-surface-800 grid grid-cols-4 gap-2 px-4 py-2 text-xs font-semibold text-surface-500">
+                                    <span>{{ t('lotto.history.colClass') }}</span>
+                                    <span>{{ t('lotto.history.colMatches') }}</span>
+                                    <span class="text-right">{{ t('lotto.history.colWinners') }}</span>
+                                    <span class="text-right">{{ t('lotto.history.colPrize') }}</span>
                                 </div>
+                                <!-- Table rows for each prize class -->
+                                @for (pc of prizeClasses; track pc; let idx = $index) {
+                                    <div class="grid grid-cols-4 gap-2 px-4 py-2.5 text-sm border-t border-surface-100 dark:border-surface-800"
+                                         [class.bg-surface-0]="idx % 2 === 0"
+                                         [class.dark:bg-surface-900]="idx % 2 === 0"
+                                         [class.bg-surface-50/50]="idx % 2 !== 0"
+                                         [class.dark:bg-surface-800/30]="idx % 2 !== 0"
+                                    >
+                                        <span class="font-semibold text-surface-900 dark:text-surface-0">{{ idx + 1 }}</span>
+                                        <span class="text-surface-500">{{ t(prizeClassInfo[pc].description) }}</span>
+                                        <span class="text-right font-medium" [class.text-surface-900]="getWinnerCount(entry, pc) > 0" [class.dark:text-surface-0]="getWinnerCount(entry, pc) > 0" [class.text-surface-400]="getWinnerCount(entry, pc) === 0">
+                                            {{ getWinnerCount(entry, pc) > 0 ? (getWinnerCount(entry, pc) + ' ×') : '0 ×' }}
+                                        </span>
+                                        <span class="text-right font-medium" [class.text-green-600]="getWinnerPrize(entry, pc) > 0" [class.dark:text-green-400]="getWinnerPrize(entry, pc) > 0" [class.text-surface-400]="getWinnerPrize(entry, pc) === 0">
+                                            {{ getWinnerPrize(entry, pc) > 0 ? formatCredits(getWinnerPrize(entry, pc)) : t('lotto.history.unoccupied') }}
+                                        </span>
+                                    </div>
                                 }
                             </div>
                         </div>
-                        } @else {
-                        <p class="text-surface-400 mt-4 text-center text-sm">{{ t('lotto.history.noDraws') }}</p>
-                        }
                     </div>
                     }
                 </div>

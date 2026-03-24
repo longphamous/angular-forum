@@ -1,7 +1,13 @@
 import { Controller, Get } from "@nestjs/common";
 
 import { Public } from "../auth/auth.decorators";
-import { DashboardService, DashboardStatsDto, RecentThreadDto, TopPosterDto } from "./dashboard.service";
+import {
+    DashboardService,
+    DashboardStatsDto,
+    NewestMemberDto,
+    RecentThreadDto,
+    TopPosterDto
+} from "./dashboard.service";
 
 @Controller("dashboard")
 export class DashboardController {
@@ -23,5 +29,11 @@ export class DashboardController {
     @Get("top-posters")
     getTopPosters(): Promise<TopPosterDto[]> {
         return this.dashboardService.getTopPosters();
+    }
+
+    @Public()
+    @Get("newest-members")
+    getNewestMembers(): Promise<NewestMemberDto[]> {
+        return this.dashboardService.getNewestMembers();
     }
 }

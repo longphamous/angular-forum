@@ -232,9 +232,16 @@ export class LottoService implements OnModuleInit {
         this.logger.log(`Config updated and persisted: ${JSON.stringify(this.configCache)}`);
 
         if (scheduleChanged) {
+            // Preserve the jackpot from the current pending draw before rescheduling
+            const currentPending = await this.drawRepo.findOne({
+                where: { status: "pending" },
+                order: { drawDate: "ASC" }
+            });
+            const preservedJackpot = currentPending?.jackpot ?? this.configCache.baseJackpot;
+
             await this.drawRepo.delete({ status: "pending" });
-            await this.scheduleNextDraw();
-            this.logger.log("Pending draws rescheduled after config change");
+            await this.scheduleNextDraw(preservedJackpot);
+            this.logger.log(`Pending draws rescheduled after config change (jackpot preserved: ${preservedJackpot})`);
         }
 
         return { ...this.configCache };
@@ -575,6 +582,7 @@ export class LottoService implements OnModuleInit {
 
             if (i < drawCount - 1) {
                 const currentDrawDate = new Date(draw.drawDate);
+                // Look for an existing pending draw after the current one
                 const subsequent = await this.drawRepo
                     .createQueryBuilder("d")
                     .where("d.status = :status", { status: "pending" })
@@ -585,8 +593,20 @@ export class LottoService implements OnModuleInit {
                 if (subsequent) {
                     currentDrawId = subsequent.id;
                 } else {
-                    const scheduled = await this.scheduleNextDraw();
-                    currentDrawId = scheduled.id;
+                    // Calculate the next draw date relative to the current draw, not "now"
+                    const nextDate = this.nextDrawDateAfter(currentDrawDate);
+                    const newId = `draw-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                    const newDraw = this.drawRepo.create({
+                        id: newId,
+                        drawDate: nextDate,
+                        winningNumbers: [],
+                        superNumber: -1,
+                        jackpot: this.configCache.baseJackpot,
+                        status: "pending"
+                    });
+                    await this.drawRepo.save(newDraw);
+                    this.logger.log(`Multi-draw: scheduled "${newId}" on ${nextDate.toISOString()}`);
+                    currentDrawId = newId;
                 }
             }
         }
@@ -809,15 +829,20 @@ export class LottoService implements OnModuleInit {
 
     nextDrawDateAfter(after: Date): Date {
         const { drawDays, drawHourUtc, drawMinuteUtc } = this.configCache;
-        for (let offset = 1; offset <= 8; offset++) {
+        // Start from offset 0 (today) so that a draw later today is not skipped
+        for (let offset = 0; offset <= 7; offset++) {
             const candidate = new Date(after);
             candidate.setUTCDate(after.getUTCDate() + offset);
             candidate.setUTCHours(drawHourUtc, drawMinuteUtc, 0, 0);
             if (drawDays.includes(candidate.getUTCDay() as Weekday) && candidate > after) return candidate;
         }
+        // Fallback: next occurrence of the first configured day
         const fallback = new Date(after);
-        fallback.setUTCDate(after.getUTCDate() + 7);
+        fallback.setUTCDate(after.getUTCDate() + 1);
         fallback.setUTCHours(drawHourUtc, drawMinuteUtc, 0, 0);
+        while (!drawDays.includes(fallback.getUTCDay() as Weekday)) {
+            fallback.setUTCDate(fallback.getUTCDate() + 1);
+        }
         return fallback;
     }
 

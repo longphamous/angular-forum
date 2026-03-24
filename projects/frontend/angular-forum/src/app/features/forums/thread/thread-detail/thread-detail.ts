@@ -94,6 +94,9 @@ export class ThreadDetail implements OnInit, OnDestroy {
     editReason = "";
     editSubmitting = false;
 
+    // Poll
+    readonly showPollParticipants = signal(false);
+
     // Poll edit
     readonly pollEditDialogVisible = signal(false);
     pollEditNewOptions: { text: string; imageUrl: string }[] = [];

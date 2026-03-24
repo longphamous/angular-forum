@@ -1358,18 +1358,35 @@ export const mockCalendarEventDetails = new Map<string, CalendarEventDetail>([
 // ── Lotto ─────────────────────────────────────────────────────────────────────
 
 export const mockLottoConfig: DrawScheduleConfig = {
-    drawDays: [6],
-    drawHourUtc: 19,
+    drawDays: [0, 1, 2, 3, 4, 5, 6],
+    drawHourUtc: 18,
     drawMinuteUtc: 0,
     baseJackpot: 1_000_000,
     rolloverPercentage: 50,
     ticketCost: 2
 };
 
+const MOCK_DRAW_HOUR = 18; // 18:00 UTC = 20:00 MESZ
+
+function computeMockDrawDate(daysAgo: number): string {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - daysAgo);
+    d.setUTCHours(MOCK_DRAW_HOUR, 0, 0, 0);
+    return d.toISOString();
+}
+
+function computeNextMockDrawDate(): string {
+    const now = new Date();
+    const candidate = new Date(now);
+    candidate.setUTCHours(MOCK_DRAW_HOUR, 0, 0, 0);
+    if (candidate <= now) candidate.setUTCDate(candidate.getUTCDate() + 1);
+    return candidate.toISOString();
+}
+
 export const mockLottoDraws: LottoDraw[] = [
     {
-        id: "draw-2026-02-28",
-        drawDate: "2026-02-28T19:00:00.000Z",
+        id: "draw-past-3",
+        drawDate: computeMockDrawDate(3),
         winningNumbers: [7, 14, 22, 31, 38, 45],
         superNumber: 3,
         jackpot: 3_500_000,
@@ -1377,8 +1394,8 @@ export const mockLottoDraws: LottoDraw[] = [
         totalTickets: 18
     },
     {
-        id: "draw-2026-03-07",
-        drawDate: "2026-03-07T19:00:00.000Z",
+        id: "draw-past-2",
+        drawDate: computeMockDrawDate(2),
         winningNumbers: [2, 9, 17, 28, 36, 49],
         superNumber: 6,
         jackpot: 4_200_000,
@@ -1386,8 +1403,8 @@ export const mockLottoDraws: LottoDraw[] = [
         totalTickets: 24
     },
     {
-        id: "draw-2026-03-14",
-        drawDate: "2026-03-14T19:00:00.000Z",
+        id: "draw-past-1",
+        drawDate: computeMockDrawDate(1),
         winningNumbers: [5, 13, 21, 34, 42, 48],
         superNumber: 1,
         jackpot: 5_500_000,
@@ -1395,11 +1412,11 @@ export const mockLottoDraws: LottoDraw[] = [
         totalTickets: 31
     },
     {
-        id: "draw-2026-03-21",
-        drawDate: "2026-03-21T19:00:00.000Z",
+        id: "draw-next",
+        drawDate: computeNextMockDrawDate(),
         winningNumbers: [],
         superNumber: -1,
-        jackpot: 6_000_000,
+        jackpot: 1_000_648,
         status: "pending",
         totalTickets: 7
     }
@@ -1411,7 +1428,7 @@ export const mockLottoTickets: LottoTicket[] = [
         userId: "00000000-0000-0000-0000-000000000001",
         fields: [[5, 9, 17, 28, 36, 49]],
         superNumber: 3,
-        drawId: "draw-2026-03-07",
+        drawId: "draw-past-2",
         purchasedAt: "2026-03-06T10:00:00.000Z",
         cost: 2
     },
@@ -1420,7 +1437,7 @@ export const mockLottoTickets: LottoTicket[] = [
         userId: "00000000-0000-0000-0000-000000000001",
         fields: [[5, 13, 21, 34, 42, 48]],
         superNumber: 1,
-        drawId: "draw-2026-03-14",
+        drawId: "draw-past-1",
         purchasedAt: "2026-03-13T14:30:00.000Z",
         cost: 2
     },
@@ -1429,7 +1446,7 @@ export const mockLottoTickets: LottoTicket[] = [
         userId: "00000000-0000-0000-0000-000000000001",
         fields: [[3, 14, 25, 36, 47, 49]],
         superNumber: 7,
-        drawId: "draw-2026-03-21",
+        drawId: "draw-next",
         purchasedAt: "2026-03-15T09:00:00.000Z",
         cost: 2
     }
@@ -1439,7 +1456,7 @@ export const mockLottoResults: LottoResult[] = [
     {
         ticketId: "lt-001",
         userId: "00000000-0000-0000-0000-000000000001",
-        drawId: "draw-2026-03-07",
+        drawId: "draw-past-2",
         matchedNumbers: [9, 17, 28, 36, 49],
         matchedCount: 5,
         superNumberMatched: false,
@@ -1449,7 +1466,7 @@ export const mockLottoResults: LottoResult[] = [
     {
         ticketId: "lt-002",
         userId: "00000000-0000-0000-0000-000000000001",
-        drawId: "draw-2026-03-14",
+        drawId: "draw-past-1",
         matchedNumbers: [5, 13, 21, 34, 42, 48],
         matchedCount: 6,
         superNumberMatched: true,

@@ -970,6 +970,47 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(topPosters);
         }
 
+        // GET /api/dashboard/newest-members
+        if (method === "GET" && /\/api\/dashboard\/newest-members$/.test(url)) {
+            return this.ok([
+                {
+                    userId: "00000000-0000-0000-0000-000000000001",
+                    username: "admin",
+                    displayName: "Aniverse Admin",
+                    avatarUrl: null,
+                    joinedAt: "2024-01-15T10:00:00.000Z"
+                },
+                {
+                    userId: "00000000-0000-0000-0000-000000000002",
+                    username: "moderator",
+                    displayName: "ModUser",
+                    avatarUrl: null,
+                    joinedAt: "2025-06-10T14:30:00.000Z"
+                },
+                {
+                    userId: "00000000-0000-0000-0000-000000000003",
+                    username: "testuser",
+                    displayName: "TestMember",
+                    avatarUrl: null,
+                    joinedAt: "2026-01-20T09:15:00.000Z"
+                },
+                {
+                    userId: "00000000-0000-0000-0000-000000000004",
+                    username: "sakura",
+                    displayName: "Sakura Fan",
+                    avatarUrl: null,
+                    joinedAt: "2026-02-14T18:00:00.000Z"
+                },
+                {
+                    userId: "00000000-0000-0000-0000-000000000005",
+                    username: "naruto99",
+                    displayName: "NarutoLover",
+                    avatarUrl: null,
+                    joinedAt: "2026-03-01T12:00:00.000Z"
+                }
+            ]);
+        }
+
         // GET /api/credit/leaderboard
         if (method === "GET" && lowerUrl.match(/\/api\/credit\/leaderboard/)) {
             const entries = Object.values(mockWallets)
@@ -1380,7 +1421,29 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "PATCH" && /\/api\/credit\/lotto\/config$/.test(url)) {
+            const scheduleChanged =
+                (req.body as Record<string, unknown>)["drawDays"] !== undefined ||
+                (req.body as Record<string, unknown>)["drawHourUtc"] !== undefined ||
+                (req.body as Record<string, unknown>)["drawMinuteUtc"] !== undefined;
             Object.assign(mockLottoConfig, req.body);
+
+            // Recalculate pending draw date if schedule changed, but preserve the jackpot
+            if (scheduleChanged) {
+                const pendingDraw = mockLottoDraws.find((d) => d.status === "pending");
+                if (pendingDraw) {
+                    const preservedJackpot = pendingDraw.jackpot;
+                    const now = new Date();
+                    const candidate = new Date(now);
+                    candidate.setUTCHours(mockLottoConfig.drawHourUtc, mockLottoConfig.drawMinuteUtc, 0, 0);
+                    if (candidate <= now) candidate.setUTCDate(candidate.getUTCDate() + 1);
+                    const days = mockLottoConfig.drawDays as number[];
+                    while (days.length > 0 && !days.includes(candidate.getUTCDay())) {
+                        candidate.setUTCDate(candidate.getUTCDate() + 1);
+                    }
+                    pendingDraw.drawDate = candidate.toISOString();
+                    pendingDraw.jackpot = preservedJackpot;
+                }
+            }
             return this.ok({ ...mockLottoConfig });
         }
 
@@ -1490,9 +1553,16 @@ export class MockInterceptor implements HttpInterceptor {
         }
 
         if (method === "POST" && /\/api\/credit\/lotto\/draws$/.test(url)) {
-            const nextDate = new Date(Date.now() + 7 * 24 * 3600_000);
+            // Calculate next draw date based on configured draw days
+            const now = new Date();
+            const nextDate = new Date(now);
+            nextDate.setUTCHours(mockLottoConfig.drawHourUtc, mockLottoConfig.drawMinuteUtc, 0, 0);
+            if (nextDate <= now) nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            while (!mockLottoConfig.drawDays.includes(nextDate.getUTCDay() as 0|1|2|3|4|5|6)) {
+                nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            }
             const newDraw: LottoDraw = {
-                id: `draw-${nextDate.toISOString().slice(0, 10)}`,
+                id: `draw-${Date.now()}`,
                 drawDate: nextDate.toISOString(),
                 winningNumbers: [],
                 superNumber: -1,

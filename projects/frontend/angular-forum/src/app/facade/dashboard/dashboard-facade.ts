@@ -31,6 +31,14 @@ export interface RecentThread {
     title: string;
 }
 
+export interface NewestMember {
+    userId: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+    joinedAt: string;
+}
+
 export interface TopPoster {
     displayName: string;
     postCount: number;
@@ -44,6 +52,7 @@ export class DashboardFacade {
     readonly error: Signal<string | null>;
     readonly loading: Signal<boolean>;
     readonly newestAnime: Signal<Anime[]>;
+    readonly newestMembers: Signal<NewestMember[]>;
     readonly recentThreads: Signal<RecentThread[]>;
     readonly stats: Signal<DashboardStats | null>;
     readonly topPosters: Signal<TopPoster[]>;
@@ -52,6 +61,7 @@ export class DashboardFacade {
     private readonly _error = signal<string | null>(null);
     private readonly _loading = signal(false);
     private readonly _newestAnime = signal<Anime[]>([]);
+    private readonly _newestMembers = signal<NewestMember[]>([]);
     private readonly _recentThreads = signal<RecentThread[]>([]);
     private readonly _stats = signal<DashboardStats | null>(null);
     private readonly _topPosters = signal<TopPoster[]>([]);
@@ -63,6 +73,7 @@ export class DashboardFacade {
         this.error = this._error.asReadonly();
         this.loading = this._loading.asReadonly();
         this.newestAnime = this._newestAnime.asReadonly();
+        this.newestMembers = this._newestMembers.asReadonly();
         this.recentThreads = this._recentThreads.asReadonly();
         this.stats = this._stats.asReadonly();
         this.topPosters = this._topPosters.asReadonly();
@@ -79,6 +90,9 @@ export class DashboardFacade {
             `${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.recentThreads()}`
         );
         const topPosters$ = this.http.get<TopPoster[]>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.topPosters()}`);
+        const newestMembers$ = this.http.get<NewestMember[]>(
+            `${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.newestMembers()}`
+        );
         const newestAnime$ = this.http
             .get<PaginatedAnime>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.list()}`, {
                 params: animeParams
@@ -113,6 +127,7 @@ export class DashboardFacade {
         forkJoin({
             activeForums: activeForums$,
             newestAnime: newestAnime$,
+            newestMembers: newestMembers$,
             recentThreads: recentThreads$,
             stats: stats$,
             topPosters: topPosters$
@@ -120,6 +135,7 @@ export class DashboardFacade {
             next: (results) => {
                 this._activeForums.set(results.activeForums);
                 this._newestAnime.set(results.newestAnime);
+                this._newestMembers.set(results.newestMembers);
                 this._recentThreads.set(results.recentThreads);
                 this._stats.set(results.stats);
                 this._topPosters.set(results.topPosters);

@@ -1,14 +1,16 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
+import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { ChipModule } from "primeng/chip";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
+import { PaginatorModule } from "primeng/paginator";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
@@ -25,12 +27,15 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
     selector: "app-blog-page",
     imports: [
         AdminQuicklink,
+        AvatarModule,
         ButtonModule,
         ChipModule,
         FormsModule,
         IconFieldModule,
         InputIconModule,
         InputTextModule,
+        PaginatorModule,
+        RouterLink,
         SelectModule,
         SkeletonModule,
         TagModule,
@@ -60,6 +65,12 @@ export class BlogPage implements OnInit {
         { label: "blog.types.diary", value: "diary" }
     ];
 
+    protected readonly viewMode = signal<"grid" | "list">(
+        (typeof localStorage !== "undefined" && (localStorage.getItem("blog_view_mode") as "grid" | "list")) || "grid"
+    );
+    protected readonly currentPage = signal(0);
+    protected readonly pageSize = 12;
+
     protected readonly filteredPosts = computed(() => {
         const q = this.searchQuery().toLowerCase();
         const type = this.selectedType();
@@ -73,18 +84,23 @@ export class BlogPage implements OnInit {
         });
     });
 
-    protected readonly featuredPosts = computed(() =>
-        this.posts()
-            .filter((p) => p.type === "editorial" || p.type === "news")
-            .slice(0, 3)
+    protected readonly paginatedPosts = computed(() => {
+        const all = this.filteredPosts();
+        const start = this.currentPage() * this.pageSize;
+        return all.slice(start, start + this.pageSize);
+    });
+
+    protected readonly mostViewedPosts = computed(() =>
+        [...this.posts()].sort((a, b) => b.viewCount - a.viewCount).slice(0, 5)
     );
 
-    protected readonly recentPosts = computed(() => {
-        const featuredIds = new Set(this.featuredPosts().map((p) => p.id));
-        return this.posts()
-            .filter((p) => !featuredIds.has(p.id))
-            .slice(0, 4);
-    });
+    protected readonly mostCommentedPosts = computed(() =>
+        [...this.posts()].sort((a, b) => b.commentCount - a.commentCount).slice(0, 5)
+    );
+
+    protected readonly hasActiveFilters = computed(
+        () => !!this.searchQuery() || !!this.selectedType() || !!this.selectedCategory()
+    );
 
     private get apiBase(): string {
         return this.config.baseUrl;
@@ -120,6 +136,7 @@ export class BlogPage implements OnInit {
         this.searchQuery.set("");
         this.selectedType.set(null);
         this.selectedCategory.set(null);
+        this.currentPage.set(0);
     }
 
     protected typeBadgeSeverity(type: BlogType): "info" | "success" | "warn" | "secondary" {
@@ -140,15 +157,29 @@ export class BlogPage implements OnInit {
         return new Date(dateStr).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
     }
 
+    protected setViewMode(mode: "grid" | "list"): void {
+        this.viewMode.set(mode);
+        localStorage.setItem("blog_view_mode", mode);
+    }
+
+    protected onPageChange(event: { first?: number; rows?: number }): void {
+        const first = event.first ?? 0;
+        const rows = event.rows ?? this.pageSize;
+        this.currentPage.set(Math.floor(first / rows));
+    }
+
     protected setSearchQuery(value: string): void {
         this.searchQuery.set(value);
+        this.currentPage.set(0);
     }
 
     protected setSelectedType(value: BlogType | null): void {
         this.selectedType.set(value);
+        this.currentPage.set(0);
     }
 
     protected setSelectedCategory(value: string | null): void {
         this.selectedCategory.set(value);
+        this.currentPage.set(0);
     }
 }

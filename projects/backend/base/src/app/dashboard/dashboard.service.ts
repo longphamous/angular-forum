@@ -20,6 +20,14 @@ export interface RecentThreadDto {
     title: string;
 }
 
+export interface NewestMemberDto {
+    userId: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    joinedAt: string;
+}
+
 export interface TopPosterDto {
     displayName: string;
     postCount: number;
@@ -121,6 +129,30 @@ export class DashboardService {
             postCount: Number(r.post_count),
             userId: r.user_id,
             username: r.username
+        }));
+    }
+
+    async getNewestMembers(limit = 5): Promise<NewestMemberDto[]> {
+        const rows = await this.db.query<
+            {
+                user_id: string;
+                username: string;
+                display_name: string;
+                avatar_url: string | null;
+                created_at: string;
+            }[]
+        >(
+            `SELECT id AS user_id, username, display_name, avatar_url, created_at
+             FROM users ORDER BY created_at DESC LIMIT $1`,
+            [limit]
+        );
+
+        return rows.map((r) => ({
+            userId: r.user_id,
+            username: r.username,
+            displayName: r.display_name,
+            avatarUrl: r.avatar_url ?? null,
+            joinedAt: r.created_at
         }));
     }
 }
