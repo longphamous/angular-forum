@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (onClick)="goBack()" />
+            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" [label]="navHistory.backLabel()" (onClick)="goBack()" />
             <h1 class="text-2xl font-bold m-0">
                 {{ (isEditMode() ? 'lexicon.editArticle' : 'lexicon.createArticle') | transloco }}
             </h1>
@@ -80,6 +80,7 @@
                 <!-- Cover Image -->
                 <div>
                     <label class="block text-sm font-semibold mb-1">{{ 'common.coverImage' | transloco }}</label>
+                    <media-upload sourceModule="lexicon" category="cover" accept="image/*" (uploaded)="onCoverImageUploaded($event)" />
                     <input
                         type="text"
                         pInputText

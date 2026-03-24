@@ -68,7 +68,8 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.linkDatabase"), icon: "pi pi-fw pi-link", routerLink: ["/links"] },
                     { label: this.t("nav.recipes"), icon: "pi pi-fw pi-star", routerLink: ["/recipes"] },
                     { label: this.t("nav.messages"), icon: "pi pi-fw pi-envelope", routerLink: ["/messages"] },
-                    { label: this.t("nav.friends"), icon: "pi pi-fw pi-users", routerLink: ["/friends"] }
+                    { label: this.t("nav.friends"), icon: "pi pi-fw pi-users", routerLink: ["/friends"] },
+                    { label: this.t("nav.clips"), icon: "pi pi-fw pi-video", routerLink: ["/clips"] }
                 ]
             },
             // ── Anime ─────────────────────────────────────────────────
@@ -179,6 +180,11 @@ export class AppMenu implements OnInit, OnDestroy {
                                 label: this.t("nav.communityBot"),
                                 icon: "pi pi-fw pi-robot",
                                 routerLink: ["/admin/community-bot"]
+                            },
+                            {
+                                label: this.t("nav.mediaManagement"),
+                                icon: "pi pi-fw pi-cloud",
+                                routerLink: ["/admin/media"]
                             }
                         ]
                     },

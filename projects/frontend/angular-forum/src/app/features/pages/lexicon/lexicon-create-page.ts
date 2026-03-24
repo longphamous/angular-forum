@@ -20,7 +20,10 @@ import {
     LexiconCategory,
     LexiconCustomField
 } from "../../../core/models/lexicon/lexicon";
+import { MediaAsset } from "../../../core/models/media/media";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { LexiconFacade } from "../../../facade/lexicon/lexicon-facade";
+import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 
 @Component({
     selector: "app-lexicon-create-page",
@@ -38,7 +41,8 @@ import { LexiconFacade } from "../../../facade/lexicon/lexicon-facade";
         TextareaModule,
         ToastModule,
         ToggleSwitchModule,
-        TranslocoModule
+        TranslocoModule,
+        MediaUpload
     ],
     providers: [MessageService],
     templateUrl: "./lexicon-create-page.html"
@@ -49,6 +53,7 @@ export class LexiconCreatePage implements OnInit {
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly translocoService = inject(TranslocoService);
+    readonly navHistory = inject(NavigationHistoryService);
 
     protected readonly loading = signal(false);
     protected readonly saving = signal(false);
@@ -170,6 +175,10 @@ export class LexiconCreatePage implements OnInit {
         this.form.update((f) => ({ ...f, tags: (f.tags ?? []).filter((t) => t !== tag) }));
     }
 
+    protected onCoverImageUploaded(asset: MediaAsset): void {
+        this.form.update((f) => ({ ...f, coverImageUrl: asset.url }));
+    }
+
     protected setField(field: keyof CreateArticlePayload, value: unknown): void {
         this.form.update((f) => ({ ...f, [field]: value }));
     }
@@ -274,6 +283,6 @@ export class LexiconCreatePage implements OnInit {
     }
 
     protected goBack(): void {
-        void this.router.navigate(["/lexicon"]);
+        this.navHistory.back("/lexicon");
     }
 }

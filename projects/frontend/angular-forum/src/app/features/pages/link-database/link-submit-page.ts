@@ -12,8 +12,10 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { ToastModule } from "primeng/toast";
 
+import { MediaAsset } from "../../../core/models/media/media";
 import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { LinkDatabaseFacade } from "../../../facade/link-database/link-database-facade";
+import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 
 @Component({
     selector: "app-link-submit-page",
@@ -30,7 +32,8 @@ import { LinkDatabaseFacade } from "../../../facade/link-database/link-database-
         TagModule,
         TextareaModule,
         ToastModule,
-        TranslocoModule
+        TranslocoModule,
+        MediaUpload
     ],
     templateUrl: "./link-submit-page.html"
 })
@@ -58,6 +61,11 @@ export class LinkSubmitPage implements OnInit {
 
     ngOnInit(): void {
         this.facade.loadCategories();
+    }
+
+    protected onPreviewImageUploaded(asset: MediaAsset): void {
+        this.formPreviewImageUrl = asset.url;
+        this.cd.markForCheck();
     }
 
     protected addTag(): void {

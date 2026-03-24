@@ -12,7 +12,9 @@ export interface UserProfile {
     email: string;
     displayName: string;
     avatarUrl?: string;
+    avatarMediaId?: string;
     coverUrl?: string;
+    coverMediaId?: string;
     bio?: string;
     birthday?: string;
     gender?: string;

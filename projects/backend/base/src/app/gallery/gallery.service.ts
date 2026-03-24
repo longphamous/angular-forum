@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { GalleryAlbumEntity } from "./entities/gallery-album.entity";
 import { GalleryCommentEntity } from "./entities/gallery-comment.entity";
@@ -24,6 +25,7 @@ export interface CreateAlbumDto {
 export interface AddMediaDto {
     type: "image" | "video" | "youtube";
     url: string;
+    mediaAssetId?: string;
     youtubeId?: string;
     title?: string;
     description?: string;
@@ -50,7 +52,8 @@ export class GalleryService {
         @InjectRepository(GalleryRatingEntity)
         private readonly ratingRepo: Repository<GalleryRatingEntity>,
         @InjectRepository(UserEntity)
-        private readonly userRepo: Repository<UserEntity>
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly mediaService: MediaService
     ) {}
 
     async getAlbums(userId: string, isAdmin: boolean): Promise<object[]> {
@@ -136,11 +139,18 @@ export class GalleryService {
         const album = await this.albumRepo.findOne({ where: { id: albumId } });
         if (!album) throw new NotFoundException("Album not found");
 
+        let resolvedUrl = dto.url;
+        if (dto.mediaAssetId) {
+            const asset = await this.mediaService.findById(dto.mediaAssetId);
+            resolvedUrl = asset.url;
+        }
+
         const media = this.mediaRepo.create({
             albumId,
             ownerId,
             type: dto.type,
-            url: dto.url,
+            url: resolvedUrl,
+            mediaAssetId: dto.mediaAssetId ?? undefined,
             youtubeId: dto.youtubeId ?? null,
             title: dto.title ?? null,
             description: dto.description ?? null,

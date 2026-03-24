@@ -1,4 +1,5 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
+import { Clip, ClipComment } from "../../models/clips/clips";
 import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
 import { FeaturedThread, HotThread, PaginatedFeed } from "../../models/feed/feed";
@@ -24,6 +25,7 @@ import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
+import { MediaAsset } from "../../models/media/media";
 import { CoinEarnConfig, Wallet, WalletTransaction } from "../../models/wallet/wallet";
 
 export interface User {
@@ -2349,3 +2351,206 @@ export const mockFeed: PaginatedFeed = {
     page: 1,
     limit: 20
 };
+
+// ── Clips (mock) ─────────────────────────────────────────────────────────────
+
+export const mockClips: Clip[] = [
+    {
+        id: "clip-1",
+        authorId: "user-1",
+        authorName: "Sakura",
+        authorAvatar: null,
+        title: "Anime Opening Dance",
+        description: "My take on the latest anime opening!",
+        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+        thumbnailUrl: null,
+        tags: ["anime", "dance"],
+        viewCount: 12400,
+        likeCount: 980,
+        commentCount: 42,
+        shareCount: 15,
+        duration: 30,
+        isPublished: true,
+        isLiked: false,
+        isFollowing: false,
+        isOwner: false,
+        createdAt: "2026-03-20T10:00:00Z",
+        updatedAt: "2026-03-20T10:00:00Z"
+    },
+    {
+        id: "clip-2",
+        authorId: "user-2",
+        authorName: "NarutoFan99",
+        authorAvatar: null,
+        title: "Best Anime Fight Scenes 2026",
+        description: "Top 5 fight scenes this season",
+        videoUrl: "https://www.w3schools.com/html/movie.mp4",
+        thumbnailUrl: null,
+        tags: ["anime", "fights", "top5"],
+        viewCount: 45200,
+        likeCount: 3200,
+        commentCount: 156,
+        shareCount: 89,
+        duration: 45,
+        isPublished: true,
+        isLiked: true,
+        isFollowing: true,
+        isOwner: false,
+        createdAt: "2026-03-19T15:30:00Z",
+        updatedAt: "2026-03-19T15:30:00Z"
+    },
+    {
+        id: "clip-3",
+        authorId: "user-3",
+        authorName: "CosplayQueen",
+        authorAvatar: null,
+        title: "Quick Cosplay Tutorial",
+        description: null,
+        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+        thumbnailUrl: null,
+        tags: ["cosplay", "tutorial"],
+        viewCount: 8900,
+        likeCount: 720,
+        commentCount: 28,
+        shareCount: 34,
+        duration: 60,
+        isPublished: true,
+        isLiked: false,
+        isFollowing: false,
+        isOwner: false,
+        createdAt: "2026-03-18T08:00:00Z",
+        updatedAt: "2026-03-18T08:00:00Z"
+    },
+    {
+        id: "clip-4",
+        authorId: "user-1",
+        authorName: "Sakura",
+        authorAvatar: null,
+        title: "Anime Food IRL",
+        description: "Trying to recreate anime food in real life!",
+        videoUrl: "https://www.w3schools.com/html/movie.mp4",
+        thumbnailUrl: null,
+        tags: ["food", "anime", "cooking"],
+        viewCount: 22100,
+        likeCount: 1800,
+        commentCount: 67,
+        shareCount: 42,
+        duration: 55,
+        isPublished: true,
+        isLiked: false,
+        isFollowing: false,
+        isOwner: false,
+        createdAt: "2026-03-17T12:00:00Z",
+        updatedAt: "2026-03-17T12:00:00Z"
+    },
+    {
+        id: "clip-5",
+        authorId: "user-4",
+        authorName: "MangaArtist",
+        authorAvatar: null,
+        title: "Speed Drawing - Goku",
+        description: "10 second speed draw of Goku SSJ4",
+        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+        thumbnailUrl: null,
+        tags: ["art", "drawing", "dragonball"],
+        viewCount: 67500,
+        likeCount: 5400,
+        commentCount: 230,
+        shareCount: 120,
+        duration: 15,
+        isPublished: true,
+        isLiked: true,
+        isFollowing: false,
+        isOwner: false,
+        createdAt: "2026-03-16T18:00:00Z",
+        updatedAt: "2026-03-16T18:00:00Z"
+    }
+];
+
+export const mockClipComments: Record<string, ClipComment[]> = {
+    "clip-1": [
+        {
+            id: "cc-1", clipId: "clip-1", authorId: "user-2", authorName: "NarutoFan99", authorAvatar: null,
+            content: "Amazing moves! \u{1F525}", parentId: null, replies: [
+                { id: "cc-1r", clipId: "clip-1", authorId: "user-1", authorName: "Sakura", authorAvatar: null, content: "Thanks! \u{1F495}", parentId: "cc-1", replies: [], createdAt: "2026-03-20T11:00:00Z", updatedAt: "2026-03-20T11:00:00Z" }
+            ], createdAt: "2026-03-20T10:30:00Z", updatedAt: "2026-03-20T10:30:00Z"
+        },
+        {
+            id: "cc-2", clipId: "clip-1", authorId: "user-3", authorName: "CosplayQueen", authorAvatar: null,
+            content: "Which anime is this from?", parentId: null, replies: [], createdAt: "2026-03-20T10:45:00Z", updatedAt: "2026-03-20T10:45:00Z"
+        }
+    ]
+};
+
+// ── Media (mock) ──────────────────────────────────────────────────────────────
+
+export const mockMediaAssets: MediaAsset[] = [
+    {
+        id: "media-1",
+        ownerId: "user-1",
+        ownerName: "Sakura",
+        originalFilename: "anime-wallpaper.jpg",
+        mimeType: "image/jpeg",
+        fileSize: 245000,
+        width: 1920,
+        height: 1080,
+        duration: null,
+        sourceModule: "gallery",
+        category: "wallpaper",
+        accessLevel: "public",
+        altText: "Anime wallpaper",
+        tags: ["anime", "wallpaper"],
+        isProcessed: true,
+        url: "/uploads/media/user-1/2026/03/anime-wallpaper.jpg",
+        variants: [
+            { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 8000, width: 150, height: 150, url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_sm.jpg" },
+            { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 25000, width: 400, height: 400, url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_md.jpg" },
+            { variantKey: "webp_1x", mimeType: "image/webp", fileSize: 180000, width: 1920, height: 1080, url: "/uploads/media/user-1/2026/03/anime-wallpaper.webp" }
+        ],
+        createdAt: "2026-03-20T10:00:00Z"
+    },
+    {
+        id: "media-2",
+        ownerId: "user-1",
+        ownerName: "Sakura",
+        originalFilename: "profile-photo.png",
+        mimeType: "image/png",
+        fileSize: 520000,
+        width: 800,
+        height: 800,
+        duration: null,
+        sourceModule: "user",
+        category: "avatar",
+        accessLevel: "public",
+        altText: "Profile photo",
+        tags: ["profile"],
+        isProcessed: true,
+        url: "/uploads/media/user-1/2026/03/profile-photo.png",
+        variants: [
+            { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 5000, width: 150, height: 150, url: "/uploads/media/user-1/2026/03/profile-photo_thumb_sm.jpg" },
+            { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 18000, width: 400, height: 400, url: "/uploads/media/user-1/2026/03/profile-photo_thumb_md.jpg" },
+            { variantKey: "webp_1x", mimeType: "image/webp", fileSize: 380000, width: 800, height: 800, url: "/uploads/media/user-1/2026/03/profile-photo.webp" }
+        ],
+        createdAt: "2026-03-19T15:00:00Z"
+    },
+    {
+        id: "media-3",
+        ownerId: "user-2",
+        ownerName: "NarutoFan99",
+        originalFilename: "cosplay-video.mp4",
+        mimeType: "video/mp4",
+        fileSize: 15000000,
+        width: 1080,
+        height: 1920,
+        duration: 30,
+        sourceModule: "clips",
+        category: "content",
+        accessLevel: "public",
+        altText: null,
+        tags: ["cosplay", "video"],
+        isProcessed: false,
+        url: "/uploads/media/user-2/2026/03/cosplay-video.mp4",
+        variants: [],
+        createdAt: "2026-03-18T08:00:00Z"
+    }
+];

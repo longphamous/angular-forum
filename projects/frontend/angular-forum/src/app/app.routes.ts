@@ -399,6 +399,20 @@ export const routes: Routes = [
                     import("./features/pages/steam/steam-page").then((c) => c.SteamPage)
             },
             {
+                path: "clips",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clips/clips-feed-page").then((c) => c.ClipsFeedPage)
+            },
+            {
+                path: "clips/upload",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clips/clips-upload-page").then((c) => c.ClipsUploadPage)
+            },
+            {
                 path: "admin/link-database",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
@@ -450,6 +464,13 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-logs/admin-logs").then((c) => c.AdminLogs)
+            },
+            {
+                path: "admin/media",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-media/admin-media").then((c) => c.AdminMedia)
             }
         ]
     }

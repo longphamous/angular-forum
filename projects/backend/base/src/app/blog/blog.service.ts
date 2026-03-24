@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { ActivityService } from "../activity/activity.service";
+import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogCategoryEntity } from "./entities/blog-category.entity";
 import { BlogCommentEntity } from "./entities/blog-comment.entity";
@@ -16,6 +17,7 @@ export interface CreatePostDto {
     status?: BlogStatus;
     categoryId?: string;
     coverImageUrl?: string;
+    coverImageMediaId?: string;
     tags?: string[];
     allowComments?: boolean;
 }
@@ -53,7 +55,8 @@ export class BlogService {
         private readonly commentRepo: Repository<BlogCommentEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
-        private readonly activityService: ActivityService
+        private readonly activityService: ActivityService,
+        private readonly mediaService: MediaService
     ) {}
 
     async getPosts(options: {
@@ -135,6 +138,13 @@ export class BlogService {
             allowComments: dto.allowComments ?? true,
             publishedAt: dto.status === "published" ? new Date() : null
         });
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            post.coverImageUrl = asset.url;
+            post.coverImageMediaId = dto.coverImageMediaId;
+        }
+
         const saved = await this.postRepo.save(post);
 
         if (saved.status === "published") {
@@ -168,6 +178,12 @@ export class BlogService {
         if (dto.coverImageUrl !== undefined) post.coverImageUrl = dto.coverImageUrl ?? null;
         if (dto.tags !== undefined) post.tags = dto.tags;
         if (dto.allowComments !== undefined) post.allowComments = dto.allowComments;
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            post.coverImageUrl = asset.url;
+            post.coverImageMediaId = dto.coverImageMediaId;
+        }
 
         const saved = await this.postRepo.save(post);
         return this.enrichPost(saved, userId);

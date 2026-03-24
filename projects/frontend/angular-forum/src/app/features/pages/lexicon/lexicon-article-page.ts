@@ -17,6 +17,7 @@ import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
 
 import { LexiconComment } from "../../../core/models/lexicon/lexicon";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { LexiconFacade } from "../../../facade/lexicon/lexicon-facade";
 
@@ -172,7 +173,9 @@ export class LexiconArticlePage implements OnInit {
         return `${days}d`;
     }
 
+    readonly navHistory = inject(NavigationHistoryService);
+
     protected goBack(): void {
-        void this.router.navigate(["/lexicon"]);
+        this.navHistory.back("/lexicon");
     }
 }

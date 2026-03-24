@@ -1,4 +1,4 @@
-import { DatePipe } from "@angular/common";
+import { DatePipe, DecimalPipe } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
@@ -12,11 +12,18 @@ import { DividerModule } from "primeng/divider";
 import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
+import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
+import { BLOG_ROUTES } from "../../../core/api/blog.routes";
+import { CLIPS_ROUTES } from "../../../core/api/clips.routes";
+import { FRIENDS_ROUTES } from "../../../core/api/friends.routes";
+import { GALLERY_ROUTES } from "../../../core/api/gallery.routes";
+import { LEXICON_ROUTES } from "../../../core/api/lexicon.routes";
+import { RECIPES_ROUTES } from "../../../core/api/recipes.routes";
 import { USER_ROUTES } from "../../../core/api/user.routes";
 import { AchievementBadge } from "../../../core/components/achievement-badge/achievement-badge";
 import { LevelProgress } from "../../../core/components/level-badge/level-badge";
@@ -27,14 +34,24 @@ import {
     ChronikVisibility,
     CreateChronikEntry
 } from "../../../core/models/chronik/chronik";
-import { FRIENDS_ROUTES } from "../../../core/api/friends.routes";
+import { Clip, PaginatedClips } from "../../../core/models/clips/clips";
 import { FriendshipStatusResult, FriendUser } from "../../../core/models/friends/friends";
 import { UserAchievement } from "../../../core/models/gamification/achievement";
+import { MediaAsset } from "../../../core/models/media/media";
 import { UserProfile, UserRole } from "../../../core/models/user/user";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
+import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { ChronikFacade } from "../../../facade/chronik/chronik-facade";
 import { FriendsFacade } from "../../../facade/friends/friends-facade";
+import { ClipThumbnail } from "../../../shared/components/clip-thumbnail/clip-thumbnail";
+import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
+
+interface BlogPostSummary { id: string; title: string; slug: string; excerpt?: string; coverImageUrl?: string; viewCount: number; createdAt: string }
+interface LexiconArticleSummary { id: string; title: string; slug: string; excerpt?: string; status: string; createdAt: string }
+interface GalleryAlbumSummary { id: string; title: string; coverUrl?: string; mediaCount: number; createdAt: string }
+interface RecipeSummary { id: string; title: string; slug: string; imageUrl?: string; avgRating: number; createdAt: string }
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,7 +60,9 @@ import { OnlineIndicator } from "../../../shared/components/online-indicator/onl
         AvatarModule,
         ButtonModule,
         CardModule,
+        ClipThumbnail,
         DatePipe,
+        DecimalPipe,
         DialogModule,
         DividerModule,
         FormsModule,
@@ -52,10 +71,12 @@ import { OnlineIndicator } from "../../../shared/components/online-indicator/onl
         RouterModule,
         SelectModule,
         SkeletonModule,
+        TabsModule,
         TagModule,
         TextareaModule,
         TooltipModule,
         TranslocoModule,
+        MediaUpload,
         OnlineIndicator
     ],
     selector: "app-user-profile-page",
@@ -96,6 +117,15 @@ export class UserProfilePage implements OnInit {
     protected formLinkDescription = "";
     protected formLinkImageUrl = "";
 
+    // Content tabs
+    protected readonly activeTab = signal("chronik");
+    protected readonly userClips = signal<Clip[]>([]);
+    protected readonly userBlogPosts = signal<BlogPostSummary[]>([]);
+    protected readonly userLexiconArticles = signal<LexiconArticleSummary[]>([]);
+    protected readonly userGalleryAlbums = signal<GalleryAlbumSummary[]>([]);
+    protected readonly userRecipes = signal<RecipeSummary[]>([]);
+    private readonly loadedTabs = new Set<string>();
+
     // Comments inline
     protected readonly expandedComments = signal<Set<string>>(new Set());
     protected newComments = new Map<string, string>();
@@ -104,6 +134,8 @@ export class UserProfilePage implements OnInit {
 
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
     readonly authFacade = inject(AuthFacade);
+    readonly navHistory = inject(NavigationHistoryService);
+    private readonly tabService = inject(TabPersistenceService);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly http = inject(HttpClient);
     private readonly profileUserId = signal<string | null>(null);
@@ -121,6 +153,15 @@ export class UserProfilePage implements OnInit {
             const userId = params["userId"] as string;
             this.loadProfile(userId);
         });
+
+        // Restore tab when navigating back (query param changes without route param change)
+        this.route.queryParams.subscribe((qp) => {
+            const tab = qp["tab"] as string | undefined;
+            if (tab && tab !== this.activeTab()) {
+                this.activeTab.set(tab);
+                this.onTabChange(tab);
+            }
+        });
     }
 
     private loadProfile(userId: string): void {
@@ -130,6 +171,19 @@ export class UserProfilePage implements OnInit {
         this.achievements.set([]);
         this.friends.set([]);
         this.friendStatus.set(null);
+        this.loadedTabs.clear();
+        this.userClips.set([]);
+        this.userBlogPosts.set([]);
+        this.userLexiconArticles.set([]);
+        this.userGalleryAlbums.set([]);
+        this.userRecipes.set([]);
+
+        // Restore tab from URL query param or default to "chronik"
+        const restoredTab = this.tabService.get("chronik");
+        this.activeTab.set(restoredTab);
+        if (restoredTab !== "chronik") {
+            this.onTabChange(restoredTab);
+        }
 
         this.http.get<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.publicProfile(userId)}`).subscribe({
             next: (p) => {
@@ -428,6 +482,54 @@ export class UserProfilePage implements OnInit {
                 this.cd.markForCheck();
             }
         });
+    }
+
+    protected onCoverUploaded(asset: MediaAsset): void {
+        this.coverUrlDraft = asset.url;
+        this.cd.markForCheck();
+    }
+
+    protected onChronikImageUploaded(asset: MediaAsset): void {
+        this.formImageUrl = asset.url;
+        this.cd.markForCheck();
+    }
+
+    protected onTabChange(tabValue: string | number | undefined): void {
+        if (tabValue == null) return;
+        const tab = String(tabValue);
+        this.activeTab.set(tab);
+        this.tabService.set(tab);
+        const userId = this.profileUserId();
+        if (!userId || this.loadedTabs.has(tab)) return;
+        this.loadedTabs.add(tab);
+
+        switch (tab) {
+            case "clips":
+                this.http
+                    .get<PaginatedClips | Clip[]>(`${this.apiConfig.baseUrl}${CLIPS_ROUTES.userClips(userId)}`, { params: { page: 1, limit: 50 } })
+                    .subscribe({ next: (res) => { this.userClips.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                break;
+            case "blog":
+                this.http
+                    .get<BlogPostSummary[] | { data: BlogPostSummary[] }>(`${this.apiConfig.baseUrl}${BLOG_ROUTES.posts()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({ next: (res) => { this.userBlogPosts.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                break;
+            case "lexicon":
+                this.http
+                    .get<LexiconArticleSummary[] | { data: LexiconArticleSummary[] }>(`${this.apiConfig.baseUrl}${LEXICON_ROUTES.articles()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({ next: (res) => { this.userLexiconArticles.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                break;
+            case "gallery":
+                this.http
+                    .get<GalleryAlbumSummary[] | { data: GalleryAlbumSummary[] }>(`${this.apiConfig.baseUrl}${GALLERY_ROUTES.albums()}`, { params: { ownerId: userId } })
+                    .subscribe({ next: (res) => { this.userGalleryAlbums.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                break;
+            case "recipes":
+                this.http
+                    .get<RecipeSummary[] | { data: RecipeSummary[] }>(`${this.apiConfig.baseUrl}${RECIPES_ROUTES.list()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({ next: (res) => { this.userRecipes.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                break;
+        }
     }
 
     private resetForm(): void {

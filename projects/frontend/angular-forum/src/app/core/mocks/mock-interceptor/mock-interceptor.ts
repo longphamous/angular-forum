@@ -23,6 +23,7 @@ import { GalleryAlbum, GalleryComment, GalleryMedia } from "../../models/gallery
 import { Group } from "../../models/group/group";
 import { LottoDraw, LottoPrizeClass, LottoResult, LottoTicket } from "../../models/lotto/lotto";
 import { MarketComment, MarketListing, MarketOffer, MarketReport } from "../../models/marketplace/marketplace";
+import { MediaAsset } from "../../models/media/media";
 import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
 import { UserProfile } from "../../models/user/user";
 import {
@@ -72,6 +73,9 @@ import {
     mockUsers,
     mockWallets,
     mockWalletTransactions,
+    mockClips,
+    mockClipComments,
+    mockMediaAssets,
     User
 } from "../mock-data/mock-data";
 
@@ -2617,6 +2621,311 @@ export class MockInterceptor implements HttpInterceptor {
         // GET /api/feed/hot
         if (method === "GET" && lowerUrl.match(/\/api\/feed\/hot$/)) {
             return this.ok({ ...mockFeed });
+        }
+
+        // ── Clip Stats ───────────────────────────────────────────────────
+
+        // POST /api/clips/stats/:id/view
+        const clipStatsViewMatch = url.match(/\/api\/clips\/stats\/([^/]+)\/view$/);
+        if (method === "POST" && clipStatsViewMatch) {
+            return this.ok({ tracked: true });
+        }
+
+        // GET /api/clips/stats/trending/list
+        if (method === "GET" && lowerUrl.includes("/api/clips/stats/trending/list")) {
+            const trending = mockClips
+                .filter((c) => c.isPublished)
+                .map((c) => ({
+                    clipId: c.id,
+                    title: c.title,
+                    authorName: c.authorName,
+                    thumbnailUrl: c.thumbnailUrl,
+                    trendingScore: c.viewCount * 1 + c.likeCount * 5,
+                    recentViews: Math.floor(c.viewCount * 0.3),
+                    recentLikes: Math.floor(c.likeCount * 0.2),
+                    viewCount: c.viewCount,
+                    likeCount: c.likeCount
+                }))
+                .sort((a, b) => b.trendingScore - a.trendingScore);
+            return this.ok(trending);
+        }
+
+        // GET /api/clips/stats/author/:authorId
+        const clipStatsAuthorMatch = url.match(/\/api\/clips\/stats\/author\/([^/?]+)/);
+        if (method === "GET" && clipStatsAuthorMatch) {
+            const authorId = clipStatsAuthorMatch[1]!;
+            const authorClips = mockClips.filter((c) => c.authorId === authorId && c.isPublished);
+            return this.ok({
+                authorId,
+                authorName: authorClips[0]?.authorName ?? "Unknown",
+                totalClips: authorClips.length,
+                totalViews: authorClips.reduce((s, c) => s + c.viewCount, 0),
+                totalLikes: authorClips.reduce((s, c) => s + c.likeCount, 0),
+                totalComments: authorClips.reduce((s, c) => s + c.commentCount, 0),
+                totalShares: authorClips.reduce((s, c) => s + c.shareCount, 0),
+                avgCompletionPercent: 68,
+                avgEngagementScore: 42.5,
+                topClips: authorClips.slice(0, 5).map((c) => ({
+                    clipId: c.id,
+                    title: c.title,
+                    viewCount: c.viewCount,
+                    engagementScore: Math.round((c.likeCount * 2 + c.commentCount * 3) / Math.max(c.viewCount, 1) * 100 * 100) / 100
+                }))
+            });
+        }
+
+        // GET /api/clips/stats/:id/recommendations
+        const clipStatsRecoMatch = url.match(/\/api\/clips\/stats\/([^/]+)\/recommendations$/);
+        if (method === "GET" && clipStatsRecoMatch) {
+            const clipId = clipStatsRecoMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            return this.ok({
+                clipId,
+                engagementScore: 38.5,
+                avgCompletionPercent: 72,
+                likeRate: 4.2,
+                commentRate: 1.1,
+                shareRate: 0.8,
+                trendingScore: 125.5,
+                tags: clip?.tags ?? [],
+                duration: clip?.duration ?? 30,
+                ageHours: 48.3
+            });
+        }
+
+        // GET /api/clips/stats/:id
+        const clipStatsMatch = url.match(/\/api\/clips\/stats\/([^/]+)$/);
+        if (method === "GET" && clipStatsMatch) {
+            const clipId = clipStatsMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            const totalViews = Math.max(clip.viewCount, 1);
+            return this.ok({
+                clipId,
+                title: clip.title,
+                totalViews: clip.viewCount,
+                uniqueViewers: Math.floor(clip.viewCount * 0.7),
+                avgWatchDurationMs: 18500,
+                avgCompletionPercent: 72,
+                likeCount: clip.likeCount,
+                commentCount: clip.commentCount,
+                shareCount: clip.shareCount,
+                likeRate: Math.round((clip.likeCount / totalViews) * 10000) / 100,
+                commentRate: Math.round((clip.commentCount / totalViews) * 10000) / 100,
+                shareRate: Math.round((clip.shareCount / totalViews) * 10000) / 100,
+                engagementScore: Math.round((clip.likeCount * 2 + clip.commentCount * 3 + clip.shareCount * 4) / totalViews * 100 * 100) / 100,
+                viewsBySource: { feed: Math.floor(clip.viewCount * 0.6), profile: Math.floor(clip.viewCount * 0.25), direct: Math.floor(clip.viewCount * 0.15) },
+                viewsOverTime: Array.from({ length: 7 }, (_, i) => ({
+                    date: new Date(Date.now() - (6 - i) * 86400000).toISOString().split("T")[0],
+                    views: Math.floor(Math.random() * (clip.viewCount / 5))
+                })),
+                createdAt: clip.createdAt
+            });
+        }
+
+        // ── Clips ────────────────────────────────────────────────────────
+
+        // GET /api/clips/feed
+        if (method === "GET" && lowerUrl.includes("/api/clips/feed")) {
+            const published = mockClips.filter((c) => c.isPublished);
+            return this.ok({ data: published, total: published.length, page: 1, limit: 10 });
+        }
+
+        // GET /api/clips/user/:userId
+        const clipsUserMatch = url.match(/\/api\/clips\/user\/([^/?]+)/);
+        if (method === "GET" && clipsUserMatch) {
+            const userId = clipsUserMatch[1]!;
+            const userClips = mockClips.filter((c) => c.authorId === userId);
+            return this.ok({ data: userClips, total: userClips.length, page: 1, limit: 10 });
+        }
+
+        // POST /api/clips/:id/like  (must be before single-clip GET)
+        const clipLikeMatch = url.match(/\/api\/clips\/([^/]+)\/like$/);
+        if (method === "POST" && clipLikeMatch) {
+            const clipId = clipLikeMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            clip.isLiked = !clip.isLiked;
+            clip.likeCount += clip.isLiked ? 1 : -1;
+            return this.ok({ isLiked: clip.isLiked, likeCount: clip.likeCount });
+        }
+
+        // POST /api/clips/:id/view
+        const clipViewMatch = url.match(/\/api\/clips\/([^/]+)\/view$/);
+        if (method === "POST" && clipViewMatch) {
+            const clipId = clipViewMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            clip.viewCount++;
+            return this.ok({ viewCount: clip.viewCount });
+        }
+
+        // POST /api/clips/:id/share
+        const clipShareMatch = url.match(/\/api\/clips\/([^/]+)\/share$/);
+        if (method === "POST" && clipShareMatch) {
+            const clipId = clipShareMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            clip.shareCount++;
+            return this.ok({ shareCount: clip.shareCount });
+        }
+
+        // POST /api/clips/:id/follow
+        const clipFollowMatch = url.match(/\/api\/clips\/([^/]+)\/follow$/);
+        if (method === "POST" && clipFollowMatch) {
+            const clipId = clipFollowMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            clip.isFollowing = !clip.isFollowing;
+            return this.ok({ isFollowing: clip.isFollowing });
+        }
+
+        // GET /api/clips/:id/comments
+        const clipCommentsMatch = url.match(/\/api\/clips\/([^/]+)\/comments$/);
+        if (method === "GET" && clipCommentsMatch) {
+            const clipId = clipCommentsMatch[1]!;
+            const comments = mockClipComments[clipId] ?? [];
+            return this.ok(comments);
+        }
+
+        // POST /api/clips/:id/comments
+        if (method === "POST" && clipCommentsMatch) {
+            const clipId = clipCommentsMatch[1]!;
+            const payload = body as { content: string; parentId?: string } | null;
+            if (!payload?.content) return this.error("Content required", 400);
+            const newComment = {
+                id: `cc-${Date.now()}`,
+                clipId,
+                authorId: MOCK_ADMIN_ID,
+                authorName: "Aniverse Admin",
+                authorAvatar: null,
+                content: payload.content,
+                parentId: payload.parentId ?? null,
+                replies: [] as never[],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            if (!mockClipComments[clipId]) {
+                mockClipComments[clipId] = [];
+            }
+            mockClipComments[clipId].push(newComment);
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (clip) clip.commentCount++;
+            return this.ok(newComment);
+        }
+
+        // POST /api/clips  (create new clip)
+        if (method === "POST" && lowerUrl.match(/\/api\/clips$/)) {
+            const payload = body as Record<string, unknown> | null;
+            if (!payload) return this.error("Fehlender Request-Body", 400);
+            const newClip = {
+                id: `clip-${Date.now()}`,
+                authorId: MOCK_ADMIN_ID,
+                authorName: "Aniverse Admin",
+                authorAvatar: null,
+                title: (payload["title"] as string) ?? "Untitled",
+                description: (payload["description"] as string | null) ?? null,
+                videoUrl: (payload["videoUrl"] as string) ?? "",
+                thumbnailUrl: (payload["thumbnailUrl"] as string | null) ?? null,
+                tags: (payload["tags"] as string[]) ?? [],
+                viewCount: 0,
+                likeCount: 0,
+                commentCount: 0,
+                shareCount: 0,
+                duration: (payload["duration"] as number) ?? 0,
+                isPublished: (payload["isPublished"] as boolean) ?? true,
+                isLiked: false,
+                isFollowing: false,
+                isOwner: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            mockClips.unshift(newClip);
+            return this.ok(newClip);
+        }
+
+        // GET /api/clips/:id  (single clip detail)
+        const clipDetailMatch = url.match(/\/api\/clips\/([^/]+)$/);
+        if (method === "GET" && clipDetailMatch) {
+            const clipId = clipDetailMatch[1]!;
+            const clip = mockClips.find((c) => c.id === clipId);
+            if (!clip) return this.error("Clip nicht gefunden", 404);
+            return this.ok({ ...clip });
+        }
+
+        // ── Media ──────────────────────────────────────────────────────────────
+
+        // POST /api/media/upload
+        if (method === "POST" && url.endsWith("/api/media/upload")) {
+            const newAsset: MediaAsset = {
+                id: `media-${Date.now()}`,
+                ownerId: "user-1",
+                ownerName: "Sakura",
+                originalFilename: "uploaded-file.jpg",
+                mimeType: "image/jpeg",
+                fileSize: 100000,
+                width: 800,
+                height: 600,
+                duration: null,
+                sourceModule: "general",
+                category: null,
+                accessLevel: "public",
+                altText: null,
+                tags: [],
+                isProcessed: true,
+                url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}.jpg`,
+                variants: [
+                    { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 5000, width: 150, height: 150, url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_sm.jpg` },
+                    { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 15000, width: 400, height: 400, url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_md.jpg` }
+                ],
+                createdAt: new Date().toISOString()
+            };
+            mockMediaAssets.unshift(newAsset);
+            return this.ok(newAsset);
+        }
+
+        // GET /api/media/browse
+        if (method === "GET" && url.includes("/api/media/browse")) {
+            return this.ok({ data: mockMediaAssets, total: mockMediaAssets.length });
+        }
+
+        // GET /api/media/user/:userId
+        const mediaByUserMatch = url.match(/\/api\/media\/user\/([^/?]+)/);
+        if (method === "GET" && mediaByUserMatch) {
+            const userId = mediaByUserMatch[1]!;
+            const userMedia = mockMediaAssets.filter((m) => m.ownerId === userId);
+            return this.ok({ data: userMedia, total: userMedia.length });
+        }
+
+        // PATCH /api/media/:id
+        const mediaPatchMatch = url.match(/\/api\/media\/([^/?]+)$/);
+        if (method === "PATCH" && mediaPatchMatch) {
+            const mediaId = mediaPatchMatch[1]!;
+            const asset = mockMediaAssets.find((m) => m.id === mediaId);
+            if (!asset) return this.error("Media not found", 404);
+            const body = req.body as Partial<MediaAsset> | null;
+            if (body?.altText !== undefined) asset.altText = body.altText;
+            if (body?.tags !== undefined) asset.tags = body.tags;
+            return this.ok({ ...asset });
+        }
+
+        // DELETE /api/media/:id
+        const mediaDeleteMatch = url.match(/\/api\/media\/([^/?]+)$/);
+        if (method === "DELETE" && mediaDeleteMatch) {
+            const mediaId = mediaDeleteMatch[1]!;
+            const idx = mockMediaAssets.findIndex((m) => m.id === mediaId);
+            if (idx === -1) return this.error("Media not found", 404);
+            mockMediaAssets.splice(idx, 1);
+            return this.ok({ success: true });
+        }
+
+        // GET /api/media/:id
+        const mediaDetailMatch = url.match(/\/api\/media\/([^/?]+)$/);
+        if (method === "GET" && mediaDetailMatch) {
+            const mediaId = mediaDetailMatch[1]!;
+            const asset = mockMediaAssets.find((m) => m.id === mediaId);
+            if (!asset) return this.error("Media not found", 404);
+            return this.ok({ ...asset });
         }
 
         // Fallback: durchreichen

@@ -30,8 +30,14 @@ export class UserEntity {
     @Column({ name: "avatar_url", nullable: true, type: "text" })
     avatarUrl?: string;
 
+    @Column({ name: "avatar_media_id", type: "uuid", nullable: true })
+    avatarMediaId?: string;
+
     @Column({ name: "cover_url", nullable: true, type: "text" })
     coverUrl!: string | null;
+
+    @Column({ name: "cover_media_id", type: "uuid", nullable: true })
+    coverMediaId?: string;
 
     @Column({ nullable: true, type: "text" })
     bio?: string;

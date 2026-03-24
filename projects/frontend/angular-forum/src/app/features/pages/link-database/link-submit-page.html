@@ -117,6 +117,7 @@
                         <label class="text-surface-700 dark:text-surface-300 text-sm font-medium" for="link-preview">
                             {{ t("links.submit.previewImage") }}
                         </label>
+                        <media-upload sourceModule="general" category="preview" accept="image/*" (uploaded)="onPreviewImageUploaded($event)" />
                         <input
                             class="w-full"
                             id="link-preview"

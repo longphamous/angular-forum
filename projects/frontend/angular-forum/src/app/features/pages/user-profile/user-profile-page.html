@@ -1,4 +1,11 @@
 <div class="mx-auto max-w-6xl" *transloco="let t">
+    <!-- Back Button -->
+    @if (navHistory.canGoBack()) {
+        <div class="mb-3">
+            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" [label]="navHistory.backLabel()" (onClick)="navHistory.back('/feed')" size="small" />
+        </div>
+    }
+
     @if (loading()) {
     <!-- Skeleton -->
     <div class="overflow-hidden rounded-xl border border-surface">
@@ -200,182 +207,308 @@
     <!-- TWO COLUMN: Feed + Sidebar                                        -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div class="profile-content mt-4">
-        <!-- ── Main Feed ──────────────────────────────────────────────── -->
+        <!-- ── Main Feed with Tabs ────────────────────────────────────── -->
         <div class="profile-feed">
-            <!-- Composer (own profile only) -->
-            @if (isOwnProfile()) {
-            <div class="rounded-xl border border-surface p-4">
-                <h3 class="text-color-secondary mb-3 text-sm font-semibold">{{ t('chronik.whatMovesYou') }}</h3>
+            <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+                <p-tablist>
+                    <p-tab value="chronik"><i class="pi pi-history mr-2"></i>{{ t('userProfile.tabChronik') }}</p-tab>
+                    <p-tab value="clips"><i class="pi pi-video mr-2"></i>{{ t('userProfile.tabClips') }}</p-tab>
+                    <p-tab value="blog"><i class="pi pi-pencil mr-2"></i>{{ t('userProfile.tabBlog') }}</p-tab>
+                    <p-tab value="lexicon"><i class="pi pi-book mr-2"></i>{{ t('userProfile.tabLexicon') }}</p-tab>
+                    <p-tab value="gallery"><i class="pi pi-images mr-2"></i>{{ t('userProfile.tabGallery') }}</p-tab>
+                    <p-tab value="recipes"><i class="pi pi-clipboard mr-2"></i>{{ t('userProfile.tabRecipes') }}</p-tab>
+                </p-tablist>
 
-                <div class="mb-3 flex gap-2">
-                    <p-button (onClick)="formType.set('text')" [label]="t('chronik.type.text')" [outlined]="formType() !== 'text'" icon="pi pi-align-left" size="small" />
-                    <p-button (onClick)="formType.set('image')" [label]="t('chronik.type.image')" [outlined]="formType() !== 'image'" icon="pi pi-image" size="small" />
-                    <p-button (onClick)="formType.set('link')" [label]="t('chronik.type.link')" [outlined]="formType() !== 'link'" icon="pi pi-link" size="small" />
-                </div>
-
-                <textarea class="w-full" [(ngModel)]="formContent" [disabled]="saving()" [placeholder]="t('chronik.whatMovesYou')" pTextarea rows="3"></textarea>
-
-                @if (formType() === 'image') {
-                    <div class="mt-3">
-                        <label class="text-color-secondary mb-1 block text-sm">{{ t('chronik.imageUrl') }}</label>
-                        <input class="w-full" [(ngModel)]="formImageUrl" [disabled]="saving()" pInputText type="url" />
-                    </div>
-                }
-                @if (formType() === 'link') {
-                    <div class="mt-3 flex flex-col gap-2">
-                        <input class="w-full" [(ngModel)]="formLinkUrl" [disabled]="saving()" [placeholder]="t('chronik.linkUrl')" pInputText type="url" />
-                        <input class="w-full" [(ngModel)]="formLinkTitle" [disabled]="saving()" [placeholder]="t('chronik.linkTitle')" pInputText />
-                        <input class="w-full" [(ngModel)]="formLinkDescription" [disabled]="saving()" [placeholder]="t('chronik.linkDescription')" pInputText />
-                        <input class="w-full" [(ngModel)]="formLinkImageUrl" [disabled]="saving()" [placeholder]="t('chronik.linkPreview')" pInputText type="url" />
-                    </div>
-                }
-
-                <div class="mt-3 flex items-center justify-between gap-2">
-                    <p-select (ngModelChange)="formVisibility.set($event)" [ngModel]="formVisibility()" [options]="visibilityOptions" optionLabel="label" optionValue="value" styleClass="w-40" />
-                    <p-button (onClick)="submitEntry()" [disabled]="!formContent.trim()" [label]="t('chronik.post')" [loading]="saving()" icon="pi pi-send" />
-                </div>
-            </div>
-            }
-
-            <!-- Loading skeletons -->
-            @if (chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
-                @for (i of [1,2,3]; track i) {
-                    <div class="flex flex-col gap-3 rounded-xl border border-surface p-4">
-                        <div class="flex items-center gap-3">
-                            <p-skeleton shape="circle" size="2.5rem" />
-                            <div class="flex flex-col gap-1"><p-skeleton height="0.875rem" width="8rem" /><p-skeleton height="0.75rem" width="5rem" /></div>
-                        </div>
-                        <p-skeleton height="4rem" width="100%" />
-                        <div class="flex gap-4"><p-skeleton height="1.5rem" width="4rem" /><p-skeleton height="1.5rem" width="4rem" /></div>
-                    </div>
-                }
-            }
-
-            <!-- Empty state -->
-            @if (!chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
-                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
-                    <i class="pi pi-history text-color-secondary text-5xl"></i>
-                    <p class="text-color-secondary text-sm">{{ t('chronik.noEntries') }}</p>
-                </div>
-            }
-
-            <!-- Entry list -->
-            @for (entry of chronikFacade.profileEntries(); track entry.id) {
-            <div class="overflow-hidden rounded-xl border border-surface">
-                <!-- Entry Header -->
-                <div class="flex items-start justify-between p-4 pb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
-                            @if (entry.authorAvatar) {
-                                <p-avatar [image]="entry.authorAvatar" shape="circle" size="normal" />
-                            } @else {
-                                <p-avatar [label]="getAvatarLabel(entry.authorDisplayName)" shape="circle" size="normal" />
-                            }
-                        </div>
-                        <div>
-                            <a class="text-sm font-semibold no-underline hover:underline" [routerLink]="['/users', entry.authorId]">
-                                {{ entry.authorDisplayName }}
-                            </a>
-                            <div class="text-color-secondary flex items-center gap-2 text-xs">
-                                <i [class]="visibilityIcon(entry.visibility)" style="font-size: 0.65rem"></i>
-                                <span>{{ formatDate(entry.createdAt, 'full') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    @if (entry.authorId === authFacade.currentUser()?.id) {
-                        <p-button (onClick)="deleteEntry(entry)" [text]="true" icon="pi pi-trash" severity="danger" size="small" />
-                    }
-                </div>
-
-                <!-- Content -->
-                <div class="px-4 pb-3">
-                    <p class="m-0 whitespace-pre-line text-sm">{{ entry.content }}</p>
-                    @if (entry.imageUrl) {
-                        <img class="mt-3 max-h-80 w-full rounded-lg object-cover" [src]="entry.imageUrl" />
-                    }
-                    @if (entry.linkUrl) {
-                        <a class="border-surface hover:bg-emphasis mt-3 flex gap-3 rounded-lg border p-3 no-underline transition-colors" [href]="entry.linkUrl" rel="noopener noreferrer" target="_blank">
-                            @if (entry.linkImageUrl) {
-                                <img class="h-16 w-24 shrink-0 rounded object-cover" [src]="entry.linkImageUrl" />
-                            }
-                            <div class="min-w-0 flex-1">
-                                <div class="text-sm font-medium">{{ entry.linkTitle ?? entry.linkUrl }}</div>
-                                @if (entry.linkDescription) {
-                                    <div class="text-color-secondary mt-0.5 line-clamp-2 text-xs">{{ entry.linkDescription }}</div>
+                <p-tabpanels>
+                    <!-- ── Chronik Tab ──────────────────────────────────────── -->
+                    <p-tabpanel value="chronik">
+                        <div class="flex flex-col gap-4 pt-4">
+                            @if (isOwnProfile()) {
+                            <div class="rounded-xl border border-surface p-4">
+                                <h3 class="text-color-secondary mb-3 text-sm font-semibold">{{ t('chronik.whatMovesYou') }}</h3>
+                                <div class="mb-3 flex gap-2">
+                                    <p-button (onClick)="formType.set('text')" [label]="t('chronik.type.text')" [outlined]="formType() !== 'text'" icon="pi pi-align-left" size="small" />
+                                    <p-button (onClick)="formType.set('image')" [label]="t('chronik.type.image')" [outlined]="formType() !== 'image'" icon="pi pi-image" size="small" />
+                                    <p-button (onClick)="formType.set('link')" [label]="t('chronik.type.link')" [outlined]="formType() !== 'link'" icon="pi pi-link" size="small" />
+                                </div>
+                                <textarea class="w-full" [(ngModel)]="formContent" [disabled]="saving()" [placeholder]="t('chronik.whatMovesYou')" pTextarea rows="3"></textarea>
+                                @if (formType() === 'image') {
+                                    <div class="mt-3">
+                                        <media-upload sourceModule="chronik" category="image" accept="image/*" (uploaded)="onChronikImageUploaded($event)" />
+                                        <label class="text-color-secondary mb-1 block text-sm">{{ t('chronik.imageUrl') }}</label>
+                                        <input class="w-full" [(ngModel)]="formImageUrl" [disabled]="saving()" pInputText type="url" />
+                                    </div>
                                 }
-                            </div>
-                        </a>
-                    }
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-4 border-t border-surface px-4 py-2">
-                    <button class="flex items-center gap-1.5 border-none bg-transparent cursor-pointer text-sm transition-colors" [class.text-red-500]="entry.isLiked" [class.text-color-secondary]="!entry.isLiked" (click)="toggleLike(entry)">
-                        <i [class]="entry.isLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
-                        {{ entry.likeCount }}
-                    </button>
-                    <button class="flex items-center gap-1.5 border-none bg-transparent cursor-pointer text-sm text-color-secondary" (click)="toggleComments(entry.id)">
-                        <i class="pi pi-comment"></i>
-                        {{ entry.commentCount }}
-                    </button>
-                </div>
-
-                <!-- Comments section -->
-                @if (isCommentsExpanded(entry.id)) {
-                    <div class="border-t border-surface px-4 py-3">
-                        @for (comment of getComments(entry.id); track comment.id) {
-                            <div class="mb-2 flex gap-2">
-                                <p-avatar [label]="getAvatarLabel(comment.authorDisplayName)" shape="circle" size="normal" styleClass="shrink-0" />
-                                <div class="flex-1">
-                                    <div class="bg-emphasis rounded-lg px-3 py-2">
-                                        <a class="text-xs font-semibold no-underline hover:underline" [routerLink]="['/users', comment.authorId]">{{ comment.authorDisplayName }}</a>
-                                        <p class="m-0 mt-0.5 text-sm">{{ comment.content }}</p>
+                                @if (formType() === 'link') {
+                                    <div class="mt-3 flex flex-col gap-2">
+                                        <input class="w-full" [(ngModel)]="formLinkUrl" [disabled]="saving()" [placeholder]="t('chronik.linkUrl')" pInputText type="url" />
+                                        <input class="w-full" [(ngModel)]="formLinkTitle" [disabled]="saving()" [placeholder]="t('chronik.linkTitle')" pInputText />
+                                        <input class="w-full" [(ngModel)]="formLinkDescription" [disabled]="saving()" [placeholder]="t('chronik.linkDescription')" pInputText />
+                                        <input class="w-full" [(ngModel)]="formLinkImageUrl" [disabled]="saving()" [placeholder]="t('chronik.linkPreview')" pInputText type="url" />
                                     </div>
-                                    <div class="mt-1 flex items-center gap-3 text-xs text-color-secondary">
-                                        <span>{{ formatDate(comment.createdAt, 'full') }}</span>
-                                        <button class="border-none bg-transparent cursor-pointer text-xs" [class.text-red-500]="comment.isLiked" [class.text-color-secondary]="!comment.isLiked" (click)="toggleCommentLike(comment.id, entry.id)">
-                                            <i [class]="comment.isLiked ? 'pi pi-heart-fill' : 'pi pi-heart'" style="font-size: 0.65rem"></i> {{ comment.likeCount }}
-                                        </button>
-                                        <button class="border-none bg-transparent cursor-pointer text-xs text-color-secondary hover:underline" (click)="setReplyingTo(entry.id, comment.id)">{{ t('chronik.reply') }}</button>
-                                        @if (comment.authorId === authFacade.currentUser()?.id) {
-                                            <button class="border-none bg-transparent cursor-pointer text-xs text-red-500 hover:underline" (click)="deleteComment(comment.id, entry.id)">{{ t('common.delete') }}</button>
-                                        }
-                                    </div>
-                                    <!-- Replies -->
-                                    @if (comment.replies?.length) {
-                                        <div class="ml-4 mt-2 flex flex-col gap-2">
-                                            @for (reply of comment.replies; track reply.id) {
-                                                <div class="flex gap-2">
-                                                    <p-avatar [label]="getAvatarLabel(reply.authorDisplayName)" shape="circle" size="normal" styleClass="shrink-0" style="width:1.5rem;height:1.5rem;font-size:0.7rem" />
-                                                    <div class="flex-1">
-                                                        <div class="bg-emphasis rounded-lg px-3 py-2">
-                                                            <a class="text-xs font-semibold no-underline hover:underline" [routerLink]="['/users', reply.authorId]">{{ reply.authorDisplayName }}</a>
-                                                            <p class="m-0 mt-0.5 text-xs">{{ reply.content }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                    <!-- Reply input -->
-                                    @if (getReplyingTo(entry.id) === comment.id) {
-                                        <div class="ml-4 mt-2 flex gap-2">
-                                            <input class="flex-1" pInputText [ngModel]="newComments.get(entry.id + '-' + comment.id) ?? ''" (ngModelChange)="newComments.set(entry.id + '-' + comment.id, $event)" (keydown.enter)="submitComment(entry.id, comment.id)" [placeholder]="t('chronik.replyPlaceholder')" />
-                                            <p-button icon="pi pi-send" size="small" (onClick)="submitComment(entry.id, comment.id)" />
-                                        </div>
-                                    }
+                                }
+                                <div class="mt-3 flex items-center justify-between gap-2">
+                                    <p-select (ngModelChange)="formVisibility.set($event)" [ngModel]="formVisibility()" [options]="visibilityOptions" optionLabel="label" optionValue="value" styleClass="w-40" />
+                                    <p-button (onClick)="submitEntry()" [disabled]="!formContent.trim()" [label]="t('chronik.post')" [loading]="saving()" icon="pi pi-send" />
                                 </div>
                             </div>
-                        }
-                        <!-- New comment input -->
-                        <div class="mt-2 flex gap-2">
-                            <input class="flex-1" pInputText [ngModel]="getNewComment(entry.id)" (ngModelChange)="setNewComment(entry.id, $event)" (keydown.enter)="submitComment(entry.id)" [placeholder]="t('chronik.commentPlaceholder')" />
-                            <p-button icon="pi pi-send" size="small" (onClick)="submitComment(entry.id)" />
+                            }
+
+                            @if (chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
+                                @for (i of [1,2,3]; track i) {
+                                    <div class="flex flex-col gap-3 rounded-xl border border-surface p-4">
+                                        <div class="flex items-center gap-3">
+                                            <p-skeleton shape="circle" size="2.5rem" />
+                                            <div class="flex flex-col gap-1"><p-skeleton height="0.875rem" width="8rem" /><p-skeleton height="0.75rem" width="5rem" /></div>
+                                        </div>
+                                        <p-skeleton height="4rem" width="100%" />
+                                        <div class="flex gap-4"><p-skeleton height="1.5rem" width="4rem" /><p-skeleton height="1.5rem" width="4rem" /></div>
+                                    </div>
+                                }
+                            }
+
+                            @if (!chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-history text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('chronik.noEntries') }}</p>
+                                </div>
+                            }
+
+                            @for (entry of chronikFacade.profileEntries(); track entry.id) {
+                            <div class="overflow-hidden rounded-xl border border-surface">
+                                <div class="flex items-start justify-between p-4 pb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative">
+                                            @if (entry.authorAvatar) {
+                                                <p-avatar [image]="entry.authorAvatar" shape="circle" size="normal" />
+                                            } @else {
+                                                <p-avatar [label]="getAvatarLabel(entry.authorDisplayName)" shape="circle" size="normal" />
+                                            }
+                                        </div>
+                                        <div>
+                                            <a class="text-sm font-semibold no-underline hover:underline" [routerLink]="['/users', entry.authorId]">{{ entry.authorDisplayName }}</a>
+                                            <div class="text-color-secondary flex items-center gap-2 text-xs">
+                                                <i [class]="visibilityIcon(entry.visibility)" style="font-size: 0.65rem"></i>
+                                                <span>{{ formatDate(entry.createdAt, 'full') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (entry.authorId === authFacade.currentUser()?.id) {
+                                        <p-button (onClick)="deleteEntry(entry)" [text]="true" icon="pi pi-trash" severity="danger" size="small" />
+                                    }
+                                </div>
+                                <div class="px-4 pb-3">
+                                    <p class="m-0 whitespace-pre-line text-sm">{{ entry.content }}</p>
+                                    @if (entry.imageUrl) { <img class="mt-3 max-h-80 w-full rounded-lg object-cover" [src]="entry.imageUrl" /> }
+                                    @if (entry.linkUrl) {
+                                        <a class="border-surface hover:bg-emphasis mt-3 flex gap-3 rounded-lg border p-3 no-underline transition-colors" [href]="entry.linkUrl" rel="noopener noreferrer" target="_blank">
+                                            @if (entry.linkImageUrl) { <img class="h-16 w-24 shrink-0 rounded object-cover" [src]="entry.linkImageUrl" /> }
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-sm font-medium">{{ entry.linkTitle ?? entry.linkUrl }}</div>
+                                                @if (entry.linkDescription) { <div class="text-color-secondary mt-0.5 line-clamp-2 text-xs">{{ entry.linkDescription }}</div> }
+                                            </div>
+                                        </a>
+                                    }
+                                </div>
+                                <div class="flex items-center gap-4 border-t border-surface px-4 py-2">
+                                    <button class="flex items-center gap-1.5 border-none bg-transparent cursor-pointer text-sm transition-colors" [class.text-red-500]="entry.isLiked" [class.text-color-secondary]="!entry.isLiked" (click)="toggleLike(entry)">
+                                        <i [class]="entry.isLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"></i> {{ entry.likeCount }}
+                                    </button>
+                                    <button class="flex items-center gap-1.5 border-none bg-transparent cursor-pointer text-sm text-color-secondary" (click)="toggleComments(entry.id)">
+                                        <i class="pi pi-comment"></i> {{ entry.commentCount }}
+                                    </button>
+                                </div>
+                                @if (isCommentsExpanded(entry.id)) {
+                                    <div class="border-t border-surface px-4 py-3">
+                                        @for (comment of getComments(entry.id); track comment.id) {
+                                            <div class="mb-2 flex gap-2">
+                                                <p-avatar [label]="getAvatarLabel(comment.authorDisplayName)" shape="circle" size="normal" styleClass="shrink-0" />
+                                                <div class="flex-1">
+                                                    <div class="bg-emphasis rounded-lg px-3 py-2">
+                                                        <a class="text-xs font-semibold no-underline hover:underline" [routerLink]="['/users', comment.authorId]">{{ comment.authorDisplayName }}</a>
+                                                        <p class="m-0 mt-0.5 text-sm">{{ comment.content }}</p>
+                                                    </div>
+                                                    <div class="mt-1 flex items-center gap-3 text-xs text-color-secondary">
+                                                        <span>{{ formatDate(comment.createdAt, 'full') }}</span>
+                                                        <button class="border-none bg-transparent cursor-pointer text-xs" [class.text-red-500]="comment.isLiked" [class.text-color-secondary]="!comment.isLiked" (click)="toggleCommentLike(comment.id, entry.id)">
+                                                            <i [class]="comment.isLiked ? 'pi pi-heart-fill' : 'pi pi-heart'" style="font-size: 0.65rem"></i> {{ comment.likeCount }}
+                                                        </button>
+                                                        <button class="border-none bg-transparent cursor-pointer text-xs text-color-secondary hover:underline" (click)="setReplyingTo(entry.id, comment.id)">{{ t('chronik.reply') }}</button>
+                                                        @if (comment.authorId === authFacade.currentUser()?.id) {
+                                                            <button class="border-none bg-transparent cursor-pointer text-xs text-red-500 hover:underline" (click)="deleteComment(comment.id, entry.id)">{{ t('common.delete') }}</button>
+                                                        }
+                                                    </div>
+                                                    @if (comment.replies?.length) {
+                                                        <div class="ml-4 mt-2 flex flex-col gap-2">
+                                                            @for (reply of comment.replies; track reply.id) {
+                                                                <div class="flex gap-2">
+                                                                    <p-avatar [label]="getAvatarLabel(reply.authorDisplayName)" shape="circle" size="normal" styleClass="shrink-0" style="width:1.5rem;height:1.5rem;font-size:0.7rem" />
+                                                                    <div class="flex-1">
+                                                                        <div class="bg-emphasis rounded-lg px-3 py-2">
+                                                                            <a class="text-xs font-semibold no-underline hover:underline" [routerLink]="['/users', reply.authorId]">{{ reply.authorDisplayName }}</a>
+                                                                            <p class="m-0 mt-0.5 text-xs">{{ reply.content }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    @if (getReplyingTo(entry.id) === comment.id) {
+                                                        <div class="ml-4 mt-2 flex gap-2">
+                                                            <input class="flex-1" pInputText [ngModel]="newComments.get(entry.id + '-' + comment.id) ?? ''" (ngModelChange)="newComments.set(entry.id + '-' + comment.id, $event)" (keydown.enter)="submitComment(entry.id, comment.id)" [placeholder]="t('chronik.replyPlaceholder')" />
+                                                            <p-button icon="pi pi-send" size="small" (onClick)="submitComment(entry.id, comment.id)" />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="mt-2 flex gap-2">
+                                            <input class="flex-1" pInputText [ngModel]="getNewComment(entry.id)" (ngModelChange)="setNewComment(entry.id, $event)" (keydown.enter)="submitComment(entry.id)" [placeholder]="t('chronik.commentPlaceholder')" />
+                                            <p-button icon="pi pi-send" size="small" (onClick)="submitComment(entry.id)" />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            }
                         </div>
-                    </div>
-                }
-            </div>
-            }
+                    </p-tabpanel>
+
+                    <!-- ── Clips Tab ────────────────────────────────────────── -->
+                    <p-tabpanel value="clips">
+                        <div class="flex flex-col gap-3 pt-4">
+                            @if (userClips().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-video text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
+                                </div>
+                            }
+                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                @for (clip of userClips(); track clip.id) {
+                                    <a [routerLink]="['/clips']" class="group relative aspect-[9/16] overflow-hidden rounded-xl bg-black no-underline">
+                                        <clip-thumbnail [videoUrl]="clip.videoUrl" [thumbnailUrl]="clip.thumbnailUrl" />
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                            <p class="m-0 text-xs font-medium text-white line-clamp-2">{{ clip.title }}</p>
+                                            <div class="mt-1 flex items-center gap-2 text-xs text-white/70">
+                                                <span><i class="pi pi-eye" style="font-size:0.6rem"></i> {{ clip.viewCount }}</span>
+                                                <span><i class="pi pi-heart" style="font-size:0.6rem"></i> {{ clip.likeCount }}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- ── Blog Tab ─────────────────────────────────────────── -->
+                    <p-tabpanel value="blog">
+                        <div class="flex flex-col gap-3 pt-4">
+                            @if (userBlogPosts().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-pencil text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
+                                </div>
+                            }
+                            @for (post of userBlogPosts(); track post.id) {
+                                <a [routerLink]="['/blog', post.slug]" class="flex gap-4 rounded-xl border border-surface p-4 no-underline transition-colors hover:bg-emphasis">
+                                    @if (post.coverImageUrl) {
+                                        <img [src]="post.coverImageUrl" class="h-20 w-28 shrink-0 rounded-lg object-cover" />
+                                    }
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="m-0 text-sm font-semibold text-color">{{ post.title }}</h4>
+                                        @if (post.excerpt) { <p class="m-0 mt-1 text-xs text-color-secondary line-clamp-2">{{ post.excerpt }}</p> }
+                                        <div class="mt-2 flex items-center gap-3 text-xs text-color-secondary">
+                                            <span><i class="pi pi-eye" style="font-size:0.6rem"></i> {{ post.viewCount }}</span>
+                                            <span>{{ formatDate(post.createdAt, 'full') }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- ── Lexicon Tab ──────────────────────────────────────── -->
+                    <p-tabpanel value="lexicon">
+                        <div class="flex flex-col gap-3 pt-4">
+                            @if (userLexiconArticles().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-book text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
+                                </div>
+                            }
+                            @for (article of userLexiconArticles(); track article.id) {
+                                <a [routerLink]="['/lexicon', article.slug]" class="flex items-center gap-4 rounded-xl border border-surface p-4 no-underline transition-colors hover:bg-emphasis">
+                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+                                        <i class="pi pi-book text-blue-500"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="m-0 text-sm font-semibold text-color">{{ article.title }}</h4>
+                                        @if (article.excerpt) { <p class="m-0 mt-1 text-xs text-color-secondary line-clamp-2">{{ article.excerpt }}</p> }
+                                        <div class="mt-1 flex items-center gap-3 text-xs text-color-secondary">
+                                            <p-tag [value]="article.status" [severity]="article.status === 'published' ? 'success' : 'warn'" styleClass="text-xs" />
+                                            <span>{{ formatDate(article.createdAt, 'full') }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- ── Gallery Tab ──────────────────────────────────────── -->
+                    <p-tabpanel value="gallery">
+                        <div class="flex flex-col gap-3 pt-4">
+                            @if (userGalleryAlbums().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-images text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
+                                </div>
+                            }
+                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                @for (album of userGalleryAlbums(); track album.id) {
+                                    <a [routerLink]="['/gallery', album.id]" class="group relative aspect-square overflow-hidden rounded-xl bg-surface-100 dark:bg-surface-800 no-underline">
+                                        @if (album.coverUrl) {
+                                            <img [src]="album.coverUrl" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                        } @else {
+                                            <div class="flex h-full items-center justify-center"><i class="pi pi-images text-3xl text-color-secondary"></i></div>
+                                        }
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                            <p class="m-0 text-xs font-medium text-white line-clamp-1">{{ album.title }}</p>
+                                            <span class="text-xs text-white/70">{{ album.mediaCount }} {{ t('userProfile.items') }}</span>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- ── Recipes Tab ──────────────────────────────────────── -->
+                    <p-tabpanel value="recipes">
+                        <div class="flex flex-col gap-3 pt-4">
+                            @if (userRecipes().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-clipboard text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
+                                </div>
+                            }
+                            @for (recipe of userRecipes(); track recipe.id) {
+                                <a [routerLink]="['/recipes', recipe.slug]" class="flex gap-4 rounded-xl border border-surface p-4 no-underline transition-colors hover:bg-emphasis">
+                                    @if (recipe.imageUrl) {
+                                        <img [src]="recipe.imageUrl" class="h-20 w-28 shrink-0 rounded-lg object-cover" />
+                                    }
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="m-0 text-sm font-semibold text-color">{{ recipe.title }}</h4>
+                                        <div class="mt-2 flex items-center gap-3 text-xs text-color-secondary">
+                                            @if (recipe.avgRating > 0) {
+                                                <span class="text-yellow-500"><i class="pi pi-star-fill" style="font-size:0.6rem"></i> {{ recipe.avgRating | number:'1.1-1' }}</span>
+                                            }
+                                            <span>{{ formatDate(recipe.createdAt, 'full') }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </p-tabpanel>
+                </p-tabpanels>
+            </p-tabs>
         </div>
 
         <!-- ── Sidebar ────────────────────────────────────────────────── -->
@@ -522,6 +655,7 @@
     *transloco="let t"
 >
     <div class="flex flex-col gap-3 pt-2">
+        <media-upload sourceModule="user" category="cover" accept="image/*" (uploaded)="onCoverUploaded($event)" />
         <label class="text-sm font-medium">{{ t('userProfile.coverUrl') }}</label>
         <input class="w-full" [(ngModel)]="coverUrlDraft" pInputText placeholder="https://..." type="url" />
     </div>

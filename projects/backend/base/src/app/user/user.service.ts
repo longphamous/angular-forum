@@ -7,6 +7,7 @@ import { AuthService } from "../auth/auth.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { UserXpData } from "../gamification/level.config";
 import { GroupEntity } from "../group/entities/group.entity";
+import { MediaService } from "../media/media.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../push/push.service";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
@@ -40,7 +41,9 @@ function toProfile(user: UserEntity, postCount = 0, xpData: UserXpData = DEFAULT
         email: user.email,
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
+        avatarMediaId: user.avatarMediaId,
         coverUrl: user.coverUrl ?? undefined,
+        coverMediaId: user.coverMediaId,
         bio: user.bio,
         birthday: user.birthday ? (user.birthday as Date).toISOString().split("T")[0] : undefined,
         gender: user.gender,
@@ -77,7 +80,8 @@ export class UserService {
         private readonly authService: AuthService,
         private readonly gamificationService: GamificationService,
         private readonly moderationService: ModerationService,
-        private readonly pushService: PushService
+        private readonly pushService: PushService,
+        private readonly mediaService: MediaService
     ) {}
 
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -190,6 +194,22 @@ export class UserService {
         if (dto.website !== undefined) user.website = dto.website;
         if (dto.socialLinks !== undefined) user.socialLinks = dto.socialLinks;
         if (dto.profileFieldSettings !== undefined) user.profileFieldSettings = dto.profileFieldSettings;
+
+        // Resolve media asset IDs to URLs
+        if (dto.avatarMediaId !== undefined) {
+            user.avatarMediaId = dto.avatarMediaId || undefined;
+            if (dto.avatarMediaId) {
+                const asset = await this.mediaService.findById(dto.avatarMediaId);
+                user.avatarUrl = asset.url;
+            }
+        }
+        if (dto.coverMediaId !== undefined) {
+            user.coverMediaId = dto.coverMediaId || undefined;
+            if (dto.coverMediaId) {
+                const asset = await this.mediaService.findById(dto.coverMediaId);
+                user.coverUrl = asset.url;
+            }
+        }
 
         await this.userRepo.save(user);
         const profile = toProfile(user);

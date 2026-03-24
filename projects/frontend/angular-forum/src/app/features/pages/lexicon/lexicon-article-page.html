@@ -11,8 +11,7 @@
     @if (!facade.loading() && facade.currentArticle(); as article) {
         <!-- Navigation -->
         <div class="flex items-center gap-2">
-            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (onClick)="goBack()" />
-            <span class="text-color-secondary text-sm">{{ 'lexicon.title' | transloco }}</span>
+            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" [label]="navHistory.backLabel()" (onClick)="goBack()" />
             @if (article.categoryName) {
                 <i class="pi pi-angle-right text-color-secondary text-sm"></i>
                 <span class="text-color-secondary text-sm">{{ article.categoryName }}</span>

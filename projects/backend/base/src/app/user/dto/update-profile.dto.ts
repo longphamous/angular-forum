@@ -62,4 +62,12 @@ export class UpdateProfileDto {
     @ValidateNested()
     @Type(() => ProfileFieldSettingsDto)
     profileFieldSettings?: ProfileFieldSettingsDto;
+
+    @IsOptional()
+    @IsString()
+    avatarMediaId?: string;
+
+    @IsOptional()
+    @IsString()
+    coverMediaId?: string;
 }

@@ -12,6 +12,7 @@ export class LinkEntryEntity {
     @Column({ type: "text", nullable: true }) description!: string | null;
     @Column({ type: "text", nullable: true }) excerpt!: string | null;
     @Column({ name: "preview_image_url", type: "text", nullable: true }) previewImageUrl!: string | null;
+    @Column({ name: "preview_image_media_id", type: "uuid", nullable: true }) previewImageMediaId?: string;
     @Column({ type: "jsonb", default: [] }) tags!: string[];
     @Column({ length: 20, default: "active" }) status!: LinkStatus;
     @Column({ name: "view_count", default: 0 }) viewCount!: number;

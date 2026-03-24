@@ -19,6 +19,9 @@ export class GalleryMediaEntity {
     @Column({ type: "text" })
     url!: string;
 
+    @Column({ name: "media_asset_id", type: "uuid", nullable: true })
+    mediaAssetId?: string;
+
     @Column({ name: "youtube_id", type: "varchar", length: 20, nullable: true })
     youtubeId!: string | null;
 

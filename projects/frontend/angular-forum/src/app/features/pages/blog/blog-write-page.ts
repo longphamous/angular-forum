@@ -16,6 +16,9 @@ import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { BLOG_ROUTES } from "../../../core/api/blog.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { BlogCategory, BlogPost, BlogStatus, BlogType, CreateBlogPostPayload } from "../../../core/models/blog/blog";
+import { MediaAsset } from "../../../core/models/media/media";
+import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
+import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,7 +33,8 @@ import { BlogCategory, BlogPost, BlogStatus, BlogType, CreateBlogPostPayload } f
         TextareaModule,
         ToastModule,
         ToggleSwitchModule,
-        TranslocoModule
+        TranslocoModule,
+        MediaUpload
     ],
     providers: [MessageService],
     templateUrl: "./blog-write-page.html"
@@ -41,6 +45,7 @@ export class BlogWritePage implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    readonly navHistory = inject(NavigationHistoryService);
 
     protected readonly loading = signal(false);
     protected readonly saving = signal(false);
@@ -187,7 +192,7 @@ export class BlogWritePage implements OnInit {
     }
 
     protected goBack(): void {
-        void this.router.navigate(["/blog"]);
+        this.navHistory.back("/blog");
     }
 
     protected setTitle(value: string): void {
@@ -198,6 +203,9 @@ export class BlogWritePage implements OnInit {
     }
     protected setExcerpt(value: string): void {
         this.form.update((f) => ({ ...f, excerpt: value }));
+    }
+    protected onCoverImageUploaded(asset: MediaAsset): void {
+        this.form.update((f) => ({ ...f, coverImageUrl: asset.url }));
     }
     protected setCoverImageUrl(value: string): void {
         this.form.update((f) => ({ ...f, coverImageUrl: value }));

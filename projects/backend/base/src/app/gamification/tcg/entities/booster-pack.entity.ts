@@ -26,6 +26,9 @@ export class BoosterPackEntity {
     @Column({ name: "image_url", type: "text", nullable: true })
     imageUrl!: string | null;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     @Column({ type: "int" })
     price!: number;
 

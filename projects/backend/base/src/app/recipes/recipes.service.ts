@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
 import { RecipeCommentEntity } from "./entities/recipe-comment.entity";
@@ -21,6 +22,7 @@ export interface CreateRecipeDto {
     description?: string;
     categoryId?: string;
     coverImageUrl?: string;
+    coverImageMediaId?: string;
     servings?: number;
     prepTime?: number;
     cookTime?: number;
@@ -83,7 +85,8 @@ export class RecipesService {
         @InjectRepository(RecipeRatingEntity)
         private readonly ratingRepo: Repository<RecipeRatingEntity>,
         @InjectRepository(UserEntity)
-        private readonly userRepo: Repository<UserEntity>
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly mediaService: MediaService
     ) {}
 
     // ── Categories ──────────────────────────────────────────────
@@ -238,6 +241,13 @@ export class RecipesService {
             allowComments: dto.allowComments ?? true,
             publishedAt: dto.status === "published" ? new Date() : null
         });
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            recipe.coverImageUrl = asset.url;
+            recipe.coverImageMediaId = dto.coverImageMediaId;
+        }
+
         const saved = await this.recipeRepo.save(recipe);
         return this.enrichRecipe(saved, authorId);
     }
@@ -262,6 +272,13 @@ export class RecipesService {
         if (dto.nutrition !== undefined) recipe.nutrition = dto.nutrition ?? null;
         if (dto.tags !== undefined) recipe.tags = dto.tags;
         if (dto.allowComments !== undefined) recipe.allowComments = dto.allowComments;
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            recipe.coverImageUrl = asset.url;
+            recipe.coverImageMediaId = dto.coverImageMediaId;
+        }
+
         if (dto.status !== undefined) {
             if (recipe.status !== "published" && dto.status === "published") recipe.publishedAt = new Date();
             recipe.status = dto.status;

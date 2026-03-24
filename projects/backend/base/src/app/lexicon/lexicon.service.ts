@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
 import {
     ArticleQueryDto,
@@ -49,7 +50,8 @@ export class LexiconService {
         @InjectRepository(LexiconTermsEntity)
         private readonly termsRepo: Repository<LexiconTermsEntity>,
         @InjectRepository(UserEntity)
-        private readonly userRepo: Repository<UserEntity>
+        private readonly userRepo: Repository<UserEntity>,
+        private readonly mediaService: MediaService
     ) {}
 
     // ── Categories ──────────────────────────────────────────────
@@ -217,6 +219,13 @@ export class LexiconService {
             allowComments: dto.allowComments ?? true,
             publishedAt: dto.status === "published" ? new Date() : null
         });
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            article.coverImageUrl = asset.url;
+            article.coverImageMediaId = dto.coverImageMediaId;
+        }
+
         const saved = await this.articleRepo.save(article);
 
         await this.createVersion(saved, userId, dto.changeSummary ?? "Initial version");
@@ -250,6 +259,12 @@ export class LexiconService {
         if (dto.linkedArticleId !== undefined) article.linkedArticleId = dto.linkedArticleId ?? null;
         if (dto.coverImageUrl !== undefined) article.coverImageUrl = dto.coverImageUrl ?? null;
         if (dto.allowComments !== undefined) article.allowComments = dto.allowComments;
+
+        if (dto.coverImageMediaId) {
+            const asset = await this.mediaService.findById(dto.coverImageMediaId);
+            article.coverImageUrl = asset.url;
+            article.coverImageMediaId = dto.coverImageMediaId;
+        }
         if (dto.status !== undefined) {
             if (article.status !== "published" && dto.status === "published") article.publishedAt = new Date();
             article.status = dto.status;

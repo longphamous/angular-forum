@@ -28,6 +28,9 @@ export class ChronikEntryEntity {
     @Column({ name: "image_url", type: "text", nullable: true })
     imageUrl!: string | null;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     @Column({ name: "link_url", type: "text", nullable: true })
     linkUrl!: string | null;
 

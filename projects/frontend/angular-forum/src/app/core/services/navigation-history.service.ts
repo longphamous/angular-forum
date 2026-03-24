@@ -24,13 +24,23 @@ const ROUTE_LABELS: RouteLabel[] = [
     { pattern: "/blog", label: "Blog" },
     { pattern: /^\/gallery\/[^/]+/, label: "Galerie" },
     { pattern: "/gallery", label: "Galerie" },
+    { pattern: "/lexicon/create", label: "Lexikon" },
+    { pattern: /^\/lexicon\/[^/]+/, label: "Lexikon" },
+    { pattern: "/lexicon", label: "Lexikon" },
+    { pattern: /^\/recipes\/[^/]+/, label: "Rezepte" },
+    { pattern: "/recipes", label: "Rezepte" },
+    { pattern: "/clips", label: "Clips" },
+    { pattern: /^\/links\/[^/]+/, label: "Links" },
+    { pattern: "/links", label: "Links" },
     { pattern: "/calendar", label: "Kalender" },
     { pattern: "/lotto", label: "Lotto" },
     { pattern: "/shop", label: "Shop" },
     { pattern: "/messages", label: "Nachrichten" },
     { pattern: /^\/users\/[^/]+/, label: "Profil" },
     { pattern: "/profile", label: "Profil" },
-    { pattern: "/dashboard", label: "Dashboard" }
+    { pattern: "/dashboard", label: "Dashboard" },
+    { pattern: "/achievements", label: "Achievements" },
+    { pattern: "/friends", label: "Freunde" }
 ];
 
 @Injectable({ providedIn: "root" })

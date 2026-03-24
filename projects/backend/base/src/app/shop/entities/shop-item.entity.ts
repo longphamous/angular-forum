@@ -17,6 +17,9 @@ export class ShopItemEntity {
     @Column({ name: "image_url", type: "varchar", length: 500, nullable: true })
     imageUrl!: string | null;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     @Column({ type: "varchar", length: 100, nullable: true })
     icon!: string | null;
 

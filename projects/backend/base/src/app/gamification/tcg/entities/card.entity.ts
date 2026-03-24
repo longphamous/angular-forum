@@ -14,6 +14,9 @@ export class CardEntity {
     @Column({ name: "image_url", type: "text", nullable: true })
     imageUrl!: string | null;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     @Column({ type: "varchar", length: 20 })
     rarity!: "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
 

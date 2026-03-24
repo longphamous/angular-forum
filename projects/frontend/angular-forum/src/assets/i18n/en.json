@@ -127,7 +127,9 @@
     "adminGamification": "Gamification",
     "adminAppearance": "Appearance",
     "adminSystem": "System",
-    "adminLogs": "System Logs"
+    "adminLogs": "System Logs",
+    "clips": "Clips",
+    "mediaManagement": "Media Management"
   },
   "login": {
     "title": "Welcome back",
@@ -787,6 +789,13 @@
     "coverUrl": "Cover image URL",
     "tabInfo": "Info",
     "tabChronik": "Chronicle",
+    "tabClips": "Clips",
+    "tabBlog": "Blog",
+    "tabLexicon": "Lexicon",
+    "tabGallery": "Gallery",
+    "tabRecipes": "Recipes",
+    "noContent": "No content yet.",
+    "items": "items",
     "roles": {
       "admin": "Administrator",
       "moderator": "Moderator",
@@ -2190,6 +2199,105 @@
       "title": "Contributors",
       "edit": "edit",
       "edits": "edits"
+    }
+  },
+  "clips": {
+    "title": "Clips",
+    "subtitle": "Short Videos",
+    "feed": "For You",
+    "following": "Following",
+    "upload": "Upload Clip",
+    "noClips": "No clips available.",
+    "like": "Like",
+    "comment": "Comment",
+    "share": "Share",
+    "follow": "Follow",
+    "followingBtn": "Following",
+    "unfollow": "Unfollow",
+    "tapToUnmute": "Tap to unmute",
+    "views": "views",
+    "likes": "likes",
+    "comments_title": "Comments",
+    "commentsCount": "comments",
+    "noComments": "No comments yet. Be the first!",
+    "addComment": "Add a comment...",
+    "deleteConfirm": "Really delete this clip?",
+    "upload_form": {
+      "title": "Upload a Clip",
+      "dropVideo": "Drop your video here or click to browse",
+      "videoHint": "MP4, WebM up to 500 MB",
+      "selectThumbnail": "Click to upload a thumbnail image",
+      "videoUrl": "Video URL",
+      "videoUrlPlaceholder": "https://...",
+      "thumbnailUrl": "Thumbnail",
+      "thumbnailUrlPlaceholder": "https://... (optional)",
+      "clipTitle": "Title",
+      "titlePlaceholder": "Give your clip a title",
+      "description": "Description",
+      "descriptionPlaceholder": "What is this clip about?",
+      "tags": "Tags",
+      "tagPlaceholder": "Add tag (Enter or comma to separate)",
+      "duration": "Duration (seconds)",
+      "publish": "Publish immediately",
+      "submit": "Publish Clip",
+      "success": "Clip uploaded successfully!"
+    },
+    "errors": {
+      "loadFeed": "Error loading clips.",
+      "uploadFailed": "Error uploading clip.",
+      "likeFailed": "Error toggling like.",
+      "commentFailed": "Error posting comment."
+    }
+  },
+  "media": {
+    "upload": {
+      "title": "Upload Media",
+      "dragDrop": "Drag & drop files here or click to browse",
+      "selectFiles": "Select Files",
+      "progress": "Uploading...",
+      "processing": "Processing...",
+      "complete": "Upload complete",
+      "error": "Upload failed",
+      "maxSize": "Maximum file size: {{size}}",
+      "allowedTypes": "Allowed types: {{types}}"
+    },
+    "browser": {
+      "title": "Media Library",
+      "search": "Search files...",
+      "filter": "Filter by module",
+      "noResults": "No media found.",
+      "select": "Select",
+      "cancel": "Cancel"
+    },
+    "asset": {
+      "altText": "Alt text",
+      "tags": "Tags",
+      "category": "Category",
+      "accessLevel": "Access level",
+      "delete": "Delete",
+      "deleteConfirm": "Really delete this media?",
+      "public": "Public",
+      "membersOnly": "Members only",
+      "private": "Private",
+      "unlisted": "Unlisted"
+    },
+    "admin": {
+      "title": "Media Storage Configuration",
+      "activeBackend": "Active Storage Backend",
+      "localTab": "Local Storage",
+      "settingsTab": "Settings",
+      "localBasePath": "Base Path",
+      "localPublicUrlPrefix": "Public URL Prefix",
+      "username": "Username",
+      "password": "Password",
+      "basePath": "Base Path",
+      "publicUrlPrefix": "Public URL Prefix",
+      "secure": "Secure Connection",
+      "testConnection": "Test Connection",
+      "maxFileSize": "Max File Size",
+      "autoVariants": "Auto-generate image variants (thumbnails, WebP, AVIF)",
+      "saved": "Storage configuration saved.",
+      "saveFailed": "Failed to save storage configuration."
     }
   }
 }

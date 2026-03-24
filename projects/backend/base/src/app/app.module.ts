@@ -10,6 +10,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
+import { ClipsModule } from "./clips/clips.module";
 import { ChronikModule } from "./chronik/chronik.module";
 import { CommunityBotModule } from "./community-bot/community-bot.module";
 import { CreditModule } from "./credit/credit.module";
@@ -25,6 +26,7 @@ import { GroupModule } from "./group/group.module";
 import { LexiconModule } from "./lexicon/lexicon.module";
 import { LinkDatabaseModule } from "./link-database/link-database.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
+import { MediaModule } from "./media/media.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ModerationModule } from "./moderation/moderation.module";
 import { NotificationsModule } from "./notifications/notifications.module";
@@ -66,6 +68,7 @@ import { WeatherModule } from "./weather/weather.module";
         BlogModule,
         ChronikModule,
         MarketplaceModule,
+        MediaModule,
         FeedModule,
         FriendsModule,
         CommunityBotModule,
@@ -74,7 +77,8 @@ import { WeatherModule } from "./weather/weather.module";
         RecipesModule,
         SteamModule,
         TcgModule,
-        WeatherModule
+        WeatherModule,
+        ClipsModule
     ],
     controllers: [AppController],
     providers: [AppService]

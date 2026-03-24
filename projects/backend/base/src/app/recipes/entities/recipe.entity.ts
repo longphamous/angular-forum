@@ -66,6 +66,9 @@ export class RecipeEntity {
     @Column({ name: "cover_image_url", nullable: true, type: "text" })
     coverImageUrl!: string | null;
 
+    @Column({ name: "cover_image_media_id", type: "uuid", nullable: true })
+    coverImageMediaId?: string;
+
     @Column({ nullable: true, type: "int" })
     servings!: number | null;
 

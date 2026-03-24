@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
 import { RecipeCommentEntity } from "./entities/recipe-comment.entity";
@@ -12,6 +13,7 @@ import { RecipesService } from "./recipes.service";
 
 @Module({
     imports: [
+        MediaModule,
         TypeOrmModule.forFeature([
             RecipeEntity,
             RecipeCategoryEntity,

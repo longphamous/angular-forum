@@ -11,6 +11,7 @@ export interface CreateArticleDto {
     customFieldValues?: Record<string, unknown>;
     linkedArticleId?: string;
     coverImageUrl?: string;
+    coverImageMediaId?: string;
     allowComments?: boolean;
     status?: LexiconArticleStatus;
     changeSummary?: string;

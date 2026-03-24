@@ -127,7 +127,9 @@
     "adminGamification": "Gamification",
     "adminAppearance": "Darstellung",
     "adminSystem": "System",
-    "adminLogs": "Systemprotokoll"
+    "adminLogs": "Systemprotokoll",
+    "clips": "Clips",
+    "mediaManagement": "Medienverwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -787,6 +789,13 @@
     "coverUrl": "Titelbild-URL",
     "tabInfo": "Info",
     "tabChronik": "Chronik",
+    "tabClips": "Clips",
+    "tabBlog": "Blog",
+    "tabLexicon": "Lexikon",
+    "tabGallery": "Galerie",
+    "tabRecipes": "Rezepte",
+    "noContent": "Noch keine Inhalte vorhanden.",
+    "items": "Einträge",
     "roles": {
       "admin": "Administrator",
       "moderator": "Moderator",
@@ -2190,6 +2199,105 @@
       "title": "Mitwirkende",
       "edit": "Bearbeitung",
       "edits": "Bearbeitungen"
+    }
+  },
+  "clips": {
+    "title": "Clips",
+    "subtitle": "Kurzvideos",
+    "feed": "Für dich",
+    "following": "Folge ich",
+    "upload": "Clip hochladen",
+    "noClips": "Keine Clips verfügbar.",
+    "like": "Gefällt mir",
+    "comment": "Kommentar",
+    "share": "Teilen",
+    "follow": "Folgen",
+    "followingBtn": "Folge ich",
+    "unfollow": "Entfolgen",
+    "tapToUnmute": "Tippen zum Einschalten",
+    "views": "Aufrufe",
+    "likes": "Likes",
+    "comments_title": "Kommentare",
+    "commentsCount": "Kommentare",
+    "noComments": "Noch keine Kommentare. Sei der Erste!",
+    "addComment": "Kommentar hinzufügen...",
+    "deleteConfirm": "Diesen Clip wirklich löschen?",
+    "upload_form": {
+      "title": "Clip hochladen",
+      "dropVideo": "Video hierher ziehen oder klicken zum Auswählen",
+      "videoHint": "MP4, WebM bis zu 500 MB",
+      "selectThumbnail": "Klicken um ein Vorschaubild hochzuladen",
+      "videoUrl": "Video-URL",
+      "videoUrlPlaceholder": "https://...",
+      "thumbnailUrl": "Vorschaubild",
+      "thumbnailUrlPlaceholder": "https://... (optional)",
+      "clipTitle": "Titel",
+      "titlePlaceholder": "Gib deinem Clip einen Titel",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Worum geht es in diesem Clip?",
+      "tags": "Tags",
+      "tagPlaceholder": "Tag hinzufügen (Enter oder Komma zum Trennen)",
+      "duration": "Dauer (Sekunden)",
+      "publish": "Sofort veröffentlichen",
+      "submit": "Clip veröffentlichen",
+      "success": "Clip erfolgreich hochgeladen!"
+    },
+    "errors": {
+      "loadFeed": "Fehler beim Laden der Clips.",
+      "uploadFailed": "Fehler beim Hochladen des Clips.",
+      "likeFailed": "Fehler beim Liken.",
+      "commentFailed": "Fehler beim Kommentieren."
+    }
+  },
+  "media": {
+    "upload": {
+      "title": "Medien hochladen",
+      "dragDrop": "Dateien hierher ziehen oder klicken zum Durchsuchen",
+      "selectFiles": "Dateien auswählen",
+      "progress": "Wird hochgeladen...",
+      "processing": "Wird verarbeitet...",
+      "complete": "Hochladen abgeschlossen",
+      "error": "Hochladen fehlgeschlagen",
+      "maxSize": "Maximale Dateigröße: {{size}}",
+      "allowedTypes": "Erlaubte Typen: {{types}}"
+    },
+    "browser": {
+      "title": "Medienbibliothek",
+      "search": "Dateien suchen...",
+      "filter": "Nach Modul filtern",
+      "noResults": "Keine Medien gefunden.",
+      "select": "Auswählen",
+      "cancel": "Abbrechen"
+    },
+    "asset": {
+      "altText": "Alternativtext",
+      "tags": "Tags",
+      "category": "Kategorie",
+      "accessLevel": "Zugriffsebene",
+      "delete": "Löschen",
+      "deleteConfirm": "Dieses Medium wirklich löschen?",
+      "public": "Öffentlich",
+      "membersOnly": "Nur Mitglieder",
+      "private": "Privat",
+      "unlisted": "Nicht gelistet"
+    },
+    "admin": {
+      "title": "Medienspeicher-Konfiguration",
+      "activeBackend": "Aktives Speicher-Backend",
+      "localTab": "Lokaler Speicher",
+      "settingsTab": "Einstellungen",
+      "localBasePath": "Basispfad",
+      "localPublicUrlPrefix": "Öffentlicher URL-Präfix",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "basePath": "Basispfad",
+      "publicUrlPrefix": "Öffentlicher URL-Präfix",
+      "secure": "Sichere Verbindung",
+      "testConnection": "Verbindung testen",
+      "maxFileSize": "Maximale Dateigröße",
+      "autoVariants": "Bildvarianten automatisch generieren (Thumbnails, WebP, AVIF)",
+      "saved": "Speicherkonfiguration gespeichert.",
+      "saveFailed": "Speicherkonfiguration konnte nicht gespeichert werden."
     }
   }
 }

@@ -53,6 +53,9 @@ export class BlogPostEntity {
     @Column({ name: "cover_image_url", nullable: true, type: "text" })
     coverImageUrl!: string | null;
 
+    @Column({ name: "cover_image_media_id", type: "uuid", nullable: true })
+    coverImageMediaId?: string;
+
     @Column({ type: "jsonb", default: [] })
     tags!: string[];
 

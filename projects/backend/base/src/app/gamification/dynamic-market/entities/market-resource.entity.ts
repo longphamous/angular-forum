@@ -23,6 +23,9 @@ export class MarketResourceEntity {
     @Column({ name: "image_url", type: "varchar", length: 500, nullable: true })
     imageUrl!: string | null;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     /** Category / group key – resources in the same group influence each other */
     @Column({ name: "group_key", type: "varchar", length: 60 })
     groupKey!: string;

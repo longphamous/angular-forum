@@ -23,6 +23,9 @@ export class TeaserSlideEntity {
     @Column({ name: "image_url", type: "varchar", length: 500 })
     imageUrl!: string;
 
+    @Column({ name: "image_media_id", type: "uuid", nullable: true })
+    imageMediaId?: string;
+
     @Column({ name: "link_url", type: "varchar", length: 500, nullable: true })
     linkUrl!: string | null;
 
