@@ -50,7 +50,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.17",
-    "@primeuix/themes": "^1.2.5",
+    "@primeuix/themes": "^2.0.3",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
