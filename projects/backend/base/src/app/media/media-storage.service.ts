@@ -202,7 +202,13 @@ export class MediaStorageService implements OnModuleInit {
         try {
             const { Client } = require("basic-ftp");
             const client = new Client();
-            await client.access({ host: ftp.host, port: ftp.port, user: ftp.username, password: ftp.password, secure: ftp.secure });
+            await client.access({
+                host: ftp.host,
+                port: ftp.port,
+                user: ftp.username,
+                password: ftp.password,
+                secure: ftp.secure
+            });
             const remotePath = path.posix.join(ftp.basePath, relativePath);
             const remoteDir = path.posix.dirname(remotePath);
             await client.ensureDir(remoteDir);
@@ -222,7 +228,13 @@ export class MediaStorageService implements OnModuleInit {
             const { Client } = require("basic-ftp");
             const { Writable } = require("stream");
             const client = new Client();
-            await client.access({ host: ftp.host, port: ftp.port, user: ftp.username, password: ftp.password, secure: ftp.secure });
+            await client.access({
+                host: ftp.host,
+                port: ftp.port,
+                user: ftp.username,
+                password: ftp.password,
+                secure: ftp.secure
+            });
             const remotePath = path.posix.join(ftp.basePath, relativePath);
             const chunks: Buffer[] = [];
             const writable = new Writable({
@@ -245,7 +257,13 @@ export class MediaStorageService implements OnModuleInit {
         try {
             const { Client } = require("basic-ftp");
             const client = new Client();
-            await client.access({ host: ftp.host, port: ftp.port, user: ftp.username, password: ftp.password, secure: ftp.secure });
+            await client.access({
+                host: ftp.host,
+                port: ftp.port,
+                user: ftp.username,
+                password: ftp.password,
+                secure: ftp.secure
+            });
             await client.remove(path.posix.join(ftp.basePath, relativePath));
             client.close();
         } catch (err) {
@@ -259,7 +277,13 @@ export class MediaStorageService implements OnModuleInit {
         try {
             const { Client } = require("basic-ftp");
             const client = new Client();
-            await client.access({ host: ftp.host, port: ftp.port, user: ftp.username, password: ftp.password, secure: ftp.secure });
+            await client.access({
+                host: ftp.host,
+                port: ftp.port,
+                user: ftp.username,
+                password: ftp.password,
+                secure: ftp.secure
+            });
             const remotePath = path.posix.join(ftp.basePath, relativePath);
             const size = await client.size(remotePath);
             client.close();
@@ -275,7 +299,13 @@ export class MediaStorageService implements OnModuleInit {
         try {
             const { Client } = require("basic-ftp");
             const client = new Client();
-            await client.access({ host: config.host, port: config.port, user: config.username, password: config.password, secure: config.secure });
+            await client.access({
+                host: config.host,
+                port: config.port,
+                user: config.username,
+                password: config.password,
+                secure: config.secure
+            });
             await client.close();
             return { success: true, message: `Connected to ${config.host}:${config.port}` };
         } catch (err) {

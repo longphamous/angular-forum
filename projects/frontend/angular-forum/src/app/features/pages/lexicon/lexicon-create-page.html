@@ -1,283 +1,285 @@
 <p-toast />
 
-<div class="flex flex-col gap-4 p-4 max-w-5xl mx-auto">
+<div class="mx-auto flex max-w-5xl flex-col gap-4 p-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" [label]="navHistory.backLabel()" (onClick)="goBack()" />
-            <h1 class="text-2xl font-bold m-0">
+            <p-button
+                (onClick)="goBack()"
+                [label]="navHistory.backLabel()"
+                [text]="true"
+                icon="pi pi-arrow-left"
+                severity="secondary"
+            />
+            <h1 class="m-0 text-2xl font-bold">
                 {{ (isEditMode() ? 'lexicon.editArticle' : 'lexicon.createArticle') | transloco }}
             </h1>
         </div>
     </div>
 
     @if (loading()) {
-        <p-skeleton height="30rem" />
+    <p-skeleton height="30rem" />
     } @else {
-        <div class="surface-card border border-surface rounded-lg p-6">
-            <div class="flex flex-col gap-4">
-                <!-- Title -->
+    <div class="surface-card border-surface rounded-lg border p-6">
+        <div class="flex flex-col gap-4">
+            <!-- Title -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'common.title' | transloco }} *</label>
+                <input
+                    class="w-full"
+                    (ngModelChange)="setField('title', $event)"
+                    [ngModel]="form().title"
+                    pInputText
+                    type="text"
+                />
+            </div>
+
+            <!-- Category & Language -->
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'common.title' | transloco }} *</label>
+                    <label class="mb-1 block text-sm font-semibold">{{ 'lexicon.category' | transloco }} *</label>
+                    <p-select
+                        (ngModelChange)="setField('categoryId', $event)"
+                        [ngModel]="form().categoryId"
+                        [options]="categories()"
+                        [placeholder]="'lexicon.category' | transloco"
+                        optionLabel="name"
+                        optionValue="id"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold">{{ 'lexicon.language' | transloco }} *</label>
+                    <p-select
+                        (ngModelChange)="setField('language', $event)"
+                        [ngModel]="form().language"
+                        [options]="languageOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Content (WYSIWYG Editor) -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'common.content' | transloco }} *</label>
+                <p-editor
+                    (ngModelChange)="setField('content', $event)"
+                    [ngModel]="form().content"
+                    [style]="{ height: '320px' }"
+                />
+            </div>
+
+            <!-- Excerpt -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'common.excerpt' | transloco }}</label>
+                <textarea
+                    class="w-full"
+                    (ngModelChange)="setField('excerpt', $event)"
+                    [ngModel]="form().excerpt"
+                    [rows]="3"
+                    pTextarea
+                ></textarea>
+            </div>
+
+            <!-- Cover Image -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'common.coverImage' | transloco }}</label>
+                <media-upload
+                    (uploaded)="onCoverImageUploaded($event)"
+                    accept="image/*"
+                    category="cover"
+                    sourceModule="lexicon"
+                />
+                <input
+                    class="w-full"
+                    (ngModelChange)="setField('coverImageUrl', $event)"
+                    [ngModel]="form().coverImageUrl"
+                    [placeholder]="'https://...'"
+                    pInputText
+                    type="text"
+                />
+            </div>
+
+            <!-- Tags -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'lexicon.tags' | transloco }}</label>
+                <div class="mb-2 flex items-center gap-2">
                     <input
-                        type="text"
+                        class="flex-1"
+                        (keydown.enter)="addTag(); $event.preventDefault()"
+                        (ngModelChange)="tagInput.set($event)"
+                        [ngModel]="tagInput()"
+                        [placeholder]="'common.addTag' | transloco"
                         pInputText
-                        class="w-full"
-                        [ngModel]="form().title"
-                        (ngModelChange)="setField('title', $event)"
-                    />
-                </div>
-
-                <!-- Category & Language -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">{{ 'lexicon.category' | transloco }} *</label>
-                        <p-select
-                            [options]="categories()"
-                            optionLabel="name"
-                            optionValue="id"
-                            [placeholder]="'lexicon.category' | transloco"
-                            [ngModel]="form().categoryId"
-                            (ngModelChange)="setField('categoryId', $event)"
-                            styleClass="w-full"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">{{ 'lexicon.language' | transloco }} *</label>
-                        <p-select
-                            [options]="languageOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            [ngModel]="form().language"
-                            (ngModelChange)="setField('language', $event)"
-                            styleClass="w-full"
-                        />
-                    </div>
-                </div>
-
-                <!-- Content (WYSIWYG Editor) -->
-                <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'common.content' | transloco }} *</label>
-                    <p-editor
-                        [ngModel]="form().content"
-                        (ngModelChange)="setField('content', $event)"
-                        [style]="{ height: '320px' }"
-                    />
-                </div>
-
-                <!-- Excerpt -->
-                <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'common.excerpt' | transloco }}</label>
-                    <textarea
-                        pTextarea
-                        [rows]="3"
-                        class="w-full"
-                        [ngModel]="form().excerpt"
-                        (ngModelChange)="setField('excerpt', $event)"
-                    ></textarea>
-                </div>
-
-                <!-- Cover Image -->
-                <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'common.coverImage' | transloco }}</label>
-                    <media-upload sourceModule="lexicon" category="cover" accept="image/*" (uploaded)="onCoverImageUploaded($event)" />
-                    <input
                         type="text"
-                        pInputText
-                        class="w-full"
-                        [placeholder]="'https://...'"
-                        [ngModel]="form().coverImageUrl"
-                        (ngModelChange)="setField('coverImageUrl', $event)"
                     />
+                    <p-button (onClick)="addTag()" [disabled]="!tagInput().trim()" icon="pi pi-plus" />
                 </div>
-
-                <!-- Tags -->
-                <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'lexicon.tags' | transloco }}</label>
-                    <div class="flex gap-2 items-center mb-2">
-                        <input
-                            type="text"
-                            pInputText
-                            [placeholder]="'common.addTag' | transloco"
-                            [ngModel]="tagInput()"
-                            (ngModelChange)="tagInput.set($event)"
-                            (keydown.enter)="addTag(); $event.preventDefault()"
-                            class="flex-1"
-                        />
-                        <p-button icon="pi pi-plus" (onClick)="addTag()" [disabled]="!tagInput().trim()" />
-                    </div>
-                    @if ((form().tags ?? []).length > 0) {
-                        <div class="flex gap-1 flex-wrap">
-                            @for (tag of form().tags ?? []; track tag) {
-                                <p-chip [label]="tag" [removable]="true" (onRemove)="removeTag(tag)" />
-                            }
-                        </div>
+                @if ((form().tags ?? []).length > 0) {
+                <div class="flex flex-wrap gap-1">
+                    @for (tag of form().tags ?? []; track tag) {
+                    <p-chip (onRemove)="removeTag(tag)" [label]="tag" [removable]="true" />
                     }
                 </div>
-
-                <!-- Custom Fields (dynamic, based on selected category) -->
-                @if (selectedCategoryFields().length > 0) {
-                    <div class="border-t border-surface pt-4">
-                        <h3 class="text-lg font-semibold mb-3">{{ 'lexicon.customFields' | transloco }}</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @for (field of selectedCategoryFields(); track field.key) {
-                                <div>
-                                    <label class="block text-sm font-semibold mb-1">
-                                        {{ field.label }}
-                                        @if (field.required) { <span class="text-red-500">*</span> }
-                                    </label>
-                                    @switch (field.type) {
-                                        @case ('text') {
-                                            <input
-                                                type="text"
-                                                pInputText
-                                                class="w-full"
-                                                [class.ng-invalid]="invalidFields().has(field.key)"
-                                                [class.ng-dirty]="invalidFields().has(field.key)"
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? ''"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                            />
-                                        }
-                                        @case ('url') {
-                                            <input
-                                                type="url"
-                                                pInputText
-                                                class="w-full"
-                                                [class.ng-invalid]="invalidFields().has(field.key)"
-                                                [class.ng-dirty]="invalidFields().has(field.key)"
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? ''"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                            />
-                                        }
-                                        @case ('number') {
-                                            <input
-                                                type="number"
-                                                pInputText
-                                                class="w-full"
-                                                [class.ng-invalid]="invalidFields().has(field.key)"
-                                                [class.ng-dirty]="invalidFields().has(field.key)"
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? ''"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                            />
-                                        }
-                                        @case ('date') {
-                                            <input
-                                                type="date"
-                                                pInputText
-                                                class="w-full"
-                                                [class.ng-invalid]="invalidFields().has(field.key)"
-                                                [class.ng-dirty]="invalidFields().has(field.key)"
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? ''"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                            />
-                                        }
-                                        @case ('boolean') {
-                                            <p-toggleSwitch
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? false"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                            />
-                                        }
-                                        @case ('select') {
-                                            <p-select
-                                                [options]="field.options ?? []"
-                                                [ngModel]="form().customFieldValues?.[field.key] ?? ''"
-                                                (ngModelChange)="setCustomFieldValue(field.key, $event)"
-                                                [invalid]="invalidFields().has(field.key)"
-                                                styleClass="w-full"
-                                            />
-                                        }
-                                    }
-                                    @if (invalidFields().has(field.key)) {
-                                        <small class="text-red-500">{{ 'common.fieldRequired' | transloco }}</small>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    </div>
                 }
+            </div>
 
-                <!-- Linked Article (cross-language) -->
-                <div>
-                    <label class="block text-sm font-semibold mb-1">{{ 'lexicon.linkedArticle' | transloco }}</label>
-                    <input
-                        type="text"
-                        pInputText
-                        class="w-full"
-                        [placeholder]="'Article ID'"
-                        [ngModel]="form().linkedArticleId"
-                        (ngModelChange)="setField('linkedArticleId', $event)"
-                    />
-                    <small class="text-color-secondary">{{ 'lexicon.linkedArticleHint' | transloco }}</small>
-                </div>
-
-                <!-- Status & Allow Comments -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Custom Fields (dynamic, based on selected category) -->
+            @if (selectedCategoryFields().length > 0) {
+            <div class="border-surface border-t pt-4">
+                <h3 class="mb-3 text-lg font-semibold">{{ 'lexicon.customFields' | transloco }}</h3>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    @for (field of selectedCategoryFields(); track field.key) {
                     <div>
-                        <label class="block text-sm font-semibold mb-1">{{ 'common.status' | transloco }}</label>
+                        <label class="mb-1 block text-sm font-semibold">
+                            {{ field.label }} @if (field.required) { <span class="text-red-500">*</span> }
+                        </label>
+                        @switch (field.type) { @case ('text') {
+                        <input
+                            class="w-full"
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [class.ng-dirty]="invalidFields().has(field.key)"
+                            [class.ng-invalid]="invalidFields().has(field.key)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? ''"
+                            pInputText
+                            type="text"
+                        />
+                        } @case ('url') {
+                        <input
+                            class="w-full"
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [class.ng-dirty]="invalidFields().has(field.key)"
+                            [class.ng-invalid]="invalidFields().has(field.key)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? ''"
+                            pInputText
+                            type="url"
+                        />
+                        } @case ('number') {
+                        <input
+                            class="w-full"
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [class.ng-dirty]="invalidFields().has(field.key)"
+                            [class.ng-invalid]="invalidFields().has(field.key)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? ''"
+                            pInputText
+                            type="number"
+                        />
+                        } @case ('date') {
+                        <input
+                            class="w-full"
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [class.ng-dirty]="invalidFields().has(field.key)"
+                            [class.ng-invalid]="invalidFields().has(field.key)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? ''"
+                            pInputText
+                            type="date"
+                        />
+                        } @case ('boolean') {
+                        <p-toggleSwitch
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? false"
+                        />
+                        } @case ('select') {
                         <p-select
-                            [options]="statusOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            [ngModel]="form().status"
-                            (ngModelChange)="setField('status', $event)"
+                            (ngModelChange)="setCustomFieldValue(field.key, $event)"
+                            [invalid]="invalidFields().has(field.key)"
+                            [ngModel]="form().customFieldValues?.[field.key] ?? ''"
+                            [options]="field.options ?? []"
                             styleClass="w-full"
                         />
+                        } } @if (invalidFields().has(field.key)) {
+                        <small class="text-red-500">{{ 'common.fieldRequired' | transloco }}</small>
+                        }
                     </div>
-                    <div class="flex items-center gap-2 pt-6">
-                        <p-toggleSwitch
-                            [ngModel]="form().allowComments"
-                            (ngModelChange)="setField('allowComments', $event)"
-                        />
-                        <label>{{ 'lexicon.allowComments' | transloco }}</label>
-                    </div>
+                    }
                 </div>
+            </div>
+            }
 
-                <!-- Change Summary (for edits) -->
-                @if (isEditMode()) {
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">{{ 'lexicon.changeSummary' | transloco }}</label>
-                        <input
-                            type="text"
-                            pInputText
-                            class="w-full"
-                            [ngModel]="form().changeSummary"
-                            (ngModelChange)="setField('changeSummary', $event)"
-                        />
-                    </div>
-                }
+            <!-- Linked Article (cross-language) -->
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'lexicon.linkedArticle' | transloco }}</label>
+                <input
+                    class="w-full"
+                    (ngModelChange)="setField('linkedArticleId', $event)"
+                    [ngModel]="form().linkedArticleId"
+                    [placeholder]="'Article ID'"
+                    pInputText
+                    type="text"
+                />
+                <small class="text-color-secondary">{{ 'lexicon.linkedArticleHint' | transloco }}</small>
+            </div>
 
-                <!-- Actions -->
-                <div class="flex items-center justify-between border-t border-surface pt-4">
-                    <p-button
-                        [label]="'common.cancel' | transloco"
-                        severity="secondary"
-                        [text]="true"
-                        (onClick)="goBack()"
+            <!-- Status & Allow Comments -->
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold">{{ 'common.status' | transloco }}</label>
+                    <p-select
+                        (ngModelChange)="setField('status', $event)"
+                        [ngModel]="form().status"
+                        [options]="statusOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
                     />
-                    <div class="flex gap-2">
-                        <p-button
-                            [label]="'lexicon.saveDraft' | transloco"
-                            severity="secondary"
-                            icon="pi pi-save"
-                            [loading]="saving()"
-                            (onClick)="saveDraft()"
-                        />
-                        <p-button
-                            [label]="'lexicon.submitForReview' | transloco"
-                            severity="info"
-                            icon="pi pi-send"
-                            [loading]="saving()"
-                            (onClick)="submitForReview()"
-                        />
-                        <p-button
-                            [label]="'lexicon.publish' | transloco"
-                            icon="pi pi-check"
-                            [loading]="saving()"
-                            (onClick)="publish()"
-                        />
-                    </div>
+                </div>
+                <div class="flex items-center gap-2 pt-6">
+                    <p-toggleSwitch
+                        (ngModelChange)="setField('allowComments', $event)"
+                        [ngModel]="form().allowComments"
+                    />
+                    <label>{{ 'lexicon.allowComments' | transloco }}</label>
+                </div>
+            </div>
+
+            <!-- Change Summary (for edits) -->
+            @if (isEditMode()) {
+            <div>
+                <label class="mb-1 block text-sm font-semibold">{{ 'lexicon.changeSummary' | transloco }}</label>
+                <input
+                    class="w-full"
+                    (ngModelChange)="setField('changeSummary', $event)"
+                    [ngModel]="form().changeSummary"
+                    pInputText
+                    type="text"
+                />
+            </div>
+            }
+
+            <!-- Actions -->
+            <div class="border-surface flex items-center justify-between border-t pt-4">
+                <p-button
+                    (onClick)="goBack()"
+                    [label]="'common.cancel' | transloco"
+                    [text]="true"
+                    severity="secondary"
+                />
+                <div class="flex gap-2">
+                    <p-button
+                        (onClick)="saveDraft()"
+                        [label]="'lexicon.saveDraft' | transloco"
+                        [loading]="saving()"
+                        icon="pi pi-save"
+                        severity="secondary"
+                    />
+                    <p-button
+                        (onClick)="submitForReview()"
+                        [label]="'lexicon.submitForReview' | transloco"
+                        [loading]="saving()"
+                        icon="pi pi-send"
+                        severity="info"
+                    />
+                    <p-button
+                        (onClick)="publish()"
+                        [label]="'lexicon.publish' | transloco"
+                        [loading]="saving()"
+                        icon="pi pi-check"
+                    />
                 </div>
             </div>
         </div>
+    </div>
     }
 </div>

@@ -12,39 +12,41 @@ import { SessionService } from "../../services/session.service";
     imports: [ButtonModule, DialogModule, TranslocoModule],
     template: `
         <p-dialog
-            [visible]="sessionService.sessionExpired()"
-            [closable]="false"
-            [modal]="true"
-            [draggable]="false"
-            [style]="{ width: '28rem' }"
             *transloco="let t"
+            [closable]="false"
+            [draggable]="false"
+            [modal]="true"
+            [style]="{ width: '28rem' }"
+            [visible]="sessionService.sessionExpired()"
         >
             <ng-template pTemplate="header">
                 <div class="flex items-center gap-2">
-                    <i class="pi pi-lock text-orange-500 text-xl"></i>
-                    <span class="font-bold text-lg">{{ t('session.expiredTitle') }}</span>
+                    <i class="pi pi-lock text-xl text-orange-500"></i>
+                    <span class="text-lg font-bold">{{ t("session.expiredTitle") }}</span>
                 </div>
             </ng-template>
 
             <div class="flex flex-col items-center gap-4 py-4 text-center">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-                    <i class="pi pi-clock text-orange-500 text-3xl"></i>
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30"
+                >
+                    <i class="pi pi-clock text-3xl text-orange-500"></i>
                 </div>
                 <p class="text-color-secondary m-0 text-sm">
-                    @if (sessionService.sessionExpiredReason() === 'inactivity') {
-                        {{ t('session.inactivityMessage') }}
+                    @if (sessionService.sessionExpiredReason() === "inactivity") {
+                        {{ t("session.inactivityMessage") }}
                     } @else {
-                        {{ t('session.expiredMessage') }}
+                        {{ t("session.expiredMessage") }}
                     }
                 </p>
             </div>
 
             <ng-template pTemplate="footer">
-                <div class="flex justify-center w-full">
+                <div class="flex w-full justify-center">
                     <p-button
                         [label]="t('session.loginAgain')"
-                        icon="pi pi-sign-in"
                         (onClick)="sessionService.confirmLogout()"
+                        icon="pi pi-sign-in"
                     />
                 </div>
             </ng-template>

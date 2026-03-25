@@ -4,13 +4,13 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import { ObjectLiteral, Repository } from "typeorm";
 
 import { UserEntity } from "../user/entities/user.entity";
-import { LexiconService } from "./lexicon.service";
 import { LexiconArticleEntity } from "./entities/lexicon-article.entity";
 import { LexiconArticleVersionEntity } from "./entities/lexicon-article-version.entity";
 import { LexiconCategoryEntity } from "./entities/lexicon-category.entity";
 import { LexiconCommentEntity } from "./entities/lexicon-comment.entity";
 import { LexiconReportEntity } from "./entities/lexicon-report.entity";
 import { LexiconTermsEntity } from "./entities/lexicon-terms.entity";
+import { LexiconService } from "./lexicon.service";
 
 const createMockRepo = <T extends ObjectLiteral>(): Partial<Record<keyof Repository<T>, jest.Mock>> => ({
     create: jest.fn(),
@@ -154,9 +154,7 @@ describe("LexiconService", () => {
 
             const result = await service.createCategory({ name: "General" });
 
-            expect(categoryRepo.create).toHaveBeenCalledWith(
-                expect.objectContaining({ name: "General" })
-            );
+            expect(categoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({ name: "General" }));
             expect(result).toBeDefined();
         });
     });
@@ -230,7 +228,12 @@ describe("LexiconService", () => {
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Author",
+                username: "author",
+                avatarUrl: null
+            });
             userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "Author", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
@@ -301,9 +304,7 @@ describe("LexiconService", () => {
                 status: "published"
             });
 
-            expect(articleRepo.create).toHaveBeenCalledWith(
-                expect.objectContaining({ publishedAt: expect.any(Date) })
-            );
+            expect(articleRepo.create).toHaveBeenCalledWith(expect.objectContaining({ publishedAt: expect.any(Date) }));
         });
     });
 
@@ -346,32 +347,37 @@ describe("LexiconService", () => {
         it("should throw NotFoundException when article not found", async () => {
             articleRepo.findOne!.mockResolvedValue(null);
 
-            await expect(
-                service.updateArticle("missing", "user-1", false, { content: "x" })
-            ).rejects.toThrow(NotFoundException);
+            await expect(service.updateArticle("missing", "user-1", false, { content: "x" })).rejects.toThrow(
+                NotFoundException
+            );
         });
 
         it("should throw ForbiddenException when non-owner non-admin edits", async () => {
             articleRepo.findOne!.mockResolvedValue(makeArticle({ authorId: "user-1" }));
 
-            await expect(
-                service.updateArticle("article-1", "user-2", false, { content: "x" })
-            ).rejects.toThrow(ForbiddenException);
+            await expect(service.updateArticle("article-1", "user-2", false, { content: "x" })).rejects.toThrow(
+                ForbiddenException
+            );
         });
 
         it("should throw ForbiddenException when article is locked and user is not admin", async () => {
             articleRepo.findOne!.mockResolvedValue(makeArticle({ authorId: "user-1", isLocked: true }));
 
-            await expect(
-                service.updateArticle("article-1", "user-1", false, { content: "x" })
-            ).rejects.toThrow(ForbiddenException);
+            await expect(service.updateArticle("article-1", "user-1", false, { content: "x" })).rejects.toThrow(
+                ForbiddenException
+            );
         });
 
         it("should allow admin to update locked article", async () => {
             const article = makeArticle({ authorId: "user-1", isLocked: true });
             articleRepo.findOne!.mockResolvedValue(article);
             articleRepo.save!.mockImplementation((a) => Promise.resolve(a));
-            userRepo.findOne!.mockResolvedValue({ id: "admin", displayName: "Admin", username: "admin", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "admin",
+                displayName: "Admin",
+                username: "admin",
+                avatarUrl: null
+            });
             userRepo.find!.mockResolvedValue([{ id: "admin", displayName: "Admin", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(1);
@@ -460,7 +466,12 @@ describe("LexiconService", () => {
             const comment = makeComment();
             commentRepo.create!.mockReturnValue(comment);
             commentRepo.save!.mockResolvedValue(comment);
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Author",
+                username: "author",
+                avatarUrl: null
+            });
 
             const result = await service.addComment("article-1", "user-1", { content: "Great article" });
 
@@ -470,17 +481,15 @@ describe("LexiconService", () => {
         it("should throw NotFoundException when article not found", async () => {
             articleRepo.findOne!.mockResolvedValue(null);
 
-            await expect(
-                service.addComment("missing", "user-1", { content: "x" })
-            ).rejects.toThrow(NotFoundException);
+            await expect(service.addComment("missing", "user-1", { content: "x" })).rejects.toThrow(NotFoundException);
         });
 
         it("should throw ForbiddenException when comments are disabled", async () => {
             articleRepo.findOne!.mockResolvedValue(makeArticle({ allowComments: false }));
 
-            await expect(
-                service.addComment("article-1", "user-1", { content: "x" })
-            ).rejects.toThrow(ForbiddenException);
+            await expect(service.addComment("article-1", "user-1", { content: "x" })).rejects.toThrow(
+                ForbiddenException
+            );
         });
     });
 
@@ -547,9 +556,9 @@ describe("LexiconService", () => {
         it("should throw NotFoundException when report not found", async () => {
             reportRepo.findOne!.mockResolvedValue(null);
 
-            await expect(
-                service.resolveReport("missing", "admin-1", { status: "resolved" })
-            ).rejects.toThrow(NotFoundException);
+            await expect(service.resolveReport("missing", "admin-1", { status: "resolved" })).rejects.toThrow(
+                NotFoundException
+            );
         });
     });
 
@@ -612,9 +621,7 @@ describe("LexiconService", () => {
         });
 
         it("should return empty array when no matches", async () => {
-            articleRepo.find!.mockResolvedValue([
-                { id: "a1", title: "Angular", slug: "angular" }
-            ]);
+            articleRepo.find!.mockResolvedValue([{ id: "a1", title: "Angular", slug: "angular" }]);
 
             const result = await service.detectTerms("No matches here");
 
@@ -646,7 +653,12 @@ describe("LexiconService", () => {
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Author",
+                username: "author",
+                avatarUrl: null
+            });
             userRepo.find!.mockResolvedValue([{ id: "user-1", displayName: "Author", avatarUrl: null }]);
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(2);
@@ -690,7 +702,12 @@ describe("LexiconService", () => {
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Author",
+                username: "author",
+                avatarUrl: null
+            });
             commentRepo.count!.mockResolvedValue(0);
             versionRepo.count!.mockResolvedValue(0);
 
@@ -731,7 +748,12 @@ describe("LexiconService", () => {
             versionRepo.create!.mockReturnValue({});
             versionRepo.save!.mockResolvedValue({});
 
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Author", username: "author", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Author",
+                username: "author",
+                avatarUrl: null
+            });
             userRepo.find!.mockResolvedValue([
                 { id: "user-1", displayName: "Author", avatarUrl: null },
                 { id: "user-2", displayName: "Contributor2", avatarUrl: "avatar2.png" },
@@ -746,12 +768,12 @@ describe("LexiconService", () => {
                 categoryId: "cat-1"
             })) as Record<string, unknown>;
 
-            const contributors = result.contributors as Array<{
+            const contributors = result.contributors as {
                 id: string;
                 displayName: string;
                 avatarUrl: string | null;
                 versionCount: number;
-            }>;
+            }[];
             expect(contributors).toHaveLength(3);
             expect(contributors[0]).toEqual({
                 id: "user-1",

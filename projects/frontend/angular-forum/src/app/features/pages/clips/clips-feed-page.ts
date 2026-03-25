@@ -270,7 +270,10 @@ export class ClipsFeedPage implements OnInit, AfterViewInit, OnDestroy {
     onUploadVideoSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
-        if (file) { this.startVideoUpload(file); input.value = ""; }
+        if (file) {
+            this.startVideoUpload(file);
+            input.value = "";
+        }
     }
 
     onUploadThumbnailSelected(event: Event): void {
@@ -278,7 +281,12 @@ export class ClipsFeedPage implements OnInit, AfterViewInit, OnDestroy {
         const file = input.files?.[0];
         if (file) {
             this.mediaFacade.upload(file, { sourceModule: "clips", category: "thumbnail" }).subscribe({
-                next: (p) => { if (p.status === "complete" && p.asset) { this.uploadThumbnailAsset.set(p.asset); this.cd.markForCheck(); } }
+                next: (p) => {
+                    if (p.status === "complete" && p.asset) {
+                        this.uploadThumbnailAsset.set(p.asset);
+                        this.cd.markForCheck();
+                    }
+                }
             });
             input.value = "";
         }
@@ -310,32 +318,49 @@ export class ClipsFeedPage implements OnInit, AfterViewInit, OnDestroy {
         const video = this.uploadVideoAsset();
         if (!video || !this.uploadTitle.trim()) return;
         this.uploadSubmitting.set(true);
-        this.facade.createClip({
-            title: this.uploadTitle.trim(),
-            description: this.uploadDescription.trim() || undefined,
-            videoUrl: video.url,
-            thumbnailUrl: this.uploadThumbnailAsset()?.url || undefined,
-            tags: this.uploadTags.length > 0 ? this.uploadTags : undefined,
-            duration: this.uploadDuration || 30,
-            isPublished: this.uploadIsPublished
-        }).subscribe({
-            next: () => {
-                this.uploadSubmitting.set(false);
-                this.showUploadDialog.set(false);
-                this.messageService.add({ severity: "success", summary: "OK", detail: this.translocoService.translate("clips.upload_form.success") });
-                this.facade.loadFeed(1, 10);
-                this.cd.markForCheck();
-            },
-            error: () => {
-                this.uploadSubmitting.set(false);
-                this.messageService.add({ severity: "error", summary: "Error", detail: this.translocoService.translate("clips.errors.uploadFailed") });
-                this.cd.markForCheck();
-            }
-        });
+        this.facade
+            .createClip({
+                title: this.uploadTitle.trim(),
+                description: this.uploadDescription.trim() || undefined,
+                videoUrl: video.url,
+                thumbnailUrl: this.uploadThumbnailAsset()?.url || undefined,
+                tags: this.uploadTags.length > 0 ? this.uploadTags : undefined,
+                duration: this.uploadDuration || 30,
+                isPublished: this.uploadIsPublished
+            })
+            .subscribe({
+                next: () => {
+                    this.uploadSubmitting.set(false);
+                    this.showUploadDialog.set(false);
+                    this.messageService.add({
+                        severity: "success",
+                        summary: "OK",
+                        detail: this.translocoService.translate("clips.upload_form.success")
+                    });
+                    this.facade.loadFeed(1, 10);
+                    this.cd.markForCheck();
+                },
+                error: () => {
+                    this.uploadSubmitting.set(false);
+                    this.messageService.add({
+                        severity: "error",
+                        summary: "Error",
+                        detail: this.translocoService.translate("clips.errors.uploadFailed")
+                    });
+                    this.cd.markForCheck();
+                }
+            });
     }
 
     private startVideoUpload(file: File): void {
-        this.uploadProgress.set({ fileId: `${Date.now()}`, filename: file.name, loaded: 0, total: file.size, percent: 0, status: "uploading" });
+        this.uploadProgress.set({
+            fileId: `${Date.now()}`,
+            filename: file.name,
+            loaded: 0,
+            total: file.size,
+            percent: 0,
+            status: "uploading"
+        });
         this.mediaFacade.upload(file, { sourceModule: "clips", category: "content" }).subscribe({
             next: (progress) => {
                 this.uploadProgress.set(progress);
@@ -347,7 +372,11 @@ export class ClipsFeedPage implements OnInit, AfterViewInit, OnDestroy {
                 }
                 if (progress.status === "error") {
                     this.uploadProgress.set(null);
-                    this.messageService.add({ severity: "error", summary: "Error", detail: progress.error ?? "Upload failed" });
+                    this.messageService.add({
+                        severity: "error",
+                        summary: "Error",
+                        detail: progress.error ?? "Upload failed"
+                    });
                     this.cd.markForCheck();
                 }
             }

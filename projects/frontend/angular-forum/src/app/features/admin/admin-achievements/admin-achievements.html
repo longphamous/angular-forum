@@ -1,41 +1,51 @@
 <div class="flex flex-col gap-6" *transloco="let t">
     <!-- Header -->
     <div class="card">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex items-center justify-between">
             <div>
                 <h2 class="m-0 text-2xl font-bold">{{ t('adminAchievements.title') }}</h2>
                 <p class="text-surface-500 mt-1 mb-0 text-sm">{{ t('adminAchievements.subtitle') }}</p>
             </div>
             <div class="flex gap-2">
-                <p-button (onClick)="openGrantDialog()" label="Grant" icon="pi pi-gift" severity="secondary" [outlined]="true" />
-                <p-button (onClick)="openCreate()" [label]="t('adminAchievements.createAchievement')" icon="pi pi-plus" />
+                <p-button
+                    (onClick)="openGrantDialog()"
+                    [outlined]="true"
+                    icon="pi pi-gift"
+                    label="Grant"
+                    severity="secondary"
+                />
+                <p-button
+                    (onClick)="openCreate()"
+                    [label]="t('adminAchievements.createAchievement')"
+                    icon="pi pi-plus"
+                />
             </div>
         </div>
         <!-- Tabs -->
-        <div class="flex gap-1 border-b border-surface">
+        <div class="border-surface flex gap-1 border-b">
             <button
-                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                class="cursor-pointer rounded-t-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+                (click)="onTabChange('achievements')"
                 [class]="activeTab() === 'achievements' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
                 [style.border-bottom]="activeTab() === 'achievements' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
-                (click)="onTabChange('achievements')"
                 type="button"
             >
                 <i class="pi pi-trophy mr-1"></i> Achievements
             </button>
             <button
-                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                class="cursor-pointer rounded-t-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+                (click)="onTabChange('categories')"
                 [class]="activeTab() === 'categories' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
                 [style.border-bottom]="activeTab() === 'categories' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
-                (click)="onTabChange('categories')"
                 type="button"
             >
                 <i class="pi pi-folder mr-1"></i> {{ t('adminAchievements.dialog.category') }}
             </button>
             <button
-                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                class="cursor-pointer rounded-t-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+                (click)="onTabChange('history')"
                 [class]="activeTab() === 'history' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
                 [style.border-bottom]="activeTab() === 'history' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
-                (click)="onTabChange('history')"
                 type="button"
             >
                 <i class="pi pi-history mr-1"></i> Historie
@@ -69,13 +79,15 @@
                         {{ t('adminAchievements.table.rarity') }} <p-sortIcon field="rarity" />
                     </th>
                     <th>{{ t('adminAchievements.table.trigger') }}</th>
-                    <th pSortableColumn="category">{{ t('adminAchievements.dialog.category') }} <p-sortIcon field="category" /></th>
+                    <th pSortableColumn="category">
+                        {{ t('adminAchievements.dialog.category') }} <p-sortIcon field="category" />
+                    </th>
                     <th class="w-20 text-center">{{ t('common.active') }}</th>
                     <th class="w-24 text-right">{{ t('common.actions') }}</th>
                 </tr>
             </ng-template>
             <ng-template #body let-a>
-                <tr class="cursor-pointer hover:bg-emphasis transition-colors" (click)="openDetail(a)">
+                <tr class="hover:bg-emphasis cursor-pointer transition-colors" (click)="openDetail(a)">
                     <td>
                         <div
                             class="bg-surface-100 dark:bg-surface-800 flex h-8 w-8 items-center justify-center rounded-full"
@@ -105,9 +117,9 @@
                     </td>
                     <td class="text-sm">
                         @if (a.category) {
-                            <span class="text-color-secondary">{{ getCategoryName(a.category) }}</span>
+                        <span class="text-color-secondary">{{ getCategoryName(a.category) }}</span>
                         } @else {
-                            <span class="text-color-secondary">—</span>
+                        <span class="text-color-secondary">—</span>
                         }
                     </td>
                     <td class="text-center">
@@ -158,31 +170,43 @@
     <!-- Categories Tab -->
     @if (activeTab() === 'categories') {
     <div class="card">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex items-center justify-between">
             <h3 class="m-0 text-lg font-semibold">Achievement-Kategorien</h3>
-            <p-button (onClick)="openCreateCategory()" label="Kategorie erstellen" icon="pi pi-plus" size="small" />
+            <p-button (onClick)="openCreateCategory()" icon="pi pi-plus" label="Kategorie erstellen" size="small" />
         </div>
         @if (categories().length === 0) {
-            <p class="text-color-secondary text-sm">Keine Kategorien vorhanden.</p>
+        <p class="text-color-secondary text-sm">Keine Kategorien vorhanden.</p>
         } @else {
-            <div class="flex flex-col gap-2">
-                @for (cat of categories(); track cat.id) {
-                    <div class="flex items-center gap-3 rounded-lg border border-surface p-3">
-                        <i [class]="cat.icon + ' text-primary text-lg'" style="width: 1.5rem"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium text-sm">{{ cat.name }}</div>
-                            <div class="text-color-secondary text-xs">{{ cat.key }} &middot; Position: {{ cat.position }}</div>
-                            @if (cat.description) {
-                                <div class="text-color-secondary text-xs mt-0.5">{{ cat.description }}</div>
-                            }
-                        </div>
-                        <div class="flex gap-1">
-                            <p-button icon="pi pi-pencil" [text]="true" severity="secondary" size="small" (onClick)="openEditCategory(cat)" />
-                            <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small" (onClick)="deleteCategory(cat)" />
-                        </div>
-                    </div>
-                }
+        <div class="flex flex-col gap-2">
+            @for (cat of categories(); track cat.id) {
+            <div class="border-surface flex items-center gap-3 rounded-lg border p-3">
+                <i [class]="cat.icon + ' text-primary text-lg'" style="width: 1.5rem"></i>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-medium">{{ cat.name }}</div>
+                    <div class="text-color-secondary text-xs">{{ cat.key }} &middot; Position: {{ cat.position }}</div>
+                    @if (cat.description) {
+                    <div class="text-color-secondary mt-0.5 text-xs">{{ cat.description }}</div>
+                    }
+                </div>
+                <div class="flex gap-1">
+                    <p-button
+                        (onClick)="openEditCategory(cat)"
+                        [text]="true"
+                        icon="pi pi-pencil"
+                        severity="secondary"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="deleteCategory(cat)"
+                        [text]="true"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        size="small"
+                    />
+                </div>
             </div>
+            }
+        </div>
         }
     </div>
     }
@@ -190,46 +214,50 @@
     <!-- History Tab -->
     @if (activeTab() === 'history') {
     <div class="card">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex items-center justify-between">
             <h3 class="m-0 text-lg font-semibold">Vergabe-Historie</h3>
-            <p-button icon="pi pi-refresh" [text]="true" severity="secondary" (onClick)="loadHistory()" [loading]="historyLoading()" />
+            <p-button
+                (onClick)="loadHistory()"
+                [loading]="historyLoading()"
+                [text]="true"
+                icon="pi pi-refresh"
+                severity="secondary"
+            />
         </div>
         @if (historyLoading()) {
-            <div class="flex flex-col gap-3">
-                @for (_ of [1,2,3,4,5]; track $index) {
-                    <p-skeleton height="3rem" />
-                }
-            </div>
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3,4,5]; track $index) {
+            <p-skeleton height="3rem" />
+            }
+        </div>
         } @else if (history().length === 0) {
-            <p class="text-color-secondary text-sm">Keine Vergabe-Historie vorhanden.</p>
+        <p class="text-color-secondary text-sm">Keine Vergabe-Historie vorhanden.</p>
         } @else {
-            <div class="flex flex-col">
-                @for (h of history(); track h.id) {
-                    <div class="flex items-center gap-3 py-2.5 border-b border-surface last:border-b-0">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emphasis">
-                            <i [class]="h.achievementIcon + ' text-primary text-sm'"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm">
-                                <span class="font-semibold">{{ h.displayName }}</span>
-                                <span class="text-color-secondary mx-1">&rarr;</span>
-                                <span class="font-medium">{{ h.achievementName }}</span>
-                            </div>
-                            <div class="text-color-secondary text-xs mt-0.5">
-                                {{ formatDate(h.earnedAt) }}
-                                @if (h.grantedByName) {
-                                    &middot; vergeben von {{ h.grantedByName }}
-                                }
-                            </div>
-                        </div>
-                        @if (h.source === 'manual') {
-                            <p-tag value="Manuell" severity="warn" styleClass="text-xs" />
-                        } @else {
-                            <p-tag value="Automatisch" severity="info" styleClass="text-xs" />
+        <div class="flex flex-col">
+            @for (h of history(); track h.id) {
+            <div class="border-surface flex items-center gap-3 border-b py-2.5 last:border-b-0">
+                <div class="bg-emphasis flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                    <i [class]="h.achievementIcon + ' text-primary text-sm'"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm">
+                        <span class="font-semibold">{{ h.displayName }}</span>
+                        <span class="text-color-secondary mx-1">&rarr;</span>
+                        <span class="font-medium">{{ h.achievementName }}</span>
+                    </div>
+                    <div class="text-color-secondary mt-0.5 text-xs">
+                        {{ formatDate(h.earnedAt) }} @if (h.grantedByName) { &middot; vergeben von {{ h.grantedByName }}
                         }
                     </div>
+                </div>
+                @if (h.source === 'manual') {
+                <p-tag severity="warn" styleClass="text-xs" value="Manuell" />
+                } @else {
+                <p-tag severity="info" styleClass="text-xs" value="Automatisch" />
                 }
             </div>
+            }
+        </div>
         }
     </div>
     }
@@ -262,7 +290,7 @@
                 placeholder="z.B. Erster Schritt"
             />
             @if (form().key) {
-                <small class="text-color-secondary">Key: {{ form().key }}</small>
+            <small class="text-color-secondary">Key: {{ form().key }}</small>
             }
         </div>
 
@@ -316,7 +344,11 @@
             </div>
         </div>
 
-        <div class="grid gap-4" [class.grid-cols-2]="form().triggerType !== 'manual'" [class.grid-cols-1]="form().triggerType === 'manual'">
+        <div
+            class="grid gap-4"
+            [class.grid-cols-1]="form().triggerType === 'manual'"
+            [class.grid-cols-2]="form().triggerType !== 'manual'"
+        >
             <!-- Trigger Type -->
             <div class="flex flex-col gap-1">
                 <label class="text-sm font-medium" for="ach-triggerType"
@@ -333,7 +365,7 @@
                     styleClass="w-full"
                 />
                 @if (form().triggerType === 'manual') {
-                    <small class="text-color-secondary">{{ t('adminAchievements.dialog.manualHint') }}</small>
+                <small class="text-color-secondary">{{ t('adminAchievements.dialog.manualHint') }}</small>
                 }
             </div>
             <!-- Trigger Value (hidden for manual) -->
@@ -362,7 +394,9 @@
         <div class="grid grid-cols-2 gap-4">
             <!-- XP Reward -->
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium" for="ach-xpReward">{{ t('adminAchievements.dialog.xpReward') }}</label>
+                <label class="text-sm font-medium" for="ach-xpReward"
+                    >{{ t('adminAchievements.dialog.xpReward') }}</label
+                >
                 <p-inputnumber
                     (ngModelChange)="updateForm({ xpReward: $event })"
                     [max]="99999"
@@ -379,7 +413,9 @@
             </div>
             <!-- Category -->
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium" for="ach-category">{{ t('adminAchievements.dialog.category') }}</label>
+                <label class="text-sm font-medium" for="ach-category"
+                    >{{ t('adminAchievements.dialog.category') }}</label
+                >
                 <p-select
                     (ngModelChange)="updateForm({ category: $event })"
                     [ngModel]="form().category"
@@ -434,33 +470,74 @@
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Key *</label>
-            <input pInputText class="w-full" [ngModel]="categoryForm().key" (ngModelChange)="updateCategoryForm({ key: $event })" [disabled]="!!editingCategoryId()" placeholder="z.B. community" />
+            <input
+                class="w-full"
+                (ngModelChange)="updateCategoryForm({ key: $event })"
+                [disabled]="!!editingCategoryId()"
+                [ngModel]="categoryForm().key"
+                pInputText
+                placeholder="z.B. community"
+            />
         </div>
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Name *</label>
-            <input pInputText class="w-full" [ngModel]="categoryForm().name" (ngModelChange)="updateCategoryForm({ name: $event })" placeholder="z.B. Community" />
+            <input
+                class="w-full"
+                (ngModelChange)="updateCategoryForm({ name: $event })"
+                [ngModel]="categoryForm().name"
+                pInputText
+                placeholder="z.B. Community"
+            />
         </div>
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Beschreibung</label>
-            <input pInputText class="w-full" [ngModel]="categoryForm().description" (ngModelChange)="updateCategoryForm({ description: $event })" />
+            <input
+                class="w-full"
+                (ngModelChange)="updateCategoryForm({ description: $event })"
+                [ngModel]="categoryForm().description"
+                pInputText
+            />
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
                 <label class="text-sm font-medium">Icon</label>
                 <div class="flex items-center gap-2">
                     <i [class]="categoryForm().icon + ' text-primary'" style="width: 1.25rem"></i>
-                    <input pInputText class="flex-1" [ngModel]="categoryForm().icon" (ngModelChange)="updateCategoryForm({ icon: $event })" />
+                    <input
+                        class="flex-1"
+                        (ngModelChange)="updateCategoryForm({ icon: $event })"
+                        [ngModel]="categoryForm().icon"
+                        pInputText
+                    />
                 </div>
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-sm font-medium">Position</label>
-                <p-inputnumber [ngModel]="categoryForm().position" (ngModelChange)="updateCategoryForm({ position: $event })" [min]="0" [showButtons]="true" styleClass="w-full" />
+                <p-inputnumber
+                    (ngModelChange)="updateCategoryForm({ position: $event })"
+                    [min]="0"
+                    [ngModel]="categoryForm().position"
+                    [showButtons]="true"
+                    styleClass="w-full"
+                />
             </div>
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button (onClick)="categoryDialogVisible.set(false)" [disabled]="saving()" label="Abbrechen" [text]="true" severity="secondary" />
-        <p-button (onClick)="saveCategory()" [disabled]="!categoryForm().key || !categoryForm().name" [loading]="saving()" label="Speichern" icon="pi pi-check" />
+        <p-button
+            (onClick)="categoryDialogVisible.set(false)"
+            [disabled]="saving()"
+            [text]="true"
+            label="Abbrechen"
+            severity="secondary"
+        />
+        <p-button
+            (onClick)="saveCategory()"
+            [disabled]="!categoryForm().key || !categoryForm().name"
+            [loading]="saving()"
+            icon="pi pi-check"
+            label="Speichern"
+        />
     </ng-template>
 </p-dialog>
 
@@ -468,130 +545,141 @@
 <p-dialog
     [(visible)]="grantDialogVisible"
     [closable]="!saving()"
-    header="Achievement manuell vergeben"
     [modal]="true"
     [style]="{ width: '420px' }"
+    header="Achievement manuell vergeben"
 >
     <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Benutzer *</label>
-            <app-user-autocomplete
-                placeholder="Username eingeben..."
-                (userSelected)="onGrantUserSelected($event)"
-            />
+            <app-user-autocomplete (userSelected)="onGrantUserSelected($event)" placeholder="Username eingeben..." />
         </div>
         <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Achievement *</label>
             <p-select
+                (ngModelChange)="grantAchievementId.set($event)"
+                [ngModel]="grantAchievementId()"
                 [options]="achievements()"
+                appendTo="body"
                 optionLabel="name"
                 optionValue="id"
-                [ngModel]="grantAchievementId()"
-                (ngModelChange)="grantAchievementId.set($event)"
                 placeholder="Achievement auswahlen"
                 styleClass="w-full"
-                appendTo="body"
             />
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button (onClick)="grantDialogVisible.set(false)" [disabled]="saving()" label="Abbrechen" [text]="true" severity="secondary" />
-        <p-button (onClick)="grantAchievement()" [disabled]="!grantSelectedUser() || !grantAchievementId()" [loading]="saving()" label="Vergeben" icon="pi pi-gift" />
+        <p-button
+            (onClick)="grantDialogVisible.set(false)"
+            [disabled]="saving()"
+            [text]="true"
+            label="Abbrechen"
+            severity="secondary"
+        />
+        <p-button
+            (onClick)="grantAchievement()"
+            [disabled]="!grantSelectedUser() || !grantAchievementId()"
+            [loading]="saving()"
+            icon="pi pi-gift"
+            label="Vergeben"
+        />
     </ng-template>
 </p-dialog>
 
 <!-- Detail Dialog -->
 <p-dialog
     [(visible)]="detailDialogVisible"
+    [header]="detailData()?.name ?? 'Achievement Details'"
     [modal]="true"
     [style]="{ width: '520px' }"
-    [header]="detailData()?.name ?? 'Achievement Details'"
 >
     @if (detailLoading()) {
-        <div class="flex flex-col gap-3 py-4">
-            <p-skeleton height="2rem" width="60%" />
-            <p-skeleton height="1rem" width="40%" />
-            <p-skeleton height="3rem" />
-            <p-skeleton height="3rem" />
-        </div>
+    <div class="flex flex-col gap-3 py-4">
+        <p-skeleton height="2rem" width="60%" />
+        <p-skeleton height="1rem" width="40%" />
+        <p-skeleton height="3rem" />
+        <p-skeleton height="3rem" />
+    </div>
     } @else if (detailData(); as d) {
-        <div class="flex flex-col gap-4 pt-2">
-            <!-- Achievement info -->
-            <div class="flex items-center gap-4">
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emphasis">
-                    <i class="pi text-2xl text-primary" [class]="d.icon"></i>
-                </div>
-                <div>
-                    <div class="text-lg font-bold">{{ d.name }}</div>
-                    <div class="flex items-center gap-2 mt-1">
-                        <p-tag [severity]="raritySeverity(d.rarity)" [value]="rarityLabel(d.rarity)" styleClass="text-xs" />
-                        <span class="text-color-secondary text-sm">{{ d.totalGranted }}x vergeben</span>
-                    </div>
+    <div class="flex flex-col gap-4 pt-2">
+        <!-- Achievement info -->
+        <div class="flex items-center gap-4">
+            <div class="bg-emphasis flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
+                <i class="pi text-primary text-2xl" [class]="d.icon"></i>
+            </div>
+            <div>
+                <div class="text-lg font-bold">{{ d.name }}</div>
+                <div class="mt-1 flex items-center gap-2">
+                    <p-tag [severity]="raritySeverity(d.rarity)" [value]="rarityLabel(d.rarity)" styleClass="text-xs" />
+                    <span class="text-color-secondary text-sm">{{ d.totalGranted }}x vergeben</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Quick grant in detail view -->
-            <div class="border-t border-surface pt-3">
-                <h4 class="m-0 mb-2 text-sm font-semibold">Vergeben an</h4>
-                <div class="flex gap-2">
-                    <app-user-autocomplete
-                        placeholder="Username eingeben..."
-                        styleClass="flex-1"
-                        (userSelected)="detailGrantUser.set($event)"
-                    />
-                    <p-button
-                        icon="pi pi-gift"
-                        label="Vergeben"
-                        size="small"
-                        [disabled]="!detailGrantUser()"
-                        [loading]="saving()"
-                        (onClick)="grantFromDetail()"
-                    />
-                </div>
+        <!-- Quick grant in detail view -->
+        <div class="border-surface border-t pt-3">
+            <h4 class="m-0 mb-2 text-sm font-semibold">Vergeben an</h4>
+            <div class="flex gap-2">
+                <app-user-autocomplete
+                    (userSelected)="detailGrantUser.set($event)"
+                    placeholder="Username eingeben..."
+                    styleClass="flex-1"
+                />
+                <p-button
+                    (onClick)="grantFromDetail()"
+                    [disabled]="!detailGrantUser()"
+                    [loading]="saving()"
+                    icon="pi pi-gift"
+                    label="Vergeben"
+                    size="small"
+                />
             </div>
+        </div>
 
-            <!-- Recipients list -->
-            <div class="border-t border-surface pt-3">
-                <h4 class="m-0 mb-2 text-sm font-semibold">Empfänger ({{ d.recipients.length }})</h4>
-                @if (d.recipients.length === 0) {
-                    <div class="text-color-secondary text-center py-4 text-sm">
-                        Noch an niemanden vergeben.
+        <!-- Recipients list -->
+        <div class="border-surface border-t pt-3">
+            <h4 class="m-0 mb-2 text-sm font-semibold">Empfänger ({{ d.recipients.length }})</h4>
+            @if (d.recipients.length === 0) {
+            <div class="text-color-secondary py-4 text-center text-sm">Noch an niemanden vergeben.</div>
+            } @else {
+            <div class="flex flex-col gap-1" style="max-height: 300px; overflow-y: auto">
+                @for (r of d.recipients; track r.userId) {
+                <div class="hover:bg-emphasis flex items-center gap-3 rounded-lg p-2 transition-colors">
+                    <p-avatar
+                        [image]="r.avatarUrl ?? ''"
+                        [label]="r.displayName.charAt(0).toUpperCase()"
+                        shape="circle"
+                        size="normal"
+                    />
+                    <a
+                        class="min-w-0 flex-1 text-inherit no-underline"
+                        (click)="detailDialogVisible.set(false)"
+                        [routerLink]="['/users', r.userId]"
+                    >
+                        <div class="text-sm font-medium">{{ r.displayName }}</div>
+                        <div class="text-color-secondary text-xs">@{{ r.username }}</div>
+                    </a>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <div class="flex flex-col items-end gap-0.5">
+                            <span class="text-color-secondary text-xs">{{ formatDate(r.earnedAt) }}</span>
+                            @if (r.source === 'manual') {
+                            <p-tag severity="warn" styleClass="text-xs" value="Manuell" />
+                            }
+                        </div>
+                        <p-button
+                            (onClick)="revokeFromDetail(r.userId)"
+                            [pTooltip]="'Zurückziehen'"
+                            [text]="true"
+                            icon="pi pi-times"
+                            severity="danger"
+                            size="small"
+                        />
                     </div>
-                } @else {
-                    <div class="flex flex-col gap-1" style="max-height: 300px; overflow-y: auto">
-                        @for (r of d.recipients; track r.userId) {
-                            <div class="flex items-center gap-3 rounded-lg p-2 hover:bg-emphasis transition-colors">
-                                <p-avatar
-                                    [label]="r.displayName.charAt(0).toUpperCase()"
-                                    [image]="r.avatarUrl ?? ''"
-                                    shape="circle"
-                                    size="normal"
-                                />
-                                <a class="flex-1 min-w-0 no-underline text-inherit" [routerLink]="['/users', r.userId]" (click)="detailDialogVisible.set(false)">
-                                    <div class="text-sm font-medium">{{ r.displayName }}</div>
-                                    <div class="text-color-secondary text-xs">@{{ r.username }}</div>
-                                </a>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <div class="flex flex-col items-end gap-0.5">
-                                        <span class="text-color-secondary text-xs">{{ formatDate(r.earnedAt) }}</span>
-                                        @if (r.source === 'manual') {
-                                            <p-tag value="Manuell" severity="warn" styleClass="text-xs" />
-                                        }
-                                    </div>
-                                    <p-button
-                                        icon="pi pi-times"
-                                        [text]="true"
-                                        severity="danger"
-                                        size="small"
-                                        [pTooltip]="'Zurückziehen'"
-                                        (onClick)="revokeFromDetail(r.userId)"
-                                    />
-                                </div>
-                            </div>
-                        }
-                    </div>
+                </div>
                 }
             </div>
+            }
         </div>
+    </div>
     }
 </p-dialog>

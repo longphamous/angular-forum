@@ -169,7 +169,12 @@ describe("PostService", () => {
         userRepo.find!.mockResolvedValue([user]);
         postRepo.query!.mockResolvedValue([{ author_id: postEntity.authorId, count: "5" }]);
         mockGamificationService.getUserXpDataBatch.mockResolvedValue(
-            new Map<string, UserXpData>([[postEntity.authorId, { xp: 100, level: 3, levelName: "Veteran", xpToNextLevel: 200, xpProgressPercent: 50 }]])
+            new Map<string, UserXpData>([
+                [
+                    postEntity.authorId,
+                    { xp: 100, level: 3, levelName: "Veteran", xpToNextLevel: 200, xpProgressPercent: 50 }
+                ]
+            ])
         );
         mockCreditService.getBalances.mockResolvedValue(new Map<string, number>([[postEntity.authorId, 42]]));
     }
@@ -272,7 +277,12 @@ describe("PostService", () => {
         postRepo.findOneBy!.mockResolvedValue(post);
         postRepo.save!.mockImplementation(async (entity: ForumPostEntity) => entity);
 
-        const result = await service.update("post-1", { content: "<p>Updated</p>", editReason: "typo" }, "user-1", "member");
+        const result = await service.update(
+            "post-1",
+            { content: "<p>Updated</p>", editReason: "typo" },
+            "user-1",
+            "member"
+        );
 
         expect(result.content).toBe("<p>Updated</p>");
         expect(post.isEdited).toBe(true);

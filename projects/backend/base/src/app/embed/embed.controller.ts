@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Post, Query } from "@nestjs/common";
+
 import { Public } from "../auth/auth.decorators";
 import { EmbedService, LinkEmbedDto } from "./embed.service";
 

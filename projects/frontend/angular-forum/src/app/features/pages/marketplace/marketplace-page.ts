@@ -51,11 +51,11 @@ export class MarketplacePage implements OnInit {
 
     get typeOptions(): { label: string; value: string | null }[] {
         return [
-            { label: this.translocoService.translate('common.all'), value: null },
-            { label: this.translocoService.translate('marketplace.type.sell'), value: "sell" },
-            { label: this.translocoService.translate('marketplace.type.buy'), value: "buy" },
-            { label: this.translocoService.translate('marketplace.type.trade'), value: "trade" },
-            { label: this.translocoService.translate('marketplace.type.gift'), value: "gift" }
+            { label: this.translocoService.translate("common.all"), value: null },
+            { label: this.translocoService.translate("marketplace.type.sell"), value: "sell" },
+            { label: this.translocoService.translate("marketplace.type.buy"), value: "buy" },
+            { label: this.translocoService.translate("marketplace.type.trade"), value: "trade" },
+            { label: this.translocoService.translate("marketplace.type.gift"), value: "gift" }
         ];
     }
 

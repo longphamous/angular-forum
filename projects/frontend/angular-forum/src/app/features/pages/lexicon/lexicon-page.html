@@ -2,14 +2,10 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-bold m-0">{{ 'lexicon.title' | transloco }}</h1>
+            <h1 class="m-0 text-2xl font-bold">{{ 'lexicon.title' | transloco }}</h1>
             <admin-quicklink route="/admin/lexicon" />
         </div>
-        <p-button
-            [label]="'lexicon.createArticle' | transloco"
-            icon="pi pi-plus"
-            (onClick)="createArticle()"
-        />
+        <p-button (onClick)="createArticle()" [label]="'lexicon.createArticle' | transloco" icon="pi pi-plus" />
     </div>
 
     <!-- Filters -->
@@ -17,156 +13,157 @@
         <p-iconfield>
             <p-inputicon styleClass="pi pi-search" />
             <input
-                type="text"
-                pInputText
-                [placeholder]="'lexicon.search' | transloco"
-                [ngModel]="searchQuery()"
                 (ngModelChange)="onSearch($event)"
+                [ngModel]="searchQuery()"
+                [placeholder]="'lexicon.search' | transloco"
+                pInputText
+                type="text"
             />
         </p-iconfield>
 
         <p-select
+            (ngModelChange)="onCategorySelect($event)"
+            [ngModel]="selectedCategoryId()"
             [options]="facade.categories()"
+            [placeholder]="'lexicon.category' | transloco"
+            [showClear]="true"
             optionLabel="name"
             optionValue="id"
-            [placeholder]="'lexicon.category' | transloco"
-            [ngModel]="selectedCategoryId()"
-            (ngModelChange)="onCategorySelect($event)"
-            [showClear]="true"
             styleClass="w-48"
         />
 
         <p-select
+            (ngModelChange)="onLanguageChange($event)"
+            [ngModel]="selectedLanguage()"
             [options]="languageOptions"
+            [placeholder]="'lexicon.language' | transloco"
             optionLabel="label"
             optionValue="value"
-            [placeholder]="'lexicon.language' | transloco"
-            [ngModel]="selectedLanguage()"
-            (ngModelChange)="onLanguageChange($event)"
             styleClass="w-40"
         />
 
         @if (hasFilters()) {
-            <p-button
-                [label]="'common.clearFilters' | transloco"
-                icon="pi pi-filter-slash"
-                severity="secondary"
-                [text]="true"
-                (onClick)="clearFilters()"
-            />
+        <p-button
+            (onClick)="clearFilters()"
+            [label]="'common.clearFilters' | transloco"
+            [text]="true"
+            icon="pi pi-filter-slash"
+            severity="secondary"
+        />
         }
     </div>
 
     <!-- Categories Overview -->
     @if (!selectedCategoryId() && !searchQuery()) {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            @for (cat of facade.categories(); track cat.id) {
-                <div
-                    class="surface-card border border-surface rounded-lg p-4 cursor-pointer hover:surface-hover transition-colors"
-                    (click)="onCategorySelect(cat.id)"
-                >
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="pi pi-folder text-primary text-lg"></i>
-                        <span class="font-semibold text-lg">{{ cat.name }}</span>
-                    </div>
-                    @if (cat.description) {
-                        <p class="text-color-secondary text-sm m-0 mb-2 line-clamp-2">{{ cat.description }}</p>
-                    }
-                    <span class="text-color-secondary text-xs">{{ cat.articleCount }} {{ 'lexicon.articles' | transloco }}</span>
-                </div>
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @for (cat of facade.categories(); track cat.id) {
+        <div
+            class="surface-card border-surface hover:surface-hover cursor-pointer rounded-lg border p-4 transition-colors"
+            (click)="onCategorySelect(cat.id)"
+        >
+            <div class="mb-2 flex items-center gap-2">
+                <i class="pi pi-folder text-primary text-lg"></i>
+                <span class="text-lg font-semibold">{{ cat.name }}</span>
+            </div>
+            @if (cat.description) {
+            <p class="text-color-secondary m-0 mb-2 line-clamp-2 text-sm">{{ cat.description }}</p>
             }
+            <span class="text-color-secondary text-xs"
+                >{{ cat.articleCount }} {{ 'lexicon.articles' | transloco }}</span
+            >
         </div>
+        }
+    </div>
     }
 
     <!-- Loading -->
     @if (facade.loading()) {
-        <div class="flex flex-col gap-3">
-            @for (i of [1, 2, 3, 4, 5]; track i) {
-                <p-skeleton height="6rem" />
-            }
-        </div>
+    <div class="flex flex-col gap-3">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <p-skeleton height="6rem" />
+        }
+    </div>
     }
 
     <!-- Articles List -->
-    @if (!facade.loading()) {
-        @if (facade.articles().length === 0) {
-            <div class="text-center py-8 text-color-secondary">
-                <i class="pi pi-book text-4xl mb-3 block"></i>
-                <p>{{ 'lexicon.noArticles' | transloco }}</p>
-            </div>
-        } @else {
-            <div class="flex flex-col gap-3">
-                @for (article of facade.articles(); track article.id) {
-                    <div
-                        class="surface-card border border-surface rounded-lg p-4 cursor-pointer hover:surface-hover transition-colors"
-                        (click)="openArticle(article)"
-                    >
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="text-lg font-semibold m-0 truncate">{{ article.title }}</h3>
-                                    @if (article.status !== 'published') {
-                                        <p-tag [value]="'lexicon.' + article.status | transloco" [severity]="statusSeverity(article.status)" />
-                                    }
-                                    @if (article.isLocked) {
-                                        <i class="pi pi-lock text-color-secondary" [pTooltip]="'lexicon.locked' | transloco"></i>
-                                    }
-                                </div>
-                                @if (article.excerpt) {
-                                    <p class="text-color-secondary text-sm m-0 mb-2 line-clamp-2">{{ article.excerpt }}</p>
-                                }
-                                <div class="flex items-center gap-3 text-xs text-color-secondary">
-                                    <span>{{ article.authorName }}</span>
-                                    <span>{{ formatDate(article.createdAt) }}</span>
-                                    @if (article.categoryName) {
-                                        <span class="flex items-center gap-1">
-                                            <i class="pi pi-folder"></i>
-                                            {{ article.categoryName }}
-                                        </span>
-                                    }
-                                    <span class="flex items-center gap-1">
-                                        <i class="pi pi-eye"></i>
-                                        {{ article.viewCount }}
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <i class="pi pi-comments"></i>
-                                        {{ article.commentCount }}
-                                    </span>
-                                    <span class="uppercase font-mono">{{ article.language }}</span>
-                                </div>
-                                @if (article.tags.length > 0) {
-                                    <div class="flex gap-1 mt-2 flex-wrap">
-                                        @for (tag of article.tags; track tag) {
-                                            <p-chip
-                                                [label]="tag"
-                                                styleClass="text-xs"
-                                                (click)="onTagSelect(tag); $event.stopPropagation()"
-                                            />
-                                        }
-                                    </div>
-                                }
-                            </div>
-                            @if (article.coverImageUrl) {
-                                <img
-                                    [src]="article.coverImageUrl"
-                                    [alt]="article.title"
-                                    class="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                                />
-                            }
-                        </div>
+    @if (!facade.loading()) { @if (facade.articles().length === 0) {
+    <div class="text-color-secondary py-8 text-center">
+        <i class="pi pi-book mb-3 block text-4xl"></i>
+        <p>{{ 'lexicon.noArticles' | transloco }}</p>
+    </div>
+    } @else {
+    <div class="flex flex-col gap-3">
+        @for (article of facade.articles(); track article.id) {
+        <div
+            class="surface-card border-surface hover:surface-hover cursor-pointer rounded-lg border p-4 transition-colors"
+            (click)="openArticle(article)"
+        >
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="mb-1 flex items-center gap-2">
+                        <h3 class="m-0 truncate text-lg font-semibold">{{ article.title }}</h3>
+                        @if (article.status !== 'published') {
+                        <p-tag
+                            [severity]="statusSeverity(article.status)"
+                            [value]="'lexicon.' + article.status | transloco"
+                        />
+                        } @if (article.isLocked) {
+                        <i class="pi pi-lock text-color-secondary" [pTooltip]="'lexicon.locked' | transloco"></i>
+                        }
                     </div>
+                    @if (article.excerpt) {
+                    <p class="text-color-secondary m-0 mb-2 line-clamp-2 text-sm">{{ article.excerpt }}</p>
+                    }
+                    <div class="text-color-secondary flex items-center gap-3 text-xs">
+                        <span>{{ article.authorName }}</span>
+                        <span>{{ formatDate(article.createdAt) }}</span>
+                        @if (article.categoryName) {
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-folder"></i>
+                            {{ article.categoryName }}
+                        </span>
+                        }
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-eye"></i>
+                            {{ article.viewCount }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-comments"></i>
+                            {{ article.commentCount }}
+                        </span>
+                        <span class="font-mono uppercase">{{ article.language }}</span>
+                    </div>
+                    @if (article.tags.length > 0) {
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        @for (tag of article.tags; track tag) {
+                        <p-chip
+                            (click)="onTagSelect(tag); $event.stopPropagation()"
+                            [label]="tag"
+                            styleClass="text-xs"
+                        />
+                        }
+                    </div>
+                    }
+                </div>
+                @if (article.coverImageUrl) {
+                <img
+                    class="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
+                    [alt]="article.title"
+                    [src]="article.coverImageUrl"
+                />
                 }
             </div>
-
-            <!-- Pagination -->
-            @if (facade.articleTotal() > pageSize) {
-                <p-paginator
-                    [rows]="pageSize"
-                    [totalRecords]="facade.articleTotal()"
-                    [first]="page() * pageSize"
-                    (onPageChange)="onPageChange($event)"
-                />
-            }
+        </div>
         }
-    }
+    </div>
+
+    <!-- Pagination -->
+    @if (facade.articleTotal() > pageSize) {
+    <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="page() * pageSize"
+        [rows]="pageSize"
+        [totalRecords]="facade.articleTotal()"
+    />
+    } } }
 </div>

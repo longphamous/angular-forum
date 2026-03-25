@@ -145,9 +145,9 @@ describe("UserService", () => {
         it("should throw BadRequestException when username is taken", async () => {
             userRepo.existsBy!.mockResolvedValueOnce(true);
 
-            await expect(
-                service.register({ username: "taken", email: "x@x.com", password: "pass" })
-            ).rejects.toThrow(BadRequestException);
+            await expect(service.register({ username: "taken", email: "x@x.com", password: "pass" })).rejects.toThrow(
+                BadRequestException
+            );
         });
 
         it("should throw BadRequestException when email is taken", async () => {

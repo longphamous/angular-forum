@@ -45,9 +45,7 @@ export class ClipStatsController {
     }
 
     @Get(":id/recommendations")
-    getRecommendationSignals(
-        @Param("id") id: string
-    ): Promise<RecommendationSignals> {
+    getRecommendationSignals(@Param("id") id: string): Promise<RecommendationSignals> {
         return this.statsService.getRecommendationSignals(id);
     }
 }

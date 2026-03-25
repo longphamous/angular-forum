@@ -40,9 +40,7 @@ function isFieldVisible(visibility: FieldVisibility | undefined, isAuthenticated
 }
 
 function toDto(entity: ForumPostEntity, author?: AuthorInfo, isViewerAuthenticated = false): PostDto {
-    const genderVisible = author?.gender
-        ? isFieldVisible(author.genderVisibility, isViewerAuthenticated)
-        : false;
+    const genderVisible = author?.gender ? isFieldVisible(author.genderVisibility, isViewerAuthenticated) : false;
 
     return {
         id: entity.id,
@@ -167,7 +165,10 @@ export class PostService {
     }
 
     async create(threadId: string, authorId: string, dto: CreatePostDto): Promise<PostDto> {
-        const textContent = dto.content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        const textContent = dto.content
+            .replace(/<[^>]*>/g, "")
+            .replace(/&nbsp;/g, " ")
+            .trim();
         if (!textContent) throw new BadRequestException("Post content must not be empty");
 
         const thread = await this.threadRepo.findOneBy({ id: threadId });
@@ -211,7 +212,10 @@ export class PostService {
     }
 
     async update(id: string, dto: UpdatePostDto, userId: string, userRole: UserRole): Promise<PostDto> {
-        const textContent = dto.content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        const textContent = dto.content
+            .replace(/<[^>]*>/g, "")
+            .replace(/&nbsp;/g, " ")
+            .trim();
         if (!textContent) throw new BadRequestException("Post content must not be empty");
 
         const entity = await this.findEntityById(id);

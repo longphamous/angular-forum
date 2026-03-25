@@ -52,8 +52,8 @@ export class MyListingsPage implements OnInit {
 
     confirmDelete(id: string): void {
         this.confirmationService.confirm({
-            message: this.translocoService.translate('marketplace.confirmDeleteListing'),
-            header: this.translocoService.translate('marketplace.deleteListingHeader'),
+            message: this.translocoService.translate("marketplace.confirmDeleteListing"),
+            header: this.translocoService.translate("marketplace.deleteListingHeader"),
             icon: "pi pi-exclamation-triangle",
             accept: () => {
                 this.facade.deleteListing(id).subscribe({

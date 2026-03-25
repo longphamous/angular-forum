@@ -1,10 +1,13 @@
 <p-fluid *transloco="let t">
     @if (facade.currentForum()) {
-        <app-forum-breadcrumb class="mb-4 block" [items]="[
+    <app-forum-breadcrumb
+        class="mb-4 block"
+        [items]="[
             { label: '', icon: 'pi-home', routerLink: '/forum' },
             { label: facade.currentForum()!.name, routerLink: '/forum/forums/' + facade.currentForum()!.id },
             { label: t('threadCreate.title') }
-        ]" />
+        ]"
+    />
     }
 
     <div class="card">

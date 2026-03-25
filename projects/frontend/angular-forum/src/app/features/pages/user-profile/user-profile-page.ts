@@ -21,8 +21,8 @@ import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { BLOG_ROUTES } from "../../../core/api/blog.routes";
 import { CLIPS_ROUTES } from "../../../core/api/clips.routes";
 import { FRIENDS_ROUTES } from "../../../core/api/friends.routes";
-import { GAMIFICATION_ROUTES } from "../../../core/api/gamification.routes";
 import { GALLERY_ROUTES } from "../../../core/api/gallery.routes";
+import { GAMIFICATION_ROUTES } from "../../../core/api/gamification.routes";
 import { LEXICON_ROUTES } from "../../../core/api/lexicon.routes";
 import { RECIPES_ROUTES } from "../../../core/api/recipes.routes";
 import { USER_ROUTES } from "../../../core/api/user.routes";
@@ -49,11 +49,45 @@ import { ClipThumbnail } from "../../../shared/components/clip-thumbnail/clip-th
 import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
 
-interface BlogPostSummary { id: string; title: string; slug: string; excerpt?: string; coverImageUrl?: string; viewCount: number; createdAt: string }
-interface LexiconArticleSummary { id: string; title: string; slug: string; excerpt?: string; status: string; createdAt: string }
-interface GalleryAlbumSummary { id: string; title: string; coverUrl?: string; mediaCount: number; createdAt: string }
-interface RecipeSummary { id: string; title: string; slug: string; imageUrl?: string; avgRating: number; createdAt: string }
-interface XpHistoryEvent { id: string; eventType: string; xpGained: number; referenceId: string | null; createdAt: string }
+interface BlogPostSummary {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    coverImageUrl?: string;
+    viewCount: number;
+    createdAt: string;
+}
+interface LexiconArticleSummary {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    status: string;
+    createdAt: string;
+}
+interface GalleryAlbumSummary {
+    id: string;
+    title: string;
+    coverUrl?: string;
+    mediaCount: number;
+    createdAt: string;
+}
+interface RecipeSummary {
+    id: string;
+    title: string;
+    slug: string;
+    imageUrl?: string;
+    avgRating: number;
+    createdAt: string;
+}
+interface XpHistoryEvent {
+    id: string;
+    eventType: string;
+    xpGained: number;
+    referenceId: string | null;
+    createdAt: string;
+}
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -149,7 +183,10 @@ export class UserProfilePage implements OnInit {
 
     readonly visibilityOptions = computed(() => [
         { label: this.translocoService.translate("chronik.visibility.public"), value: "public" as ChronikVisibility },
-        { label: this.translocoService.translate("chronik.visibility.followers"), value: "followers" as ChronikVisibility },
+        {
+            label: this.translocoService.translate("chronik.visibility.followers"),
+            value: "followers" as ChronikVisibility
+        },
         { label: this.translocoService.translate("chronik.visibility.private"), value: "private" as ChronikVisibility }
     ]);
 
@@ -513,33 +550,79 @@ export class UserProfilePage implements OnInit {
         switch (tab) {
             case "clips":
                 this.http
-                    .get<PaginatedClips | Clip[]>(`${this.apiConfig.baseUrl}${CLIPS_ROUTES.userClips(userId)}`, { params: { page: 1, limit: 50 } })
-                    .subscribe({ next: (res) => { this.userClips.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                    .get<
+                        PaginatedClips | Clip[]
+                    >(`${this.apiConfig.baseUrl}${CLIPS_ROUTES.userClips(userId)}`, { params: { page: 1, limit: 50 } })
+                    .subscribe({
+                        next: (res) => {
+                            this.userClips.set(Array.isArray(res) ? res : (res.data ?? []));
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
             case "blog":
                 this.http
-                    .get<BlogPostSummary[] | { data: BlogPostSummary[] }>(`${this.apiConfig.baseUrl}${BLOG_ROUTES.posts()}`, { params: { authorId: userId, limit: 50 } })
-                    .subscribe({ next: (res) => { this.userBlogPosts.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                    .get<
+                        BlogPostSummary[] | { data: BlogPostSummary[] }
+                    >(`${this.apiConfig.baseUrl}${BLOG_ROUTES.posts()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({
+                        next: (res) => {
+                            this.userBlogPosts.set(Array.isArray(res) ? res : (res.data ?? []));
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
             case "lexicon":
                 this.http
-                    .get<LexiconArticleSummary[] | { data: LexiconArticleSummary[] }>(`${this.apiConfig.baseUrl}${LEXICON_ROUTES.articles()}`, { params: { authorId: userId, limit: 50 } })
-                    .subscribe({ next: (res) => { this.userLexiconArticles.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                    .get<
+                        LexiconArticleSummary[] | { data: LexiconArticleSummary[] }
+                    >(`${this.apiConfig.baseUrl}${LEXICON_ROUTES.articles()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({
+                        next: (res) => {
+                            this.userLexiconArticles.set(Array.isArray(res) ? res : (res.data ?? []));
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
             case "gallery":
                 this.http
-                    .get<GalleryAlbumSummary[] | { data: GalleryAlbumSummary[] }>(`${this.apiConfig.baseUrl}${GALLERY_ROUTES.albums()}`, { params: { ownerId: userId } })
-                    .subscribe({ next: (res) => { this.userGalleryAlbums.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                    .get<
+                        GalleryAlbumSummary[] | { data: GalleryAlbumSummary[] }
+                    >(`${this.apiConfig.baseUrl}${GALLERY_ROUTES.albums()}`, { params: { ownerId: userId } })
+                    .subscribe({
+                        next: (res) => {
+                            this.userGalleryAlbums.set(Array.isArray(res) ? res : (res.data ?? []));
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
             case "recipes":
                 this.http
-                    .get<RecipeSummary[] | { data: RecipeSummary[] }>(`${this.apiConfig.baseUrl}${RECIPES_ROUTES.list()}`, { params: { authorId: userId, limit: 50 } })
-                    .subscribe({ next: (res) => { this.userRecipes.set(Array.isArray(res) ? res : res.data ?? []); this.cd.markForCheck(); } });
+                    .get<
+                        RecipeSummary[] | { data: RecipeSummary[] }
+                    >(`${this.apiConfig.baseUrl}${RECIPES_ROUTES.list()}`, { params: { authorId: userId, limit: 50 } })
+                    .subscribe({
+                        next: (res) => {
+                            this.userRecipes.set(Array.isArray(res) ? res : (res.data ?? []));
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
             case "xp-history":
                 this.http
-                    .get<{ events: XpHistoryEvent[]; total: number }>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.userHistory(userId)}`, { params: { limit: 100 } })
-                    .subscribe({ next: (res) => { this.userXpHistory.set(res.events); this.userXpHistoryTotal.set(res.total); this.cd.markForCheck(); } });
+                    .get<{
+                        events: XpHistoryEvent[];
+                        total: number;
+                    }>(`${this.apiConfig.baseUrl}${GAMIFICATION_ROUTES.userHistory(userId)}`, {
+                        params: { limit: 100 }
+                    })
+                    .subscribe({
+                        next: (res) => {
+                            this.userXpHistory.set(res.events);
+                            this.userXpHistoryTotal.set(res.total);
+                            this.cd.markForCheck();
+                        }
+                    });
                 break;
         }
     }
@@ -548,18 +631,42 @@ export class UserProfilePage implements OnInit {
         const map: Record<string, { icon: string; translationKey: string; color: string }> = {
             create_thread: { icon: "pi pi-comments", translationKey: "xpHistory.createThread", color: "text-blue-500" },
             create_post: { icon: "pi pi-comment", translationKey: "xpHistory.createPost", color: "text-blue-400" },
-            receive_reaction: { icon: "pi pi-heart-fill", translationKey: "xpHistory.receiveReaction", color: "text-pink-500" },
+            receive_reaction: {
+                icon: "pi pi-heart-fill",
+                translationKey: "xpHistory.receiveReaction",
+                color: "text-pink-500"
+            },
             give_reaction: { icon: "pi pi-heart", translationKey: "xpHistory.giveReaction", color: "text-pink-400" },
             create_clip: { icon: "pi pi-video", translationKey: "xpHistory.createClip", color: "text-purple-500" },
-            create_blog_post: { icon: "pi pi-pencil", translationKey: "xpHistory.createBlogPost", color: "text-green-500" },
+            create_blog_post: {
+                icon: "pi pi-pencil",
+                translationKey: "xpHistory.createBlogPost",
+                color: "text-green-500"
+            },
             upload_gallery: { icon: "pi pi-image", translationKey: "xpHistory.uploadGallery", color: "text-cyan-500" },
-            create_lexicon_article: { icon: "pi pi-book", translationKey: "xpHistory.createLexiconArticle", color: "text-indigo-500" },
-            create_recipe: { icon: "pi pi-clipboard", translationKey: "xpHistory.createRecipe", color: "text-orange-500" },
-            buy_lotto_ticket: { icon: "pi pi-ticket", translationKey: "xpHistory.buyLottoTicket", color: "text-yellow-500" }
+            create_lexicon_article: {
+                icon: "pi pi-book",
+                translationKey: "xpHistory.createLexiconArticle",
+                color: "text-indigo-500"
+            },
+            create_recipe: {
+                icon: "pi pi-clipboard",
+                translationKey: "xpHistory.createRecipe",
+                color: "text-orange-500"
+            },
+            buy_lotto_ticket: {
+                icon: "pi pi-ticket",
+                translationKey: "xpHistory.buyLottoTicket",
+                color: "text-yellow-500"
+            }
         };
         const entry = map[eventType];
         if (entry) {
-            return { icon: entry.icon, label: this.translocoService.translate(entry.translationKey), color: entry.color };
+            return {
+                icon: entry.icon,
+                label: this.translocoService.translate(entry.translationKey),
+                color: entry.color
+            };
         }
         return { icon: "pi pi-star", label: eventType, color: "text-surface-500" };
     }

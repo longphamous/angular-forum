@@ -1,7 +1,7 @@
-import { vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { provideRouter } from "@angular/router";
+import { vi } from "vitest";
 
 import { AuthFacade } from "../../facade/auth/auth-facade";
 import { accessGuard } from "./access.guard";

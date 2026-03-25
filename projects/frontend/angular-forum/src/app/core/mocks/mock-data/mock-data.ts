@@ -1,7 +1,7 @@
 import { Anime, AnimeListEntry, AnimeListStatus } from "../../models/anime/anime";
-import { Clip, ClipComment } from "../../models/clips/clips";
 import { BlogCategory, BlogComment, BlogPost, BlogPostDetail } from "../../models/blog/blog";
 import { CalendarEvent, CalendarEventDetail } from "../../models/calendar/calendar";
+import { Clip, ClipComment } from "../../models/clips/clips";
 import { FeaturedThread, HotThread, PaginatedFeed } from "../../models/feed/feed";
 import { Forum } from "../../models/forum/forum";
 import { ForumCategory } from "../../models/forum/forum-category";
@@ -19,13 +19,13 @@ import {
     MarketRating,
     MarketReport
 } from "../../models/marketplace/marketplace";
+import { MediaAsset } from "../../models/media/media";
 import { Conversation, ConversationDetail, Draft } from "../../models/messages/messages";
 import { AppNotification } from "../../models/notifications/notification";
 import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
-import { MediaAsset } from "../../models/media/media";
 import { CoinEarnConfig, Wallet, WalletTransaction } from "../../models/wallet/wallet";
 
 export interface User {
@@ -2489,14 +2489,41 @@ export const mockClips: Clip[] = [
 export const mockClipComments: Record<string, ClipComment[]> = {
     "clip-1": [
         {
-            id: "cc-1", clipId: "clip-1", authorId: "user-2", authorName: "NarutoFan99", authorAvatar: null,
-            content: "Amazing moves! \u{1F525}", parentId: null, replies: [
-                { id: "cc-1r", clipId: "clip-1", authorId: "user-1", authorName: "Sakura", authorAvatar: null, content: "Thanks! \u{1F495}", parentId: "cc-1", replies: [], createdAt: "2026-03-20T11:00:00Z", updatedAt: "2026-03-20T11:00:00Z" }
-            ], createdAt: "2026-03-20T10:30:00Z", updatedAt: "2026-03-20T10:30:00Z"
+            id: "cc-1",
+            clipId: "clip-1",
+            authorId: "user-2",
+            authorName: "NarutoFan99",
+            authorAvatar: null,
+            content: "Amazing moves! \u{1F525}",
+            parentId: null,
+            replies: [
+                {
+                    id: "cc-1r",
+                    clipId: "clip-1",
+                    authorId: "user-1",
+                    authorName: "Sakura",
+                    authorAvatar: null,
+                    content: "Thanks! \u{1F495}",
+                    parentId: "cc-1",
+                    replies: [],
+                    createdAt: "2026-03-20T11:00:00Z",
+                    updatedAt: "2026-03-20T11:00:00Z"
+                }
+            ],
+            createdAt: "2026-03-20T10:30:00Z",
+            updatedAt: "2026-03-20T10:30:00Z"
         },
         {
-            id: "cc-2", clipId: "clip-1", authorId: "user-3", authorName: "CosplayQueen", authorAvatar: null,
-            content: "Which anime is this from?", parentId: null, replies: [], createdAt: "2026-03-20T10:45:00Z", updatedAt: "2026-03-20T10:45:00Z"
+            id: "cc-2",
+            clipId: "clip-1",
+            authorId: "user-3",
+            authorName: "CosplayQueen",
+            authorAvatar: null,
+            content: "Which anime is this from?",
+            parentId: null,
+            replies: [],
+            createdAt: "2026-03-20T10:45:00Z",
+            updatedAt: "2026-03-20T10:45:00Z"
         }
     ]
 };
@@ -2522,9 +2549,30 @@ export const mockMediaAssets: MediaAsset[] = [
         isProcessed: true,
         url: "/uploads/media/user-1/2026/03/anime-wallpaper.jpg",
         variants: [
-            { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 8000, width: 150, height: 150, url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_sm.jpg" },
-            { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 25000, width: 400, height: 400, url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_md.jpg" },
-            { variantKey: "webp_1x", mimeType: "image/webp", fileSize: 180000, width: 1920, height: 1080, url: "/uploads/media/user-1/2026/03/anime-wallpaper.webp" }
+            {
+                variantKey: "thumb_sm",
+                mimeType: "image/jpeg",
+                fileSize: 8000,
+                width: 150,
+                height: 150,
+                url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_sm.jpg"
+            },
+            {
+                variantKey: "thumb_md",
+                mimeType: "image/jpeg",
+                fileSize: 25000,
+                width: 400,
+                height: 400,
+                url: "/uploads/media/user-1/2026/03/anime-wallpaper_thumb_md.jpg"
+            },
+            {
+                variantKey: "webp_1x",
+                mimeType: "image/webp",
+                fileSize: 180000,
+                width: 1920,
+                height: 1080,
+                url: "/uploads/media/user-1/2026/03/anime-wallpaper.webp"
+            }
         ],
         createdAt: "2026-03-20T10:00:00Z"
     },
@@ -2546,9 +2594,30 @@ export const mockMediaAssets: MediaAsset[] = [
         isProcessed: true,
         url: "/uploads/media/user-1/2026/03/profile-photo.png",
         variants: [
-            { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 5000, width: 150, height: 150, url: "/uploads/media/user-1/2026/03/profile-photo_thumb_sm.jpg" },
-            { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 18000, width: 400, height: 400, url: "/uploads/media/user-1/2026/03/profile-photo_thumb_md.jpg" },
-            { variantKey: "webp_1x", mimeType: "image/webp", fileSize: 380000, width: 800, height: 800, url: "/uploads/media/user-1/2026/03/profile-photo.webp" }
+            {
+                variantKey: "thumb_sm",
+                mimeType: "image/jpeg",
+                fileSize: 5000,
+                width: 150,
+                height: 150,
+                url: "/uploads/media/user-1/2026/03/profile-photo_thumb_sm.jpg"
+            },
+            {
+                variantKey: "thumb_md",
+                mimeType: "image/jpeg",
+                fileSize: 18000,
+                width: 400,
+                height: 400,
+                url: "/uploads/media/user-1/2026/03/profile-photo_thumb_md.jpg"
+            },
+            {
+                variantKey: "webp_1x",
+                mimeType: "image/webp",
+                fileSize: 380000,
+                width: 800,
+                height: 800,
+                url: "/uploads/media/user-1/2026/03/profile-photo.webp"
+            }
         ],
         createdAt: "2026-03-19T15:00:00Z"
     },

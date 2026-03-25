@@ -86,7 +86,7 @@ export class TcgPage implements OnInit {
 
     get rarityOptions(): SelectOption<CardRarity | null>[] {
         return [
-            { label: this.translocoService.translate('common.all'), value: null },
+            { label: this.translocoService.translate("common.all"), value: null },
             { label: "Gewöhnlich", value: "common" },
             { label: "Ungewöhnlich", value: "uncommon" },
             { label: "Selten", value: "rare" },
@@ -98,7 +98,7 @@ export class TcgPage implements OnInit {
 
     get elementOptions(): SelectOption<CardElement | null>[] {
         return [
-            { label: this.translocoService.translate('common.all'), value: null },
+            { label: this.translocoService.translate("common.all"), value: null },
             { label: "Feuer", value: "fire" },
             { label: "Wasser", value: "water" },
             { label: "Erde", value: "earth" },
@@ -111,7 +111,7 @@ export class TcgPage implements OnInit {
 
     get ownershipOptions(): SelectOption<OwnershipFilter>[] {
         return [
-            { label: this.translocoService.translate('common.all'), value: "all" },
+            { label: this.translocoService.translate("common.all"), value: "all" },
             { label: "Im Besitz", value: "owned" },
             { label: "Nicht im Besitz", value: "notOwned" }
         ];
@@ -121,7 +121,9 @@ export class TcgPage implements OnInit {
     readonly seriesOptions = computed<SelectOption<string | null>[]>(() => {
         const cards = this.tcgFacade.cards();
         const seriesSet = new Set(cards.map((c) => c.series));
-        const options: SelectOption<string | null>[] = [{ label: this.translocoService.translate('common.all'), value: null }];
+        const options: SelectOption<string | null>[] = [
+            { label: this.translocoService.translate("common.all"), value: null }
+        ];
         seriesSet.forEach((s) => options.push({ label: s, value: s }));
         return options;
     });

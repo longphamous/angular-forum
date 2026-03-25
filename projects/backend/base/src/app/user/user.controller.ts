@@ -138,9 +138,7 @@ export class UserController {
         if (!isOwner && !isAdmin) {
             const genderSetting = profile.profileFieldSettings?.gender ?? "everyone";
             const isAuthenticated = !!currentUser;
-            const showGender =
-                genderSetting === "everyone" ||
-                (genderSetting === "members" && isAuthenticated);
+            const showGender = genderSetting === "everyone" || (genderSetting === "members" && isAuthenticated);
             return {
                 ...profile,
                 email: "",

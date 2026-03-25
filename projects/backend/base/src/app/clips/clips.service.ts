@@ -5,10 +5,10 @@ import { In, IsNull, Repository } from "typeorm";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
+import { ClipEntity } from "./entities/clip.entity";
 import { ClipCommentEntity } from "./entities/clip-comment.entity";
 import { ClipFollowEntity } from "./entities/clip-follow.entity";
 import { ClipLikeEntity } from "./entities/clip-like.entity";
-import { ClipEntity } from "./entities/clip.entity";
 
 export interface CreateClipDto {
     title: string;
@@ -262,8 +262,7 @@ export class ClipsService {
         });
 
         const authorIds = [...new Set(comments.map((c) => c.authorId))];
-        const authors =
-            authorIds.length > 0 ? await this.userRepo.find({ where: { id: In(authorIds) } }) : [];
+        const authors = authorIds.length > 0 ? await this.userRepo.find({ where: { id: In(authorIds) } }) : [];
         const authorMap = new Map(authors.map((a) => [a.id, a]));
 
         const enrichComment = (comment: ClipCommentEntity): EnrichedComment => {
@@ -303,11 +302,7 @@ export class ClipsService {
         return topLevel;
     }
 
-    async addComment(
-        clipId: string,
-        userId: string,
-        dto: CreateCommentDto
-    ): Promise<EnrichedComment> {
+    async addComment(clipId: string, userId: string, dto: CreateCommentDto): Promise<EnrichedComment> {
         const clip = await this.clipRepo.findOne({ where: { id: clipId } });
         if (!clip) {
             throw new NotFoundException("Clip not found");
@@ -341,11 +336,7 @@ export class ClipsService {
         };
     }
 
-    async deleteComment(
-        id: string,
-        userId: string,
-        isAdmin: boolean
-    ): Promise<{ deleted: boolean }> {
+    async deleteComment(id: string, userId: string, isAdmin: boolean): Promise<{ deleted: boolean }> {
         const comment = await this.commentRepo.findOne({ where: { id } });
         if (!comment) {
             throw new NotFoundException("Comment not found");
@@ -367,10 +358,7 @@ export class ClipsService {
         return { deleted: true };
     }
 
-    async toggleFollow(
-        followerId: string,
-        followingId: string
-    ): Promise<{ following: boolean }> {
+    async toggleFollow(followerId: string, followingId: string): Promise<{ following: boolean }> {
         if (followerId === followingId) {
             throw new ForbiddenException("You cannot follow yourself");
         }

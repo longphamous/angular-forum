@@ -1,9 +1,9 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
-import { AvatarModule } from "primeng/avatar";
 import { AutoCompleteCompleteEvent, AutoCompleteModule } from "primeng/autocomplete";
+import { AvatarModule } from "primeng/avatar";
+import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
 
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 
@@ -21,38 +21,38 @@ export interface UserSuggestion {
     imports: [AutoCompleteModule, AvatarModule, FormsModule],
     template: `
         <p-autocomplete
-            [suggestions]="suggestions()"
-            [ngModel]="selectedUser"
-            (ngModelChange)="onModelChange($event)"
-            (completeMethod)="search($event)"
-            optionLabel="username"
-            [placeholder]="placeholder"
-            [forceSelection]="true"
-            [showClear]="true"
-            [minLength]="2"
             [delay]="300"
+            [forceSelection]="true"
+            [minLength]="2"
+            [ngModel]="selectedUser"
+            [placeholder]="placeholder"
+            [showClear]="true"
             [styleClass]="styleClass"
+            [suggestions]="suggestions()"
+            (completeMethod)="search($event)"
+            (ngModelChange)="onModelChange($event)"
             appendTo="body"
+            optionLabel="username"
         >
             <ng-template let-user pTemplate="item">
                 <div class="flex items-center gap-2">
                     <p-avatar
-                        [label]="user.displayName?.charAt(0)?.toUpperCase() ?? '?'"
                         [image]="user.avatarUrl ?? ''"
+                        [label]="user.displayName?.charAt(0)?.toUpperCase() ?? '?'"
                         shape="circle"
                         size="normal"
                     />
                     <div>
                         <div class="text-sm font-medium">{{ user.displayName }}</div>
-                        <div class="text-xs text-color-secondary">@{{ user.username }}</div>
+                        <div class="text-color-secondary text-xs">@{{ user.username }}</div>
                     </div>
                 </div>
             </ng-template>
             <ng-template let-user pTemplate="selectedItem">
                 <div class="flex items-center gap-2">
                     <p-avatar
-                        [label]="user.displayName?.charAt(0)?.toUpperCase() ?? '?'"
                         [image]="user.avatarUrl ?? ''"
+                        [label]="user.displayName?.charAt(0)?.toUpperCase() ?? '?'"
                         shape="circle"
                         size="normal"
                         styleClass="w-6 h-6 text-xs"

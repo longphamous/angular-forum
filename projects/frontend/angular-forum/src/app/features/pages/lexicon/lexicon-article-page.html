@@ -4,292 +4,303 @@
 <div class="flex flex-col gap-4 p-4">
     <!-- Loading -->
     @if (facade.loading()) {
-        <p-skeleton height="3rem" styleClass="mb-2" />
-        <p-skeleton height="20rem" />
-    }
+    <p-skeleton height="3rem" styleClass="mb-2" />
+    <p-skeleton height="20rem" />
+    } @if (!facade.loading() && facade.currentArticle(); as article) {
+    <!-- Navigation -->
+    <div class="flex items-center gap-2">
+        <p-button
+            (onClick)="goBack()"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+        @if (article.categoryName) {
+        <i class="pi pi-angle-right text-color-secondary text-sm"></i>
+        <span class="text-color-secondary text-sm">{{ article.categoryName }}</span>
+        }
+    </div>
 
-    @if (!facade.loading() && facade.currentArticle(); as article) {
-        <!-- Navigation -->
-        <div class="flex items-center gap-2">
-            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" [label]="navHistory.backLabel()" (onClick)="goBack()" />
-            @if (article.categoryName) {
-                <i class="pi pi-angle-right text-color-secondary text-sm"></i>
-                <span class="text-color-secondary text-sm">{{ article.categoryName }}</span>
-            }
-        </div>
-
-        <div class="flex flex-col lg:flex-row gap-4">
-            <!-- Main content column -->
-            <div class="flex-1 min-w-0 flex flex-col gap-4">
-                <!-- Article Header -->
-                <div class="surface-card border border-surface rounded-lg p-6">
-                    <div class="flex items-start justify-between gap-4 mb-4">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <h1 class="text-3xl font-bold m-0">{{ article.title }}</h1>
-                                @if (article.isLocked) {
-                                    <i class="pi pi-lock text-orange-500" [pTooltip]="'lexicon.locked' | transloco"></i>
-                                }
-                            </div>
-                            <div class="flex items-center gap-3 text-sm text-color-secondary">
-                                <div class="flex items-center gap-2">
-                                    <p-avatar
-                                        [image]="article.authorAvatar ?? undefined"
-                                        [label]="article.authorAvatar ? undefined : article.authorName.charAt(0)"
-                                        shape="circle"
-                                    />
-                                    <span>{{ article.authorName }}</span>
-                                </div>
-                                <span>{{ formatDate(article.publishedAt ?? article.createdAt) }}</span>
-                                <span class="flex items-center gap-1"><i class="pi pi-eye"></i> {{ article.viewCount }}</span>
-                                <span class="flex items-center gap-1"><i class="pi pi-history"></i> V{{ article.versionCount }}</span>
-                                <span class="uppercase font-mono bg-surface-100 px-2 py-0.5 rounded text-xs">{{ article.language }}</span>
-                            </div>
+    <div class="flex flex-col gap-4 lg:flex-row">
+        <!-- Main content column -->
+        <div class="flex min-w-0 flex-1 flex-col gap-4">
+            <!-- Article Header -->
+            <div class="surface-card border-surface rounded-lg border p-6">
+                <div class="mb-4 flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="mb-2 flex items-center gap-2">
+                            <h1 class="m-0 text-3xl font-bold">{{ article.title }}</h1>
+                            @if (article.isLocked) {
+                            <i class="pi pi-lock text-orange-500" [pTooltip]="'lexicon.locked' | transloco"></i>
+                            }
                         </div>
-                        <div class="flex items-center gap-2">
-                            @if (article.linkedArticleSlug) {
-                                <p-button
-                                    icon="pi pi-language"
-                                    [pTooltip]="'lexicon.linkedArticle' | transloco"
-                                    severity="secondary"
-                                    [text]="true"
-                                    (onClick)="goToLinkedArticle()"
+                        <div class="text-color-secondary flex items-center gap-3 text-sm">
+                            <div class="flex items-center gap-2">
+                                <p-avatar
+                                    [image]="article.authorAvatar ?? undefined"
+                                    [label]="article.authorAvatar ? undefined : article.authorName.charAt(0)"
+                                    shape="circle"
                                 />
-                            }
-                            <p-button
-                                icon="pi pi-history"
-                                [pTooltip]="'lexicon.versionHistory' | transloco"
-                                severity="secondary"
-                                [text]="true"
-                                (onClick)="viewHistory()"
-                            />
-                            @if (article.isOwner || authFacade.isAdmin()) {
-                                <p-button
-                                    icon="pi pi-pencil"
-                                    [pTooltip]="'lexicon.editArticle' | transloco"
-                                    severity="secondary"
-                                    [text]="true"
-                                    (onClick)="editArticle()"
-                                />
-                                <p-button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    [text]="true"
-                                    (onClick)="confirmDelete()"
-                                />
-                            }
-                            <p-button
-                                icon="pi pi-flag"
-                                [pTooltip]="'lexicon.report' | transloco"
-                                severity="secondary"
-                                [text]="true"
-                                (onClick)="openReportDialog()"
-                            />
+                                <span>{{ article.authorName }}</span>
+                            </div>
+                            <span>{{ formatDate(article.publishedAt ?? article.createdAt) }}</span>
+                            <span class="flex items-center gap-1"
+                                ><i class="pi pi-eye"></i> {{ article.viewCount }}</span
+                            >
+                            <span class="flex items-center gap-1"
+                                ><i class="pi pi-history"></i> V{{ article.versionCount }}</span
+                            >
+                            <span class="bg-surface-100 rounded px-2 py-0.5 font-mono text-xs uppercase"
+                                >{{ article.language }}</span
+                            >
                         </div>
                     </div>
-
-                    <!-- Tags -->
-                    @if (article.tags.length > 0) {
-                        <div class="flex gap-1 flex-wrap mb-4">
-                            @for (tag of article.tags; track tag) {
-                                <p-chip [label]="tag" styleClass="text-xs" />
-                            }
-                        </div>
-                    }
-
-                    <!-- Cover Image -->
-                    @if (article.coverImageUrl) {
-                        <img
-                            [src]="article.coverImageUrl"
-                            [alt]="article.title"
-                            class="w-full max-h-96 object-cover rounded-lg mb-4"
+                    <div class="flex items-center gap-2">
+                        @if (article.linkedArticleSlug) {
+                        <p-button
+                            (onClick)="goToLinkedArticle()"
+                            [pTooltip]="'lexicon.linkedArticle' | transloco"
+                            [text]="true"
+                            icon="pi pi-language"
+                            severity="secondary"
                         />
-                    }
-
-                    <!-- Content -->
-                    <div class="prose max-w-none" [innerHTML]="safeContent"></div>
-
-                    <!-- Custom Fields -->
-                    @if (article.customFieldValues && (article.customFieldValues | keyvalue).length > 0) {
-                        <div class="border-t border-surface mt-6 pt-4">
-                            <h3 class="text-lg font-semibold mb-3">{{ 'lexicon.customFields' | transloco }}</h3>
-                            <div class="grid grid-cols-2 gap-3">
-                                @for (field of article.customFieldValues | keyvalue; track field.key) {
-                                    <div>
-                                        <span class="text-color-secondary text-sm">{{ field.key }}</span>
-                                        <p class="m-0 font-medium">{{ field.value }}</p>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
+                        }
+                        <p-button
+                            (onClick)="viewHistory()"
+                            [pTooltip]="'lexicon.versionHistory' | transloco"
+                            [text]="true"
+                            icon="pi pi-history"
+                            severity="secondary"
+                        />
+                        @if (article.isOwner || authFacade.isAdmin()) {
+                        <p-button
+                            (onClick)="editArticle()"
+                            [pTooltip]="'lexicon.editArticle' | transloco"
+                            [text]="true"
+                            icon="pi pi-pencil"
+                            severity="secondary"
+                        />
+                        <p-button (onClick)="confirmDelete()" [text]="true" icon="pi pi-trash" severity="danger" />
+                        }
+                        <p-button
+                            (onClick)="openReportDialog()"
+                            [pTooltip]="'lexicon.report' | transloco"
+                            [text]="true"
+                            icon="pi pi-flag"
+                            severity="secondary"
+                        />
+                    </div>
                 </div>
 
-                <!-- Comments Section -->
-                @if (article.allowComments) {
-            <div class="surface-card border border-surface rounded-lg p-6">
-                <h2 class="text-xl font-semibold mb-4">
-                    {{ 'lexicon.comments' | transloco }}
-                    ({{ article.comments?.length ?? 0 }})
+                <!-- Tags -->
+                @if (article.tags.length > 0) {
+                <div class="mb-4 flex flex-wrap gap-1">
+                    @for (tag of article.tags; track tag) {
+                    <p-chip [label]="tag" styleClass="text-xs" />
+                    }
+                </div>
+                }
+
+                <!-- Cover Image -->
+                @if (article.coverImageUrl) {
+                <img
+                    class="mb-4 max-h-96 w-full rounded-lg object-cover"
+                    [alt]="article.title"
+                    [src]="article.coverImageUrl"
+                />
+                }
+
+                <!-- Content -->
+                <div class="prose max-w-none" [innerHTML]="safeContent"></div>
+
+                <!-- Custom Fields -->
+                @if (article.customFieldValues && (article.customFieldValues | keyvalue).length > 0) {
+                <div class="border-surface mt-6 border-t pt-4">
+                    <h3 class="mb-3 text-lg font-semibold">{{ 'lexicon.customFields' | transloco }}</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        @for (field of article.customFieldValues | keyvalue; track field.key) {
+                        <div>
+                            <span class="text-color-secondary text-sm">{{ field.key }}</span>
+                            <p class="m-0 font-medium">{{ field.value }}</p>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Comments Section -->
+            @if (article.allowComments) {
+            <div class="surface-card border-surface rounded-lg border p-6">
+                <h2 class="mb-4 text-xl font-semibold">
+                    {{ 'lexicon.comments' | transloco }} ({{ article.comments?.length ?? 0 }})
                 </h2>
 
                 <!-- Comment Form -->
                 <div class="mb-4">
                     @if (replyTo(); as reply) {
-                        <div class="flex items-center gap-2 mb-2 p-2 bg-surface-100 rounded">
-                            <span class="text-sm text-color-secondary">
-                                {{ 'common.replyTo' | transloco }} {{ reply.authorName }}
-                            </span>
-                            <p-button icon="pi pi-times" [text]="true" size="small" (onClick)="cancelReply()" />
-                        </div>
+                    <div class="bg-surface-100 mb-2 flex items-center gap-2 rounded p-2">
+                        <span class="text-color-secondary text-sm">
+                            {{ 'common.replyTo' | transloco }} {{ reply.authorName }}
+                        </span>
+                        <p-button (onClick)="cancelReply()" [text]="true" icon="pi pi-times" size="small" />
+                    </div>
                     }
                     <div class="flex gap-2">
                         <textarea
-                            pTextarea
-                            [ngModel]="commentContent()"
+                            class="flex-1"
                             (ngModelChange)="commentContent.set($event)"
+                            [ngModel]="commentContent()"
                             [placeholder]="'lexicon.addComment' | transloco"
                             [rows]="3"
-                            class="flex-1"
+                            pTextarea
                         ></textarea>
                         <p-button
-                            icon="pi pi-send"
-                            [loading]="submittingComment()"
-                            [disabled]="!commentContent().trim()"
                             (onClick)="submitComment()"
+                            [disabled]="!commentContent().trim()"
+                            [loading]="submittingComment()"
+                            icon="pi pi-send"
                         />
                     </div>
                 </div>
 
                 <!-- Comments List -->
                 @for (comment of article.comments ?? []; track comment.id) {
-                    <div class="border-t border-surface pt-3 mt-3">
-                        <div class="flex items-start gap-3">
-                            <p-avatar
-                                [image]="comment.authorAvatar ?? undefined"
-                                [label]="comment.authorAvatar ? undefined : comment.authorName.charAt(0)"
-                                size="normal"
-                                shape="circle"
-                            />
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="font-semibold text-sm">{{ comment.authorName }}</span>
-                                    <span class="text-color-secondary text-xs">{{ relativeTime(comment.createdAt) }}</span>
-                                </div>
-                                <p class="m-0 text-sm">{{ comment.content }}</p>
-                                <div class="flex gap-2 mt-1">
-                                    <p-button
-                                        [label]="'common.reply' | transloco"
-                                        [text]="true"
-                                        size="small"
-                                        (onClick)="setReplyTo(comment)"
-                                    />
-                                    @if (comment.authorId === authFacade.currentUser()?.id || authFacade.isAdmin()) {
-                                        <p-button
-                                            icon="pi pi-trash"
-                                            [text]="true"
-                                            size="small"
-                                            severity="danger"
-                                            (onClick)="deleteComment(comment.id)"
-                                        />
-                                    }
-                                </div>
-
-                                <!-- Replies -->
-                                @for (reply of comment.replies; track reply.id) {
-                                    <div class="border-l-2 border-surface pl-4 mt-3">
-                                        <div class="flex items-start gap-2">
-                                            <p-avatar
-                                                [image]="reply.authorAvatar ?? undefined"
-                                                [label]="reply.authorAvatar ? undefined : reply.authorName.charAt(0)"
-                                                size="normal"
-                                                shape="circle"
-                                            />
-                                            <div>
-                                                <div class="flex items-center gap-2 mb-1">
-                                                    <span class="font-semibold text-xs">{{ reply.authorName }}</span>
-                                                    <span class="text-color-secondary text-xs">{{ relativeTime(reply.createdAt) }}</span>
-                                                </div>
-                                                <p class="m-0 text-sm">{{ reply.content }}</p>
-                                                @if (reply.authorId === authFacade.currentUser()?.id || authFacade.isAdmin()) {
-                                                    <p-button
-                                                        icon="pi pi-trash"
-                                                        [text]="true"
-                                                        size="small"
-                                                        severity="danger"
-                                                        (onClick)="deleteComment(reply.id)"
-                                                    />
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
+                <div class="border-surface mt-3 border-t pt-3">
+                    <div class="flex items-start gap-3">
+                        <p-avatar
+                            [image]="comment.authorAvatar ?? undefined"
+                            [label]="comment.authorAvatar ? undefined : comment.authorName.charAt(0)"
+                            shape="circle"
+                            size="normal"
+                        />
+                        <div class="flex-1">
+                            <div class="mb-1 flex items-center gap-2">
+                                <span class="text-sm font-semibold">{{ comment.authorName }}</span>
+                                <span class="text-color-secondary text-xs">{{ relativeTime(comment.createdAt) }}</span>
+                            </div>
+                            <p class="m-0 text-sm">{{ comment.content }}</p>
+                            <div class="mt-1 flex gap-2">
+                                <p-button
+                                    (onClick)="setReplyTo(comment)"
+                                    [label]="'common.reply' | transloco"
+                                    [text]="true"
+                                    size="small"
+                                />
+                                @if (comment.authorId === authFacade.currentUser()?.id || authFacade.isAdmin()) {
+                                <p-button
+                                    (onClick)="deleteComment(comment.id)"
+                                    [text]="true"
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    size="small"
+                                />
                                 }
                             </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-            </div>
 
-            <!-- Sidebar -->
-            <aside class="w-full lg:w-72 shrink-0 flex flex-col gap-4">
-                <!-- Contributors -->
-                @if (article.contributors && article.contributors.length > 0) {
-                    <div class="surface-card border border-surface rounded-lg p-4">
-                        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-                            <i class="pi pi-users text-color-secondary"></i>
-                            {{ 'lexicon.contributors.title' | transloco }}
-                            <span class="text-color-secondary font-normal">({{ article.contributors.length }})</span>
-                        </h3>
-                        <div class="flex flex-col gap-2.5">
-                            @for (contributor of article.contributors; track contributor.id) {
-                                <a
-                                    class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 no-underline transition-colors hover:bg-surface-100 dark:hover:bg-surface-800"
-                                    [routerLink]="['/users', contributor.id]"
-                                >
+                            <!-- Replies -->
+                            @for (reply of comment.replies; track reply.id) {
+                            <div class="border-surface mt-3 border-l-2 pl-4">
+                                <div class="flex items-start gap-2">
                                     <p-avatar
-                                        [image]="contributor.avatarUrl ?? undefined"
-                                        [label]="contributor.avatarUrl ? undefined : contributor.displayName.charAt(0)"
-                                        size="normal"
+                                        [image]="reply.authorAvatar ?? undefined"
+                                        [label]="reply.authorAvatar ? undefined : reply.authorName.charAt(0)"
                                         shape="circle"
-                                        styleClass="w-8 h-8 text-sm"
+                                        size="normal"
                                     />
-                                    <div class="flex flex-col min-w-0">
-                                        <span class="text-sm font-medium text-color truncate">{{ contributor.displayName }}</span>
-                                        <span class="text-xs text-color-secondary">
-                                            {{ contributor.versionCount }}
-                                            {{ (contributor.versionCount === 1 ? 'lexicon.contributors.edit' : 'lexicon.contributors.edits') | transloco }}
-                                        </span>
+                                    <div>
+                                        <div class="mb-1 flex items-center gap-2">
+                                            <span class="text-xs font-semibold">{{ reply.authorName }}</span>
+                                            <span class="text-color-secondary text-xs"
+                                                >{{ relativeTime(reply.createdAt) }}</span
+                                            >
+                                        </div>
+                                        <p class="m-0 text-sm">{{ reply.content }}</p>
+                                        @if (reply.authorId === authFacade.currentUser()?.id || authFacade.isAdmin()) {
+                                        <p-button
+                                            (onClick)="deleteComment(reply.id)"
+                                            [text]="true"
+                                            icon="pi pi-trash"
+                                            severity="danger"
+                                            size="small"
+                                        />
+                                        }
                                     </div>
-                                </a>
+                                </div>
+                            </div>
                             }
                         </div>
                     </div>
+                </div>
                 }
-            </aside>
+            </div>
+            }
         </div>
+
+        <!-- Sidebar -->
+        <aside class="flex w-full shrink-0 flex-col gap-4 lg:w-72">
+            <!-- Contributors -->
+            @if (article.contributors && article.contributors.length > 0) {
+            <div class="surface-card border-surface rounded-lg border p-4">
+                <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <i class="pi pi-users text-color-secondary"></i>
+                    {{ 'lexicon.contributors.title' | transloco }}
+                    <span class="text-color-secondary font-normal">({{ article.contributors.length }})</span>
+                </h3>
+                <div class="flex flex-col gap-2.5">
+                    @for (contributor of article.contributors; track contributor.id) {
+                    <a
+                        class="hover:bg-surface-100 dark:hover:bg-surface-800 flex items-center gap-2.5 rounded-lg px-2 py-1.5 no-underline transition-colors"
+                        [routerLink]="['/users', contributor.id]"
+                    >
+                        <p-avatar
+                            [image]="contributor.avatarUrl ?? undefined"
+                            [label]="contributor.avatarUrl ? undefined : contributor.displayName.charAt(0)"
+                            shape="circle"
+                            size="normal"
+                            styleClass="w-8 h-8 text-sm"
+                        />
+                        <div class="flex min-w-0 flex-col">
+                            <span class="text-color truncate text-sm font-medium">{{ contributor.displayName }}</span>
+                            <span class="text-color-secondary text-xs">
+                                {{ contributor.versionCount }} {{ (contributor.versionCount === 1 ?
+                                'lexicon.contributors.edit' : 'lexicon.contributors.edits') | transloco }}
+                            </span>
+                        </div>
+                    </a>
+                    }
+                </div>
+            </div>
+            }
+        </aside>
+    </div>
     }
 </div>
 
 <!-- Report Dialog -->
 <p-dialog
-    [header]="'lexicon.report' | transloco"
     [(visible)]="reportDialogVisible"
+    [header]="'lexicon.report' | transloco"
     [modal]="true"
     [style]="{ width: '30rem' }"
 >
     <div class="flex flex-col gap-3">
         <label class="font-semibold">{{ 'lexicon.reportReason' | transloco }}</label>
-        <textarea
-            pTextarea
-            [ngModel]="reportReason()"
-            (ngModelChange)="reportReason.set($event)"
-            [rows]="4"
-        ></textarea>
+        <textarea (ngModelChange)="reportReason.set($event)" [ngModel]="reportReason()" [rows]="4" pTextarea></textarea>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [label]="'common.cancel' | transloco" severity="secondary" [text]="true" (onClick)="reportDialogVisible.set(false)" />
-        <p-button [label]="'lexicon.report' | transloco" icon="pi pi-flag" [disabled]="!reportReason().trim()" (onClick)="submitReport()" />
+        <p-button
+            (onClick)="reportDialogVisible.set(false)"
+            [label]="'common.cancel' | transloco"
+            [text]="true"
+            severity="secondary"
+        />
+        <p-button
+            (onClick)="submitReport()"
+            [disabled]="!reportReason().trim()"
+            [label]="'lexicon.report' | transloco"
+            icon="pi pi-flag"
+        />
     </ng-template>
 </p-dialog>

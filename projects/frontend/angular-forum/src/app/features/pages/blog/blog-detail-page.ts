@@ -185,7 +185,7 @@ export class BlogDetailPage implements OnInit {
 
     protected deletePost(): void {
         const post = this.post();
-        if (!post || !confirm(this.translocoService.translate('blog.confirmDelete'))) return;
+        if (!post || !confirm(this.translocoService.translate("blog.confirmDelete"))) return;
         this.deletingPost.set(true);
         this.http.delete(`${this.apiBase}${BLOG_ROUTES.deletePost(post.id)}`).subscribe({
             next: () => void this.router.navigate(["/blog"]),

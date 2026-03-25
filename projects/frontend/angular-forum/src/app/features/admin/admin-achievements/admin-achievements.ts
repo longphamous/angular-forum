@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@ang
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
-import { AvatarModule } from "primeng/avatar";
 import { ConfirmationService } from "primeng/api";
+import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
@@ -21,7 +21,12 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { ACHIEVEMENT_ROUTES } from "../../../core/api/achievement.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { Achievement, AchievementCategory, AchievementHistory, AchievementRarity } from "../../../core/models/gamification/achievement";
+import {
+    Achievement,
+    AchievementCategory,
+    AchievementHistory,
+    AchievementRarity
+} from "../../../core/models/gamification/achievement";
 import { UserAutocomplete, UserSuggestion } from "../../../shared/components/user-autocomplete/user-autocomplete";
 
 type TagSeverity = "secondary" | "info" | "warn" | "danger" | "success" | "contrast";
@@ -131,7 +136,20 @@ export class AdminAchievements implements OnInit {
     // Detail
     readonly detailDialogVisible = signal(false);
     readonly detailAchievementId = signal<string | null>(null);
-    readonly detailData = signal<{ name: string; icon: string; rarity: string; totalGranted: number; recipients: { userId: string; username: string; displayName: string; avatarUrl: string | null; source: string; earnedAt: string }[] } | null>(null);
+    readonly detailData = signal<{
+        name: string;
+        icon: string;
+        rarity: string;
+        totalGranted: number;
+        recipients: {
+            userId: string;
+            username: string;
+            displayName: string;
+            avatarUrl: string | null;
+            source: string;
+            earnedAt: string;
+        }[];
+    } | null>(null);
     readonly detailLoading = signal(false);
     readonly detailGrantUser = signal<UserSuggestion | null>(null);
 
@@ -323,7 +341,9 @@ export class AdminAchievements implements OnInit {
             .replace(/^_|_$/g, "");
     }
 
-    updateCategoryForm(patch: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): void {
+    updateCategoryForm(
+        patch: Partial<{ key: string; name: string; description: string; icon: string; position: number }>
+    ): void {
         this.categoryForm.update((f) => ({ ...f, ...patch }));
     }
 
@@ -355,31 +375,35 @@ export class AdminAchievements implements OnInit {
         if (!userId || !achievementId) return;
 
         this.saving.set(true);
-        this.http.post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId }).subscribe({
-            next: () => {
-                this.saving.set(false);
-                this.detailGrantUser.set(null);
-                this.loadDetail(achievementId);
-                this.successMsg.set("Achievement vergeben");
-            },
-            error: (err) => {
-                this.saving.set(false);
-                this.error.set(err.error?.message ?? "Fehler beim Vergeben");
-            }
-        });
+        this.http
+            .post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId })
+            .subscribe({
+                next: () => {
+                    this.saving.set(false);
+                    this.detailGrantUser.set(null);
+                    this.loadDetail(achievementId);
+                    this.successMsg.set("Achievement vergeben");
+                },
+                error: (err) => {
+                    this.saving.set(false);
+                    this.error.set(err.error?.message ?? "Fehler beim Vergeben");
+                }
+            });
     }
 
     revokeFromDetail(userId: string): void {
         const achievementId = this.detailAchievementId();
         if (!achievementId) return;
 
-        this.http.delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.revoke(userId, achievementId)}`).subscribe({
-            next: () => {
-                this.loadDetail(achievementId);
-                this.successMsg.set("Achievement zurückgezogen");
-            },
-            error: () => this.error.set("Fehler beim Zurückziehen")
-        });
+        this.http
+            .delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.revoke(userId, achievementId)}`)
+            .subscribe({
+                next: () => {
+                    this.loadDetail(achievementId);
+                    this.successMsg.set("Achievement zurückgezogen");
+                },
+                error: () => this.error.set("Fehler beim Zurückziehen")
+            });
     }
 
     getCategoryName(key: string): string {
@@ -403,7 +427,13 @@ export class AdminAchievements implements OnInit {
 
     openEditCategory(cat: AchievementCategory): void {
         this.editingCategoryId.set(cat.id);
-        this.categoryForm.set({ key: cat.key, name: cat.name, description: cat.description ?? "", icon: cat.icon, position: cat.position });
+        this.categoryForm.set({
+            key: cat.key,
+            name: cat.name,
+            description: cat.description ?? "",
+            icon: cat.icon,
+            position: cat.position
+        });
         this.categoryDialogVisible.set(true);
     }
 
@@ -414,8 +444,14 @@ export class AdminAchievements implements OnInit {
 
         const id = this.editingCategoryId();
         const req = id
-            ? this.http.patch<AchievementCategory>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.updateCategory(id)}`, f)
-            : this.http.post<AchievementCategory>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.createCategory()}`, f);
+            ? this.http.patch<AchievementCategory>(
+                  `${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.updateCategory(id)}`,
+                  f
+              )
+            : this.http.post<AchievementCategory>(
+                  `${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.createCategory()}`,
+                  f
+              );
 
         req.subscribe({
             next: () => {
@@ -440,13 +476,15 @@ export class AdminAchievements implements OnInit {
             rejectLabel: this.translocoService.translate("common.cancel"),
             acceptButtonProps: { severity: "danger" },
             accept: () => {
-                this.http.delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.deleteCategory(cat.id)}`).subscribe({
-                    next: () => {
-                        this.loadCategories();
-                        this.successMsg.set("Category deleted");
-                    },
-                    error: () => this.error.set("Failed to delete category")
-                });
+                this.http
+                    .delete(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.deleteCategory(cat.id)}`)
+                    .subscribe({
+                        next: () => {
+                            this.loadCategories();
+                            this.successMsg.set("Category deleted");
+                        },
+                        error: () => this.error.set("Failed to delete category")
+                    });
             }
         });
     }
@@ -469,31 +507,35 @@ export class AdminAchievements implements OnInit {
         if (!userId || !achievementId) return;
 
         this.saving.set(true);
-        this.http.post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId }).subscribe({
-            next: () => {
-                this.saving.set(false);
-                this.grantDialogVisible.set(false);
-                this.successMsg.set("Achievement granted");
-                if (this.activeTab() === "history") this.loadHistory();
-            },
-            error: (err) => {
-                this.saving.set(false);
-                this.error.set(err.error?.message ?? "Failed to grant achievement");
-            }
-        });
+        this.http
+            .post(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.grant()}`, { userId, achievementId })
+            .subscribe({
+                next: () => {
+                    this.saving.set(false);
+                    this.grantDialogVisible.set(false);
+                    this.successMsg.set("Achievement granted");
+                    if (this.activeTab() === "history") this.loadHistory();
+                },
+                error: (err) => {
+                    this.saving.set(false);
+                    this.error.set(err.error?.message ?? "Failed to grant achievement");
+                }
+            });
     }
 
     // ── History ─────────────────────────────────────────────────────────────
 
     loadHistory(): void {
         this.historyLoading.set(true);
-        this.http.get<AchievementHistory[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.history()}`).subscribe({
-            next: (data) => {
-                this.history.set(data);
-                this.historyLoading.set(false);
-            },
-            error: () => this.historyLoading.set(false)
-        });
+        this.http
+            .get<AchievementHistory[]>(`${this.apiConfig.baseUrl}${ACHIEVEMENT_ROUTES.admin.history()}`)
+            .subscribe({
+                next: (data) => {
+                    this.history.set(data);
+                    this.historyLoading.set(false);
+                },
+                error: () => this.historyLoading.set(false)
+            });
     }
 
     onTabChange(tab: "achievements" | "categories" | "history"): void {
@@ -502,6 +544,12 @@ export class AdminAchievements implements OnInit {
     }
 
     formatDate(dateStr: string): string {
-        return new Date(dateStr).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        return new Date(dateStr).toLocaleDateString("de-DE", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
     }
 }

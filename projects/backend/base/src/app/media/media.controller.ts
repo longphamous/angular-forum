@@ -20,8 +20,8 @@ import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { MediaAccessLevel } from "./entities/media-asset.entity";
 import { StorageBackendType, StorageConfigEntity } from "./entities/storage-config.entity";
-import { MediaStorageService } from "./media-storage.service";
 import { EnrichedMediaAsset, MediaService } from "./media.service";
+import { MediaStorageService } from "./media-storage.service";
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB (supports video uploads)
 
@@ -153,10 +153,7 @@ export class MediaController {
     }
 
     @Delete(":id")
-    async deleteAsset(
-        @Param("id", ParseUUIDPipe) id: string,
-        @CurrentUser() user: AuthenticatedUser
-    ): Promise<void> {
+    async deleteAsset(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
         const isAdmin = user.role === "admin";
         return this.mediaService.deleteAsset(id, user.userId, isAdmin);
     }

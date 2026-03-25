@@ -136,10 +136,7 @@ export class LexiconFacade {
     }
 
     restoreVersion(articleId: string, versionNumber: number): Observable<LexiconArticle> {
-        return this.http.post<LexiconArticle>(
-            `${this.base}${LEXICON_ROUTES.restore(articleId, versionNumber)}`,
-            {}
-        );
+        return this.http.post<LexiconArticle>(`${this.base}${LEXICON_ROUTES.restore(articleId, versionNumber)}`, {});
     }
 
     protectVersion(articleId: string, versionNumber: number): Observable<object> {
@@ -235,14 +232,12 @@ export class LexiconFacade {
         const q = new URLSearchParams();
         q.set("q", query);
         if (language) q.set("language", language);
-        this.http
-            .get<LexiconArticle[]>(`${this.base}${LEXICON_ROUTES.search()}?${q.toString()}`)
-            .subscribe({
-                next: (a) => {
-                    this.articles.set(a);
-                    this.loading.set(false);
-                },
-                error: () => this.loading.set(false)
-            });
+        this.http.get<LexiconArticle[]>(`${this.base}${LEXICON_ROUTES.search()}?${q.toString()}`).subscribe({
+            next: (a) => {
+                this.articles.set(a);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
     }
 }

@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Request } from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Request
+} from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import {
@@ -32,7 +44,11 @@ function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): v
     if (requireAll && (!dto.key || !dto.name || !dto.icon || !dto.triggerType || dto.triggerValue == null)) {
         throw new BadRequestException("key, name, icon, triggerType and triggerValue are required");
     }
-    if (dto.triggerValue !== undefined && dto.triggerType !== "manual" && (!Number.isInteger(dto.triggerValue) || dto.triggerValue < 1)) {
+    if (
+        dto.triggerValue !== undefined &&
+        dto.triggerType !== "manual" &&
+        (!Number.isInteger(dto.triggerValue) || dto.triggerValue < 1)
+    ) {
         throw new BadRequestException("triggerValue must be a positive integer");
     }
     if (dto.rarity !== undefined && !VALID_RARITIES.includes(dto.rarity as (typeof VALID_RARITIES)[number])) {
@@ -136,14 +152,19 @@ export class AchievementController {
 
     @Roles("admin")
     @Post("categories")
-    createCategory(@Body() dto: { key: string; name: string; description?: string; icon?: string; position?: number }): Promise<AchievementCategoryDto> {
+    createCategory(
+        @Body() dto: { key: string; name: string; description?: string; icon?: string; position?: number }
+    ): Promise<AchievementCategoryDto> {
         if (!dto.key || !dto.name) throw new BadRequestException("key and name are required");
         return this.achievementService.createCategory(dto);
     }
 
     @Roles("admin")
     @Patch("categories/:id")
-    updateCategory(@Param("id") id: string, @Body() dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): Promise<AchievementCategoryDto> {
+    updateCategory(
+        @Param("id") id: string,
+        @Body() dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>
+    ): Promise<AchievementCategoryDto> {
         return this.achievementService.updateCategory(id, dto);
     }
 

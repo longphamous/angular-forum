@@ -45,7 +45,11 @@ export class StorageConfigEntity {
     @Column({ name: "max_file_size_mb", type: "int", default: 50 })
     maxFileSizeMb!: number;
 
-    @Column({ name: "allowed_image_types", type: "jsonb", default: ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"] })
+    @Column({
+        name: "allowed_image_types",
+        type: "jsonb",
+        default: ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"]
+    })
     allowedImageTypes!: string[];
 
     @Column({ name: "allowed_video_types", type: "jsonb", default: ["video/mp4", "video/webm", "video/quicktime"] })

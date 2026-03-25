@@ -105,7 +105,9 @@ describe("FeedService", () => {
             threadRepo.find!.mockResolvedValue([makeThread()]);
             userRepo.find!.mockResolvedValue([makeUser()]);
             gamificationService.getUserXpDataBatch!.mockResolvedValue(
-                new Map([["user-1", { xp: 50, level: 2, levelName: "Anfänger", xpToNextLevel: 150, xpProgressPercent: 33 }]])
+                new Map([
+                    ["user-1", { xp: 50, level: 2, levelName: "Anfänger", xpToNextLevel: 150, xpProgressPercent: 33 }]
+                ])
             );
 
             const result = await service.getFeatured();
@@ -239,9 +241,7 @@ describe("FeedService", () => {
 
             await service.addFeatured({ threadId: "thread-1", position: 1 });
 
-            expect(featuredRepo.create).toHaveBeenCalledWith(
-                expect.objectContaining({ position: 1 })
-            );
+            expect(featuredRepo.create).toHaveBeenCalledWith(expect.objectContaining({ position: 1 }));
         });
     });
 

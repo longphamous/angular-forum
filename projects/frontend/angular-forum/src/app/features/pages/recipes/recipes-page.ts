@@ -14,7 +14,14 @@ import { TagModule } from "primeng/tag";
 
 import { RECIPES_ROUTES } from "../../../core/api/recipes.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { DIETARY_OPTIONS, DIFFICULTY_OPTIONS, PaginatedRecipes, Recipe, RecipeCategory, RecipeDifficulty } from "../../../core/models/recipes/recipe";
+import {
+    DIETARY_OPTIONS,
+    DIFFICULTY_OPTIONS,
+    PaginatedRecipes,
+    Recipe,
+    RecipeCategory,
+    RecipeDifficulty
+} from "../../../core/models/recipes/recipe";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
@@ -61,7 +68,10 @@ export class RecipesPage implements OnInit {
         const diff = this.selectedDifficulty();
         const diet = this.selectedDiet();
 
-        if (q) list = list.filter((r) => r.title.toLowerCase().includes(q) || (r.description ?? "").toLowerCase().includes(q));
+        if (q)
+            list = list.filter(
+                (r) => r.title.toLowerCase().includes(q) || (r.description ?? "").toLowerCase().includes(q)
+            );
         if (cat) list = list.filter((r) => r.categoryId === cat);
         if (diff) list = list.filter((r) => r.difficulty === diff);
         if (diet) list = list.filter((r) => r.dietaryTags.includes(diet));

@@ -34,22 +34,20 @@ export class NotificationService {
         this.fetchUnreadCount();
 
         // Listen for real-time push notifications
-        this.pushSub = this.pushService
-            .on<PushNotificationNew>("notification:new")
-            .subscribe((ev) => {
-                this.unreadCount.update((c) => c + 1);
-                const newNotif: AppNotification = {
-                    id: ev.id,
-                    userId: "",
-                    type: ev.type as AppNotification["type"],
-                    title: ev.title,
-                    body: ev.body,
-                    link: ev.link,
-                    isRead: false,
-                    createdAt: ev.createdAt
-                };
-                this.notifications.update((list) => [newNotif, ...list]);
-            });
+        this.pushSub = this.pushService.on<PushNotificationNew>("notification:new").subscribe((ev) => {
+            this.unreadCount.update((c) => c + 1);
+            const newNotif: AppNotification = {
+                id: ev.id,
+                userId: "",
+                type: ev.type as AppNotification["type"],
+                title: ev.title,
+                body: ev.body,
+                link: ev.link,
+                isRead: false,
+                createdAt: ev.createdAt
+            };
+            this.notifications.update((list) => [newNotif, ...list]);
+        });
     }
 
     /** @deprecated Use start() instead. Kept for backwards compatibility. */

@@ -30,9 +30,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             class="hover:bg-surface-50 dark:hover:bg-surface-800 rounded-lg p-1.5 no-underline transition-colors"
                             [routerLink]="['/forum/threads', thread.id]"
                         >
-                            <div
-                                class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium"
-                            >
+                            <div class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium">
                                 {{ thread.title }}
                             </div>
                             <div class="text-surface-500 dark:text-surface-400 mt-0.5 text-xs">
@@ -60,14 +58,10 @@ export class LatestThreadsSidebarWidget {
         const diff = Date.now() - new Date(dateStr).getTime();
         const minutes = Math.floor(diff / 60000);
         if (minutes < 1) return this.translocoService.translate("common.justNow");
-        if (minutes < 60)
-            return this.translocoService.translate("common.minutesAgo", { count: minutes });
+        if (minutes < 60) return this.translocoService.translate("common.minutesAgo", { count: minutes });
         const hours = Math.floor(minutes / 60);
         if (hours < 24) return this.translocoService.translate("common.hoursAgo", { count: hours });
         const days = Math.floor(hours / 24);
-        return this.translocoService.translate(
-            days === 1 ? "common.daysAgo" : "common.daysAgoPlural",
-            { count: days }
-        );
+        return this.translocoService.translate(days === 1 ? "common.daysAgo" : "common.daysAgoPlural", { count: days });
     }
 }

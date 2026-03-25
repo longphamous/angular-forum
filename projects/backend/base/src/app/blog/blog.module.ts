@@ -11,7 +11,11 @@ import { BlogCommentEntity } from "./entities/blog-comment.entity";
 import { BlogPostEntity } from "./entities/blog-post.entity";
 
 @Module({
-    imports: [GamificationModule, MediaModule, TypeOrmModule.forFeature([BlogPostEntity, BlogCategoryEntity, BlogCommentEntity, UserEntity])],
+    imports: [
+        GamificationModule,
+        MediaModule,
+        TypeOrmModule.forFeature([BlogPostEntity, BlogCategoryEntity, BlogCommentEntity, UserEntity])
+    ],
     controllers: [BlogController],
     providers: [BlogService],
     exports: [BlogService]

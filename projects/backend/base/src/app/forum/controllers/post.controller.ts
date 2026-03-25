@@ -108,10 +108,7 @@ export class PostController {
      * Toggles the highlight flag on a post. Only admins/moderators may call this.
      */
     @Patch("posts/:id/highlight")
-    toggleHighlight(
-        @Param("id", ParseUUIDPipe) id: string,
-        @CurrentUser() user: AuthenticatedUser
-    ): Promise<PostDto> {
+    toggleHighlight(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<PostDto> {
         return this.postService.toggleHighlight(id, user.userId, user.role);
     }
 
@@ -120,10 +117,7 @@ export class PostController {
      * Toggles the official flag on a post. Only admins/moderators may call this.
      */
     @Patch("posts/:id/official")
-    toggleOfficial(
-        @Param("id", ParseUUIDPipe) id: string,
-        @CurrentUser() user: AuthenticatedUser
-    ): Promise<PostDto> {
+    toggleOfficial(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<PostDto> {
         return this.postService.toggleOfficial(id, user.userId, user.role);
     }
 

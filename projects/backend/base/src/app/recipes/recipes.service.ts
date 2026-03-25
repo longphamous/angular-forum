@@ -5,10 +5,6 @@ import { Repository } from "typeorm";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { UserEntity } from "../user/entities/user.entity";
-import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
-import { RecipeCommentEntity } from "./entities/recipe-comment.entity";
-import { RecipeFavoriteEntity } from "./entities/recipe-favorite.entity";
-import { RecipeRatingEntity } from "./entities/recipe-rating.entity";
 import {
     RecipeDifficulty,
     RecipeEntity,
@@ -17,6 +13,10 @@ import {
     RecipeStatus,
     RecipeStep
 } from "./entities/recipe.entity";
+import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
+import { RecipeCommentEntity } from "./entities/recipe-comment.entity";
+import { RecipeFavoriteEntity } from "./entities/recipe-favorite.entity";
+import { RecipeRatingEntity } from "./entities/recipe-rating.entity";
 
 export interface CreateRecipeDto {
     title: string;

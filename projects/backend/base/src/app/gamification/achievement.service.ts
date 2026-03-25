@@ -5,8 +5,8 @@ import { In, Repository } from "typeorm";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushAchievementUnlocked } from "../push/push-event.types";
-import { AchievementCategoryEntity } from "./entities/achievement-category.entity";
 import { AchievementEntity } from "./entities/achievement.entity";
+import { AchievementCategoryEntity } from "./entities/achievement-category.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
@@ -328,7 +328,11 @@ export class AchievementService {
 
     // ── Manual Grant / Revoke ──────────────────────────────────────────────
 
-    async grantAchievement(userId: string, achievementId: string, grantedByUserId: string): Promise<UserAchievementDto> {
+    async grantAchievement(
+        userId: string,
+        achievementId: string,
+        grantedByUserId: string
+    ): Promise<UserAchievementDto> {
         const achievement = await this.achievementRepo.findOneBy({ id: achievementId });
         if (!achievement) throw new NotFoundException("Achievement not found");
 
@@ -393,7 +397,13 @@ export class AchievementService {
         }));
     }
 
-    async createCategory(dto: { key: string; name: string; description?: string; icon?: string; position?: number }): Promise<AchievementCategoryDto> {
+    async createCategory(dto: {
+        key: string;
+        name: string;
+        description?: string;
+        icon?: string;
+        position?: number;
+    }): Promise<AchievementCategoryDto> {
         const entity = this.categoryRepo.create({
             key: dto.key,
             name: dto.name,
@@ -402,15 +412,32 @@ export class AchievementService {
             position: dto.position ?? 0
         });
         const saved = await this.categoryRepo.save(entity);
-        return { id: saved.id, key: saved.key, name: saved.name, description: saved.description, icon: saved.icon, position: saved.position };
+        return {
+            id: saved.id,
+            key: saved.key,
+            name: saved.name,
+            description: saved.description,
+            icon: saved.icon,
+            position: saved.position
+        };
     }
 
-    async updateCategory(id: string, dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>): Promise<AchievementCategoryDto> {
+    async updateCategory(
+        id: string,
+        dto: Partial<{ key: string; name: string; description: string; icon: string; position: number }>
+    ): Promise<AchievementCategoryDto> {
         const entity = await this.categoryRepo.findOneBy({ id });
         if (!entity) throw new NotFoundException("Category not found");
         Object.assign(entity, dto);
         const saved = await this.categoryRepo.save(entity);
-        return { id: saved.id, key: saved.key, name: saved.name, description: saved.description, icon: saved.icon, position: saved.position };
+        return {
+            id: saved.id,
+            key: saved.key,
+            name: saved.name,
+            description: saved.description,
+            icon: saved.icon,
+            position: saved.position
+        };
     }
 
     async deleteCategory(id: string): Promise<void> {
@@ -428,7 +455,9 @@ export class AchievementService {
         if (!earned.length) return [];
 
         const achievementIds = [...new Set(earned.map((e) => e.achievementId))];
-        const userIds = [...new Set([...earned.map((e) => e.userId), ...earned.filter((e) => e.grantedBy).map((e) => e.grantedBy!)])];
+        const userIds = [
+            ...new Set([...earned.map((e) => e.userId), ...earned.filter((e) => e.grantedBy).map((e) => e.grantedBy!)])
+        ];
 
         const achievements = await this.achievementRepo.find({ where: { id: In(achievementIds) } });
         const achMap = new Map(achievements.map((a) => [a.id, a]));

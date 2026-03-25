@@ -170,7 +170,7 @@ describe("BlogService", () => {
                 "blog_published",
                 "Published Post",
                 undefined,
-                `/blog/published-post-123`
+                "/blog/published-post-123"
             );
         });
 
@@ -246,10 +246,17 @@ describe("BlogService", () => {
             const post = makePost({ authorId: "user-1" });
             postRepo.findOne!.mockResolvedValue(post);
             postRepo.save!.mockImplementation((p) => Promise.resolve(p));
-            userRepo.findOne!.mockResolvedValue({ id: "user-2", displayName: "Admin", username: "admin", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-2",
+                displayName: "Admin",
+                username: "admin",
+                avatarUrl: null
+            });
             commentRepo.count!.mockResolvedValue(0);
 
-            await expect(service.updatePost("post-1", "user-2", true, { content: "admin edit" })).resolves.toBeDefined();
+            await expect(
+                service.updatePost("post-1", "user-2", true, { content: "admin edit" })
+            ).resolves.toBeDefined();
         });
 
         it("should set publishedAt when transitioning to published status", async () => {

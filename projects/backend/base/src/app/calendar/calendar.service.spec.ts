@@ -3,9 +3,9 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { getDataSourceToken, getRepositoryToken } from "@nestjs/typeorm";
 import { ObjectLiteral, Repository } from "typeorm";
 
+import { CalendarService } from "./calendar.service";
 import { CalendarAttendeeEntity } from "./entities/calendar-attendee.entity";
 import { CalendarEventEntity } from "./entities/calendar-event.entity";
-import { CalendarService } from "./calendar.service";
 
 const createMockRepo = <T extends ObjectLiteral>(): Partial<Record<keyof Repository<T>, jest.Mock>> => ({
     create: jest.fn(),
@@ -109,18 +109,17 @@ describe("CalendarService", () => {
 
             await service.findEvents({ from: "2026-04-01", to: "2026-04-30" });
 
-            expect(dataSource.query).toHaveBeenCalledWith(
-                expect.any(String),
-                ["00000000-0000-0000-0000-000000000000", "2026-04-01", "2026-04-30"]
-            );
+            expect(dataSource.query).toHaveBeenCalledWith(expect.any(String), [
+                "00000000-0000-0000-0000-000000000000",
+                "2026-04-01",
+                "2026-04-30"
+            ]);
         });
     });
 
     describe("findById", () => {
         it("should return event detail with attendees", async () => {
-            dataSource.query
-                .mockResolvedValueOnce([makeEventRow()])
-                .mockResolvedValueOnce([]);
+            dataSource.query.mockResolvedValueOnce([makeEventRow()]).mockResolvedValueOnce([]);
 
             const result = await service.findById("event-1", "user-1");
 
@@ -140,9 +139,7 @@ describe("CalendarService", () => {
             const entity = makeEventEntity();
             eventRepo.create!.mockReturnValue(entity);
             eventRepo.save!.mockResolvedValue(entity);
-            dataSource.query
-                .mockResolvedValueOnce([makeEventRow()])
-                .mockResolvedValueOnce([]);
+            dataSource.query.mockResolvedValueOnce([makeEventRow()]).mockResolvedValueOnce([]);
 
             const result = await service.create("user-1", {
                 title: "Test Event",
@@ -173,9 +170,7 @@ describe("CalendarService", () => {
             attendeeRepo.findOneBy!.mockResolvedValue(null);
             attendeeRepo.create!.mockReturnValue({});
             attendeeRepo.save!.mockResolvedValue({});
-            dataSource.query
-                .mockResolvedValueOnce([makeEventRow()])
-                .mockResolvedValueOnce([]);
+            dataSource.query.mockResolvedValueOnce([makeEventRow()]).mockResolvedValueOnce([]);
 
             await service.create("user-1", {
                 title: "Party",
@@ -193,9 +188,7 @@ describe("CalendarService", () => {
             const entity = makeEventEntity({ createdByUserId: "user-1" });
             eventRepo.findOneBy!.mockResolvedValue(entity);
             eventRepo.save!.mockResolvedValue(entity);
-            dataSource.query
-                .mockResolvedValueOnce([makeEventRow()])
-                .mockResolvedValueOnce([]);
+            dataSource.query.mockResolvedValueOnce([makeEventRow()]).mockResolvedValueOnce([]);
 
             const result = await service.update("event-1", "user-1", { title: "Updated" });
 

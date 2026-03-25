@@ -144,9 +144,9 @@ import { LayoutService } from "./service/layout.service";
             @if (authFacade.isAuthenticated()) {
                 <div class="flex min-w-44 flex-col gap-1">
                     <a
-                        class="flex items-center gap-3 px-1 pb-2 no-underline text-inherit cursor-pointer"
-                        (click)="userMenu.hide()"
+                        class="flex cursor-pointer items-center gap-3 px-1 pb-2 text-inherit no-underline"
                         [routerLink]="['/users', authFacade.currentUser()?.id]"
+                        (click)="userMenu.hide()"
                     >
                         <p-avatar [label]="userInitial()" shape="circle" size="large" styleClass="font-semibold" />
                         <div class="flex flex-col">
@@ -157,8 +157,8 @@ import { LayoutService } from "./service/layout.service";
                     <p-divider styleClass="my-0" />
                     <a
                         class="hover:bg-surface-100 dark:hover:bg-surface-800 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-inherit no-underline"
-                        (click)="userMenu.hide()"
                         [routerLink]="['/users', authFacade.currentUser()?.id]"
+                        (click)="userMenu.hide()"
                     >
                         <i class="pi pi-user text-surface-500"></i>
                         <span>{{ t("nav.profile") }}</span>

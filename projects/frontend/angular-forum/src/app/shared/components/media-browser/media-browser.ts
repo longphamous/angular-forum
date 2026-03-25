@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, OnInit, Output, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
@@ -8,8 +8,8 @@ import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
 
 import { MediaAsset, SourceModule } from "../../../core/models/media/media";
-import { MediaFacade } from "../../../facade/media/media-facade";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { MediaFacade } from "../../../facade/media/media-facade";
 
 @Component({
     selector: "media-browser",
@@ -18,89 +18,104 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
     imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, SelectModule, SkeletonModule, TranslocoModule],
     template: `
         <p-dialog
-            [header]="'media.browser.title' | transloco"
             [(visible)]="visible"
+            [header]="'media.browser.title' | transloco"
+            [maximizable]="true"
             [modal]="true"
             [style]="{ width: '60rem', height: '80vh' }"
-            [maximizable]="true"
         >
             <!-- Filters -->
-            <div class="flex gap-2 mb-4 flex-wrap">
+            <div class="mb-4 flex flex-wrap gap-2">
                 <input
-                    pInputText
+                    class="flex-1"
                     [(ngModel)]="searchQuery"
                     [placeholder]="'media.browser.search' | transloco"
-                    class="flex-1"
                     (keyup.enter)="applyFilter()"
+                    pInputText
                 />
                 <p-select
                     [(ngModel)]="filterModule"
                     [options]="moduleOptions"
-                    optionLabel="label"
-                    optionValue="value"
                     [placeholder]="'media.browser.filter' | transloco"
                     [showClear]="true"
                     (onChange)="applyFilter()"
+                    optionLabel="label"
+                    optionValue="value"
                 />
-                <p-button icon="pi pi-search" (onClick)="applyFilter()" />
+                <p-button (onClick)="applyFilter()" icon="pi pi-search" />
             </div>
 
             <!-- Grid -->
             <div class="grid grid-cols-4 gap-3 overflow-y-auto" style="max-height: 55vh">
                 @if (facade.loading()) {
-                    @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                    @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
                         <p-skeleton height="120px" styleClass="rounded-lg" />
                     }
                 }
                 @for (asset of facade.browseResults(); track asset.id) {
                     <div
-                        class="relative rounded-lg overflow-hidden cursor-pointer border-2 transition-all"
+                        class="relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all"
                         [class.border-primary]="selectedIds().has(asset.id)"
                         [class.border-transparent]="!selectedIds().has(asset.id)"
                         (click)="toggleSelect(asset)"
                     >
-                        @if (asset.mimeType.startsWith('image/')) {
-                            <img [src]="facade.getVariantUrl(asset, 'thumb_md')" [alt]="asset.altText ?? asset.originalFilename" class="w-full h-28 object-cover" />
-                        } @else if (asset.mimeType.startsWith('video/')) {
-                            <div class="w-full h-28 bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-                                <i class="pi pi-video text-2xl text-color-secondary"></i>
+                        @if (asset.mimeType.startsWith("image/")) {
+                            <img
+                                class="h-28 w-full object-cover"
+                                [alt]="asset.altText ?? asset.originalFilename"
+                                [src]="facade.getVariantUrl(asset, 'thumb_md')"
+                            />
+                        } @else if (asset.mimeType.startsWith("video/")) {
+                            <div
+                                class="bg-surface-100 dark:bg-surface-800 flex h-28 w-full items-center justify-center"
+                            >
+                                <i class="pi pi-video text-color-secondary text-2xl"></i>
                             </div>
                         } @else {
-                            <div class="w-full h-28 bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-                                <i class="pi pi-file text-2xl text-color-secondary"></i>
+                            <div
+                                class="bg-surface-100 dark:bg-surface-800 flex h-28 w-full items-center justify-center"
+                            >
+                                <i class="pi pi-file text-color-secondary text-2xl"></i>
                             </div>
                         }
-                        <div class="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-                            <span class="text-white text-xs truncate block">{{ asset.originalFilename }}</span>
+                        <div class="absolute right-0 bottom-0 left-0 bg-black/60 px-2 py-1">
+                            <span class="block truncate text-xs text-white">{{ asset.originalFilename }}</span>
                         </div>
                         @if (selectedIds().has(asset.id)) {
-                            <div class="absolute top-1 right-1 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">
+                            <div
+                                class="bg-primary absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full text-white"
+                            >
                                 <i class="pi pi-check text-xs"></i>
                             </div>
                         }
                     </div>
                 }
                 @if (!facade.loading() && facade.browseResults().length === 0) {
-                    <div class="col-span-4 text-center text-color-secondary py-8">
-                        <i class="pi pi-images text-4xl mb-2 opacity-50"></i>
-                        <p>{{ 'media.browser.noResults' | transloco }}</p>
+                    <div class="text-color-secondary col-span-4 py-8 text-center">
+                        <i class="pi pi-images mb-2 text-4xl opacity-50"></i>
+                        <p>{{ "media.browser.noResults" | transloco }}</p>
                     </div>
                 }
             </div>
 
             <ng-template pTemplate="footer">
-                <p-button [label]="'media.browser.cancel' | transloco" severity="secondary" [text]="true" (onClick)="visible = false" />
                 <p-button
-                    [label]="'media.browser.select' | transloco"
-                    icon="pi pi-check"
+                    [label]="'media.browser.cancel' | transloco"
+                    [text]="true"
+                    (onClick)="visible = false"
+                    severity="secondary"
+                />
+                <p-button
                     [disabled]="selectedIds().size === 0"
+                    [label]="'media.browser.select' | transloco"
                     (onClick)="confirmSelection()"
+                    icon="pi pi-check"
                 />
             </ng-template>
         </p-dialog>
     `
 })
-export class MediaBrowser {
+export class MediaBrowser implements OnInit {
     @Input() visible = false;
     @Input() selectionMode: "single" | "multiple" = "single";
     @Input() filterSourceModule?: SourceModule;

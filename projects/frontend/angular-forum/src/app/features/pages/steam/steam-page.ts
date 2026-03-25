@@ -14,7 +14,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { STEAM_ROUTES } from "../../../core/api/steam.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { SteamGame, SteamProfile, STEAM_STATUS_COLORS, STEAM_STATUS_LABELS } from "../../../core/models/steam/steam";
+import { STEAM_STATUS_COLORS, STEAM_STATUS_LABELS, SteamGame, SteamProfile } from "../../../core/models/steam/steam";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,14 +78,16 @@ export class SteamPage implements OnInit {
     protected linkSteam(): void {
         if (!this.steamIdInput.trim()) return;
         this.linking.set(true);
-        this.http.post<SteamProfile>(`${this.config.baseUrl}${STEAM_ROUTES.link()}`, { steamId: this.steamIdInput.trim() }).subscribe({
-            next: (p) => {
-                this.profile.set(p);
-                this.linking.set(false);
-                this.loadGames();
-            },
-            error: () => this.linking.set(false)
-        });
+        this.http
+            .post<SteamProfile>(`${this.config.baseUrl}${STEAM_ROUTES.link()}`, { steamId: this.steamIdInput.trim() })
+            .subscribe({
+                next: (p) => {
+                    this.profile.set(p);
+                    this.linking.set(false);
+                    this.loadGames();
+                },
+                error: () => this.linking.set(false)
+            });
     }
 
     protected unlinkSteam(): void {
@@ -115,12 +117,14 @@ export class SteamPage implements OnInit {
 
     protected updateSettings(patch: { isPublic?: boolean; syncFriends?: boolean }): void {
         this.http.patch<SteamProfile>(`${this.config.baseUrl}${STEAM_ROUTES.settings()}`, patch).subscribe({
-            next: (p) => { if (p) this.profile.set(p); }
+            next: (p) => {
+                if (p) this.profile.set(p);
+            }
         });
     }
 
     protected formatPlaytime(minutes: number): string {
-        const hours = Math.round(minutes / 60 * 10) / 10;
+        const hours = Math.round((minutes / 60) * 10) / 10;
         return `${hours}h`;
     }
 }

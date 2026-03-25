@@ -14,7 +14,12 @@ import { TextareaModule } from "primeng/textarea";
 
 import { MODERATION_ROUTES } from "../../../core/api/moderation.routes";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
-import { APPROVAL_TYPE_LABELS, ApprovalStatus, ModerationStats, ProfileApproval } from "../../../core/models/moderation/moderation";
+import {
+    APPROVAL_TYPE_LABELS,
+    ApprovalStatus,
+    ModerationStats,
+    ProfileApproval
+} from "../../../core/models/moderation/moderation";
 
 @Component({
     selector: "admin-moderation",
@@ -90,30 +95,34 @@ export class AdminModeration implements OnInit {
         const item = this.reviewItem();
         if (!item) return;
         this.processing.set(true);
-        this.http.post(`${this.config.baseUrl}${MODERATION_ROUTES.approve(item.id)}`, { note: this.reviewNote || undefined }).subscribe({
-            next: () => {
-                this.processing.set(false);
-                this.reviewDialogVisible.set(false);
-                this.loadPending();
-                this.loadStats();
-            },
-            error: () => this.processing.set(false)
-        });
+        this.http
+            .post(`${this.config.baseUrl}${MODERATION_ROUTES.approve(item.id)}`, { note: this.reviewNote || undefined })
+            .subscribe({
+                next: () => {
+                    this.processing.set(false);
+                    this.reviewDialogVisible.set(false);
+                    this.loadPending();
+                    this.loadStats();
+                },
+                error: () => this.processing.set(false)
+            });
     }
 
     reject(): void {
         const item = this.reviewItem();
         if (!item) return;
         this.processing.set(true);
-        this.http.post(`${this.config.baseUrl}${MODERATION_ROUTES.reject(item.id)}`, { note: this.reviewNote || undefined }).subscribe({
-            next: () => {
-                this.processing.set(false);
-                this.reviewDialogVisible.set(false);
-                this.loadPending();
-                this.loadStats();
-            },
-            error: () => this.processing.set(false)
-        });
+        this.http
+            .post(`${this.config.baseUrl}${MODERATION_ROUTES.reject(item.id)}`, { note: this.reviewNote || undefined })
+            .subscribe({
+                next: () => {
+                    this.processing.set(false);
+                    this.reviewDialogVisible.set(false);
+                    this.loadPending();
+                    this.loadStats();
+                },
+                error: () => this.processing.set(false)
+            });
     }
 
     onTabChange(tab: "pending" | "history"): void {
@@ -129,7 +138,13 @@ export class AdminModeration implements OnInit {
 
     formatDate(dateStr: string | null): string {
         if (!dateStr) return "—";
-        return new Date(dateStr).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        return new Date(dateStr).toLocaleDateString("de-DE", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
     }
 
     isImageType(type: string): boolean {

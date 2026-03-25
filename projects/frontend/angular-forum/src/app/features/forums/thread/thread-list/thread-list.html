@@ -1,10 +1,12 @@
 <div class="flex flex-col gap-4" *transloco="let t">
     <!-- Breadcrumb -->
     @if (facade.currentForum()) {
-        <app-forum-breadcrumb [items]="[
+    <app-forum-breadcrumb
+        [items]="[
             { label: '', icon: 'pi-home', routerLink: '/forum' },
             { label: facade.currentForum()!.name }
-        ]" />
+        ]"
+    />
     }
 
     <!-- Header -->

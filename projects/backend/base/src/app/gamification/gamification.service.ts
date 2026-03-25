@@ -3,11 +3,11 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
 import { NotificationsService } from "../notifications/notifications.service";
-import { PushLevelUp } from "../push/push-event.types";
 import { PushService } from "../push/push.service";
+import { PushLevelUp } from "../push/push-event.types";
+import { AchievementService } from "./achievement.service";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
-import { AchievementService } from "./achievement.service";
 import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpConfigEntity } from "./entities/xp-config.entity";
 import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
@@ -249,9 +249,11 @@ export class GamificationService implements OnModuleInit {
             }
         }
 
-        return { updatedUsers: activityResult.length + [...achievementXpMap.keys()].filter(
-            (uid) => !activityResult.some((r) => r.user_id === uid)
-        ).length };
+        return {
+            updatedUsers:
+                activityResult.length +
+                [...achievementXpMap.keys()].filter((uid) => !activityResult.some((r) => r.user_id === uid)).length
+        };
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

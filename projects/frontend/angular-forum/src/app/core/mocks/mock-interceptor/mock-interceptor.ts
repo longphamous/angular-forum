@@ -37,6 +37,8 @@ import {
     mockCalendarEventDetails,
     mockCalendarEvents,
     mockCategories,
+    mockClipComments,
+    mockClips,
     mockCoinConfig,
     mockConversationDetails,
     mockConversations,
@@ -59,6 +61,7 @@ import {
     mockMarketOffers,
     mockMarketRatings,
     mockMarketReports,
+    mockMediaAssets,
     mockNotifications,
     mockOnlineUsers,
     mockPagePermissions,
@@ -73,9 +76,6 @@ import {
     mockUsers,
     mockWallets,
     mockWalletTransactions,
-    mockClips,
-    mockClipComments,
-    mockMediaAssets,
     User
 } from "../mock-data/mock-data";
 
@@ -856,16 +856,76 @@ export class MockInterceptor implements HttpInterceptor {
         const xpHistoryMatch = lowerUrl.match(/\/api\/gamification\/users\/([^/]+)\/history/);
         if (method === "GET" && xpHistoryMatch) {
             const mockEvents = [
-                { id: "xp-1", eventType: "create_post", xpGained: 5, referenceId: "post-1", createdAt: new Date(Date.now() - 3600000).toISOString() },
-                { id: "xp-2", eventType: "create_thread", xpGained: 10, referenceId: "thread-1", createdAt: new Date(Date.now() - 7200000).toISOString() },
-                { id: "xp-3", eventType: "receive_reaction", xpGained: 3, referenceId: "post-2", createdAt: new Date(Date.now() - 10800000).toISOString() },
-                { id: "xp-4", eventType: "create_clip", xpGained: 8, referenceId: "clip-1", createdAt: new Date(Date.now() - 86400000).toISOString() },
-                { id: "xp-5", eventType: "create_blog_post", xpGained: 15, referenceId: "blog-1", createdAt: new Date(Date.now() - 172800000).toISOString() },
-                { id: "xp-6", eventType: "upload_gallery", xpGained: 5, referenceId: "gallery-1", createdAt: new Date(Date.now() - 259200000).toISOString() },
-                { id: "xp-7", eventType: "create_lexicon_article", xpGained: 20, referenceId: "lex-1", createdAt: new Date(Date.now() - 345600000).toISOString() },
-                { id: "xp-8", eventType: "create_recipe", xpGained: 12, referenceId: "recipe-1", createdAt: new Date(Date.now() - 432000000).toISOString() },
-                { id: "xp-9", eventType: "buy_lotto_ticket", xpGained: 2, referenceId: "ticket-1", createdAt: new Date(Date.now() - 518400000).toISOString() },
-                { id: "xp-10", eventType: "give_reaction", xpGained: 1, referenceId: "post-3", createdAt: new Date(Date.now() - 604800000).toISOString() }
+                {
+                    id: "xp-1",
+                    eventType: "create_post",
+                    xpGained: 5,
+                    referenceId: "post-1",
+                    createdAt: new Date(Date.now() - 3600000).toISOString()
+                },
+                {
+                    id: "xp-2",
+                    eventType: "create_thread",
+                    xpGained: 10,
+                    referenceId: "thread-1",
+                    createdAt: new Date(Date.now() - 7200000).toISOString()
+                },
+                {
+                    id: "xp-3",
+                    eventType: "receive_reaction",
+                    xpGained: 3,
+                    referenceId: "post-2",
+                    createdAt: new Date(Date.now() - 10800000).toISOString()
+                },
+                {
+                    id: "xp-4",
+                    eventType: "create_clip",
+                    xpGained: 8,
+                    referenceId: "clip-1",
+                    createdAt: new Date(Date.now() - 86400000).toISOString()
+                },
+                {
+                    id: "xp-5",
+                    eventType: "create_blog_post",
+                    xpGained: 15,
+                    referenceId: "blog-1",
+                    createdAt: new Date(Date.now() - 172800000).toISOString()
+                },
+                {
+                    id: "xp-6",
+                    eventType: "upload_gallery",
+                    xpGained: 5,
+                    referenceId: "gallery-1",
+                    createdAt: new Date(Date.now() - 259200000).toISOString()
+                },
+                {
+                    id: "xp-7",
+                    eventType: "create_lexicon_article",
+                    xpGained: 20,
+                    referenceId: "lex-1",
+                    createdAt: new Date(Date.now() - 345600000).toISOString()
+                },
+                {
+                    id: "xp-8",
+                    eventType: "create_recipe",
+                    xpGained: 12,
+                    referenceId: "recipe-1",
+                    createdAt: new Date(Date.now() - 432000000).toISOString()
+                },
+                {
+                    id: "xp-9",
+                    eventType: "buy_lotto_ticket",
+                    xpGained: 2,
+                    referenceId: "ticket-1",
+                    createdAt: new Date(Date.now() - 518400000).toISOString()
+                },
+                {
+                    id: "xp-10",
+                    eventType: "give_reaction",
+                    xpGained: 1,
+                    referenceId: "post-3",
+                    createdAt: new Date(Date.now() - 604800000).toISOString()
+                }
             ];
             return this.ok({ events: mockEvents, total: mockEvents.length });
         }
@@ -1597,7 +1657,7 @@ export class MockInterceptor implements HttpInterceptor {
             const nextDate = new Date(now);
             nextDate.setUTCHours(mockLottoConfig.drawHourUtc, mockLottoConfig.drawMinuteUtc, 0, 0);
             if (nextDate <= now) nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-            while (!mockLottoConfig.drawDays.includes(nextDate.getUTCDay() as 0|1|2|3|4|5|6)) {
+            while (!mockLottoConfig.drawDays.includes(nextDate.getUTCDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6)) {
                 nextDate.setUTCDate(nextDate.getUTCDate() + 1);
             }
             const newDraw: LottoDraw = {
@@ -2778,7 +2838,9 @@ export class MockInterceptor implements HttpInterceptor {
                     clipId: c.id,
                     title: c.title,
                     viewCount: c.viewCount,
-                    engagementScore: Math.round((c.likeCount * 2 + c.commentCount * 3) / Math.max(c.viewCount, 1) * 100 * 100) / 100
+                    engagementScore:
+                        Math.round(((c.likeCount * 2 + c.commentCount * 3) / Math.max(c.viewCount, 1)) * 100 * 100) /
+                        100
                 }))
             });
         }
@@ -2822,8 +2884,15 @@ export class MockInterceptor implements HttpInterceptor {
                 likeRate: Math.round((clip.likeCount / totalViews) * 10000) / 100,
                 commentRate: Math.round((clip.commentCount / totalViews) * 10000) / 100,
                 shareRate: Math.round((clip.shareCount / totalViews) * 10000) / 100,
-                engagementScore: Math.round((clip.likeCount * 2 + clip.commentCount * 3 + clip.shareCount * 4) / totalViews * 100 * 100) / 100,
-                viewsBySource: { feed: Math.floor(clip.viewCount * 0.6), profile: Math.floor(clip.viewCount * 0.25), direct: Math.floor(clip.viewCount * 0.15) },
+                engagementScore:
+                    Math.round(
+                        ((clip.likeCount * 2 + clip.commentCount * 3 + clip.shareCount * 4) / totalViews) * 100 * 100
+                    ) / 100,
+                viewsBySource: {
+                    feed: Math.floor(clip.viewCount * 0.6),
+                    profile: Math.floor(clip.viewCount * 0.25),
+                    direct: Math.floor(clip.viewCount * 0.15)
+                },
                 viewsOverTime: Array.from({ length: 7 }, (_, i) => ({
                     date: new Date(Date.now() - (6 - i) * 86400000).toISOString().split("T")[0],
                     views: Math.floor(Math.random() * (clip.viewCount / 5))
@@ -2984,8 +3053,22 @@ export class MockInterceptor implements HttpInterceptor {
                 isProcessed: true,
                 url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}.jpg`,
                 variants: [
-                    { variantKey: "thumb_sm", mimeType: "image/jpeg", fileSize: 5000, width: 150, height: 150, url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_sm.jpg` },
-                    { variantKey: "thumb_md", mimeType: "image/jpeg", fileSize: 15000, width: 400, height: 400, url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_md.jpg` }
+                    {
+                        variantKey: "thumb_sm",
+                        mimeType: "image/jpeg",
+                        fileSize: 5000,
+                        width: 150,
+                        height: 150,
+                        url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_sm.jpg`
+                    },
+                    {
+                        variantKey: "thumb_md",
+                        mimeType: "image/jpeg",
+                        fileSize: 15000,
+                        width: 400,
+                        height: 400,
+                        url: `/uploads/media/user-1/2026/03/uploaded-file-${Date.now()}_thumb_md.jpg`
+                    }
                 ],
                 createdAt: new Date().toISOString()
             };
@@ -3086,7 +3169,7 @@ export class MockInterceptor implements HttpInterceptor {
 
         // POST /api/embeds/batch
         if (method === "POST" && lowerUrl.includes("/api/embeds/batch")) {
-            const urls = ((req.body as { urls?: string[] })?.urls ?? []);
+            const urls = (req.body as { urls?: string[] })?.urls ?? [];
             return this.ok(
                 urls.map((u: string) => {
                     let d = "";

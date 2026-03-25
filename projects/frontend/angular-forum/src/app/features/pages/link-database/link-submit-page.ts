@@ -109,8 +109,8 @@ export class LinkSubmitPage implements OnInit {
                     this.saving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: this.translocoService.translate('links.submit.submitted'),
-                        detail: this.translocoService.translate('links.submit.submitSuccess')
+                        summary: this.translocoService.translate("links.submit.submitted"),
+                        detail: this.translocoService.translate("links.submit.submitSuccess")
                     });
                     setTimeout(() => void this.router.navigate(["/links", link.id]), 1500);
                     this.cd.markForCheck();
@@ -119,8 +119,8 @@ export class LinkSubmitPage implements OnInit {
                     this.saving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: this.translocoService.translate('common.error'),
-                        detail: this.translocoService.translate('links.submit.submitFailed')
+                        summary: this.translocoService.translate("common.error"),
+                        detail: this.translocoService.translate("links.submit.submitFailed")
                     });
                     this.cd.markForCheck();
                 }

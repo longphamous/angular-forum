@@ -35,7 +35,11 @@ export class MediaConfigEntity {
     @Column({ name: "active_storage", type: "varchar", length: 20, default: "local" })
     activeStorage!: StorageType;
 
-    @Column({ name: "local_config", type: "jsonb", default: { basePath: "uploads/media", publicUrlPrefix: "/uploads/media" } })
+    @Column({
+        name: "local_config",
+        type: "jsonb",
+        default: { basePath: "uploads/media", publicUrlPrefix: "/uploads/media" }
+    })
     localConfig!: LocalConfig;
 
     @Column({ name: "s3_config", type: "jsonb", nullable: true })

@@ -1,5 +1,5 @@
-import { IsIn, IsObject, IsOptional, IsString, Length, MaxLength, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
+import { IsIn, IsObject, IsOptional, IsString, Length, MaxLength, ValidateNested } from "class-validator";
 
 import { FieldVisibility } from "../entities/user.entity";
 

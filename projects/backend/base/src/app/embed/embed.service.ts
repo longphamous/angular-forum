@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+
 import { LinkEmbedEntity } from "./entities/link-embed.entity";
 
 export interface LinkEmbedDto {
@@ -77,7 +78,7 @@ export class EmbedService {
             signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
             headers: {
                 "User-Agent": "Aniverse/1.0 (Rich Embed Bot)",
-                Accept: "text/html,application/xhtml+xml"
+                "Accept": "text/html,application/xhtml+xml"
             },
             redirect: "follow"
         });
@@ -123,26 +124,14 @@ export class EmbedService {
     } {
         const getMetaContent = (property: string): string | null => {
             // Match both property="og:X" content="Y" and content="Y" property="og:X" orders
-            const pattern1 = new RegExp(
-                `<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']*)["']`,
-                "i"
-            );
-            const pattern2 = new RegExp(
-                `<meta[^>]+content=["']([^"']*)["'][^>]+property=["']${property}["']`,
-                "i"
-            );
+            const pattern1 = new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']*)["']`, "i");
+            const pattern2 = new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+property=["']${property}["']`, "i");
             return pattern1.exec(html)?.[1] ?? pattern2.exec(html)?.[1] ?? null;
         };
 
         const getMetaName = (name: string): string | null => {
-            const pattern1 = new RegExp(
-                `<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']*)["']`,
-                "i"
-            );
-            const pattern2 = new RegExp(
-                `<meta[^>]+content=["']([^"']*)["'][^>]+name=["']${name}["']`,
-                "i"
-            );
+            const pattern1 = new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']*)["']`, "i");
+            const pattern2 = new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+name=["']${name}["']`, "i");
             return pattern1.exec(html)?.[1] ?? pattern2.exec(html)?.[1] ?? null;
         };
 

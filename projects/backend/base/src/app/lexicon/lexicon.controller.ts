@@ -169,11 +169,7 @@ export class LexiconController {
     }
 
     @Post("articles/:id/comments")
-    addComment(
-        @Param("id") id: string,
-        @Request() req: { user: { userId: string } },
-        @Body() dto: CreateCommentDto
-    ) {
+    addComment(@Param("id") id: string, @Request() req: { user: { userId: string } }, @Body() dto: CreateCommentDto) {
         return this.lexiconService.addComment(id, req.user.userId, dto);
     }
 

@@ -17,7 +17,6 @@ import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
 
 import { MESSAGES_ROUTES } from "../../../core/api/messages.routes";
-import { UserAutocomplete, UserSuggestion } from "../../../shared/components/user-autocomplete/user-autocomplete";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import {
     ComposePayload,
@@ -29,6 +28,7 @@ import {
 } from "../../../core/models/messages/messages";
 import { TabPersistenceService } from "../../../core/services/tab-persistence.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { UserAutocomplete, UserSuggestion } from "../../../shared/components/user-autocomplete/user-autocomplete";
 
 type ActiveTab = "inbox" | "starred" | "drafts" | "important" | "sent" | "archive" | "trash";
 
@@ -95,9 +95,7 @@ export class MessagesPage implements OnInit {
     // ─── Computed ─────────────────────────────────────────────────────────────
     protected readonly currentUserId = computed(() => this.authFacade.currentUser()?.id ?? "");
 
-    protected readonly unreadTotal = computed(() =>
-        this.conversations().reduce((sum, c) => sum + c.unreadCount, 0)
-    );
+    protected readonly unreadTotal = computed(() => this.conversations().reduce((sum, c) => sum + c.unreadCount, 0));
 
     protected readonly filteredConversations = computed(() => {
         const tab = this.activeTab();
@@ -265,11 +263,19 @@ export class MessagesPage implements OnInit {
                     });
                     this.replyContent.set("");
                     this.sending.set(false);
-                    this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.sent'), life: 2000 });
+                    this.messageService.add({
+                        severity: "success",
+                        summary: this.translocoService.translate("messages.sent"),
+                        life: 2000
+                    });
                 },
                 error: () => {
                     this.sending.set(false);
-                    this.messageService.add({ severity: "error", summary: this.translocoService.translate('messages.sendError'), life: 3000 });
+                    this.messageService.add({
+                        severity: "error",
+                        summary: this.translocoService.translate("messages.sendError"),
+                        life: 3000
+                    });
                 }
             });
     }
@@ -306,11 +312,19 @@ export class MessagesPage implements OnInit {
                 this.composeVisible.set(false);
                 this.sending.set(false);
                 this.selectConversation(conv);
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.sent'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("messages.sent"),
+                    life: 2000
+                });
             },
             error: () => {
                 this.sending.set(false);
-                this.messageService.add({ severity: "error", summary: this.translocoService.translate('messages.sendError'), life: 3000 });
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.translocoService.translate("messages.sendError"),
+                    life: 3000
+                });
             }
         });
     }
@@ -329,7 +343,11 @@ export class MessagesPage implements OnInit {
             next: (draft) => {
                 this.drafts.set([draft, ...this.drafts()]);
                 this.composeVisible.set(false);
-                this.messageService.add({ severity: "info", summary: this.translocoService.translate('messages.draftSaved'), life: 2000 });
+                this.messageService.add({
+                    severity: "info",
+                    summary: this.translocoService.translate("messages.draftSaved"),
+                    life: 2000
+                });
             }
         });
     }
@@ -339,7 +357,11 @@ export class MessagesPage implements OnInit {
         this.http.delete(`${base}${MESSAGES_ROUTES.draft(draftId)}`).subscribe({
             next: () => {
                 this.drafts.set(this.drafts().filter((d) => d.id !== draftId));
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.draftDeleted'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("messages.draftDeleted"),
+                    life: 2000
+                });
             }
         });
     }

@@ -51,22 +51,19 @@ const BG_GRADIENTS_NIGHT: Record<string, string> = {
         <!-- Collapsed state: small enable button -->
         @if (hasLocation() && !enabled()) {
             <button
-                class="flex w-full items-center gap-2 rounded-xl border border-surface p-3 text-sm text-color-secondary cursor-pointer bg-transparent hover:bg-emphasis transition-colors"
+                class="border-surface text-color-secondary hover:bg-emphasis flex w-full cursor-pointer items-center gap-2 rounded-xl border bg-transparent p-3 text-sm transition-colors"
                 (click)="toggle()"
                 type="button"
             >
                 <span>🌤️</span>
-                <span *transloco="let t">{{ t('weather.enable') }}</span>
+                <span *transloco="let t">{{ t("weather.enable") }}</span>
                 <i class="pi pi-chevron-down ml-auto" style="font-size: 0.7rem"></i>
             </button>
         }
 
         <!-- Weather card -->
         @if (weather(); as w) {
-            <div
-                class="overflow-hidden rounded-xl text-white"
-                [class]="'bg-gradient-to-br ' + gradient()"
-            >
+            <div class="overflow-hidden rounded-xl text-white" [class]="'bg-gradient-to-br ' + gradient()">
                 <div class="p-5">
                     <div class="flex items-start justify-between">
                         <div>
@@ -80,10 +77,10 @@ const BG_GRADIENTS_NIGHT: Record<string, string> = {
                         <div class="flex flex-col items-end gap-2">
                             <div class="text-5xl">{{ w.icon }}</div>
                             <button
-                                class="border-none bg-transparent cursor-pointer text-white/40 hover:text-white/80 transition-colors"
+                                class="cursor-pointer border-none bg-transparent text-white/40 transition-colors hover:text-white/80"
                                 (click)="toggle()"
-                                type="button"
                                 title="Hide weather"
+                                type="button"
                             >
                                 <i class="pi pi-eye-slash" style="font-size: 0.75rem"></i>
                             </button>
@@ -99,7 +96,7 @@ const BG_GRADIENTS_NIGHT: Record<string, string> = {
                             {{ w.humidity }}%
                         </span>
                         <span class="flex items-center gap-1" *transloco="let t">
-                            {{ t('weather.feelsLike') }} {{ w.feelsLike }}°C
+                            {{ t("weather.feelsLike") }} {{ w.feelsLike }}°C
                         </span>
                     </div>
                 </div>

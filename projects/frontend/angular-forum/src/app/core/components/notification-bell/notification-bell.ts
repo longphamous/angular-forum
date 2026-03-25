@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal, ViewChild } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    inject,
+    OnDestroy,
+    OnInit,
+    signal,
+    ViewChild
+} from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
@@ -6,6 +15,7 @@ import { Popover, PopoverModule } from "primeng/popover";
 import { SkeletonModule } from "primeng/skeleton";
 import { TooltipModule } from "primeng/tooltip";
 
+import { FriendsFacade } from "../../../facade/friends/friends-facade";
 import {
     AppNotification,
     NOTIFICATION_CATEGORY_MAP,
@@ -15,7 +25,6 @@ import {
     NotificationType
 } from "../../models/notifications/notification";
 import { NotificationService } from "../../services/notification.service";
-import { FriendsFacade } from "../../../facade/friends/friends-facade";
 
 interface TabItem {
     label: string;
@@ -52,8 +61,8 @@ export class NotificationBell implements OnInit, OnDestroy {
         return all.filter((n) => NOTIFICATION_CATEGORY_MAP[n.type] === tab);
     });
 
-    protected readonly friendRequestCount = computed(() =>
-        this.notifService.notifications().filter((n) => this.isFriendRequest(n)).length
+    protected readonly friendRequestCount = computed(
+        () => this.notifService.notifications().filter((n) => this.isFriendRequest(n)).length
     );
 
     ngOnInit(): void {
@@ -154,6 +163,9 @@ export class NotificationBell implements OnInit, OnDestroy {
             const key = d > 1 ? "common.daysAgoPlural" : "common.daysAgo";
             return this.translocoService.translate(key, { count: d });
         }
-        return new Date(dateStr).toLocaleDateString(this.translocoService.getActiveLang(), { day: "numeric", month: "short" });
+        return new Date(dateStr).toLocaleDateString(this.translocoService.getActiveLang(), {
+            day: "numeric",
+            month: "short"
+        });
     }
 }

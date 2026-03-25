@@ -39,7 +39,13 @@ const mockArticle = {
     updatedAt: "2026-01-01T00:00:00Z"
 };
 
-const mockCategory = { id: "cat-1", name: "General", slug: "general", description: "General articles", articleCount: 5 };
+const mockCategory = {
+    id: "cat-1",
+    name: "General",
+    slug: "general",
+    description: "General articles",
+    articleCount: 5
+};
 
 const mockVersion = {
     id: "v-1",

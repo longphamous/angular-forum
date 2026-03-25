@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-6" *transloco="let t">
     <!-- Header -->
     <div class="card">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex items-center justify-between">
             <div>
                 <h2 class="m-0 text-2xl font-bold">{{ t('moderation.title') }}</h2>
                 <p class="text-color-secondary mt-1 mb-0 text-sm">{{ t('moderation.subtitle') }}</p>
@@ -10,44 +10,43 @@
 
         <!-- Stats -->
         @if (stats(); as s) {
-            <div class="flex gap-4 mb-4">
-                <div class="flex items-center gap-2 rounded-lg border border-surface px-4 py-2">
-                    <i class="pi pi-clock text-yellow-500"></i>
-                    <span class="text-2xl font-bold">{{ s.pending }}</span>
-                    <span class="text-color-secondary text-sm">{{ t('moderation.pending') }}</span>
-                </div>
-                <div class="flex items-center gap-2 rounded-lg border border-surface px-4 py-2">
-                    <i class="pi pi-check-circle text-green-500"></i>
-                    <span class="text-2xl font-bold">{{ s.approvedToday }}</span>
-                    <span class="text-color-secondary text-sm">{{ t('moderation.approvedToday') }}</span>
-                </div>
-                <div class="flex items-center gap-2 rounded-lg border border-surface px-4 py-2">
-                    <i class="pi pi-times-circle text-red-500"></i>
-                    <span class="text-2xl font-bold">{{ s.rejectedToday }}</span>
-                    <span class="text-color-secondary text-sm">{{ t('moderation.rejectedToday') }}</span>
-                </div>
+        <div class="mb-4 flex gap-4">
+            <div class="border-surface flex items-center gap-2 rounded-lg border px-4 py-2">
+                <i class="pi pi-clock text-yellow-500"></i>
+                <span class="text-2xl font-bold">{{ s.pending }}</span>
+                <span class="text-color-secondary text-sm">{{ t('moderation.pending') }}</span>
             </div>
+            <div class="border-surface flex items-center gap-2 rounded-lg border px-4 py-2">
+                <i class="pi pi-check-circle text-green-500"></i>
+                <span class="text-2xl font-bold">{{ s.approvedToday }}</span>
+                <span class="text-color-secondary text-sm">{{ t('moderation.approvedToday') }}</span>
+            </div>
+            <div class="border-surface flex items-center gap-2 rounded-lg border px-4 py-2">
+                <i class="pi pi-times-circle text-red-500"></i>
+                <span class="text-2xl font-bold">{{ s.rejectedToday }}</span>
+                <span class="text-color-secondary text-sm">{{ t('moderation.rejectedToday') }}</span>
+            </div>
+        </div>
         }
 
         <!-- Tabs -->
-        <div class="flex gap-1 border-b border-surface">
+        <div class="border-surface flex gap-1 border-b">
             <button
-                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                class="cursor-pointer rounded-t-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+                (click)="onTabChange('pending')"
                 [class]="activeTab() === 'pending' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
                 [style.border-bottom]="activeTab() === 'pending' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
-                (click)="onTabChange('pending')"
                 type="button"
             >
-                {{ t('moderation.pendingTab') }}
-                @if ((stats()?.pending ?? 0) > 0) {
-                    <p-badge [value]="stats()!.pending.toString()" severity="danger" styleClass="ml-2" />
+                {{ t('moderation.pendingTab') }} @if ((stats()?.pending ?? 0) > 0) {
+                <p-badge [value]="stats()!.pending.toString()" severity="danger" styleClass="ml-2" />
                 }
             </button>
             <button
-                class="px-4 py-2 text-sm font-medium border-none cursor-pointer rounded-t-lg transition-colors"
+                class="cursor-pointer rounded-t-lg border-none px-4 py-2 text-sm font-medium transition-colors"
+                (click)="onTabChange('history')"
                 [class]="activeTab() === 'history' ? 'bg-transparent text-primary' : 'bg-transparent text-color-secondary hover:text-color'"
                 [style.border-bottom]="activeTab() === 'history' ? '2px solid var(--p-primary-color)' : '2px solid transparent'"
-                (click)="onTabChange('history')"
                 type="button"
             >
                 {{ t('moderation.historyTab') }}
@@ -57,98 +56,125 @@
 
     <!-- Pending Tab -->
     @if (activeTab() === 'pending') {
-        <div class="card">
-            @if (loading()) {
-                <div class="flex flex-col gap-3">
-                    @for (_ of [1,2,3]; track $index) {
-                        <p-skeleton height="5rem" />
-                    }
-                </div>
-            } @else if (pending().length === 0) {
-                <div class="text-color-secondary text-center py-12">
-                    <i class="pi pi-check-circle mb-2 block text-4xl text-green-500"></i>
-                    <p class="m-0 font-medium">{{ t('moderation.noPending') }}</p>
-                </div>
-            } @else {
-                <div class="flex flex-col gap-3">
-                    @for (item of pending(); track item.id) {
-                        <div class="flex items-center gap-4 rounded-xl border border-surface p-4 hover:bg-emphasis transition-colors">
-                            <!-- User info -->
-                            <a class="flex items-center gap-3 no-underline text-inherit min-w-0" [routerLink]="['/users', item.userId]">
-                                <p-avatar
-                                    [label]="item.displayName.charAt(0).toUpperCase()"
-                                    [image]="item.avatarUrl ?? ''"
-                                    shape="circle"
-                                    size="normal"
-                                />
-                                <div class="min-w-0">
-                                    <div class="text-sm font-semibold truncate">{{ item.displayName }}</div>
-                                    <div class="text-color-secondary text-xs">@{{ item.username }}</div>
-                                </div>
-                            </a>
-
-                            <!-- Type + Preview -->
-                            <div class="flex-1 flex items-center gap-3">
-                                <p-tag [value]="t(typeLabels[item.type])" severity="info" styleClass="text-xs" />
-                                @if (isImageType(item.type) && item.newValue) {
-                                    <div class="flex items-center gap-2">
-                                        @if (item.oldValue) {
-                                            <img class="h-10 w-10 rounded object-cover opacity-50" [src]="item.oldValue" alt="Old" />
-                                            <i class="pi pi-arrow-right text-color-secondary" style="font-size: 0.7rem"></i>
-                                        }
-                                        <img class="h-10 w-10 rounded object-cover border-2 border-primary" [src]="item.newValue" alt="New" />
-                                    </div>
-                                } @else if (item.type === 'signature') {
-                                    <div class="text-sm text-color-secondary truncate max-w-xs">{{ item.newValue }}</div>
-                                }
-                            </div>
-
-                            <!-- Time + Actions -->
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-color-secondary text-xs">{{ formatDate(item.createdAt) }}</span>
-                                <p-button icon="pi pi-eye" [text]="true" severity="secondary" size="small" (onClick)="openReview(item)" />
-                                <p-button icon="pi pi-check" [text]="true" severity="success" size="small" (onClick)="reviewItem.set(item); approve()" />
-                                <p-button icon="pi pi-times" [text]="true" severity="danger" size="small" (onClick)="reviewItem.set(item); reject()" />
-                            </div>
-                        </div>
-                    }
-                </div>
+    <div class="card">
+        @if (loading()) {
+        <div class="flex flex-col gap-3">
+            @for (_ of [1,2,3]; track $index) {
+            <p-skeleton height="5rem" />
             }
         </div>
+        } @else if (pending().length === 0) {
+        <div class="text-color-secondary py-12 text-center">
+            <i class="pi pi-check-circle mb-2 block text-4xl text-green-500"></i>
+            <p class="m-0 font-medium">{{ t('moderation.noPending') }}</p>
+        </div>
+        } @else {
+        <div class="flex flex-col gap-3">
+            @for (item of pending(); track item.id) {
+            <div
+                class="border-surface hover:bg-emphasis flex items-center gap-4 rounded-xl border p-4 transition-colors"
+            >
+                <!-- User info -->
+                <a
+                    class="flex min-w-0 items-center gap-3 text-inherit no-underline"
+                    [routerLink]="['/users', item.userId]"
+                >
+                    <p-avatar
+                        [image]="item.avatarUrl ?? ''"
+                        [label]="item.displayName.charAt(0).toUpperCase()"
+                        shape="circle"
+                        size="normal"
+                    />
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-semibold">{{ item.displayName }}</div>
+                        <div class="text-color-secondary text-xs">@{{ item.username }}</div>
+                    </div>
+                </a>
+
+                <!-- Type + Preview -->
+                <div class="flex flex-1 items-center gap-3">
+                    <p-tag [value]="t(typeLabels[item.type])" severity="info" styleClass="text-xs" />
+                    @if (isImageType(item.type) && item.newValue) {
+                    <div class="flex items-center gap-2">
+                        @if (item.oldValue) {
+                        <img class="h-10 w-10 rounded object-cover opacity-50" [src]="item.oldValue" alt="Old" />
+                        <i class="pi pi-arrow-right text-color-secondary" style="font-size: 0.7rem"></i>
+                        }
+                        <img
+                            class="border-primary h-10 w-10 rounded border-2 object-cover"
+                            [src]="item.newValue"
+                            alt="New"
+                        />
+                    </div>
+                    } @else if (item.type === 'signature') {
+                    <div class="text-color-secondary max-w-xs truncate text-sm">{{ item.newValue }}</div>
+                    }
+                </div>
+
+                <!-- Time + Actions -->
+                <div class="flex shrink-0 items-center gap-2">
+                    <span class="text-color-secondary text-xs">{{ formatDate(item.createdAt) }}</span>
+                    <p-button
+                        (onClick)="openReview(item)"
+                        [text]="true"
+                        icon="pi pi-eye"
+                        severity="secondary"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="reviewItem.set(item); approve()"
+                        [text]="true"
+                        icon="pi pi-check"
+                        severity="success"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="reviewItem.set(item); reject()"
+                        [text]="true"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                    />
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
     }
 
     <!-- History Tab -->
     @if (activeTab() === 'history') {
-        <div class="card">
-            @if (history().length === 0) {
-                <p class="text-color-secondary text-sm text-center py-8">{{ t('moderation.noHistory') }}</p>
-            } @else {
-                <div class="flex flex-col">
-                    @for (item of history(); track item.id) {
-                        <div class="flex items-center gap-4 py-3 border-b border-surface last:border-b-0">
-                            <p-avatar
-                                [label]="item.displayName.charAt(0).toUpperCase()"
-                                [image]="item.avatarUrl ?? ''"
-                                shape="circle"
-                                size="normal"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm">
-                                    <span class="font-semibold">{{ item.displayName }}</span>
-                                    <span class="text-color-secondary mx-1">·</span>
-                                    <span class="text-color-secondary">{{ t(typeLabels[item.type]) }}</span>
-                                </div>
-                                @if (item.reviewNote) {
-                                    <div class="text-color-secondary text-xs mt-0.5">{{ item.reviewNote }}</div>
-                                }
-                            </div>
-                            <p-tag [value]="item.status" [severity]="statusSeverity(item.status)" styleClass="text-xs" />
-                            <span class="text-color-secondary text-xs shrink-0">{{ formatDate(item.reviewedAt) }}</span>
-                        </div>
+    <div class="card">
+        @if (history().length === 0) {
+        <p class="text-color-secondary py-8 text-center text-sm">{{ t('moderation.noHistory') }}</p>
+        } @else {
+        <div class="flex flex-col">
+            @for (item of history(); track item.id) {
+            <div class="border-surface flex items-center gap-4 border-b py-3 last:border-b-0">
+                <p-avatar
+                    [image]="item.avatarUrl ?? ''"
+                    [label]="item.displayName.charAt(0).toUpperCase()"
+                    shape="circle"
+                    size="normal"
+                />
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm">
+                        <span class="font-semibold">{{ item.displayName }}</span>
+                        <span class="text-color-secondary mx-1">·</span>
+                        <span class="text-color-secondary">{{ t(typeLabels[item.type]) }}</span>
+                    </div>
+                    @if (item.reviewNote) {
+                    <div class="text-color-secondary mt-0.5 text-xs">{{ item.reviewNote }}</div>
                     }
                 </div>
+                <p-tag [severity]="statusSeverity(item.status)" [value]="item.status" styleClass="text-xs" />
+                <span class="text-color-secondary shrink-0 text-xs">{{ formatDate(item.reviewedAt) }}</span>
+            </div>
             }
         </div>
+        }
+    </div>
     }
 </div>
 
@@ -157,47 +183,65 @@
     [(visible)]="reviewDialogVisible"
     [modal]="true"
     [style]="{ width: '32rem' }"
-    header="Review"
     *transloco="let t"
+    header="Review"
 >
     @if (reviewItem(); as item) {
-        <div class="flex flex-col gap-4 pt-2">
-            <div class="flex items-center gap-3">
-                <p-avatar [label]="item.displayName.charAt(0).toUpperCase()" shape="circle" />
-                <div>
-                    <div class="font-semibold">{{ item.displayName }}</div>
-                    <p-tag [value]="t(typeLabels[item.type])" severity="info" styleClass="text-xs" />
-                </div>
-            </div>
-
-            <!-- Preview -->
-            @if (isImageType(item.type)) {
-                <div class="flex items-center gap-4">
-                    @if (item.oldValue) {
-                        <div class="text-center">
-                            <div class="text-xs text-color-secondary mb-1">{{ t('moderation.old') }}</div>
-                            <img class="h-24 w-24 rounded-lg object-cover opacity-50" [src]="item.oldValue" />
-                        </div>
-                        <i class="pi pi-arrow-right text-color-secondary text-xl"></i>
-                    }
-                    <div class="text-center">
-                        <div class="text-xs text-color-secondary mb-1">{{ t('moderation.new') }}</div>
-                        <img class="h-24 w-24 rounded-lg object-cover border-2 border-primary" [src]="item.newValue" />
-                    </div>
-                </div>
-            } @else {
-                <div class="rounded-lg border border-surface p-3 text-sm">{{ item.newValue }}</div>
-            }
-
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium">{{ t('moderation.note') }}</label>
-                <textarea pTextarea rows="2" [(ngModel)]="reviewNote" [placeholder]="t('moderation.notePlaceholder')"></textarea>
+    <div class="flex flex-col gap-4 pt-2">
+        <div class="flex items-center gap-3">
+            <p-avatar [label]="item.displayName.charAt(0).toUpperCase()" shape="circle" />
+            <div>
+                <div class="font-semibold">{{ item.displayName }}</div>
+                <p-tag [value]="t(typeLabels[item.type])" severity="info" styleClass="text-xs" />
             </div>
         </div>
 
-        <ng-template pTemplate="footer">
-            <p-button (onClick)="reject()" [label]="t('moderation.reject')" icon="pi pi-times" severity="danger" [outlined]="true" [loading]="processing()" />
-            <p-button (onClick)="approve()" [label]="t('moderation.approve')" icon="pi pi-check" severity="success" [loading]="processing()" />
-        </ng-template>
+        <!-- Preview -->
+        @if (isImageType(item.type)) {
+        <div class="flex items-center gap-4">
+            @if (item.oldValue) {
+            <div class="text-center">
+                <div class="text-color-secondary mb-1 text-xs">{{ t('moderation.old') }}</div>
+                <img class="h-24 w-24 rounded-lg object-cover opacity-50" [src]="item.oldValue" />
+            </div>
+            <i class="pi pi-arrow-right text-color-secondary text-xl"></i>
+            }
+            <div class="text-center">
+                <div class="text-color-secondary mb-1 text-xs">{{ t('moderation.new') }}</div>
+                <img class="border-primary h-24 w-24 rounded-lg border-2 object-cover" [src]="item.newValue" />
+            </div>
+        </div>
+        } @else {
+        <div class="border-surface rounded-lg border p-3 text-sm">{{ item.newValue }}</div>
+        }
+
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">{{ t('moderation.note') }}</label>
+            <textarea
+                [(ngModel)]="reviewNote"
+                [placeholder]="t('moderation.notePlaceholder')"
+                pTextarea
+                rows="2"
+            ></textarea>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button
+            (onClick)="reject()"
+            [label]="t('moderation.reject')"
+            [loading]="processing()"
+            [outlined]="true"
+            icon="pi pi-times"
+            severity="danger"
+        />
+        <p-button
+            (onClick)="approve()"
+            [label]="t('moderation.approve')"
+            [loading]="processing()"
+            icon="pi pi-check"
+            severity="success"
+        />
+    </ng-template>
     }
 </p-dialog>

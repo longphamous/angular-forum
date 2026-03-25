@@ -1,245 +1,276 @@
 <div class="clips-feed" (scroll)="onScroll($event)" #feedContainer>
     @if (facade.loading() && facade.clips().length === 0) {
-        <div class="clip-slide flex items-center justify-center">
-            <i class="pi pi-spin pi-spinner text-4xl text-white"></i>
+    <div class="clip-slide flex items-center justify-center">
+        <i class="pi pi-spin pi-spinner text-4xl text-white"></i>
+    </div>
+    } @for (clip of facade.clips(); track clip.id; let i = $index) {
+    <div class="clip-slide" [attr.data-clip-id]="clip.id">
+        <!-- Video -->
+        <video
+            class="clip-video"
+            (click)="togglePlayPause($event)"
+            [poster]="clip.thumbnailUrl ?? ''"
+            [src]="clip.videoUrl"
+            #videoRef
+            loop
+            muted
+            playsinline
+            preload="none"
+        ></video>
+
+        <!-- Play/Pause overlay icon -->
+        @if (playPauseIcon()) {
+        <div class="play-pause-overlay">
+            <i
+                class="pi text-5xl text-white"
+                [class.pi-pause]="playPauseIcon() === 'pause'"
+                [class.pi-play]="playPauseIcon() === 'play'"
+            ></i>
         </div>
-    }
+        }
 
-    @for (clip of facade.clips(); track clip.id; let i = $index) {
-        <div class="clip-slide" [attr.data-clip-id]="clip.id">
-            <!-- Video -->
-            <video
-                #videoRef
-                class="clip-video"
-                [src]="clip.videoUrl"
-                [poster]="clip.thumbnailUrl ?? ''"
-                muted
-                playsinline
-                loop
-                preload="none"
-                (click)="togglePlayPause($event)"
-            ></video>
-
-            <!-- Play/Pause overlay icon -->
-            @if (playPauseIcon()) {
-                <div class="play-pause-overlay">
-                    <i class="pi text-5xl text-white" [class.pi-play]="playPauseIcon() === 'play'" [class.pi-pause]="playPauseIcon() === 'pause'"></i>
-                </div>
-            }
-
-            <!-- Right side action bar (TikTok style) -->
-            <div class="clip-actions">
-                <!-- Author avatar with follow badge -->
-                <div class="clip-author-action">
-                    <a [routerLink]="['/users', clip.authorId]" class="no-underline">
-                        <p-avatar
-                            [image]="clip.authorAvatar ?? undefined"
-                            [label]="clip.authorAvatar ? undefined : clip.authorName.charAt(0)"
-                            shape="circle"
-                            styleClass="clip-author-avatar"
-                        />
-                    </a>
-                    @if (!clip.isOwner && !clip.isFollowing) {
-                        <button class="clip-follow-badge" (click)="toggleFollow(clip)">
-                            <i class="pi pi-plus text-xs"></i>
-                        </button>
-                    }
-                </div>
-
-                <!-- Like -->
-                <button class="clip-action-btn" (click)="toggleLike(clip)">
-                    <i class="pi text-xl" [class.pi-heart-fill]="clip.isLiked" [class.pi-heart]="!clip.isLiked" [class.text-red-500]="clip.isLiked" [class.text-white]="!clip.isLiked"></i>
-                    <span class="text-white text-xs mt-0.5">{{ formatCount(clip.likeCount) }}</span>
-                </button>
-
-                <!-- Comment -->
-                <button class="clip-action-btn" (click)="openComments(clip)">
-                    <i class="pi pi-comment text-xl text-white"></i>
-                    <span class="text-white text-xs mt-0.5">{{ formatCount(clip.commentCount) }}</span>
-                </button>
-
-                <!-- Share -->
-                <button class="clip-action-btn" (click)="shareClip(clip)">
-                    <i class="pi pi-share-alt text-xl text-white"></i>
-                    <span class="text-white text-xs mt-0.5">{{ formatCount(clip.shareCount) }}</span>
-                </button>
-
-                <!-- Mute/Unmute -->
-                <button class="clip-action-btn" (click)="toggleMute()">
-                    <i class="pi text-xl text-white" [class.pi-volume-off]="muted()" [class.pi-volume-up]="!muted()"></i>
-                </button>
-            </div>
-
-            <!-- Bottom overlay: author + description -->
-            <div class="clip-info">
-                <a [routerLink]="['/users', clip.authorId]" class="text-white font-bold text-sm no-underline hover:underline">
-                    {{ clip.authorName }}
+        <!-- Right side action bar (TikTok style) -->
+        <div class="clip-actions">
+            <!-- Author avatar with follow badge -->
+            <div class="clip-author-action">
+                <a class="no-underline" [routerLink]="['/users', clip.authorId]">
+                    <p-avatar
+                        [image]="clip.authorAvatar ?? undefined"
+                        [label]="clip.authorAvatar ? undefined : clip.authorName.charAt(0)"
+                        shape="circle"
+                        styleClass="clip-author-avatar"
+                    />
                 </a>
-                <p class="text-white text-sm m-0 mt-1 line-clamp-2">{{ clip.title }}</p>
-                @if (clip.description) {
-                    <p class="text-white/70 text-xs m-0 mt-1 line-clamp-1">{{ clip.description }}</p>
-                }
-                @if (clip.tags.length > 0) {
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                        @for (tag of clip.tags; track tag) {
-                            <span class="text-xs text-blue-300">#{{ tag }}</span>
-                        }
-                    </div>
+                @if (!clip.isOwner && !clip.isFollowing) {
+                <button class="clip-follow-badge" (click)="toggleFollow(clip)">
+                    <i class="pi pi-plus text-xs"></i>
+                </button>
                 }
             </div>
 
-            <!-- Seekable progress bar -->
-            <div
-                class="clip-progress"
-                (mousedown)="onSeekStart($event, i)"
-                (touchstart)="onSeekTouchStart($event, i)"
+            <!-- Like -->
+            <button class="clip-action-btn" (click)="toggleLike(clip)">
+                <i
+                    class="pi text-xl"
+                    [class.pi-heart-fill]="clip.isLiked"
+                    [class.pi-heart]="!clip.isLiked"
+                    [class.text-red-500]="clip.isLiked"
+                    [class.text-white]="!clip.isLiked"
+                ></i>
+                <span class="mt-0.5 text-xs text-white">{{ formatCount(clip.likeCount) }}</span>
+            </button>
+
+            <!-- Comment -->
+            <button class="clip-action-btn" (click)="openComments(clip)">
+                <i class="pi pi-comment text-xl text-white"></i>
+                <span class="mt-0.5 text-xs text-white">{{ formatCount(clip.commentCount) }}</span>
+            </button>
+
+            <!-- Share -->
+            <button class="clip-action-btn" (click)="shareClip(clip)">
+                <i class="pi pi-share-alt text-xl text-white"></i>
+                <span class="mt-0.5 text-xs text-white">{{ formatCount(clip.shareCount) }}</span>
+            </button>
+
+            <!-- Mute/Unmute -->
+            <button class="clip-action-btn" (click)="toggleMute()">
+                <i class="pi text-xl text-white" [class.pi-volume-off]="muted()" [class.pi-volume-up]="!muted()"></i>
+            </button>
+        </div>
+
+        <!-- Bottom overlay: author + description -->
+        <div class="clip-info">
+            <a
+                class="text-sm font-bold text-white no-underline hover:underline"
+                [routerLink]="['/users', clip.authorId]"
             >
-                <div class="clip-progress-bar" [style.width.%]="getProgress(i)"></div>
-                <div class="clip-progress-thumb" [style.left.%]="getProgress(i)"></div>
+                {{ clip.authorName }}
+            </a>
+            <p class="m-0 mt-1 line-clamp-2 text-sm text-white">{{ clip.title }}</p>
+            @if (clip.description) {
+            <p class="m-0 mt-1 line-clamp-1 text-xs text-white/70">{{ clip.description }}</p>
+            } @if (clip.tags.length > 0) {
+            <div class="mt-1 flex flex-wrap gap-1">
+                @for (tag of clip.tags; track tag) {
+                <span class="text-xs text-blue-300">#{{ tag }}</span>
+                }
             </div>
+            }
         </div>
-    }
 
-    @if (facade.clips().length === 0 && !facade.loading()) {
-        <div class="clip-slide flex items-center justify-center">
-            <div class="text-center text-white">
-                <i class="pi pi-video text-5xl mb-3 opacity-50"></i>
-                <p>{{ 'clips.noClips' | transloco }}</p>
-            </div>
+        <!-- Seekable progress bar -->
+        <div class="clip-progress" (mousedown)="onSeekStart($event, i)" (touchstart)="onSeekTouchStart($event, i)">
+            <div class="clip-progress-bar" [style.width.%]="getProgress(i)"></div>
+            <div class="clip-progress-thumb" [style.left.%]="getProgress(i)"></div>
         </div>
+    </div>
+    } @if (facade.clips().length === 0 && !facade.loading()) {
+    <div class="clip-slide flex items-center justify-center">
+        <div class="text-center text-white">
+            <i class="pi pi-video mb-3 text-5xl opacity-50"></i>
+            <p>{{ 'clips.noClips' | transloco }}</p>
+        </div>
+    </div>
     }
 </div>
 
 <!-- Upload FAB (top-right, inside host but outside feed scroll) -->
 @if (authFacade.isAuthenticated()) {
-    <button class="clip-upload-btn bg-red-500 hover:bg-red-600 text-white" (click)="openUploadDialog()">
-        <i class="pi pi-plus text-base"></i>
-    </button>
+<button class="clip-upload-btn bg-red-500 text-white hover:bg-red-600" (click)="openUploadDialog()">
+    <i class="pi pi-plus text-base"></i>
+</button>
 }
 
 <p-toast />
 
 <!-- Upload Dialog -->
 <p-dialog
-    [header]="'clips.upload_form.title' | transloco"
     [(visible)]="showUploadDialog"
-    [modal]="true"
-    [style]="{ width: '36rem' }"
     [closable]="true"
     [draggable]="false"
+    [header]="'clips.upload_form.title' | transloco"
+    [modal]="true"
+    [style]="{ width: '36rem' }"
 >
     <div class="flex flex-col gap-4">
         @if (!uploadVideoAsset()) {
-            <div
-                class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer"
-                [class.border-primary]="uploadDragging()"
-                [class.bg-primary/5]="uploadDragging()"
-                [class.border-surface-300]="!uploadDragging()"
-                (dragover)="onUploadDragOver($event)"
-                (dragleave)="uploadDragging.set(false)"
-                (drop)="onUploadDrop($event)"
-                (click)="uploadVideoInput.click()"
+        <div
+            class="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors"
+            (click)="uploadVideoInput.click()"
+            (dragleave)="uploadDragging.set(false)"
+            (dragover)="onUploadDragOver($event)"
+            (drop)="onUploadDrop($event)"
+            [class.bg-primary/5]="uploadDragging()"
+            [class.border-primary]="uploadDragging()"
+            [class.border-surface-300]="!uploadDragging()"
+        >
+            @if (!uploadProgress()) {
+            <i class="pi pi-video text-color-secondary mb-3 text-5xl"></i>
+            <p class="m-0 mb-1 text-lg font-semibold">{{ 'clips.upload_form.dropVideo' | transloco }}</p>
+            <p class="text-color-secondary m-0 text-sm">{{ 'clips.upload_form.videoHint' | transloco }}</p>
+            } @if (uploadProgress(); as prog) {
+            <div class="flex flex-col items-center gap-3">
+                <i class="pi pi-spin pi-spinner text-primary text-3xl"></i>
+                <span class="text-sm font-medium">{{ prog.filename }}</span>
+                <p-progressBar [showValue]="false" [value]="prog.percent" styleClass="w-full max-w-xs h-2" />
+                <span class="text-color-secondary text-xs">{{ prog.percent }}%</span>
+            </div>
+            }
+            <input
+                class="hidden"
+                (change)="onUploadVideoSelected($event)"
+                #uploadVideoInput
+                accept="video/mp4,video/webm,video/quicktime"
+                type="file"
+            />
+        </div>
+        } @if (uploadVideoAsset(); as asset) {
+        <div class="relative overflow-hidden rounded-xl bg-black">
+            <video
+                class="max-h-52 w-full object-contain"
+                (loadedmetadata)="onUploadVideoMetadata($event)"
+                [src]="asset.url"
+                muted
+                playsinline
+            ></video>
+            <button
+                class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-none bg-red-500/80 text-white hover:bg-red-600"
+                (click)="uploadVideoAsset.set(null); uploadDuration = 0"
             >
-                @if (!uploadProgress()) {
-                    <i class="pi pi-video text-5xl text-color-secondary mb-3"></i>
-                    <p class="text-lg font-semibold m-0 mb-1">{{ 'clips.upload_form.dropVideo' | transloco }}</p>
-                    <p class="text-color-secondary text-sm m-0">{{ 'clips.upload_form.videoHint' | transloco }}</p>
-                }
-                @if (uploadProgress(); as prog) {
-                    <div class="flex flex-col items-center gap-3">
-                        <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
-                        <span class="text-sm font-medium">{{ prog.filename }}</span>
-                        <p-progressBar [value]="prog.percent" styleClass="w-full max-w-xs h-2" [showValue]="false" />
-                        <span class="text-xs text-color-secondary">{{ prog.percent }}%</span>
-                    </div>
-                }
-                <input #uploadVideoInput type="file" accept="video/mp4,video/webm,video/quicktime" class="hidden" (change)="onUploadVideoSelected($event)" />
+                <i class="pi pi-times text-sm"></i>
+            </button>
+            <div class="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">
+                {{ formatCount(uploadDuration) }}s
             </div>
-        }
+        </div>
 
-        @if (uploadVideoAsset(); as asset) {
-            <div class="relative rounded-xl overflow-hidden bg-black">
-                <video class="w-full max-h-52 object-contain" [src]="asset.url" playsinline muted (loadedmetadata)="onUploadVideoMetadata($event)"></video>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">{{ 'clips.upload_form.thumbnailUrl' | transloco }}</label>
+            @if (!uploadThumbnailAsset()) {
+            <div
+                class="border-surface-300 dark:border-surface-600 hover:border-primary cursor-pointer rounded-lg border border-dashed p-3 text-center transition-colors"
+                (click)="uploadThumbInput.click()"
+            >
+                <i class="pi pi-image text-color-secondary mr-2"></i>
+                <span class="text-color-secondary text-sm">{{ 'clips.upload_form.selectThumbnail' | transloco }}</span>
+            </div>
+            <input
+                class="hidden"
+                (change)="onUploadThumbnailSelected($event)"
+                #uploadThumbInput
+                accept="image/jpeg,image/png,image/webp"
+                type="file"
+            />
+            } @else {
+            <div class="relative inline-block">
+                <img class="h-24 rounded-lg object-cover" [src]="uploadThumbnailAsset()!.url" />
                 <button
-                    class="absolute top-2 right-2 rounded-full bg-red-500/80 text-white w-7 h-7 flex items-center justify-center border-none cursor-pointer hover:bg-red-600"
-                    (click)="uploadVideoAsset.set(null); uploadDuration = 0"
+                    class="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border-none bg-red-500/80 text-white"
+                    (click)="uploadThumbnailAsset.set(null)"
                 >
-                    <i class="pi pi-times text-sm"></i>
+                    <i class="pi pi-times text-xs"></i>
                 </button>
-                <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                    {{ formatCount(uploadDuration) }}s
-                </div>
             </div>
+            }
+        </div>
 
-            <div class="flex flex-col gap-1">
-                <label class="font-semibold text-sm">{{ 'clips.upload_form.thumbnailUrl' | transloco }}</label>
-                @if (!uploadThumbnailAsset()) {
-                    <div
-                        class="border border-dashed border-surface-300 dark:border-surface-600 rounded-lg p-3 text-center cursor-pointer hover:border-primary transition-colors"
-                        (click)="uploadThumbInput.click()"
-                    >
-                        <i class="pi pi-image text-color-secondary mr-2"></i>
-                        <span class="text-color-secondary text-sm">{{ 'clips.upload_form.selectThumbnail' | transloco }}</span>
-                    </div>
-                    <input #uploadThumbInput type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="onUploadThumbnailSelected($event)" />
-                } @else {
-                    <div class="relative inline-block">
-                        <img [src]="uploadThumbnailAsset()!.url" class="h-24 rounded-lg object-cover" />
-                        <button class="absolute top-1 right-1 rounded-full bg-red-500/80 text-white w-5 h-5 flex items-center justify-center border-none cursor-pointer" (click)="uploadThumbnailAsset.set(null)">
-                            <i class="pi pi-times text-xs"></i>
-                        </button>
-                    </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">{{ 'clips.upload_form.clipTitle' | transloco }}</label>
+            <input
+                [(ngModel)]="uploadTitle"
+                [placeholder]="'clips.upload_form.titlePlaceholder' | transloco"
+                pInputText
+            />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">{{ 'clips.upload_form.description' | transloco }}</label>
+            <textarea
+                [(ngModel)]="uploadDescription"
+                [placeholder]="'clips.upload_form.descriptionPlaceholder' | transloco"
+                [rows]="2"
+                pTextarea
+            ></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">{{ 'clips.upload_form.tags' | transloco }}</label>
+            <div class="flex gap-2">
+                <input
+                    class="flex-1"
+                    (keydown)="onUploadTagKeydown($event)"
+                    [(ngModel)]="uploadTagInput"
+                    [placeholder]="('clips.upload_form.tagPlaceholder' | transloco)"
+                    pInputText
+                    type="text"
+                />
+                <p-button (onClick)="addUploadTag()" icon="pi pi-plus" severity="secondary" size="small" />
+            </div>
+            @if (uploadTags.length > 0) {
+            <div class="mt-1 flex flex-wrap gap-1">
+                @for (tag of uploadTags; track tag) {
+                <p-chip (onRemove)="removeUploadTag(tag)" [label]="'#' + tag" [removable]="true" />
                 }
             </div>
+            }
+        </div>
 
-            <div class="flex flex-col gap-1">
-                <label class="font-semibold text-sm">{{ 'clips.upload_form.clipTitle' | transloco }}</label>
-                <input pInputText [(ngModel)]="uploadTitle" [placeholder]="'clips.upload_form.titlePlaceholder' | transloco" />
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-semibold text-sm">{{ 'clips.upload_form.description' | transloco }}</label>
-                <textarea pTextarea [(ngModel)]="uploadDescription" [placeholder]="'clips.upload_form.descriptionPlaceholder' | transloco" [rows]="2"></textarea>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="font-semibold text-sm">{{ 'clips.upload_form.tags' | transloco }}</label>
-                <div class="flex gap-2">
-                    <input
-                        class="flex-1"
-                        pInputText
-                        [(ngModel)]="uploadTagInput"
-                        (keydown)="onUploadTagKeydown($event)"
-                        [placeholder]="('clips.upload_form.tagPlaceholder' | transloco)"
-                        type="text"
-                    />
-                    <p-button (onClick)="addUploadTag()" icon="pi pi-plus" severity="secondary" size="small" />
-                </div>
-                @if (uploadTags.length > 0) {
-                    <div class="flex gap-1 flex-wrap mt-1">
-                        @for (tag of uploadTags; track tag) {
-                            <p-chip [label]="'#' + tag" [removable]="true" (onRemove)="removeUploadTag(tag)" />
-                        }
-                    </div>
-                }
-            </div>
-
-            <div class="flex items-center gap-2">
-                <p-toggleSwitch [(ngModel)]="uploadIsPublished" />
-                <label class="text-sm">{{ 'clips.upload_form.publish' | transloco }}</label>
-            </div>
+        <div class="flex items-center gap-2">
+            <p-toggleSwitch [(ngModel)]="uploadIsPublished" />
+            <label class="text-sm">{{ 'clips.upload_form.publish' | transloco }}</label>
+        </div>
         }
     </div>
 
     <ng-template pTemplate="footer">
         @if (uploadVideoAsset()) {
-            <p-button
-                [label]="'clips.upload_form.submit' | transloco"
-                icon="pi pi-check"
-                [loading]="uploadSubmitting()"
-                [disabled]="!uploadTitle.trim()"
-                (onClick)="submitUpload()"
-            />
+        <p-button
+            (onClick)="submitUpload()"
+            [disabled]="!uploadTitle.trim()"
+            [label]="'clips.upload_form.submit' | transloco"
+            [loading]="uploadSubmitting()"
+            icon="pi pi-check"
+        />
         }
     </ng-template>
 </p-dialog>
@@ -247,78 +278,76 @@
 <!-- Comments Sidebar -->
 <p-drawer
     [(visible)]="showComments"
-    position="bottom"
-    [style]="{ height: '70vh' }"
     [modal]="true"
     [showCloseIcon]="true"
+    [style]="{ height: '70vh' }"
+    position="bottom"
 >
     <ng-template pTemplate="header">
-        <span class="font-semibold text-lg">{{ 'clips.comments_title' | transloco }}</span>
+        <span class="text-lg font-semibold">{{ 'clips.comments_title' | transloco }}</span>
     </ng-template>
 
-    <div class="flex flex-col h-full">
+    <div class="flex h-full flex-col">
         <div class="flex-1 overflow-y-auto px-2">
             @if (facade.commentsLoading()) {
-                <div class="flex justify-center py-4">
-                    <i class="pi pi-spin pi-spinner text-xl"></i>
-                </div>
-            }
-            @for (comment of facade.comments(); track comment.id) {
-                <div class="flex gap-3 py-3 border-b border-surface">
-                    <p-avatar
-                        [image]="comment.authorAvatar ?? undefined"
-                        [label]="comment.authorAvatar ? undefined : comment.authorName.charAt(0)"
-                        shape="circle"
-                    />
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm">{{ comment.authorName }}</span>
-                            <span class="text-color-secondary text-xs">{{ formatRelative(comment.createdAt) }}</span>
-                        </div>
-                        <p class="text-sm m-0 mt-1">{{ comment.content }}</p>
-
-                        @for (reply of comment.replies; track reply.id) {
-                            <div class="flex gap-2 mt-2 pl-4 border-l-2 border-surface">
-                                <p-avatar
-                                    [image]="reply.authorAvatar ?? undefined"
-                                    [label]="reply.authorAvatar ? undefined : reply.authorName.charAt(0)"
-                                    shape="circle"
-                                    size="normal"
-                                />
-                                <div>
-                                    <span class="font-semibold text-xs">{{ reply.authorName }}</span>
-                                    <span class="text-color-secondary text-xs ml-1">{{ formatRelative(reply.createdAt) }}</span>
-                                    <p class="text-sm m-0 mt-0.5">{{ reply.content }}</p>
-                                </div>
-                            </div>
-                        }
+            <div class="flex justify-center py-4">
+                <i class="pi pi-spin pi-spinner text-xl"></i>
+            </div>
+            } @for (comment of facade.comments(); track comment.id) {
+            <div class="border-surface flex gap-3 border-b py-3">
+                <p-avatar
+                    [image]="comment.authorAvatar ?? undefined"
+                    [label]="comment.authorAvatar ? undefined : comment.authorName.charAt(0)"
+                    shape="circle"
+                />
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold">{{ comment.authorName }}</span>
+                        <span class="text-color-secondary text-xs">{{ formatRelative(comment.createdAt) }}</span>
                     </div>
+                    <p class="m-0 mt-1 text-sm">{{ comment.content }}</p>
+
+                    @for (reply of comment.replies; track reply.id) {
+                    <div class="border-surface mt-2 flex gap-2 border-l-2 pl-4">
+                        <p-avatar
+                            [image]="reply.authorAvatar ?? undefined"
+                            [label]="reply.authorAvatar ? undefined : reply.authorName.charAt(0)"
+                            shape="circle"
+                            size="normal"
+                        />
+                        <div>
+                            <span class="text-xs font-semibold">{{ reply.authorName }}</span>
+                            <span class="text-color-secondary ml-1 text-xs">{{ formatRelative(reply.createdAt) }}</span>
+                            <p class="m-0 mt-0.5 text-sm">{{ reply.content }}</p>
+                        </div>
+                    </div>
+                    }
                 </div>
-            }
-            @if (!facade.commentsLoading() && facade.comments().length === 0) {
-                <div class="text-center text-color-secondary py-8">
-                    <i class="pi pi-comments text-3xl mb-2 opacity-50"></i>
-                    <p>{{ 'clips.noComments' | transloco }}</p>
-                </div>
+            </div>
+            } @if (!facade.commentsLoading() && facade.comments().length === 0) {
+            <div class="text-color-secondary py-8 text-center">
+                <i class="pi pi-comments mb-2 text-3xl opacity-50"></i>
+                <p>{{ 'clips.noComments' | transloco }}</p>
+            </div>
             }
         </div>
 
-        <div class="flex gap-2 p-3 border-t border-surface">
+        <div class="border-surface flex gap-2 border-t p-3">
             <textarea
-                pTextarea
-                [ngModel]="commentText()"
+                class="flex-1"
                 (ngModelChange)="commentText.set($event)"
+                [autoResize]="true"
+                [ngModel]="commentText()"
                 [placeholder]="'clips.addComment' | transloco"
                 [rows]="1"
-                [autoResize]="true"
-                class="flex-1"
+                pTextarea
             ></textarea>
             <p-button
-                icon="pi pi-send"
-                [rounded]="true"
-                [loading]="submittingComment()"
-                [disabled]="!commentText().trim()"
                 (onClick)="submitComment()"
+                [disabled]="!commentText().trim()"
+                [loading]="submittingComment()"
+                [rounded]="true"
+                icon="pi pi-send"
             />
         </div>
     </div>

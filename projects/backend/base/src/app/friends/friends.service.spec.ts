@@ -111,7 +111,7 @@ describe("FriendsService", () => {
                 "friend_request",
                 "Freundschaftsanfrage",
                 expect.any(String),
-                `/users/user-1`,
+                "/users/user-1",
                 { friendshipId: "f-1" }
             );
             expect(pushService.sendToUser).toHaveBeenCalledWith("user-2", "friend:request", expect.any(Object));
@@ -174,7 +174,7 @@ describe("FriendsService", () => {
                 "friend_accepted",
                 "Anfrage angenommen",
                 expect.any(String),
-                `/users/user-2`
+                "/users/user-2"
             );
             expect(pushService.sendToUser).toHaveBeenCalledWith("user-1", "friend:accepted", expect.any(Object));
             expect(activityService.create).toHaveBeenCalled();
@@ -261,9 +261,7 @@ describe("FriendsService", () => {
         });
 
         it("should handle case where user is addressee in friendship", async () => {
-            const friendships = [
-                makeFriendship({ requesterId: "user-3", addresseeId: "user-1", status: "accepted" })
-            ];
+            const friendships = [makeFriendship({ requesterId: "user-3", addresseeId: "user-1", status: "accepted" })];
             const friend = makeUser({ id: "user-3", username: "otherfriend", displayName: "Other Friend" });
 
             friendshipRepo.find!.mockResolvedValue(friendships);

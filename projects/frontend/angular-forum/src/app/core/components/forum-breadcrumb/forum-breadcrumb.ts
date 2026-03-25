@@ -13,11 +13,11 @@ export interface BreadcrumbItem {
     imports: [RouterModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <nav class="flex items-stretch rounded-lg overflow-hidden border border-surface h-10">
+        <nav class="border-surface flex h-10 items-stretch overflow-hidden rounded-lg border">
             @for (item of items(); track $index; let last = $last) {
                 @if (item.routerLink && !last) {
                     <a
-                        class="flex items-center gap-2 px-4 text-sm font-medium no-underline transition-colors duration-150 text-color hover:bg-emphasis"
+                        class="text-color hover:bg-emphasis flex items-center gap-2 px-4 text-sm font-medium no-underline transition-colors duration-150"
                         [routerLink]="item.routerLink"
                     >
                         @if (item.icon) {
@@ -28,9 +28,7 @@ export interface BreadcrumbItem {
                         }
                     </a>
                 } @else {
-                    <span
-                        class="flex items-center gap-2 px-4 text-sm font-bold text-primary"
-                    >
+                    <span class="text-primary flex items-center gap-2 px-4 text-sm font-bold">
                         @if (item.icon) {
                             <i [class]="'pi ' + item.icon"></i>
                         }
@@ -38,8 +36,15 @@ export interface BreadcrumbItem {
                     </span>
                 }
                 @if (!last) {
-                    <span class="flex items-center text-color-secondary bg-emphasis" style="width: 1px">
-                        <svg width="16" height="40" viewBox="0 0 16 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-full">
+                    <span class="text-color-secondary bg-emphasis flex items-center" style="width: 1px">
+                        <svg
+                            class="h-full"
+                            fill="none"
+                            height="40"
+                            viewBox="0 0 16 40"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
                             <path d="M0 0L16 20L0 40" fill="var(--p-surface-200)" />
                         </svg>
                     </span>

@@ -3,7 +3,14 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestj
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
-import { ClipsService, CreateClipDto, CreateCommentDto, EnrichedClip, EnrichedComment, UpdateClipDto } from "./clips.service";
+import {
+    ClipsService,
+    CreateClipDto,
+    CreateCommentDto,
+    EnrichedClip,
+    EnrichedComment,
+    UpdateClipDto
+} from "./clips.service";
 
 @Controller("clips")
 export class ClipsController {
@@ -86,7 +93,10 @@ export class ClipsController {
     }
 
     @Delete("comments/:commentId")
-    deleteComment(@Param("commentId") commentId: string, @CurrentUser() user: AuthenticatedUser): Promise<{ deleted: boolean }> {
+    deleteComment(
+        @Param("commentId") commentId: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ deleted: boolean }> {
         return this.clipsService.deleteComment(commentId, user.userId, user.role === "admin");
     }
 

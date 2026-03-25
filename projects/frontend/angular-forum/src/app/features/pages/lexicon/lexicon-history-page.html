@@ -5,69 +5,64 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (onClick)="goBack()" />
-            <h1 class="text-2xl font-bold m-0">{{ 'lexicon.versionHistory' | transloco }}</h1>
+            <p-button (onClick)="goBack()" [text]="true" icon="pi pi-arrow-left" severity="secondary" />
+            <h1 class="m-0 text-2xl font-bold">{{ 'lexicon.versionHistory' | transloco }}</h1>
             <span class="text-color-secondary">– {{ articleTitle() }}</span>
         </div>
         <div class="flex gap-2">
             <p-button
-                [label]="compareMode() ? ('common.cancel' | transloco) : ('lexicon.compareVersions' | transloco)"
-                [icon]="compareMode() ? 'pi pi-times' : 'pi pi-arrows-h'"
-                [severity]="compareMode() ? 'danger' : 'info'"
-                [outlined]="true"
                 (onClick)="toggleCompareMode()"
+                [icon]="compareMode() ? 'pi pi-times' : 'pi pi-arrows-h'"
+                [label]="compareMode() ? ('common.cancel' | transloco) : ('lexicon.compareVersions' | transloco)"
+                [outlined]="true"
+                [severity]="compareMode() ? 'danger' : 'info'"
             />
             <p-button
+                (onClick)="goToArticle()"
                 [label]="'lexicon.article' | transloco"
+                [outlined]="true"
                 icon="pi pi-file"
                 severity="secondary"
-                [outlined]="true"
-                (onClick)="goToArticle()"
             />
         </div>
     </div>
 
     @if (compareMode() && compareLeft() && compareRight()) {
-        <!-- Compare View -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="surface-card border border-surface rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="font-semibold">
-                        V{{ compareLeft()!.versionNumber }} – {{ compareLeft()!.authorName }}
-                    </span>
-                    <span class="text-color-secondary text-sm">{{ formatDate(compareLeft()!.createdAt) }}</span>
-                </div>
-                <div class="prose max-w-none" [innerHTML]="leftContent"></div>
+    <!-- Compare View -->
+    <div class="grid grid-cols-2 gap-4">
+        <div class="surface-card border-surface rounded-lg border p-4">
+            <div class="mb-3 flex items-center justify-between">
+                <span class="font-semibold">
+                    V{{ compareLeft()!.versionNumber }} – {{ compareLeft()!.authorName }}
+                </span>
+                <span class="text-color-secondary text-sm">{{ formatDate(compareLeft()!.createdAt) }}</span>
             </div>
-            <div class="surface-card border border-surface rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="font-semibold">
-                        V{{ compareRight()!.versionNumber }} – {{ compareRight()!.authorName }}
-                    </span>
-                    <span class="text-color-secondary text-sm">{{ formatDate(compareRight()!.createdAt) }}</span>
-                </div>
-                <div class="prose max-w-none" [innerHTML]="rightContent"></div>
+            <div class="prose max-w-none" [innerHTML]="leftContent"></div>
+        </div>
+        <div class="surface-card border-surface rounded-lg border p-4">
+            <div class="mb-3 flex items-center justify-between">
+                <span class="font-semibold">
+                    V{{ compareRight()!.versionNumber }} – {{ compareRight()!.authorName }}
+                </span>
+                <span class="text-color-secondary text-sm">{{ formatDate(compareRight()!.createdAt) }}</span>
             </div>
+            <div class="prose max-w-none" [innerHTML]="rightContent"></div>
         </div>
-    }
-
-    @if (compareMode() && (!compareLeft() || !compareRight())) {
-        <div class="surface-card border border-surface rounded-lg p-4 text-center text-color-secondary">
-            @if (!compareLeft()) {
-                {{ 'lexicon.selectFirstVersion' | transloco }}
-            } @else {
-                {{ 'lexicon.selectSecondVersion' | transloco }}
-            }
-        </div>
+    </div>
+    } @if (compareMode() && (!compareLeft() || !compareRight())) {
+    <div class="surface-card border-surface text-color-secondary rounded-lg border p-4 text-center">
+        @if (!compareLeft()) { {{ 'lexicon.selectFirstVersion' | transloco }} } @else { {{ 'lexicon.selectSecondVersion'
+        | transloco }} }
+    </div>
     }
 
     <!-- Versions Table -->
-    <div class="surface-card border border-surface rounded-lg">
-        <p-table [value]="facade.versions()" [tableStyle]="{ 'min-width': '50rem' }">
+    <div class="surface-card border-surface rounded-lg border">
+        <p-table [tableStyle]="{ 'min-width': '50rem' }" [value]="facade.versions()">
             <ng-template pTemplate="header">
                 <tr>
                     @if (compareMode()) {
-                        <th style="width: 4rem">{{ 'common.select' | transloco }}</th>
+                    <th style="width: 4rem">{{ 'common.select' | transloco }}</th>
                     }
                     <th style="width: 6rem">{{ 'lexicon.version' | transloco }}</th>
                     <th>{{ 'common.title' | transloco }}</th>
@@ -78,17 +73,17 @@
                     <th style="width: 12rem">{{ 'common.actions' | transloco }}</th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-version>
+            <ng-template let-version pTemplate="body">
                 <tr>
                     @if (compareMode()) {
-                        <td>
-                            <p-button
-                                icon="pi pi-check"
-                                [text]="true"
-                                [disabled]="!!compareLeft() && !!compareRight()"
-                                (onClick)="selectForCompare(version)"
-                            />
-                        </td>
+                    <td>
+                        <p-button
+                            (onClick)="selectForCompare(version)"
+                            [disabled]="!!compareLeft() && !!compareRight()"
+                            [text]="true"
+                            icon="pi pi-check"
+                        />
+                    </td>
                     }
                     <td class="font-mono font-semibold">V{{ version.versionNumber }}</td>
                     <td>{{ version.title }}</td>
@@ -97,32 +92,32 @@
                     <td class="text-sm">{{ formatDate(version.createdAt) }}</td>
                     <td>
                         @if (version.isProtected) {
-                            <p-tag [value]="'lexicon.protected' | transloco" severity="warn" icon="pi pi-lock" />
+                        <p-tag [value]="'lexicon.protected' | transloco" icon="pi pi-lock" severity="warn" />
                         }
                     </td>
                     <td>
                         <div class="flex gap-1">
                             <p-button
-                                icon="pi pi-eye"
-                                [text]="true"
-                                [pTooltip]="'common.view' | transloco"
                                 (onClick)="viewVersion(version)"
+                                [pTooltip]="'common.view' | transloco"
+                                [text]="true"
+                                icon="pi pi-eye"
                             />
                             <p-button
-                                icon="pi pi-replay"
-                                [text]="true"
-                                severity="info"
-                                [pTooltip]="'lexicon.restoreVersion' | transloco"
                                 (onClick)="restoreVersion(version)"
+                                [pTooltip]="'lexicon.restoreVersion' | transloco"
+                                [text]="true"
+                                icon="pi pi-replay"
+                                severity="info"
                             />
                             @if (authFacade.isAdmin()) {
-                                <p-button
-                                    [icon]="version.isProtected ? 'pi pi-lock-open' : 'pi pi-lock'"
-                                    [text]="true"
-                                    severity="warn"
-                                    [pTooltip]="'lexicon.protectVersion' | transloco"
-                                    (onClick)="protectVersion(version)"
-                                />
+                            <p-button
+                                (onClick)="protectVersion(version)"
+                                [icon]="version.isProtected ? 'pi pi-lock-open' : 'pi pi-lock'"
+                                [pTooltip]="'lexicon.protectVersion' | transloco"
+                                [text]="true"
+                                severity="warn"
+                            />
                             }
                         </div>
                     </td>
@@ -130,7 +125,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td [attr.colspan]="compareMode() ? 8 : 7" class="text-center text-color-secondary py-8">
+                    <td class="text-color-secondary py-8 text-center" [attr.colspan]="compareMode() ? 8 : 7">
                         {{ 'lexicon.noVersions' | transloco }}
                     </td>
                 </tr>
@@ -141,19 +136,17 @@
 
 <!-- Version Detail Dialog -->
 <p-dialog
-    [header]="'V' + (facade.currentVersion()?.versionNumber ?? '') + ' – ' + (facade.currentVersion()?.title ?? '')"
     [(visible)]="versionDialogVisible"
+    [header]="'V' + (facade.currentVersion()?.versionNumber ?? '') + ' – ' + (facade.currentVersion()?.title ?? '')"
+    [maximizable]="true"
     [modal]="true"
     [style]="{ width: '70vw' }"
-    [maximizable]="true"
 >
     @if (facade.currentVersion(); as version) {
-        <div class="mb-3 text-sm text-color-secondary">
-            {{ version.authorName }} – {{ formatDate(version.createdAt) }}
-            @if (version.changeSummary) {
-                – {{ version.changeSummary }}
-            }
-        </div>
-        <div class="prose max-w-none" [innerHTML]="versionContent"></div>
+    <div class="text-color-secondary mb-3 text-sm">
+        {{ version.authorName }} – {{ formatDate(version.createdAt) }} @if (version.changeSummary) { – {{
+        version.changeSummary }} }
+    </div>
+    <div class="prose max-w-none" [innerHTML]="versionContent"></div>
     }
 </p-dialog>

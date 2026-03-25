@@ -68,9 +68,18 @@ export class ChronikPage implements OnInit {
 
     get visibilityOptions(): { label: string; value: ChronikVisibility }[] {
         return [
-            { label: this.translocoService.translate('chronik.visibility.public'), value: "public" as ChronikVisibility },
-            { label: this.translocoService.translate('chronik.visibility.followers'), value: "followers" as ChronikVisibility },
-            { label: this.translocoService.translate('chronik.visibility.private'), value: "private" as ChronikVisibility }
+            {
+                label: this.translocoService.translate("chronik.visibility.public"),
+                value: "public" as ChronikVisibility
+            },
+            {
+                label: this.translocoService.translate("chronik.visibility.followers"),
+                value: "followers" as ChronikVisibility
+            },
+            {
+                label: this.translocoService.translate("chronik.visibility.private"),
+                value: "private" as ChronikVisibility
+            }
         ];
     }
 

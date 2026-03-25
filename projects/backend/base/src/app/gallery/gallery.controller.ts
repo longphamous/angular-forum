@@ -20,21 +20,13 @@ export class GalleryController {
     }
 
     @Get("albums/:id")
-    getAlbum(
-        @Param("id") id: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Query("password") password?: string
-    ) {
+    getAlbum(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser, @Query("password") password?: string) {
         const isAdmin = user.role === "admin";
         return this.galleryService.getAlbum(id, user.userId, isAdmin, password);
     }
 
     @Put("albums/:id")
-    updateAlbum(
-        @Param("id") id: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() body: CreateAlbumDto
-    ) {
+    updateAlbum(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser, @Body() body: CreateAlbumDto) {
         const isAdmin = user.role === "admin";
         return this.galleryService.updateAlbum(id, user.userId, isAdmin, body);
     }
@@ -71,11 +63,7 @@ export class GalleryController {
     }
 
     @Patch("comments/:id")
-    updateComment(
-        @Param("id") id: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() body: { content: string }
-    ) {
+    updateComment(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser, @Body() body: { content: string }) {
         const isAdmin = user.role === "admin";
         return this.galleryService.updateComment(id, user.userId, isAdmin, body.content);
     }
@@ -87,11 +75,7 @@ export class GalleryController {
     }
 
     @Post("media/:id/rate")
-    rateMedia(
-        @Param("id") mediaId: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() body: { rating: number }
-    ) {
+    rateMedia(@Param("id") mediaId: string, @CurrentUser() user: AuthenticatedUser, @Body() body: { rating: number }) {
         return this.galleryService.rateMedia(mediaId, user.userId, body.rating);
     }
 }

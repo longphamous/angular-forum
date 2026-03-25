@@ -4,11 +4,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
 import { UserEntity } from "../user/entities/user.entity";
+import { RecipeEntity } from "./entities/recipe.entity";
 import { RecipeCategoryEntity } from "./entities/recipe-category.entity";
 import { RecipeCommentEntity } from "./entities/recipe-comment.entity";
 import { RecipeFavoriteEntity } from "./entities/recipe-favorite.entity";
 import { RecipeRatingEntity } from "./entities/recipe-rating.entity";
-import { RecipeEntity } from "./entities/recipe.entity";
 import { RecipesController } from "./recipes.controller";
 import { RecipesService } from "./recipes.service";
 

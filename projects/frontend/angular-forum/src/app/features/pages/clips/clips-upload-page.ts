@@ -44,78 +44,86 @@ import { MediaFacade } from "../../../facade/media/media-facade";
     template: `
         <p-toast />
         <div class="mx-auto max-w-2xl p-4">
-            <h2 class="text-2xl font-bold mb-4">{{ 'clips.upload_form.title' | transloco }}</h2>
+            <h2 class="mb-4 text-2xl font-bold">{{ "clips.upload_form.title" | transloco }}</h2>
 
-            <div class="surface-card border border-surface rounded-lg p-6 flex flex-col gap-5">
+            <div class="surface-card border-surface flex flex-col gap-5 rounded-lg border p-6">
                 <!-- ── Video Upload Zone ──────────────────────────────────── -->
                 @if (!videoAsset()) {
                     <div
-                        class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer"
-                        [class.border-primary]="dragging()"
+                        class="cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors"
                         [class.bg-primary/5]="dragging()"
+                        [class.border-primary]="dragging()"
                         [class.border-surface-300]="!dragging()"
                         [class.dark:border-surface-600]="!dragging()"
-                        (dragover)="onDragOver($event)"
-                        (dragleave)="dragging.set(false)"
-                        (drop)="onDrop($event)"
                         (click)="videoInput.click()"
+                        (dragleave)="dragging.set(false)"
+                        (dragover)="onDragOver($event)"
+                        (drop)="onDrop($event)"
                     >
                         @if (!uploadProgress()) {
-                            <i class="pi pi-video text-5xl text-color-secondary mb-3"></i>
-                            <p class="text-lg font-semibold text-color m-0 mb-1">
-                                {{ 'clips.upload_form.dropVideo' | transloco }}
+                            <i class="pi pi-video text-color-secondary mb-3 text-5xl"></i>
+                            <p class="text-color m-0 mb-1 text-lg font-semibold">
+                                {{ "clips.upload_form.dropVideo" | transloco }}
                             </p>
-                            <p class="text-color-secondary text-sm m-0">
-                                {{ 'clips.upload_form.videoHint' | transloco }}
+                            <p class="text-color-secondary m-0 text-sm">
+                                {{ "clips.upload_form.videoHint" | transloco }}
                             </p>
                         }
 
                         @if (uploadProgress(); as prog) {
                             <div class="flex flex-col items-center gap-3">
-                                <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                                <i class="pi pi-spin pi-spinner text-primary text-3xl"></i>
                                 <span class="text-sm font-medium">{{ prog.filename }}</span>
-                                <p-progressBar [value]="prog.percent" styleClass="w-full max-w-xs h-2" [showValue]="false" />
-                                <span class="text-xs text-color-secondary">{{ prog.percent }}%</span>
+                                <p-progressBar
+                                    [showValue]="false"
+                                    [value]="prog.percent"
+                                    styleClass="w-full max-w-xs h-2"
+                                />
+                                <span class="text-color-secondary text-xs">{{ prog.percent }}%</span>
                             </div>
                         }
 
                         <input
-                            #videoInput
-                            type="file"
-                            accept="video/mp4,video/webm,video/quicktime"
                             class="hidden"
+                            #videoInput
                             (change)="onVideoSelected($event)"
+                            accept="video/mp4,video/webm,video/quicktime"
+                            type="file"
                         />
                     </div>
                 }
 
                 <!-- ── Video Preview ──────────────────────────────────────── -->
                 @if (videoAsset(); as asset) {
-                    <div class="relative rounded-xl overflow-hidden bg-black">
+                    <div class="relative overflow-hidden rounded-xl bg-black">
                         <video
+                            class="max-h-80 w-full object-contain"
                             #videoPreview
-                            class="w-full max-h-80 object-contain"
                             [src]="asset.url"
-                            playsinline
-                            muted
-                            loop
                             (loadedmetadata)="onVideoMetadata($event)"
+                            loop
+                            muted
+                            playsinline
                         ></video>
                         <div class="absolute top-2 right-2 flex gap-1">
                             <button
-                                class="rounded-full bg-black/60 text-white w-8 h-8 flex items-center justify-center border-none cursor-pointer hover:bg-black/80"
+                                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-black/60 text-white hover:bg-black/80"
                                 (click)="togglePreviewPlay()"
                             >
-                                <i class="pi" [class.pi-play]="!previewPlaying()" [class.pi-pause]="previewPlaying()"></i>
+                                <i
+                                    class="pi"
+                                    [class.pi-pause]="previewPlaying()"
+                                    [class.pi-play]="!previewPlaying()"
+                                ></i>
                             </button>
                             <button
-                                class="rounded-full bg-red-500/80 text-white w-8 h-8 flex items-center justify-center border-none cursor-pointer hover:bg-red-600"
+                                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-red-500/80 text-white hover:bg-red-600"
                                 (click)="removeVideo()"
                             >
                                 <i class="pi pi-times"></i>
                             </button>
                         </div>
-                        <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                        <div class="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">
                             {{ formatDuration(duration) }}
                         </div>
                     </div>
@@ -124,27 +132,29 @@ import { MediaFacade } from "../../../facade/media/media-facade";
                 <!-- ── Thumbnail Upload ───────────────────────────────────── -->
                 @if (videoAsset()) {
                     <div class="flex flex-col gap-1">
-                        <label class="font-semibold text-sm">{{ 'clips.upload_form.thumbnailUrl' | transloco }}</label>
+                        <label class="text-sm font-semibold">{{ "clips.upload_form.thumbnailUrl" | transloco }}</label>
                         @if (!thumbnailAsset()) {
                             <div
-                                class="border-2 border-dashed border-surface-300 dark:border-surface-600 rounded-lg p-4 text-center cursor-pointer transition-colors hover:border-primary"
+                                class="border-surface-300 dark:border-surface-600 hover:border-primary cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors"
                                 (click)="thumbInput.click()"
                             >
-                                <i class="pi pi-image text-2xl text-color-secondary mb-1"></i>
-                                <p class="text-color-secondary text-xs m-0">{{ 'clips.upload_form.selectThumbnail' | transloco }}</p>
+                                <i class="pi pi-image text-color-secondary mb-1 text-2xl"></i>
+                                <p class="text-color-secondary m-0 text-xs">
+                                    {{ "clips.upload_form.selectThumbnail" | transloco }}
+                                </p>
                             </div>
                             <input
-                                #thumbInput
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
                                 class="hidden"
+                                #thumbInput
                                 (change)="onThumbnailSelected($event)"
+                                accept="image/jpeg,image/png,image/webp"
+                                type="file"
                             />
                         } @else {
                             <div class="relative inline-block">
-                                <img [src]="thumbnailAsset()!.url" class="h-32 rounded-lg object-cover" />
+                                <img class="h-32 rounded-lg object-cover" [src]="thumbnailAsset()!.url" />
                                 <button
-                                    class="absolute top-1 right-1 rounded-full bg-red-500/80 text-white w-6 h-6 flex items-center justify-center border-none cursor-pointer"
+                                    class="absolute top-1 right-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-none bg-red-500/80 text-white"
                                     (click)="thumbnailAsset.set(null)"
                                 >
                                     <i class="pi pi-times text-xs"></i>
@@ -157,34 +167,43 @@ import { MediaFacade } from "../../../facade/media/media-facade";
                 <!-- ── Details Form ───────────────────────────────────────── -->
                 @if (videoAsset()) {
                     <div class="flex flex-col gap-1">
-                        <label class="font-semibold text-sm">{{ 'clips.upload_form.clipTitle' | transloco }}</label>
-                        <input pInputText [(ngModel)]="title" [placeholder]="'clips.upload_form.titlePlaceholder' | transloco" />
+                        <label class="text-sm font-semibold">{{ "clips.upload_form.clipTitle" | transloco }}</label>
+                        <input
+                            [(ngModel)]="title"
+                            [placeholder]="'clips.upload_form.titlePlaceholder' | transloco"
+                            pInputText
+                        />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="font-semibold text-sm">{{ 'clips.upload_form.description' | transloco }}</label>
-                        <textarea pTextarea [(ngModel)]="description" [placeholder]="'clips.upload_form.descriptionPlaceholder' | transloco" [rows]="3"></textarea>
+                        <label class="text-sm font-semibold">{{ "clips.upload_form.description" | transloco }}</label>
+                        <textarea
+                            [(ngModel)]="description"
+                            [placeholder]="'clips.upload_form.descriptionPlaceholder' | transloco"
+                            [rows]="3"
+                            pTextarea
+                        ></textarea>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="font-semibold text-sm">{{ 'clips.upload_form.tags' | transloco }}</label>
-                        <div class="flex gap-1 flex-wrap mb-2">
+                        <label class="text-sm font-semibold">{{ "clips.upload_form.tags" | transloco }}</label>
+                        <div class="mb-2 flex flex-wrap gap-1">
                             @for (tag of tags; track tag) {
                                 <p-chip [label]="tag" [removable]="true" (onRemove)="removeTag(tag)" />
                             }
                         </div>
-                        <input pInputText [(ngModel)]="tagInput" (keyup.enter)="addTag()" placeholder="Enter tag..." />
+                        <input [(ngModel)]="tagInput" (keyup.enter)="addTag()" pInputText placeholder="Enter tag..." />
                     </div>
                     <div class="flex items-center gap-2">
                         <p-toggleSwitch [(ngModel)]="isPublished" />
-                        <label class="text-sm">{{ 'clips.upload_form.publish' | transloco }}</label>
+                        <label class="text-sm">{{ "clips.upload_form.publish" | transloco }}</label>
                     </div>
 
                     <p-button
-                        [label]="'clips.upload_form.submit' | transloco"
-                        icon="pi pi-check"
-                        [loading]="submitting()"
                         [disabled]="!title.trim()"
-                        styleClass="w-full"
+                        [label]="'clips.upload_form.submit' | transloco"
+                        [loading]="submitting()"
                         (onClick)="submit()"
+                        icon="pi pi-check"
+                        styleClass="w-full"
                     />
                 }
             </div>

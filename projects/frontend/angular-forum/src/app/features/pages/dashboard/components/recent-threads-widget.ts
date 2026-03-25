@@ -46,34 +46,24 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
 
                             <!-- Center: title + meta -->
                             <div class="min-w-0 flex-1">
-                                <div
-                                    class="text-surface-900 dark:text-surface-0 truncate text-sm font-bold"
-                                >
+                                <div class="text-surface-900 dark:text-surface-0 truncate text-sm font-bold">
                                     {{ thread.title }}
                                 </div>
                                 <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
                                     <span class="text-surface-500 dark:text-surface-400 text-xs">
                                         {{ thread.authorName }}
                                     </span>
-                                    <span class="text-surface-400 dark:text-surface-500 text-xs"
-                                        >&middot;</span
-                                    >
+                                    <span class="text-surface-400 dark:text-surface-500 text-xs">&middot;</span>
                                     <span class="text-surface-500 dark:text-surface-400 text-xs">
                                         {{ relativeTime(thread.lastPostAt) }}
                                     </span>
-                                    <p-tag
-                                        [value]="thread.forumName"
-                                        severity="secondary"
-                                        styleClass="text-xs"
-                                    />
+                                    <p-tag [value]="thread.forumName" severity="secondary" styleClass="text-xs" />
                                 </div>
                             </div>
 
                             <!-- Right: reply count + last activity -->
                             <div class="flex shrink-0 flex-col items-end gap-1">
-                                <span
-                                    class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-xs"
-                                >
+                                <span class="text-surface-500 dark:text-surface-400 flex items-center gap-1 text-xs">
                                     <i class="pi pi-comment text-xs"></i>
                                     {{ thread.replyCount }}
                                 </span>

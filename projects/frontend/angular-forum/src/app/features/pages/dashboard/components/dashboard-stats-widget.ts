@@ -25,9 +25,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             {{ facade.stats()?.threadCount ?? 0 }}
                         }
                     </span>
-                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{
-                        t("dashboard.threads")
-                    }}</span>
+                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{ t("dashboard.threads") }}</span>
                 </div>
 
                 <!-- Posts -->
@@ -44,9 +42,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             {{ facade.stats()?.postCount ?? 0 }}
                         }
                     </span>
-                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{
-                        t("dashboard.posts")
-                    }}</span>
+                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{ t("dashboard.posts") }}</span>
                 </div>
 
                 <!-- Members -->
@@ -63,9 +59,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                             {{ facade.stats()?.userCount ?? 0 }}
                         }
                     </span>
-                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{
-                        t("dashboard.stats.users")
-                    }}</span>
+                    <span class="text-surface-500 dark:text-surface-400 text-xs">{{ t("dashboard.stats.users") }}</span>
                 </div>
             </div>
         </p-card>

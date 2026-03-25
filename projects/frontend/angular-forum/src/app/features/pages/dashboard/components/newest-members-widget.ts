@@ -42,9 +42,7 @@ import { DashboardFacade } from "../../../../facade/dashboard/dashboard-facade";
                                 styleClass="shrink-0 bg-primary/10 text-primary font-semibold"
                             />
                             <div class="min-w-0 flex-1">
-                                <div
-                                    class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium"
-                                >
+                                <div class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium">
                                     {{ member.displayName }}
                                 </div>
                                 <div class="text-surface-500 dark:text-surface-400 text-xs">

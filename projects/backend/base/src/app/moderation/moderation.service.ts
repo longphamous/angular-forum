@@ -78,7 +78,12 @@ export class ModerationService {
     async getPendingApprovals(
         page: number,
         limit: number
-    ): Promise<{ data: (ProfileApprovalEntity & { user?: { username: string; displayName: string; avatarUrl: string | null } })[]; total: number }> {
+    ): Promise<{
+        data: (ProfileApprovalEntity & {
+            user?: { username: string; displayName: string; avatarUrl: string | null };
+        })[];
+        total: number;
+    }> {
         const [rows, total] = await this.approvalRepo.findAndCount({
             where: { status: "pending" as ProfileApprovalStatus },
             order: { createdAt: "ASC" },
@@ -101,7 +106,9 @@ export class ModerationService {
             const u = userMap.get(r.userId);
             return {
                 ...r,
-                user: u ? { username: u.username, displayName: u.displayName, avatarUrl: u.avatarUrl ?? null } : undefined
+                user: u
+                    ? { username: u.username, displayName: u.displayName, avatarUrl: u.avatarUrl ?? null }
+                    : undefined
             };
         });
 
@@ -176,15 +183,9 @@ export class ModerationService {
         return saved;
     }
 
-    async getHistory(
-        page: number,
-        limit: number
-    ): Promise<{ data: ProfileApprovalEntity[]; total: number }> {
+    async getHistory(page: number, limit: number): Promise<{ data: ProfileApprovalEntity[]; total: number }> {
         const [data, total] = await this.approvalRepo.findAndCount({
-            where: [
-                { status: "approved" as ProfileApprovalStatus },
-                { status: "rejected" as ProfileApprovalStatus }
-            ],
+            where: [{ status: "approved" as ProfileApprovalStatus }, { status: "rejected" as ProfileApprovalStatus }],
             order: { reviewedAt: "DESC" },
             skip: (page - 1) * limit,
             take: limit

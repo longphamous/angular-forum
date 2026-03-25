@@ -284,14 +284,14 @@ export class ShopPage implements OnInit {
                 this.load();
                 this.messageService.add({
                     severity: "success",
-                    summary: this.translocoService.translate('common.success'),
-                    detail: this.translocoService.translate('shop.itemPurchased', { name: item.name }),
+                    summary: this.translocoService.translate("common.success"),
+                    detail: this.translocoService.translate("shop.itemPurchased", { name: item.name }),
                     life: 3000
                 });
             },
             error: (err: { error?: { message?: string } }) => {
                 this.buying.set(null);
-                this.purchaseError.set(err?.error?.message ?? this.translocoService.translate('shop.purchaseFailed'));
+                this.purchaseError.set(err?.error?.message ?? this.translocoService.translate("shop.purchaseFailed"));
             }
         });
     }

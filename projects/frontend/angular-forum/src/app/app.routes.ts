@@ -241,8 +241,7 @@ export const routes: Routes = [
                 path: "lexicon",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/lexicon/lexicon-page").then((c) => c.LexiconPage)
+                loadComponent: () => import("./features/pages/lexicon/lexicon-page").then((c) => c.LexiconPage)
             },
             {
                 path: "lexicon/create",
@@ -276,8 +275,7 @@ export const routes: Routes = [
                 path: "admin/lexicon",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/admin/admin-lexicon/admin-lexicon").then((c) => c.AdminLexicon)
+                loadComponent: () => import("./features/admin/admin-lexicon/admin-lexicon").then((c) => c.AdminLexicon)
             },
             {
                 path: "blog",
@@ -388,29 +386,25 @@ export const routes: Routes = [
                 path: "recipes",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/recipes/recipes-page").then((c) => c.RecipesPage)
+                loadComponent: () => import("./features/pages/recipes/recipes-page").then((c) => c.RecipesPage)
             },
             {
                 path: "steam",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/steam/steam-page").then((c) => c.SteamPage)
+                loadComponent: () => import("./features/pages/steam/steam-page").then((c) => c.SteamPage)
             },
             {
                 path: "clips",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clips/clips-feed-page").then((c) => c.ClipsFeedPage)
+                loadComponent: () => import("./features/pages/clips/clips-feed-page").then((c) => c.ClipsFeedPage)
             },
             {
                 path: "clips/upload",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clips/clips-upload-page").then((c) => c.ClipsUploadPage)
+                loadComponent: () => import("./features/pages/clips/clips-upload-page").then((c) => c.ClipsUploadPage)
             },
             {
                 path: "admin/link-database",
@@ -469,8 +463,7 @@ export const routes: Routes = [
                 path: "admin/media",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/admin/admin-media/admin-media").then((c) => c.AdminMedia)
+                loadComponent: () => import("./features/admin/admin-media/admin-media").then((c) => c.AdminMedia)
             }
         ]
     }

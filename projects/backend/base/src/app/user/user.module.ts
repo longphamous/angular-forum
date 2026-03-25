@@ -13,7 +13,13 @@ import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 
 @Module({
-    imports: [AuthModule, GamificationModule, MediaModule, ModerationModule, TypeOrmModule.forFeature([UserEntity, GroupEntity])],
+    imports: [
+        AuthModule,
+        GamificationModule,
+        MediaModule,
+        ModerationModule,
+        TypeOrmModule.forFeature([UserEntity, GroupEntity])
+    ],
     controllers: [UserController],
     providers: [UserService, { provide: APP_INTERCEPTOR, useClass: PresenceInterceptor }],
     exports: [UserService]

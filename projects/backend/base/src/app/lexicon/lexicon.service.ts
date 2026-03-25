@@ -59,7 +59,10 @@ export class LexiconService {
     // ── Categories ──────────────────────────────────────────────
 
     async getCategories(): Promise<object[]> {
-        const cats = await this.categoryRepo.find({ where: { isActive: true }, order: { position: "ASC", name: "ASC" } });
+        const cats = await this.categoryRepo.find({
+            where: { isActive: true },
+            order: { position: "ASC", name: "ASC" }
+        });
         return Promise.all(
             cats.map(async (c) => {
                 const articleCount = await this.articleRepo.count({
@@ -336,12 +339,7 @@ export class LexiconService {
         };
     }
 
-    async restoreVersion(
-        articleId: string,
-        versionNumber: number,
-        userId: string,
-        isAdmin: boolean
-    ): Promise<object> {
+    async restoreVersion(articleId: string, versionNumber: number, userId: string, isAdmin: boolean): Promise<object> {
         const article = await this.articleRepo.findOne({ where: { id: articleId } });
         if (!article) throw new NotFoundException("Article not found");
         if (!isAdmin && article.authorId !== userId) throw new ForbiddenException("Access denied");
@@ -423,7 +421,9 @@ export class LexiconService {
         const total = await qb.getCount();
         const limit = query.limit ?? 20;
         const page = query.page ?? 0;
-        qb.orderBy("a.createdAt", "ASC").skip(page * limit).take(limit);
+        qb.orderBy("a.createdAt", "ASC")
+            .skip(page * limit)
+            .take(limit);
 
         const articles = await qb.getMany();
         const data = await Promise.all(articles.map((a) => this.enrichArticle(a, "")));
@@ -557,7 +557,11 @@ export class LexiconService {
 
     // ── Private helpers ─────────────────────────────────────────
 
-    private async createVersion(article: LexiconArticleEntity, authorId: string, changeSummary: string | null): Promise<void> {
+    private async createVersion(
+        article: LexiconArticleEntity,
+        authorId: string,
+        changeSummary: string | null
+    ): Promise<void> {
         const lastVersion = await this.versionRepo
             .createQueryBuilder("v")
             .where("v.article_id = :articleId", { articleId: article.id })
@@ -586,7 +590,8 @@ export class LexiconService {
             this.getContributors(article.id)
         ]);
         const category =
-            article.category ?? (article.categoryId ? await this.categoryRepo.findOne({ where: { id: article.categoryId } }) : null);
+            article.category ??
+            (article.categoryId ? await this.categoryRepo.findOne({ where: { id: article.categoryId } }) : null);
 
         return {
             id: article.id,

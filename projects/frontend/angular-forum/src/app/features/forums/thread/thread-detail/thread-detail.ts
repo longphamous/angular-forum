@@ -173,7 +173,10 @@ export class ThreadDetail implements OnInit, OnDestroy {
 
     /** Check if HTML content from Quill editor has actual visible text. */
     hasContent(html: string): boolean {
-        const text = html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        const text = html
+            .replace(/<[^>]*>/g, "")
+            .replace(/&nbsp;/g, " ")
+            .trim();
         return text.length > 0;
     }
 
@@ -181,9 +184,7 @@ export class ThreadDetail implements OnInit, OnDestroy {
         if (!this.hasContent(this.replyContent)) return;
         this.submittingReply = true;
         this.replyError = null;
-        this.facade
-            .createPost(this.threadId, this.replyContent, this.replyKnowledgeSource || undefined)
-            .subscribe({
+        this.facade.createPost(this.threadId, this.replyContent, this.replyKnowledgeSource || undefined).subscribe({
             next: () => {
                 this.replyContent = "";
                 this.replyKnowledgeSource = "";

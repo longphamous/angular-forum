@@ -59,21 +59,13 @@ export class ModerationController {
 
     @Roles("admin", "moderator")
     @Post("approve/:id")
-    async approve(
-        @Param("id") id: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() body: { note?: string }
-    ) {
+    async approve(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser, @Body() body: { note?: string }) {
         return this.moderationService.approveEntry(id, user.userId, body.note);
     }
 
     @Roles("admin", "moderator")
     @Post("reject/:id")
-    async reject(
-        @Param("id") id: string,
-        @CurrentUser() user: AuthenticatedUser,
-        @Body() body: { note?: string }
-    ) {
+    async reject(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser, @Body() body: { note?: string }) {
         return this.moderationService.rejectEntry(id, user.userId, body.note);
     }
 }

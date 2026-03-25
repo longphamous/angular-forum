@@ -124,9 +124,7 @@ describe("ShopService", () => {
 
             const result = await service.create({ name: "Cool Badge", price: 100 });
 
-            expect(itemRepo.create).toHaveBeenCalledWith(
-                expect.objectContaining({ name: "Cool Badge", price: 100 })
-            );
+            expect(itemRepo.create).toHaveBeenCalledWith(expect.objectContaining({ name: "Cool Badge", price: 100 }));
             expect(result.name).toBe("Cool Badge");
         });
     });
@@ -180,7 +178,12 @@ describe("ShopService", () => {
 
             const result = await service.purchaseItem("user-1", "item-1");
 
-            expect(creditService.deductCredits).toHaveBeenCalledWith("user-1", 100, "purchase", "Shop purchase: Cool Badge");
+            expect(creditService.deductCredits).toHaveBeenCalledWith(
+                "user-1",
+                100,
+                "purchase",
+                "Shop purchase: Cool Badge"
+            );
             expect(notificationsService.create).toHaveBeenCalled();
             expect(result.itemId).toBe("item-1");
         });

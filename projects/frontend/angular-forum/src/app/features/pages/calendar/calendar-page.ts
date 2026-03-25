@@ -434,11 +434,19 @@ export class CalendarPage {
                 this.saving.set(false);
                 this.createDialogVisible.set(false);
                 this.loadEvents(this.currentDate(), this.view());
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('common.saved'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("common.saved"),
+                    life: 2000
+                });
             },
             error: () => {
                 this.saving.set(false);
-                this.messageService.add({ severity: "error", summary: this.translocoService.translate('common.saveFailed'), life: 3000 });
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.translocoService.translate("common.saveFailed"),
+                    life: 3000
+                });
             }
         });
     }
@@ -448,9 +456,18 @@ export class CalendarPage {
             next: () => {
                 this.detailDialogVisible.set(false);
                 this.loadEvents(this.currentDate(), this.view());
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('calendar.eventDeleted'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("calendar.eventDeleted"),
+                    life: 2000
+                });
             },
-            error: () => this.messageService.add({ severity: "error", summary: this.translocoService.translate('common.error'), life: 3000 })
+            error: () =>
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.translocoService.translate("common.error"),
+                    life: 3000
+                })
         });
     }
 
@@ -485,11 +502,19 @@ export class CalendarPage {
                 this.rsvpDialogVisible.set(false);
                 this.openDetail(ev);
                 this.loadEvents(this.currentDate(), this.view());
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('calendar.rsvpSaved'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("calendar.rsvpSaved"),
+                    life: 2000
+                });
             },
             error: () => {
                 this.rsvpSaving.set(false);
-                this.messageService.add({ severity: "error", summary: this.translocoService.translate('common.error'), life: 3000 });
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.translocoService.translate("common.error"),
+                    life: 3000
+                });
             }
         });
     }
@@ -510,11 +535,19 @@ export class CalendarPage {
                 this.inviteDialogVisible.set(false);
                 this.inviteUserIds = "";
                 this.openDetail(ev);
-                this.messageService.add({ severity: "success", summary: this.translocoService.translate('calendar.invitesSent'), life: 2000 });
+                this.messageService.add({
+                    severity: "success",
+                    summary: this.translocoService.translate("calendar.invitesSent"),
+                    life: 2000
+                });
             },
             error: () => {
                 this.inviteSaving.set(false);
-                this.messageService.add({ severity: "error", summary: this.translocoService.translate('common.error'), life: 3000 });
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.translocoService.translate("common.error"),
+                    life: 3000
+                });
             }
         });
     }

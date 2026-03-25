@@ -447,7 +447,13 @@ export class MarketplaceService {
         return this.toCommentDto(comment);
     }
 
-    async updateComment(listingId: string, commentId: string, userId: string, isAdmin: boolean, content: string): Promise<MarketCommentDto> {
+    async updateComment(
+        listingId: string,
+        commentId: string,
+        userId: string,
+        isAdmin: boolean,
+        content: string
+    ): Promise<MarketCommentDto> {
         const comment = await this.commentRepo.findOne({ where: { id: commentId, listingId } });
         if (!comment) throw new NotFoundException("Kommentar nicht gefunden");
         if (!isAdmin && comment.authorId !== userId) throw new ForbiddenException("Kein Zugriff");

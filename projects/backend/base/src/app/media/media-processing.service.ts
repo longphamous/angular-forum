@@ -51,11 +51,17 @@ export class MediaProcessingService {
 
         try {
             // Thumbnail small (150x150 cover)
-            const thumbSm = await this.sharp(buffer).resize(150, 150, { fit: "cover" }).jpeg({ quality: 80 }).toBuffer();
+            const thumbSm = await this.sharp(buffer)
+                .resize(150, 150, { fit: "cover" })
+                .jpeg({ quality: 80 })
+                .toBuffer();
             variants.push({ variantKey: "thumb_sm", buffer: thumbSm, mimeType: "image/jpeg", width: 150, height: 150 });
 
             // Thumbnail medium (400x400 cover)
-            const thumbMd = await this.sharp(buffer).resize(400, 400, { fit: "cover" }).jpeg({ quality: 85 }).toBuffer();
+            const thumbMd = await this.sharp(buffer)
+                .resize(400, 400, { fit: "cover" })
+                .jpeg({ quality: 85 })
+                .toBuffer();
             variants.push({ variantKey: "thumb_md", buffer: thumbMd, mimeType: "image/jpeg", width: 400, height: 400 });
 
             // WebP (original dimensions, 80% quality)

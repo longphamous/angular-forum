@@ -8,12 +8,7 @@ import { SkeletonModule } from "primeng/skeleton";
 
 import { ACTIVITY_ROUTES } from "../../../../core/api/activity.routes";
 import { API_CONFIG, ApiConfig } from "../../../../core/config/api.config";
-import {
-    Activity,
-    ACTIVITY_COLORS,
-    ACTIVITY_ICONS,
-    ActivityType
-} from "../../../../core/models/activity/activity";
+import { Activity, ACTIVITY_COLORS, ACTIVITY_ICONS, ActivityType } from "../../../../core/models/activity/activity";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,10 +21,10 @@ import {
 
             @if (loading()) {
                 <div class="flex flex-col gap-4">
-                    @for (i of [1,2,3,4,5]; track i) {
+                    @for (i of [1, 2, 3, 4, 5]; track i) {
                         <div class="flex items-start gap-3">
                             <p-skeleton shape="circle" size="2.5rem" />
-                            <div class="flex-1 flex flex-col gap-2">
+                            <div class="flex flex-1 flex-col gap-2">
                                 <p-skeleton height="0.875rem" width="70%" />
                                 <p-skeleton height="0.75rem" width="50%" />
                             </div>
@@ -43,10 +38,10 @@ import {
                     <p class="m-0">{{ t("dashboard.noActivity") }}</p>
                 </div>
             } @else {
-                <div class="flex flex-col overflow-y-auto overflow-x-hidden" style="max-height: 36rem">
+                <div class="flex flex-col overflow-x-hidden overflow-y-auto" style="max-height: 36rem">
                     @for (item of activities(); track item.id) {
                         <div
-                            class="flex items-start gap-3 py-3 border-b border-surface last:border-b-0 first:pt-0 last:pb-0 cursor-pointer hover:bg-emphasis -mx-1 px-1 rounded-lg transition-colors"
+                            class="border-surface hover:bg-emphasis -mx-1 flex cursor-pointer items-start gap-3 rounded-lg border-b px-1 py-3 transition-colors first:pt-0 last:border-b-0 last:pb-0"
                             (click)="navigate(item)"
                             (keydown.enter)="navigate(item)"
                             role="button"
@@ -54,8 +49,8 @@ import {
                         >
                             <!-- Avatar -->
                             <p-avatar
-                                [label]="item.displayName.charAt(0).toUpperCase()"
                                 [image]="item.avatarUrl ?? ''"
+                                [label]="item.displayName.charAt(0).toUpperCase()"
                                 shape="circle"
                                 styleClass="shrink-0"
                             />
@@ -68,19 +63,22 @@ import {
                                         {{ t("activity.type." + item.type) }}
                                     </span>
                                 </div>
-                                <div class="text-color font-medium text-sm mt-0.5 truncate">
+                                <div class="text-color mt-0.5 truncate text-sm font-medium">
                                     {{ item.title }}
                                 </div>
                                 @if (item.description) {
-                                    <div class="text-color-secondary text-xs mt-0.5 truncate">
+                                    <div class="text-color-secondary mt-0.5 truncate text-xs">
                                         {{ item.description }}
                                     </div>
                                 }
                             </div>
 
                             <!-- Timestamp + Icon -->
-                            <div class="flex flex-col items-end gap-1 shrink-0">
-                                <i class="pi text-sm" [class]="'pi ' + activityIcon(item.type) + ' ' + activityColor(item.type)"></i>
+                            <div class="flex shrink-0 flex-col items-end gap-1">
+                                <i
+                                    class="pi text-sm"
+                                    [class]="'pi ' + activityIcon(item.type) + ' ' + activityColor(item.type)"
+                                ></i>
                                 <span class="text-color-secondary text-xs whitespace-nowrap">
                                     {{ formatTime(item.createdAt) }}
                                 </span>
@@ -106,15 +104,13 @@ export class ActivityFeedWidget implements OnInit {
 
     private loadActivities(): void {
         this.loading.set(true);
-        this.http
-            .get<Activity[]>(`${this.config.baseUrl}${ACTIVITY_ROUTES.globalFeed()}?limit=20`)
-            .subscribe({
-                next: (data) => {
-                    this.activities.set(data);
-                    this.loading.set(false);
-                },
-                error: () => this.loading.set(false)
-            });
+        this.http.get<Activity[]>(`${this.config.baseUrl}${ACTIVITY_ROUTES.globalFeed()}?limit=20`).subscribe({
+            next: (data) => {
+                this.activities.set(data);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
     }
 
     protected navigate(item: Activity): void {

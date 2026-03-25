@@ -157,7 +157,11 @@ export class UserService {
         const pendingFields: string[] = [];
 
         // Fields that require moderation for non-exempt users
-        const moderatedFields: { dtoKey: keyof UpdateProfileDto; type: "avatar_url" | "cover" | "signature"; userKey: keyof UserEntity }[] = [
+        const moderatedFields: {
+            dtoKey: keyof UpdateProfileDto;
+            type: "avatar_url" | "cover" | "signature";
+            userKey: keyof UserEntity;
+        }[] = [
             { dtoKey: "avatarUrl", type: "avatar_url", userKey: "avatarUrl" },
             { dtoKey: "coverUrl", type: "cover", userKey: "coverUrl" },
             { dtoKey: "signature", type: "signature", userKey: "signature" }
@@ -223,7 +227,9 @@ export class UserService {
         return users.map((u) => toProfile(u));
     }
 
-    async autocompleteUsers(query: string): Promise<{ id: string; username: string; displayName: string; avatarUrl: string | null }[]> {
+    async autocompleteUsers(
+        query: string
+    ): Promise<{ id: string; username: string; displayName: string; avatarUrl: string | null }[]> {
         if (!query || query.length < 2) return [];
         const users = await this.userRepo
             .createQueryBuilder("u")
@@ -231,7 +237,12 @@ export class UserService {
             .orderBy("u.username", "ASC")
             .take(10)
             .getMany();
-        return users.map((u) => ({ id: u.id, username: u.username, displayName: u.displayName, avatarUrl: u.avatarUrl ?? null }));
+        return users.map((u) => ({
+            id: u.id,
+            username: u.username,
+            displayName: u.displayName,
+            avatarUrl: u.avatarUrl ?? null
+        }));
     }
 
     async searchUsers(query: string, limit: number): Promise<{ id: string; username: string; displayName: string }[]> {

@@ -1,11 +1,13 @@
 <div class="flex flex-col gap-4" *transloco="let t">
     <!-- Breadcrumb -->
     @if (facade.currentThread()) {
-        <app-forum-breadcrumb [items]="[
+    <app-forum-breadcrumb
+        [items]="[
             { label: '', icon: 'pi-home', routerLink: '/forum' },
             { label: facade.currentForum()?.name ?? '...', routerLink: '/forum/forums/' + facade.currentThread()!.forumId },
             { label: facade.currentThread()!.title }
-        ]" />
+        ]"
+    />
     }
 
     <!-- Header -->
@@ -20,17 +22,17 @@
                     <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
                         {{ facade.currentThread()!.title }}
                     </h1>
-                    @if (facade.currentThread()!.authorId === authFacade.currentUser()?.id || authFacade.isModerator()) {
-                        <button
-                            class="border-none bg-transparent text-color-secondary hover:text-primary cursor-pointer transition-colors p-0"
-                            (click)="openTitleEdit()"
-                            [title]="t('common.edit')"
-                            type="button"
-                        >
-                            <i class="pi pi-pencil" style="font-size: 0.8rem"></i>
-                        </button>
-                    }
-                    @if (facade.currentThread()!.isPinned) {
+                    @if (facade.currentThread()!.authorId === authFacade.currentUser()?.id || authFacade.isModerator())
+                    {
+                    <button
+                        class="text-color-secondary hover:text-primary cursor-pointer border-none bg-transparent p-0 transition-colors"
+                        (click)="openTitleEdit()"
+                        [title]="t('common.edit')"
+                        type="button"
+                    >
+                        <i class="pi pi-pencil" style="font-size: 0.8rem"></i>
+                    </button>
+                    } @if (facade.currentThread()!.isPinned) {
                     <p-tag [value]="t('threadDetail.pinned')" severity="warn" />
                     } @if (facade.currentThread()!.isSticky) {
                     <p-tag [value]="t('threadDetail.sticky')" severity="info" />
@@ -303,8 +305,8 @@
                         <button class="ql-code-block" type="button"></button>
                     </span>
                     <span class="ql-formats">
-                        <button class="ql-list" value="ordered" type="button"></button>
-                        <button class="ql-list" value="bullet" type="button"></button>
+                        <button class="ql-list" type="button" value="ordered"></button>
+                        <button class="ql-list" type="button" value="bullet"></button>
                     </span>
                     <span class="ql-formats">
                         <button class="ql-link" type="button"></button>
@@ -378,7 +380,9 @@
         <div class="mb-4 flex items-center justify-between">
             <h3 class="flex items-center gap-2 text-lg font-semibold">
                 <i class="pi pi-chart-bar"></i>{{ poll.question }}
-                <span class="bg-primary text-white rounded-full px-2 py-0.5 text-xs font-medium">{{ poll.totalVotes }}</span>
+                <span class="bg-primary rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                    >{{ poll.totalVotes }}</span
+                >
                 @if (poll.isAnonymous) {
                 <span
                     class="bg-surface-100 dark:bg-surface-700 text-surface-500 rounded-full px-2 py-0.5 text-[10px] font-normal"
@@ -494,17 +498,20 @@
             @for (option of poll.options; track option.index) {
             <div
                 class="group flex flex-col gap-1.5 py-2.5 transition-colors"
-                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
-                [class.cursor-not-allowed]="poll.isClosed && poll.myVote === null"
                 (click)="votePoll(option.index)"
+                [class.cursor-not-allowed]="poll.isClosed && poll.myVote === null"
+                [class.cursor-pointer]="(poll.myVote === null || poll.canChangeVote) && !poll.isClosed"
             >
                 <!-- Option label + vote count -->
                 <div class="flex items-center justify-between">
-                    <span class="text-sm" [class.font-semibold]="poll.myVote === option.index" [class.text-primary]="poll.myVote === option.index">
+                    <span
+                        class="text-sm"
+                        [class.font-semibold]="poll.myVote === option.index"
+                        [class.text-primary]="poll.myVote === option.index"
+                    >
                         @if (poll.myVote === option.index) {
-                            <i class="pi pi-check-circle text-primary mr-1" style="font-size:0.75rem"></i>
-                        }
-                        {{ option.text }} ({{ option.votes }})
+                        <i class="pi pi-check-circle text-primary mr-1" style="font-size: 0.75rem"></i>
+                        } {{ option.text }} ({{ option.votes }})
                     </span>
                     <span class="text-surface-500 text-sm tabular-nums">{{ option.percentage }}%</span>
                 </div>
@@ -513,8 +520,8 @@
                     <div
                         class="h-full rounded transition-all duration-500"
                         [class.bg-green-500]="option.votes > 0"
-                        [class.dark:bg-green-600]="option.votes > 0"
                         [class.bg-surface-200]="option.votes === 0"
+                        [class.dark:bg-green-600]="option.votes > 0"
                         [class.dark:bg-surface-600]="option.votes === 0"
                         [style.width.%]="option.percentage"
                     ></div>
@@ -523,19 +530,26 @@
                 @if (option.voters && option.voters.length > 0) {
                 <div class="flex items-center gap-1.5">
                     <div class="flex -space-x-1.5">
-                        @for (voter of option.voters.slice(0, 5); track voter.userId) {
-                            @if (voter.avatarUrl) {
-                                <img class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover" [alt]="voter.username" [pTooltip]="voter.username" [src]="voter.avatarUrl" />
-                            } @else {
-                                <div class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold" [pTooltip]="voter.username">
-                                    {{ voter.username.charAt(0).toUpperCase() }}
-                                </div>
-                            }
-                        }
-                        @if (option.voters.length > 5) {
-                            <div class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]">
-                                +{{ option.voters.length - 5 }}
-                            </div>
+                        @for (voter of option.voters.slice(0, 5); track voter.userId) { @if (voter.avatarUrl) {
+                        <img
+                            class="border-surface-0 dark:border-surface-900 h-5 w-5 rounded-full border object-cover"
+                            [alt]="voter.username"
+                            [pTooltip]="voter.username"
+                            [src]="voter.avatarUrl"
+                        />
+                        } @else {
+                        <div
+                            class="bg-primary-100 dark:bg-primary-900 text-primary border-surface-0 dark:border-surface-900 flex h-5 w-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                            [pTooltip]="voter.username"
+                        >
+                            {{ voter.username.charAt(0).toUpperCase() }}
+                        </div>
+                        } } @if (option.voters.length > 5) {
+                        <div
+                            class="bg-surface-200 dark:bg-surface-600 border-surface-0 dark:border-surface-900 text-surface-500 flex h-5 w-5 items-center justify-center rounded-full border text-[8px]"
+                        >
+                            +{{ option.voters.length - 5 }}
+                        </div>
                         }
                     </div>
                 </div>
@@ -545,7 +559,7 @@
         </div>
         }
 
-        <div class="mt-4 flex items-center justify-between border-t border-surface pt-3">
+        <div class="border-surface mt-4 flex items-center justify-between border-t pt-3">
             <div class="text-surface-400 flex items-center gap-3 text-xs">
                 <span><i class="pi pi-users mr-1"></i>{{ poll.totalVotes }} {{ t('threadDetail.poll.votes') }}</span>
                 @if (poll.isClosed) {
@@ -562,30 +576,35 @@
                 }
             </div>
             @if (!poll.isAnonymous && poll.totalVotes > 0) {
-                <button class="text-primary border-none bg-transparent cursor-pointer text-xs hover:underline" (click)="showPollParticipants.set(!showPollParticipants())">
-                    <i class="pi pi-list mr-1"></i>{{ t('threadDetail.poll.listParticipants') }}
-                </button>
+            <button
+                class="text-primary cursor-pointer border-none bg-transparent text-xs hover:underline"
+                (click)="showPollParticipants.set(!showPollParticipants())"
+            >
+                <i class="pi pi-list mr-1"></i>{{ t('threadDetail.poll.listParticipants') }}
+            </button>
             }
         </div>
 
         <!-- Participants list (expandable) -->
         @if (showPollParticipants() && !poll.isAnonymous) {
-            <div class="mt-3 rounded-lg bg-surface-50 dark:bg-surface-800 p-3">
-                <div class="flex flex-col gap-2">
-                    @for (option of poll.options; track option.index) {
-                        @if (option.voters && option.voters.length > 0) {
-                            <div class="flex items-start gap-2">
-                                <span class="text-xs font-semibold text-surface-500 min-w-20 pt-0.5">{{ option.text }}:</span>
-                                <div class="flex flex-wrap gap-1">
-                                    @for (voter of option.voters; track voter.userId) {
-                                        <a [routerLink]="['/users', voter.userId]" class="text-primary text-xs no-underline hover:underline">{{ voter.username }}</a>
-                                    }
-                                </div>
-                            </div>
+        <div class="bg-surface-50 dark:bg-surface-800 mt-3 rounded-lg p-3">
+            <div class="flex flex-col gap-2">
+                @for (option of poll.options; track option.index) { @if (option.voters && option.voters.length > 0) {
+                <div class="flex items-start gap-2">
+                    <span class="text-surface-500 min-w-20 pt-0.5 text-xs font-semibold">{{ option.text }}:</span>
+                    <div class="flex flex-wrap gap-1">
+                        @for (voter of option.voters; track voter.userId) {
+                        <a
+                            class="text-primary text-xs no-underline hover:underline"
+                            [routerLink]="['/users', voter.userId]"
+                            >{{ voter.username }}</a
+                        >
                         }
-                    }
+                    </div>
                 </div>
+                } }
             </div>
+        </div>
         }
     </div>
     }
@@ -625,11 +644,11 @@
     } @else { @for (post of facade.posts(); track post.id) {
     <div
         class="card overflow-hidden p-0"
+        [class.bg-yellow-50/5]="post.isHighlighted"
         [class.border-l-4]="post.isFirstPost || post.isHighlighted"
         [class.border-primary-400]="post.isFirstPost && !post.isHighlighted"
-        [class.dark:border-primary-500]="post.isFirstPost && !post.isHighlighted"
         [class.border-yellow-400]="post.isHighlighted"
-        [class.bg-yellow-50/5]="post.isHighlighted"
+        [class.dark:border-primary-500]="post.isFirstPost && !post.isHighlighted"
         [class.dark:ring-green-600]="post.isBestAnswer"
         [class.ring-2]="post.isBestAnswer"
         [class.ring-green-400]="post.isBestAnswer"
@@ -705,13 +724,12 @@
                     @if (post.authorGender) {
                     <span class="text-surface-400 dark:text-surface-500 mt-1 text-[11px]">
                         @if (post.authorGender === 'male') {
-                            <i class="pi pi-mars text-blue-400"></i>
+                        <i class="pi pi-mars text-blue-400"></i>
                         } @else if (post.authorGender === 'female') {
-                            <i class="pi pi-venus text-pink-400"></i>
+                        <i class="pi pi-venus text-pink-400"></i>
                         } @else {
-                            <i class="pi pi-circle text-surface-400"></i>
-                        }
-                        {{ t('threadDetail.gender.' + post.authorGender) }}
+                        <i class="pi pi-circle text-surface-400"></i>
+                        } {{ t('threadDetail.gender.' + post.authorGender) }}
                     </span>
                     }
                 </div>
@@ -784,12 +802,18 @@
                     <div class="flex items-center gap-2">
                         <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
                         @if (isOpPost(post)) {
-                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-amber-500/80">
-                                <i class="pi pi-star-fill" style="font-size:0.5rem"></i> OP
-                            </span>
-                        }
-                        @if (post.isOfficial) {
-                            <p-tag [value]="t('threadDetail.officialPost')" severity="warn" styleClass="text-[10px] font-semibold" icon="pi pi-verified" />
+                        <span
+                            class="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-amber-500/80"
+                        >
+                            <i class="pi pi-star-fill" style="font-size: 0.5rem"></i> OP
+                        </span>
+                        } @if (post.isOfficial) {
+                        <p-tag
+                            [value]="t('threadDetail.officialPost')"
+                            icon="pi pi-verified"
+                            severity="warn"
+                            styleClass="text-[10px] font-semibold"
+                        />
                         }
                     </div>
                 </div>
@@ -799,12 +823,18 @@
                     <div class="flex items-center gap-2">
                         <span class="text-surface-500 text-xs">{{ formatDate(post.createdAt) }}</span>
                         @if (isOpPost(post)) {
-                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-amber-500/80">
-                                <i class="pi pi-star-fill" style="font-size:0.5rem"></i> OP
-                            </span>
-                        }
-                        @if (post.isOfficial) {
-                            <p-tag [value]="t('threadDetail.officialPost')" severity="warn" styleClass="text-xs font-semibold" icon="pi pi-verified" />
+                        <span
+                            class="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-amber-500/80"
+                        >
+                            <i class="pi pi-star-fill" style="font-size: 0.5rem"></i> OP
+                        </span>
+                        } @if (post.isOfficial) {
+                        <p-tag
+                            [value]="t('threadDetail.officialPost')"
+                            icon="pi pi-verified"
+                            severity="warn"
+                            styleClass="text-xs font-semibold"
+                        />
                         }
                     </div>
                     <div class="flex items-center gap-2">
@@ -841,7 +871,9 @@
                 <div class="bg-surface-100 dark:bg-surface-800 mt-3 flex items-start gap-2 rounded-lg px-3 py-2">
                     <i class="pi pi-info-circle text-primary mt-0.5 text-sm"></i>
                     <div class="flex flex-col">
-                        <span class="text-surface-500 text-[10px] font-semibold uppercase tracking-wide">{{ t('threadDetail.knowledgeSource') }}</span>
+                        <span class="text-surface-500 text-[10px] font-semibold tracking-wide uppercase"
+                            >{{ t('threadDetail.knowledgeSource') }}</span
+                        >
                         <span class="text-surface-700 dark:text-surface-300 text-xs">{{ post.knowledgeSource }}</span>
                     </div>
                 </div>
@@ -904,7 +936,10 @@
                             [class.pi-star-fill]="post.isHighlighted"
                             [class.pi-star]="!post.isHighlighted"
                         ></i>
-                        <span>{{ post.isHighlighted ? t('threadDetail.unhighlight') : t('threadDetail.highlight') }}</span>
+                        <span
+                            >{{ post.isHighlighted ? t('threadDetail.unhighlight') : t('threadDetail.highlight')
+                            }}</span
+                        >
                     </button>
 
                     <!-- Official toggle: only for moderators/admins -->
@@ -916,10 +951,13 @@
                     >
                         <i
                             class="pi text-sm"
-                            [class.pi-verified]="post.isOfficial"
                             [class.pi-check-circle]="!post.isOfficial"
+                            [class.pi-verified]="post.isOfficial"
                         ></i>
-                        <span>{{ post.isOfficial ? t('threadDetail.unmarkOfficial') : t('threadDetail.markOfficial') }}</span>
+                        <span
+                            >{{ post.isOfficial ? t('threadDetail.unmarkOfficial') : t('threadDetail.markOfficial')
+                            }}</span
+                        >
                     </button>
                     }
 
@@ -988,8 +1026,8 @@
         }
 
         <p-editor
-            [(ngModel)]="replyContent"
             (ngModelChange)="onReplyContentChange()"
+            [(ngModel)]="replyContent"
             [placeholder]="t('threadDetail.replyPlaceholder')"
             [readonly]="submittingReply"
             [style]="{ height: '200px' }"
@@ -1006,8 +1044,8 @@
                     <button class="ql-code-block" type="button"></button>
                 </span>
                 <span class="ql-formats">
-                    <button class="ql-list" value="ordered" type="button"></button>
-                    <button class="ql-list" value="bullet" type="button"></button>
+                    <button class="ql-list" type="button" value="ordered"></button>
+                    <button class="ql-list" type="button" value="bullet"></button>
                 </span>
                 <span class="ql-formats">
                     <button class="ql-link" type="button"></button>
@@ -1021,19 +1059,21 @@
 
         <!-- Rich Embed Preview in Editor -->
         @if (replyEmbedUrls().length > 0) {
-            <div class="mt-2 flex flex-col gap-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 p-3">
-                <div class="text-surface-400 text-xs font-medium uppercase">{{ t('threadDetail.embedPreview') }}</div>
-                @for (embedUrl of replyEmbedUrls(); track embedUrl) {
-                    <rich-embed [url]="embedUrl" />
-                }
-            </div>
+        <div
+            class="border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 mt-2 flex flex-col gap-2 rounded-lg border p-3"
+        >
+            <div class="text-surface-400 text-xs font-medium uppercase">{{ t('threadDetail.embedPreview') }}</div>
+            @for (embedUrl of replyEmbedUrls(); track embedUrl) {
+            <rich-embed [url]="embedUrl" />
+            }
+        </div>
         }
 
         <div class="mt-3 flex flex-col gap-3">
             <div class="flex items-center gap-2">
                 <i class="pi pi-info-circle text-surface-400 text-sm"></i>
                 <input
-                    class="text-sm flex-1"
+                    class="flex-1 text-sm"
                     [(ngModel)]="replyKnowledgeSource"
                     [placeholder]="t('threadDetail.knowledgeSourcePlaceholder')"
                     pInputText
@@ -1113,11 +1153,21 @@
     >
         <div class="flex flex-col gap-3 pt-2">
             <label class="text-sm font-medium">{{ t('common.title') }}</label>
-            <input class="w-full" pInputText [(ngModel)]="editTitleValue" />
+            <input class="w-full" [(ngModel)]="editTitleValue" pInputText />
         </div>
         <ng-template pTemplate="footer">
-            <p-button (onClick)="titleEditDialogVisible.set(false)" [label]="t('common.cancel')" [text]="true" severity="secondary" />
-            <p-button (onClick)="saveTitleEdit()" [disabled]="!editTitleValue.trim()" [label]="t('common.save')" icon="pi pi-check" />
+            <p-button
+                (onClick)="titleEditDialogVisible.set(false)"
+                [label]="t('common.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="saveTitleEdit()"
+                [disabled]="!editTitleValue.trim()"
+                [label]="t('common.save')"
+                icon="pi pi-check"
+            />
         </ng-template>
     </p-dialog>
 </ng-container>

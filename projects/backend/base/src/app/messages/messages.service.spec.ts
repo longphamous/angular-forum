@@ -308,9 +308,7 @@ describe("MessagesService", () => {
         it("should throw NotFoundException when draft not found", async () => {
             messageRepo.findOne!.mockResolvedValue(null);
 
-            await expect(service.updateDraft("user-1", "missing", { content: "x" })).rejects.toThrow(
-                NotFoundException
-            );
+            await expect(service.updateDraft("user-1", "missing", { content: "x" })).rejects.toThrow(NotFoundException);
         });
     });
 

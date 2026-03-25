@@ -153,8 +153,8 @@ export class BlogWritePage implements OnInit {
         if (!f.title.trim() || !f.content.trim()) {
             this.messageService.add({
                 severity: "warn",
-                summary: this.translocoService.translate('blog.write.requiredFields'),
-                detail: this.translocoService.translate('blog.write.titleContentRequired')
+                summary: this.translocoService.translate("blog.write.requiredFields"),
+                detail: this.translocoService.translate("blog.write.titleContentRequired")
             });
             return;
         }
@@ -176,8 +176,10 @@ export class BlogWritePage implements OnInit {
                 this.saving.set(false);
                 this.messageService.add({
                     severity: "success",
-                    summary: this.translocoService.translate('common.saved'),
-                    detail: this.translocoService.translate(this.isEditMode() ? 'blog.write.articleUpdated' : 'blog.write.articleCreated')
+                    summary: this.translocoService.translate("common.saved"),
+                    detail: this.translocoService.translate(
+                        this.isEditMode() ? "blog.write.articleUpdated" : "blog.write.articleCreated"
+                    )
                 });
                 void this.router.navigate(["/blog", post.slug]);
             },
@@ -185,8 +187,8 @@ export class BlogWritePage implements OnInit {
                 this.saving.set(false);
                 this.messageService.add({
                     severity: "error",
-                    summary: this.translocoService.translate('common.error'),
-                    detail: this.translocoService.translate('blog.write.saveFailed')
+                    summary: this.translocoService.translate("common.error"),
+                    detail: this.translocoService.translate("blog.write.saveFailed")
                 });
             }
         });

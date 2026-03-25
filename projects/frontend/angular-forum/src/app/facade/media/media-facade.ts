@@ -4,7 +4,13 @@ import { Observable, Subject } from "rxjs";
 
 import { MEDIA_ROUTES } from "../../core/api/media.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
-import { MediaAccessLevel, MediaAsset, PaginatedMedia, UploadMediaOptions, UploadProgress } from "../../core/models/media/media";
+import {
+    MediaAccessLevel,
+    MediaAsset,
+    PaginatedMedia,
+    UploadMediaOptions,
+    UploadProgress
+} from "../../core/models/media/media";
 
 @Injectable({ providedIn: "root" })
 export class MediaFacade {
@@ -42,15 +48,38 @@ export class MediaFacade {
             next: (event) => {
                 if (event.type === HttpEventType.UploadProgress) {
                     const percent = event.total ? Math.round((event.loaded / event.total) * 100) : 0;
-                    subject.next({ fileId, filename: file.name, loaded: event.loaded, total: event.total ?? file.size, percent, status: "uploading" });
+                    subject.next({
+                        fileId,
+                        filename: file.name,
+                        loaded: event.loaded,
+                        total: event.total ?? file.size,
+                        percent,
+                        status: "uploading"
+                    });
                 } else if (event.type === HttpEventType.Response) {
                     const asset = event.body as MediaAsset;
-                    subject.next({ fileId, filename: file.name, loaded: file.size, total: file.size, percent: 100, status: "complete", asset });
+                    subject.next({
+                        fileId,
+                        filename: file.name,
+                        loaded: file.size,
+                        total: file.size,
+                        percent: 100,
+                        status: "complete",
+                        asset
+                    });
                     subject.complete();
                 }
             },
             error: (err) => {
-                subject.next({ fileId, filename: file.name, loaded: 0, total: file.size, percent: 0, status: "error", error: err?.message ?? "Upload failed" });
+                subject.next({
+                    fileId,
+                    filename: file.name,
+                    loaded: 0,
+                    total: file.size,
+                    percent: 0,
+                    status: "error",
+                    error: err?.message ?? "Upload failed"
+                });
                 subject.complete();
             }
         });
@@ -58,7 +87,17 @@ export class MediaFacade {
         return subject.asObservable();
     }
 
-    browse(params: { sourceModule?: string; category?: string; ownerId?: string; mimeType?: string; search?: string; page?: number; limit?: number } = {}): void {
+    browse(
+        params: {
+            sourceModule?: string;
+            category?: string;
+            ownerId?: string;
+            mimeType?: string;
+            search?: string;
+            page?: number;
+            limit?: number;
+        } = {}
+    ): void {
         this.loading.set(true);
         const q = new URLSearchParams();
         if (params.sourceModule) q.set("sourceModule", params.sourceModule);
@@ -69,17 +108,27 @@ export class MediaFacade {
         q.set("page", String(params.page ?? 1));
         q.set("limit", String(params.limit ?? 30));
         this.http.get<PaginatedMedia>(`${this.base}${MEDIA_ROUTES.browse()}?${q.toString()}`).subscribe({
-            next: (r) => { this.browseResults.set(r.data); this.browseTotal.set(r.total); this.loading.set(false); },
+            next: (r) => {
+                this.browseResults.set(r.data);
+                this.browseTotal.set(r.total);
+                this.loading.set(false);
+            },
             error: () => this.loading.set(false)
         });
     }
 
     loadUserMedia(userId: string, page = 1, limit = 30): void {
         this.loading.set(true);
-        this.http.get<PaginatedMedia>(`${this.base}${MEDIA_ROUTES.userMedia(userId)}?page=${page}&limit=${limit}`).subscribe({
-            next: (r) => { this.userMedia.set(r.data); this.userMediaTotal.set(r.total); this.loading.set(false); },
-            error: () => this.loading.set(false)
-        });
+        this.http
+            .get<PaginatedMedia>(`${this.base}${MEDIA_ROUTES.userMedia(userId)}?page=${page}&limit=${limit}`)
+            .subscribe({
+                next: (r) => {
+                    this.userMedia.set(r.data);
+                    this.userMediaTotal.set(r.total);
+                    this.loading.set(false);
+                },
+                error: () => this.loading.set(false)
+            });
     }
 
     loadAsset(id: string): void {
@@ -88,7 +137,10 @@ export class MediaFacade {
         });
     }
 
-    updateAsset(id: string, patch: { altText?: string; tags?: string[]; category?: string; accessLevel?: MediaAccessLevel }): Observable<MediaAsset> {
+    updateAsset(
+        id: string,
+        patch: { altText?: string; tags?: string[]; category?: string; accessLevel?: MediaAccessLevel }
+    ): Observable<MediaAsset> {
         return this.http.patch<MediaAsset>(`${this.base}${MEDIA_ROUTES.asset(id)}`, patch);
     }
 

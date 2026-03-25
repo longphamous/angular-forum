@@ -49,7 +49,8 @@ async function bootstrap(): Promise<void> {
         logger.log("═══════════════════════════════════════════════");
         logger.log(`  Aniverse API running on http://localhost:${port}/${globalPrefix}`);
 
-        const pushMode = process.env["PUSH_MODE"] ?? (process.env["PUSH_ENABLED"] === "false" ? "disabled" : "embedded");
+        const pushMode =
+            process.env["PUSH_MODE"] ?? (process.env["PUSH_ENABLED"] === "false" ? "disabled" : "embedded");
         if (pushMode === "embedded") {
             logger.log(`  WebSocket gateway on ws://localhost:${port}/push`);
         } else if (pushMode === "remote") {

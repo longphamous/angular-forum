@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, Signal, signal } from "@angular/core";
 
-import { EmbedResolverService } from "../../../core/services/embed-resolver.service";
 import { LinkEmbed } from "../../../core/models/embed/link-embed";
+import { EmbedResolverService } from "../../../core/services/embed-resolver.service";
 
 @Component({
     selector: "rich-embed",
@@ -10,15 +10,10 @@ import { LinkEmbed } from "../../../core/models/embed/link-embed";
     template: `
         @if (embed(); as data) {
             @if (data.title) {
-                <a [href]="data.url" target="_blank" rel="noopener noreferrer" class="rich-embed-card">
+                <a class="rich-embed-card" [href]="data.url" rel="noopener noreferrer" target="_blank">
                     @if (data.imageUrl) {
                         <div class="rich-embed-image-wrap">
-                            <img
-                                [src]="data.imageUrl"
-                                alt=""
-                                class="rich-embed-image"
-                                (error)="onImageError($event)"
-                            />
+                            <img class="rich-embed-image" [src]="data.imageUrl" (error)="onImageError($event)" alt="" />
                         </div>
                     }
                     <div class="rich-embed-body">
@@ -29,10 +24,10 @@ import { LinkEmbed } from "../../../core/models/embed/link-embed";
                         <div class="rich-embed-meta">
                             @if (data.faviconUrl) {
                                 <img
-                                    [src]="data.faviconUrl"
-                                    alt=""
                                     class="rich-embed-favicon"
+                                    [src]="data.faviconUrl"
                                     (error)="onFaviconError($event)"
+                                    alt=""
                                 />
                             }
                             <span class="rich-embed-domain">{{ data.siteName ?? data.domain }}</span>

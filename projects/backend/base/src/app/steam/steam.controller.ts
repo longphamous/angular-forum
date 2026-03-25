@@ -13,10 +13,7 @@ export class SteamController {
     // ── User Endpoints ──────────────────────────────────────────────────────
 
     @Post("link")
-    linkSteam(
-        @Request() req: { user: { userId: string; role: string } },
-        @Body() body: { steamId: string }
-    ) {
+    linkSteam(@Request() req: { user: { userId: string; role: string } }, @Body() body: { steamId: string }) {
         return this.steamService.linkSteam(req.user.userId, body.steamId);
     }
 
@@ -46,10 +43,7 @@ export class SteamController {
     }
 
     @Get("games/:appId/achievements")
-    getAchievements(
-        @Request() req: { user: { userId: string; role: string } },
-        @Param("appId") appId: string
-    ) {
+    getAchievements(@Request() req: { user: { userId: string; role: string } }, @Param("appId") appId: string) {
         return this.steamService.getAchievements(req.user.userId, appId);
     }
 
@@ -59,10 +53,7 @@ export class SteamController {
     }
 
     @Patch("settings")
-    updateSettings(
-        @Request() req: { user: { userId: string; role: string } },
-        @Body() body: UpdateSteamSettingsDto
-    ) {
+    updateSettings(@Request() req: { user: { userId: string; role: string } }, @Body() body: UpdateSteamSettingsDto) {
         return this.steamService.updateSettings(req.user.userId, body);
     }
 

@@ -126,15 +126,13 @@ export class AchievementsPage implements OnInit {
             this.loading.set(false);
             return;
         }
-        this.http
-            .get<AchievementProgress[]>(`${this.config.baseUrl}${ACHIEVEMENT_ROUTES.progress(userId)}`)
-            .subscribe({
-                next: (data) => {
-                    this.achievements.set(data);
-                    this.loading.set(false);
-                },
-                error: () => this.loading.set(false)
-            });
+        this.http.get<AchievementProgress[]>(`${this.config.baseUrl}${ACHIEVEMENT_ROUTES.progress(userId)}`).subscribe({
+            next: (data) => {
+                this.achievements.set(data);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
     }
 
     protected rarityStyle(rarity: AchievementRarity): { bg: string; text: string; border: string } {

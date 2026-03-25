@@ -58,14 +58,18 @@ interface ToastItem {
         }
 
         .ach-card::before {
-            content: '';
+            content: "";
             position: absolute;
             inset: -2px;
             border-radius: 1rem;
             padding: 2px;
             background: var(--ach-gradient);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
@@ -74,15 +78,15 @@ interface ToastItem {
 
         /* Sparkle particles */
         .ach-card::after {
-            content: '';
+            content: "";
             position: absolute;
             inset: 0;
             background-image:
-                radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 100%),
-                radial-gradient(2px 2px at 80% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
-                radial-gradient(2px 2px at 50% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
-                radial-gradient(1.5px 1.5px at 70% 60%, rgba(255,255,255,0.7) 0%, transparent 100%),
-                radial-gradient(1.5px 1.5px at 30% 70%, rgba(255,255,255,0.4) 0%, transparent 100%);
+                radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+                radial-gradient(2px 2px at 80% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+                radial-gradient(2px 2px at 50% 80%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 70% 60%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 30% 70%, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
             animation: ach-sparkle 3s ease-in-out infinite;
             pointer-events: none;
         }
@@ -147,7 +151,7 @@ interface ToastItem {
 
         .ach-desc {
             font-size: 0.75rem;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255, 255, 255, 0.5);
             margin-top: 0.25rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -170,59 +174,135 @@ interface ToastItem {
             flex-shrink: 0;
             border: none;
             background: transparent;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             padding: 0.25rem;
             transition: color 0.2s;
             font-size: 0.875rem;
         }
-        .ach-close:hover { color: white; }
+        .ach-close:hover {
+            color: white;
+        }
 
         /* Rarity colors */
-        .ach-bronze { --ach-gradient: linear-gradient(135deg, #cd7f32, #b8860b); --ach-glow-color: rgba(205,127,50,0.4); --ach-accent: #cd7f32; }
-        .ach-silver { --ach-gradient: linear-gradient(135deg, #c0c0c0, #a8a8a8); --ach-glow-color: rgba(192,192,192,0.4); --ach-accent: #c0c0c0; }
-        .ach-gold   { --ach-gradient: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700); --ach-glow-color: rgba(255,215,0,0.5); --ach-accent: #ffd700; }
-        .ach-platinum { --ach-gradient: linear-gradient(135deg, #00e5ff, #7c4dff, #00e5ff); --ach-glow-color: rgba(0,229,255,0.4); --ach-accent: #00e5ff; }
-        .ach-levelup  { --ach-gradient: linear-gradient(135deg, #f59e0b, #ef4444, #f59e0b); --ach-glow-color: rgba(245,158,11,0.5); --ach-accent: #f59e0b; }
+        .ach-bronze {
+            --ach-gradient: linear-gradient(135deg, #cd7f32, #b8860b);
+            --ach-glow-color: rgba(205, 127, 50, 0.4);
+            --ach-accent: #cd7f32;
+        }
+        .ach-silver {
+            --ach-gradient: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+            --ach-glow-color: rgba(192, 192, 192, 0.4);
+            --ach-accent: #c0c0c0;
+        }
+        .ach-gold {
+            --ach-gradient: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700);
+            --ach-glow-color: rgba(255, 215, 0, 0.5);
+            --ach-accent: #ffd700;
+        }
+        .ach-platinum {
+            --ach-gradient: linear-gradient(135deg, #00e5ff, #7c4dff, #00e5ff);
+            --ach-glow-color: rgba(0, 229, 255, 0.4);
+            --ach-accent: #00e5ff;
+        }
+        .ach-levelup {
+            --ach-gradient: linear-gradient(135deg, #f59e0b, #ef4444, #f59e0b);
+            --ach-glow-color: rgba(245, 158, 11, 0.5);
+            --ach-accent: #f59e0b;
+        }
 
         @keyframes ach-slide-in {
-            0% { opacity: 0; transform: translateX(100px) scale(0.8); }
-            60% { opacity: 1; transform: translateX(-10px) scale(1.02); }
-            100% { opacity: 1; transform: translateX(0) scale(1); }
+            0% {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+            60% {
+                opacity: 1;
+                transform: translateX(-10px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
         }
         @keyframes ach-slide-out {
-            0% { opacity: 1; transform: translateX(0) scale(1); }
-            100% { opacity: 0; transform: translateX(100px) scale(0.8); }
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
         }
         @keyframes ach-icon-pop {
-            0% { transform: scale(0) rotate(-30deg); }
-            60% { transform: scale(1.2) rotate(5deg); }
-            100% { transform: scale(1) rotate(0deg); }
+            0% {
+                transform: scale(0) rotate(-30deg);
+            }
+            60% {
+                transform: scale(1.2) rotate(5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
         }
         @keyframes ach-glow-pulse {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.7; }
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0.7;
+            }
         }
         @keyframes ach-ring-expand {
-            0% { transform: scale(0.5); opacity: 0.8; }
-            100% { transform: scale(1.8); opacity: 0; }
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
         }
         @keyframes ach-sparkle {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
+            0%,
+            100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
         }
         @keyframes ach-text-fade {
-            0% { opacity: 0; transform: translateX(10px); }
-            100% { opacity: 1; transform: translateX(0); }
+            0% {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
         @keyframes ach-xp-bounce {
-            0% { opacity: 0; transform: translateY(8px); }
-            60% { transform: translateY(-3px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            60% {
+                transform: translateY(-3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         @keyframes ach-border-glow {
-            0% { opacity: 0.6; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 1;
+            }
         }
 
         /* Progress bar animation */
@@ -232,7 +312,7 @@ interface ToastItem {
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             overflow: hidden;
         }
         .ach-progress-bar {
@@ -241,8 +321,12 @@ interface ToastItem {
             animation: ach-progress-shrink var(--ach-duration) linear forwards;
         }
         @keyframes ach-progress-shrink {
-            0% { width: 100%; }
-            100% { width: 0%; }
+            0% {
+                width: 100%;
+            }
+            100% {
+                width: 0%;
+            }
         }
     `,
     template: `
@@ -250,18 +334,22 @@ interface ToastItem {
             <div class="ach-overlay">
                 <div
                     class="ach-card"
-                    [class.ach-leaving]="leaving()"
                     [class.ach-bronze]="item.rarity === 'bronze'"
-                    [class.ach-silver]="item.rarity === 'silver'"
                     [class.ach-gold]="item.rarity === 'gold'"
-                    [class.ach-platinum]="item.rarity === 'platinum'"
+                    [class.ach-leaving]="leaving()"
                     [class.ach-levelup]="item.type === 'levelup'"
+                    [class.ach-platinum]="item.rarity === 'platinum'"
+                    [class.ach-silver]="item.rarity === 'silver'"
                 >
                     <!-- Icon with glow -->
                     <div class="ach-icon-wrap">
                         <div class="ach-icon-glow"></div>
                         <div class="ach-ring" [style.border-color]="'var(--ach-accent)'"></div>
-                        <div class="ach-icon-circle" [style.border-color]="'var(--ach-accent)'" [style.background]="'rgba(0,0,0,0.4)'">
+                        <div
+                            class="ach-icon-circle"
+                            [style.background]="'rgba(0,0,0,0.4)'"
+                            [style.border-color]="'var(--ach-accent)'"
+                        >
                             <i class="pi text-2xl" [class]="item.icon" [style.color]="'var(--ach-accent)'"></i>
                         </div>
                     </div>
@@ -310,32 +398,30 @@ export class AchievementToast implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.subs.push(
-            this.pushService
-                .on<PushAchievementUnlocked>("achievement:unlocked")
-                .subscribe((ev) => {
-                    this.enqueue({
-                        type: "achievement",
-                        icon: ev.icon,
-                        rarity: ev.rarity,
-                        label: this.translocoService.translate("achievements.unlocked"),
-                        name: ev.name,
-                        description: ev.description,
-                        xpReward: ev.xpReward
-                    });
-                }),
-            this.pushService
-                .on<PushLevelUp>("level:up")
-                .subscribe((ev) => {
-                    this.enqueue({
-                        type: "levelup",
-                        icon: "pi pi-arrow-up",
-                        rarity: "levelup",
-                        label: this.translocoService.translate("achievements.levelUp"),
-                        name: `Level ${ev.newLevel} — ${ev.levelName}`,
-                        description: this.translocoService.translate("achievements.xpCollected", { xp: ev.totalXp.toLocaleString() }),
-                        xpReward: 0
-                    });
-                })
+            this.pushService.on<PushAchievementUnlocked>("achievement:unlocked").subscribe((ev) => {
+                this.enqueue({
+                    type: "achievement",
+                    icon: ev.icon,
+                    rarity: ev.rarity,
+                    label: this.translocoService.translate("achievements.unlocked"),
+                    name: ev.name,
+                    description: ev.description,
+                    xpReward: ev.xpReward
+                });
+            }),
+            this.pushService.on<PushLevelUp>("level:up").subscribe((ev) => {
+                this.enqueue({
+                    type: "levelup",
+                    icon: "pi pi-arrow-up",
+                    rarity: "levelup",
+                    label: this.translocoService.translate("achievements.levelUp"),
+                    name: `Level ${ev.newLevel} — ${ev.levelName}`,
+                    description: this.translocoService.translate("achievements.xpCollected", {
+                        xp: ev.totalXp.toLocaleString()
+                    }),
+                    xpReward: 0
+                });
+            })
         );
     }
 

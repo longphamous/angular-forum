@@ -17,7 +17,9 @@ const MAX_FOOTER_AVATARS = 12;
     selector: "app-footer",
     imports: [AvatarModule, RouterModule, TooltipModule, TranslocoModule],
     styles: `
-        :host { display: block; }
+        :host {
+            display: block;
+        }
 
         .footer-wrap {
             background: var(--surface-card);
@@ -67,10 +69,14 @@ const MAX_FOOTER_AVATARS = 12;
             padding: 2rem 0;
         }
         @media (min-width: 640px) {
-            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
         @media (min-width: 1024px) {
-            .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
+            .footer-grid {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
         }
 
         .footer-heading {
@@ -114,7 +120,9 @@ const MAX_FOOTER_AVATARS = 12;
             border-radius: 0.5rem;
             background: var(--surface-hover);
             color: var(--text-color-secondary);
-            transition: background 0.15s, color 0.15s;
+            transition:
+                background 0.15s,
+                color 0.15s;
             font-size: 1rem;
         }
         .footer-social-icon:hover {
@@ -161,7 +169,9 @@ const MAX_FOOTER_AVATARS = 12;
             <!-- ── Statistics ─────────────────────────────── -->
             <div class="footer-section">
                 <div class="footer-stats">
-                    <span><strong>{{ total() }}</strong> {{ t("footer.stat.members") }}</span>
+                    <span
+                        ><strong>{{ total() }}</strong> {{ t("footer.stat.members") }}</span
+                    >
                     <span class="sep">·</span>
                     <span>{{ t("footer.stat.guests") }}</span>
                     <span class="sep">·</span>
@@ -174,7 +184,9 @@ const MAX_FOOTER_AVATARS = 12;
                 <div class="footer-online">
                     <div class="flex items-center gap-1.5">
                         <span class="relative flex h-2.5 w-2.5">
-                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                            <span
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"
+                            ></span>
                             <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
                         </span>
                         <span class="text-xs font-medium" style="color: var(--text-color-secondary)">
@@ -184,17 +196,27 @@ const MAX_FOOTER_AVATARS = 12;
                     @if (visible().length > 0) {
                         <div class="flex items-center">
                             @for (user of visible(); track user.userId; let i = $index) {
-                                <a class="-ml-1.5 block no-underline first:ml-0"
-                                   [pTooltip]="user.displayName + ' (@' + user.username + ')'"
-                                   [routerLink]="['/users', user.userId]"
-                                   [style.z-index]="visible().length - i"
-                                   tooltipPosition="top">
-                                    <p-avatar [label]="user.displayName.charAt(0).toUpperCase()" shape="circle" size="normal"
-                                              styleClass="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold border-2 border-surface-card cursor-pointer" />
+                                <a
+                                    class="-ml-1.5 block no-underline first:ml-0"
+                                    [pTooltip]="user.displayName + ' (@' + user.username + ')'"
+                                    [routerLink]="['/users', user.userId]"
+                                    [style.z-index]="visible().length - i"
+                                    tooltipPosition="top"
+                                >
+                                    <p-avatar
+                                        [label]="user.displayName.charAt(0).toUpperCase()"
+                                        shape="circle"
+                                        size="normal"
+                                        styleClass="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold border-2 border-surface-card cursor-pointer"
+                                    />
                                 </a>
                             }
                             @if (overflow() > 0) {
-                                <div class="-ml-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-surface-200 text-xs font-semibold text-surface-600 dark:bg-surface-700 dark:text-surface-300" style="border-color: var(--surface-card)" [style.z-index]="0">
+                                <div
+                                    class="bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-300 -ml-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold"
+                                    [style.z-index]="0"
+                                    style="border-color: var(--surface-card)"
+                                >
                                     +{{ overflow() }}
                                 </div>
                             }
@@ -210,18 +232,42 @@ const MAX_FOOTER_AVATARS = 12;
                     <div>
                         <h5 class="footer-heading">{{ t("footer.navigation") }}</h5>
                         <ul class="footer-links">
-                            <li><a routerLink="/dashboard">{{ t("nav.dashboard") }}</a></li>
-                            <li><a routerLink="/forum">{{ t("nav.forum") }}</a></li>
-                            <li><a routerLink="/blog">{{ t("nav.blog") }}</a></li>
-                            <li><a routerLink="/gallery">{{ t("nav.gallery") }}</a></li>
-                            <li><a routerLink="/lexicon">{{ t("nav.lexicon") }}</a></li>
-                            <li><a routerLink="/clips">{{ t("nav.clips") }}</a></li>
-                            <li><a routerLink="/anime-database">{{ t("nav.anime") }}</a></li>
-                            <li><a routerLink="/marketplace">{{ t("nav.marketplace") }}</a></li>
-                            <li><a routerLink="/recipes">{{ t("nav.recipes") }}</a></li>
-                            <li><a routerLink="/calendar">{{ t("nav.calendar") }}</a></li>
-                            <li><a routerLink="/shop">{{ t("nav.shop") }}</a></li>
-                            <li><a routerLink="/lotto">{{ t("nav.lotto") }}</a></li>
+                            <li>
+                                <a routerLink="/dashboard">{{ t("nav.dashboard") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/forum">{{ t("nav.forum") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/blog">{{ t("nav.blog") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/gallery">{{ t("nav.gallery") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/lexicon">{{ t("nav.lexicon") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/clips">{{ t("nav.clips") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/anime-database">{{ t("nav.anime") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/marketplace">{{ t("nav.marketplace") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/recipes">{{ t("nav.recipes") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/calendar">{{ t("nav.calendar") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/shop">{{ t("nav.shop") }}</a>
+                            </li>
+                            <li>
+                                <a routerLink="/lotto">{{ t("nav.lotto") }}</a>
+                            </li>
                         </ul>
                     </div>
 
@@ -229,16 +275,44 @@ const MAX_FOOTER_AVATARS = 12;
                     <div>
                         <h5 class="footer-heading">{{ t("footer.connect") }}</h5>
                         <div class="footer-connect">
-                            <a class="footer-social-icon" href="https://discord.gg/" target="_blank" rel="noopener noreferrer" pTooltip="Discord" tooltipPosition="top">
+                            <a
+                                class="footer-social-icon"
+                                href="https://discord.gg/"
+                                pTooltip="Discord"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                tooltipPosition="top"
+                            >
                                 <i class="pi pi-discord"></i>
                             </a>
-                            <a class="footer-social-icon" href="https://twitter.com/" target="_blank" rel="noopener noreferrer" pTooltip="X / Twitter" tooltipPosition="top">
+                            <a
+                                class="footer-social-icon"
+                                href="https://twitter.com/"
+                                pTooltip="X / Twitter"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                tooltipPosition="top"
+                            >
                                 <i class="pi pi-twitter"></i>
                             </a>
-                            <a class="footer-social-icon" href="https://github.com/" target="_blank" rel="noopener noreferrer" pTooltip="GitHub" tooltipPosition="top">
+                            <a
+                                class="footer-social-icon"
+                                href="https://github.com/"
+                                pTooltip="GitHub"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                tooltipPosition="top"
+                            >
                                 <i class="pi pi-github"></i>
                             </a>
-                            <a class="footer-social-icon" href="https://youtube.com/" target="_blank" rel="noopener noreferrer" pTooltip="YouTube" tooltipPosition="top">
+                            <a
+                                class="footer-social-icon"
+                                href="https://youtube.com/"
+                                pTooltip="YouTube"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                tooltipPosition="top"
+                            >
                                 <i class="pi pi-youtube"></i>
                             </a>
                         </div>
@@ -264,7 +338,13 @@ const MAX_FOOTER_AVATARS = 12;
                         <span class="opacity-30">·</span>
                         <span>
                             Powered by
-                            <a class="text-primary font-medium" href="https://primeng.org" target="_blank" rel="noopener noreferrer">PrimeNG</a>
+                            <a
+                                class="text-primary font-medium"
+                                href="https://primeng.org"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                >PrimeNG</a
+                            >
                         </span>
                     </div>
                 </div>

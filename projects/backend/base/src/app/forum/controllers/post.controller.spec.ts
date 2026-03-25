@@ -1,9 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 
 import { AuthenticatedUser } from "../../auth/models/jwt.model";
-import { PostController } from "./post.controller";
-import { PostService } from "../services/post.service";
 import { PaginatedResult, PostDto } from "../models/forum.model";
+import { PostService } from "../services/post.service";
+import { PostController } from "./post.controller";
 
 const mockPostService: Partial<jest.Mocked<PostService>> = {
     findByThread: jest.fn(),

@@ -114,7 +114,12 @@ describe("GalleryService", () => {
                 getMany: jest.fn().mockResolvedValue([makeAlbum()])
             };
             albumRepo.createQueryBuilder!.mockReturnValue(mockQb);
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Owner", username: "owner", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Owner",
+                username: "owner",
+                avatarUrl: null
+            });
             mediaRepo.count!.mockResolvedValue(5);
             mediaRepo.findOne!.mockResolvedValue(makeMedia());
 
@@ -130,7 +135,12 @@ describe("GalleryService", () => {
                 getMany: jest.fn().mockResolvedValue([makeAlbum()])
             };
             albumRepo.createQueryBuilder!.mockReturnValue(mockQb);
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Owner", username: "owner", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Owner",
+                username: "owner",
+                avatarUrl: null
+            });
             mediaRepo.count!.mockResolvedValue(0);
             mediaRepo.findOne!.mockResolvedValue(null);
 
@@ -144,7 +154,12 @@ describe("GalleryService", () => {
         it("should return album with media for owner", async () => {
             albumRepo.findOne!.mockResolvedValue(makeAlbum());
             mediaRepo.find!.mockResolvedValue([makeMedia()]);
-            userRepo.findOne!.mockResolvedValue({ id: "user-1", displayName: "Owner", username: "owner", avatarUrl: null });
+            userRepo.findOne!.mockResolvedValue({
+                id: "user-1",
+                displayName: "Owner",
+                username: "owner",
+                avatarUrl: null
+            });
             mediaRepo.count!.mockResolvedValue(1);
             mediaRepo.findOne!.mockResolvedValue(makeMedia());
             commentRepo.count!.mockResolvedValue(0);
@@ -209,17 +224,17 @@ describe("GalleryService", () => {
         it("should throw NotFoundException when album not found", async () => {
             albumRepo.findOne!.mockResolvedValue(null);
 
-            await expect(
-                service.updateAlbum("missing", "user-1", false, { title: "X" })
-            ).rejects.toThrow(NotFoundException);
+            await expect(service.updateAlbum("missing", "user-1", false, { title: "X" })).rejects.toThrow(
+                NotFoundException
+            );
         });
 
         it("should throw ForbiddenException when non-owner non-admin edits", async () => {
             albumRepo.findOne!.mockResolvedValue(makeAlbum({ ownerId: "user-1" }));
 
-            await expect(
-                service.updateAlbum("album-1", "user-2", false, { title: "X" })
-            ).rejects.toThrow(ForbiddenException);
+            await expect(service.updateAlbum("album-1", "user-2", false, { title: "X" })).rejects.toThrow(
+                ForbiddenException
+            );
         });
 
         it("should allow admin to update any album", async () => {
@@ -282,9 +297,9 @@ describe("GalleryService", () => {
         it("should throw NotFoundException when album not found", async () => {
             albumRepo.findOne!.mockResolvedValue(null);
 
-            await expect(
-                service.addMedia("missing", "user-1", { type: "image", url: "test.jpg" })
-            ).rejects.toThrow(NotFoundException);
+            await expect(service.addMedia("missing", "user-1", { type: "image", url: "test.jpg" })).rejects.toThrow(
+                NotFoundException
+            );
         });
     });
 

@@ -1,12 +1,4 @@
-import {
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    Component,
-    ElementRef,
-    input,
-    signal,
-    ViewChild
-} from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, input, signal, ViewChild } from "@angular/core";
 
 /**
  * Displays a clip thumbnail: uses the provided `thumbnailUrl` if available,
@@ -23,18 +15,18 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         @if (thumbnailUrl()) {
-            <img [src]="thumbnailUrl()" class="clip-thumb-img" alt="" />
+            <img class="clip-thumb-img" [src]="thumbnailUrl()" alt="" />
         } @else if (frameDataUrl()) {
-            <img [src]="frameDataUrl()" class="clip-thumb-img" alt="" />
+            <img class="clip-thumb-img" [src]="frameDataUrl()" alt="" />
         } @else {
             <video
-                #videoEl
                 class="clip-thumb-video"
+                #videoEl
                 [src]="videoUrl()"
-                preload="metadata"
+                (loadeddata)="captureFrame()"
                 muted
                 playsinline
-                (loadeddata)="captureFrame()"
+                preload="metadata"
             ></video>
         }
     `,

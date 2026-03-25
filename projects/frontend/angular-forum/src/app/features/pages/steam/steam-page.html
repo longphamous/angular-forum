@@ -9,139 +9,153 @@
 
     <!-- Loading -->
     @if (loading()) {
-        <div class="rounded-xl border border-surface p-6">
+    <div class="border-surface rounded-xl border p-6">
+        <div class="flex items-center gap-4">
+            <p-skeleton shape="circle" size="4rem" />
+            <div class="flex-1">
+                <p-skeleton height="1.5rem" styleClass="mb-2" width="40%" />
+                <p-skeleton height="1rem" width="60%" />
+            </div>
+        </div>
+    </div>
+    } @if (!loading()) { @if (!profile()) {
+    <!-- Not linked -->
+    <div class="border-surface rounded-xl border p-8 text-center">
+        <i class="pi pi-desktop text-color-secondary mb-4 text-6xl"></i>
+        <h3 class="m-0 mb-2 text-lg font-bold">{{ t("steam.notLinked") }}</h3>
+        <p class="text-color-secondary mb-4 text-sm">{{ t("steam.subtitle") }}</p>
+        <div class="mx-auto flex max-w-sm gap-2">
+            <input class="flex-1" [(ngModel)]="steamIdInput" [placeholder]="t('steam.steamIdPlaceholder')" pInputText />
+            <p-button
+                (onClick)="linkSteam()"
+                [disabled]="!steamIdInput.trim()"
+                [label]="t('steam.linkAccount')"
+                [loading]="linking()"
+                icon="pi pi-link"
+            />
+        </div>
+    </div>
+    } @else { @let p = profile()!;
+
+    <!-- Profile Card -->
+    <div class="border-surface mb-6 overflow-hidden rounded-xl border">
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white">
             <div class="flex items-center gap-4">
-                <p-skeleton shape="circle" size="4rem" />
+                @if (p.avatarUrl) {
+                <img
+                    class="h-16 w-16 rounded-full border-2 border-white/20"
+                    [alt]="p.personaName"
+                    [src]="p.avatarUrl"
+                />
+                } @else {
+                <p-avatar [label]="p.personaName.charAt(0)" shape="circle" size="xlarge" />
+                }
                 <div class="flex-1">
-                    <p-skeleton height="1.5rem" width="40%" styleClass="mb-2" />
-                    <p-skeleton height="1rem" width="60%" />
+                    <div class="flex items-center gap-2">
+                        <h2 class="m-0 text-xl font-bold">{{ p.personaName }}</h2>
+                        <p-tag
+                            [severity]="p.onlineStatus === 1 ? 'success' : p.onlineStatus === 2 ? 'danger' : 'secondary'"
+                            [value]="t(statusLabels[p.onlineStatus] ?? 'steam.status.offline')"
+                            styleClass="text-xs"
+                        />
+                    </div>
+                    @if (p.currentGame) {
+                    <div class="mt-1 flex items-center gap-1 text-sm text-green-400">
+                        <i class="pi pi-play" style="font-size: 0.7rem"></i>
+                        {{ t("steam.currentlyPlaying") }}: {{ p.currentGame }}
+                    </div>
+                    }
+                    <div class="mt-2 flex gap-4 text-xs text-white/60">
+                        <span>{{ p.gameCount }} {{ t("steam.ownedGames") }}</span>
+                        <span>Steam ID: {{ p.steamId }}</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <p-button
+                        (onClick)="syncProfile()"
+                        [loading]="syncing()"
+                        [pTooltip]="t('steam.syncProfile')"
+                        [text]="true"
+                        icon="pi pi-refresh"
+                        severity="secondary"
+                    />
+                    <p-button
+                        (onClick)="unlinkSteam()"
+                        [pTooltip]="t('steam.unlinkAccount')"
+                        [text]="true"
+                        icon="pi pi-trash"
+                        severity="danger"
+                    />
                 </div>
             </div>
         </div>
-    }
 
-    @if (!loading()) {
-        @if (!profile()) {
-            <!-- Not linked -->
-            <div class="rounded-xl border border-surface p-8 text-center">
-                <i class="pi pi-desktop text-color-secondary mb-4 text-6xl"></i>
-                <h3 class="m-0 mb-2 text-lg font-bold">{{ t("steam.notLinked") }}</h3>
-                <p class="text-color-secondary mb-4 text-sm">{{ t("steam.subtitle") }}</p>
-                <div class="mx-auto flex max-w-sm gap-2">
-                    <input
-                        class="flex-1"
-                        pInputText
-                        [(ngModel)]="steamIdInput"
-                        [placeholder]="t('steam.steamIdPlaceholder')"
-                    />
-                    <p-button
-                        [label]="t('steam.linkAccount')"
-                        icon="pi pi-link"
-                        [loading]="linking()"
-                        [disabled]="!steamIdInput.trim()"
-                        (onClick)="linkSteam()"
-                    />
+        <!-- Privacy Settings -->
+        <div class="border-surface flex flex-wrap items-center gap-6 border-t p-4">
+            <div class="flex items-center gap-2">
+                <p-toggleSwitch (ngModelChange)="updateSettings({ isPublic: $event })" [ngModel]="p.isPublic" />
+                <span class="text-sm">{{ t("steam.publicProfile") }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <p-toggleSwitch (ngModelChange)="updateSettings({ syncFriends: $event })" [ngModel]="p.syncFriends" />
+                <span class="text-sm">{{ t("steam.autoFollowFriends") }}</span>
+            </div>
+            <p-button
+                class="ml-auto"
+                (onClick)="syncFriends()"
+                [label]="t('steam.syncFriends')"
+                [outlined]="true"
+                icon="pi pi-users"
+                severity="secondary"
+                size="small"
+            />
+        </div>
+    </div>
+
+    <!-- Recent Games -->
+    @if (recentGames().length > 0) {
+    <div class="mb-6">
+        <h3 class="mb-3 text-lg font-bold">{{ t("steam.recentGames") }}</h3>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            @for (game of recentGames(); track game.appId) {
+            <div
+                class="border-surface hover:bg-emphasis flex items-center gap-3 rounded-xl border p-3 transition-colors"
+            >
+                <img
+                    class="h-10 w-10 rounded"
+                    [alt]="game.name"
+                    [src]="'https://media.steampowered.com/steamcommunity/public/images/apps/' + game.appId + '/' + game.imgIconUrl + '.jpg'"
+                />
+                <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium">{{ game.name }}</div>
+                    <div class="text-color-secondary text-xs">
+                        {{ formatPlaytime(game.playtimeForever) }} {{ t("steam.playtime") }} @if (game.playtimeRecent) {
+                        · {{ formatPlaytime(game.playtimeRecent) }} {{ t("steam.recentGames") }} }
+                    </div>
                 </div>
             </div>
-        } @else {
-            @let p = profile()!;
-
-            <!-- Profile Card -->
-            <div class="mb-6 overflow-hidden rounded-xl border border-surface">
-                <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white">
-                    <div class="flex items-center gap-4">
-                        @if (p.avatarUrl) {
-                            <img class="h-16 w-16 rounded-full border-2 border-white/20" [src]="p.avatarUrl" [alt]="p.personaName" />
-                        } @else {
-                            <p-avatar [label]="p.personaName.charAt(0)" shape="circle" size="xlarge" />
-                        }
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <h2 class="m-0 text-xl font-bold">{{ p.personaName }}</h2>
-                                <p-tag
-                                    [value]="t(statusLabels[p.onlineStatus] ?? 'steam.status.offline')"
-                                    [severity]="p.onlineStatus === 1 ? 'success' : p.onlineStatus === 2 ? 'danger' : 'secondary'"
-                                    styleClass="text-xs"
-                                />
-                            </div>
-                            @if (p.currentGame) {
-                                <div class="mt-1 flex items-center gap-1 text-sm text-green-400">
-                                    <i class="pi pi-play" style="font-size: 0.7rem"></i>
-                                    {{ t("steam.currentlyPlaying") }}: {{ p.currentGame }}
-                                </div>
-                            }
-                            <div class="mt-2 flex gap-4 text-xs text-white/60">
-                                <span>{{ p.gameCount }} {{ t("steam.ownedGames") }}</span>
-                                <span>Steam ID: {{ p.steamId }}</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <p-button icon="pi pi-refresh" [text]="true" severity="secondary" [loading]="syncing()" (onClick)="syncProfile()" [pTooltip]="t('steam.syncProfile')" />
-                            <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="unlinkSteam()" [pTooltip]="t('steam.unlinkAccount')" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Privacy Settings -->
-                <div class="flex flex-wrap items-center gap-6 border-t border-surface p-4">
-                    <div class="flex items-center gap-2">
-                        <p-toggleSwitch [ngModel]="p.isPublic" (ngModelChange)="updateSettings({ isPublic: $event })" />
-                        <span class="text-sm">{{ t("steam.publicProfile") }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <p-toggleSwitch [ngModel]="p.syncFriends" (ngModelChange)="updateSettings({ syncFriends: $event })" />
-                        <span class="text-sm">{{ t("steam.autoFollowFriends") }}</span>
-                    </div>
-                    <p-button [label]="t('steam.syncFriends')" icon="pi pi-users" severity="secondary" size="small" [outlined]="true" (onClick)="syncFriends()" class="ml-auto" />
-                </div>
-            </div>
-
-            <!-- Recent Games -->
-            @if (recentGames().length > 0) {
-                <div class="mb-6">
-                    <h3 class="mb-3 text-lg font-bold">{{ t("steam.recentGames") }}</h3>
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        @for (game of recentGames(); track game.appId) {
-                            <div class="flex items-center gap-3 rounded-xl border border-surface p-3 hover:bg-emphasis transition-colors">
-                                <img
-                                    class="h-10 w-10 rounded"
-                                    [src]="'https://media.steampowered.com/steamcommunity/public/images/apps/' + game.appId + '/' + game.imgIconUrl + '.jpg'"
-                                    [alt]="game.name"
-                                />
-                                <div class="min-w-0 flex-1">
-                                    <div class="truncate text-sm font-medium">{{ game.name }}</div>
-                                    <div class="text-color-secondary text-xs">
-                                        {{ formatPlaytime(game.playtimeForever) }} {{ t("steam.playtime") }}
-                                        @if (game.playtimeRecent) {
-                                            · {{ formatPlaytime(game.playtimeRecent) }} {{ t("steam.recentGames") }}
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
             }
-
-            <!-- All Games -->
-            @if (games().length > 0) {
-                <div>
-                    <h3 class="mb-3 text-lg font-bold">{{ t("steam.ownedGames") }} ({{ games().length }})</h3>
-                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        @for (game of games().slice(0, 30); track game.appId) {
-                            <div class="flex items-center gap-3 rounded-lg border border-surface p-2 text-sm">
-                                <img
-                                    class="h-8 w-8 rounded"
-                                    [src]="'https://media.steampowered.com/steamcommunity/public/images/apps/' + game.appId + '/' + game.imgIconUrl + '.jpg'"
-                                    [alt]="game.name"
-                                />
-                                <span class="min-w-0 flex-1 truncate">{{ game.name }}</span>
-                                <span class="text-color-secondary text-xs shrink-0">{{ formatPlaytime(game.playtimeForever) }}</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-        }
+        </div>
+    </div>
     }
+
+    <!-- All Games -->
+    @if (games().length > 0) {
+    <div>
+        <h3 class="mb-3 text-lg font-bold">{{ t("steam.ownedGames") }} ({{ games().length }})</h3>
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            @for (game of games().slice(0, 30); track game.appId) {
+            <div class="border-surface flex items-center gap-3 rounded-lg border p-2 text-sm">
+                <img
+                    class="h-8 w-8 rounded"
+                    [alt]="game.name"
+                    [src]="'https://media.steampowered.com/steamcommunity/public/images/apps/' + game.appId + '/' + game.imgIconUrl + '.jpg'"
+                />
+                <span class="min-w-0 flex-1 truncate">{{ game.name }}</span>
+                <span class="text-color-secondary shrink-0 text-xs">{{ formatPlaytime(game.playtimeForever) }}</span>
+            </div>
+            }
+        </div>
+    </div>
+    } } }
 </div>

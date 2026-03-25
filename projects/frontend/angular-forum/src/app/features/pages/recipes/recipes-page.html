@@ -15,145 +15,177 @@
         <div class="mb-6 flex flex-wrap items-center gap-3">
             <p-iconfield class="min-w-48 flex-1">
                 <p-inputicon styleClass="pi pi-search" />
-                <input class="w-full" pInputText [placeholder]="t('common.search')" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+                <input
+                    class="w-full"
+                    (ngModelChange)="searchQuery.set($event)"
+                    [ngModel]="searchQuery()"
+                    [placeholder]="t('common.search')"
+                    pInputText
+                />
             </p-iconfield>
             <p-select
+                (ngModelChange)="selectedCategory.set($event)"
+                [ngModel]="selectedCategory()"
                 [options]="categories()"
-                optionLabel="name"
-                optionValue="id"
                 [placeholder]="t('recipes.allCategories')"
                 [showClear]="true"
-                [ngModel]="selectedCategory()"
-                (ngModelChange)="selectedCategory.set($event)"
+                optionLabel="name"
+                optionValue="id"
                 styleClass="min-w-40"
             />
             <p-select
+                (ngModelChange)="selectedDifficulty.set($event)"
+                [ngModel]="selectedDifficulty()"
                 [options]="difficultyOptions"
                 [placeholder]="t('recipes.form.difficulty')"
                 [showClear]="true"
                 optionValue="value"
-                [ngModel]="selectedDifficulty()"
-                (ngModelChange)="selectedDifficulty.set($event)"
                 styleClass="min-w-36"
             >
                 <ng-template let-opt pTemplate="selectedItem">{{ t(opt.label) }}</ng-template>
                 <ng-template let-opt pTemplate="item">{{ t(opt.label) }}</ng-template>
             </p-select>
             @if (searchQuery() || selectedCategory() || selectedDifficulty() || selectedDiet()) {
-                <p-button (onClick)="clearFilters()" [label]="t('common.reset')" [text]="true" icon="pi pi-times" severity="secondary" />
+            <p-button
+                (onClick)="clearFilters()"
+                [label]="t('common.reset')"
+                [text]="true"
+                icon="pi pi-times"
+                severity="secondary"
+            />
             }
         </div>
 
         <!-- Loading -->
         @if (loading()) {
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                @for (i of [1,2,3,4,5,6]; track i) {
-                    <div class="overflow-hidden rounded-xl border border-surface">
-                        <p-skeleton height="12rem" styleClass="w-full" />
-                        <div class="flex flex-col gap-2 p-4">
-                            <p-skeleton height="1.25rem" width="80%" />
-                            <p-skeleton height="0.875rem" width="60%" />
-                            <p-skeleton height="0.75rem" width="40%" />
-                        </div>
-                    </div>
-                }
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="border-surface overflow-hidden rounded-xl border">
+                <p-skeleton height="12rem" styleClass="w-full" />
+                <div class="flex flex-col gap-2 p-4">
+                    <p-skeleton height="1.25rem" width="80%" />
+                    <p-skeleton height="0.875rem" width="60%" />
+                    <p-skeleton height="0.75rem" width="40%" />
+                </div>
             </div>
+            }
+        </div>
         }
 
         <!-- Empty -->
         @if (!loading() && filteredRecipes().length === 0) {
-            <div class="flex flex-col items-center justify-center gap-3 py-20 text-color-secondary">
-                <i class="pi pi-book text-6xl"></i>
-                <p class="m-0 text-lg font-medium">{{ t("recipes.noRecipes") }}</p>
-                <p-button (onClick)="createRecipe()" [label]="t('recipes.createRecipe')" icon="pi pi-plus" styleClass="mt-2" />
-            </div>
+        <div class="text-color-secondary flex flex-col items-center justify-center gap-3 py-20">
+            <i class="pi pi-book text-6xl"></i>
+            <p class="m-0 text-lg font-medium">{{ t("recipes.noRecipes") }}</p>
+            <p-button
+                (onClick)="createRecipe()"
+                [label]="t('recipes.createRecipe')"
+                icon="pi pi-plus"
+                styleClass="mt-2"
+            />
+        </div>
         }
 
         <!-- Recipe Grid -->
         @if (!loading() && filteredRecipes().length > 0) {
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                @for (recipe of filteredRecipes(); track recipe.id) {
-                    <div
-                        class="group cursor-pointer overflow-hidden rounded-xl border border-surface transition-shadow duration-200 hover:shadow-lg"
-                        (click)="openRecipe(recipe)"
-                        (keydown.enter)="openRecipe(recipe)"
-                        role="button"
-                        tabindex="0"
-                    >
-                        <!-- Cover Image -->
-                        <div class="relative h-48 overflow-hidden">
-                            @if (recipe.coverImageUrl) {
-                                <img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" [alt]="recipe.title" [src]="recipe.coverImageUrl" />
-                            } @else {
-                                <div class="bg-surface-100 dark:bg-surface-700 flex h-full w-full items-center justify-center">
-                                    <i class="pi pi-book text-surface-300 text-5xl"></i>
-                                </div>
-                            }
-                            <!-- Difficulty badge -->
-                            <div class="absolute top-3 left-3">
-                                <p-tag [severity]="difficultySeverity(recipe.difficulty)" [value]="t('recipes.difficulty.' + recipe.difficulty)" />
-                            </div>
-                            <!-- Favorite count -->
-                            @if (recipe.favoriteCount > 0) {
-                                <div class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white backdrop-blur-sm">
-                                    <i class="pi pi-heart-fill text-red-400" style="font-size: 0.65rem"></i>
-                                    {{ recipe.favoriteCount }}
-                                </div>
-                            }
-                        </div>
-
-                        <!-- Content -->
-                        <div class="flex flex-col gap-2 p-4">
-                            @if (recipe.categoryName) {
-                                <span class="text-primary text-xs font-semibold uppercase tracking-wide">{{ recipe.categoryName }}</span>
-                            }
-                            <h3 class="m-0 line-clamp-2 text-base font-bold leading-snug group-hover:text-primary transition-colors">
-                                {{ recipe.title }}
-                            </h3>
-                            @if (recipe.description) {
-                                <p class="text-color-secondary m-0 line-clamp-2 text-sm">{{ recipe.description }}</p>
-                            }
-
-                            <!-- Dietary tags -->
-                            @if (recipe.dietaryTags.length > 0) {
-                                <div class="flex flex-wrap gap-1">
-                                    @for (tag of recipe.dietaryTags.slice(0, 3); track tag) {
-                                        <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                            {{ t('recipes.dietary.' + tag) }}
-                                        </span>
-                                    }
-                                </div>
-                            }
-
-                            <!-- Meta -->
-                            <div class="text-color-secondary mt-auto flex flex-wrap items-center gap-3 border-t border-surface pt-2 text-xs">
-                                @if (recipe.prepTime || recipe.cookTime) {
-                                    <span class="flex items-center gap-1">
-                                        <i class="pi pi-clock"></i>
-                                        {{ formatTime((recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)) }}
-                                    </span>
-                                }
-                                @if (recipe.servings) {
-                                    <span class="flex items-center gap-1">
-                                        <i class="pi pi-users"></i>
-                                        {{ recipe.servings }}
-                                    </span>
-                                }
-                                @if (recipe.averageRating > 0) {
-                                    <span class="flex items-center gap-1">
-                                        <i class="pi pi-star-fill text-yellow-500" style="font-size: 0.65rem"></i>
-                                        {{ recipe.averageRating.toFixed(1) }}
-                                    </span>
-                                }
-                                <span class="ml-auto flex items-center gap-1">
-                                    <i class="pi pi-user"></i>
-                                    {{ recipe.authorName }}
-                                </span>
-                            </div>
-                        </div>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @for (recipe of filteredRecipes(); track recipe.id) {
+            <div
+                class="group border-surface cursor-pointer overflow-hidden rounded-xl border transition-shadow duration-200 hover:shadow-lg"
+                (click)="openRecipe(recipe)"
+                (keydown.enter)="openRecipe(recipe)"
+                role="button"
+                tabindex="0"
+            >
+                <!-- Cover Image -->
+                <div class="relative h-48 overflow-hidden">
+                    @if (recipe.coverImageUrl) {
+                    <img
+                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        [alt]="recipe.title"
+                        [src]="recipe.coverImageUrl"
+                    />
+                    } @else {
+                    <div class="bg-surface-100 dark:bg-surface-700 flex h-full w-full items-center justify-center">
+                        <i class="pi pi-book text-surface-300 text-5xl"></i>
                     </div>
-                }
+                    }
+                    <!-- Difficulty badge -->
+                    <div class="absolute top-3 left-3">
+                        <p-tag
+                            [severity]="difficultySeverity(recipe.difficulty)"
+                            [value]="t('recipes.difficulty.' + recipe.difficulty)"
+                        />
+                    </div>
+                    <!-- Favorite count -->
+                    @if (recipe.favoriteCount > 0) {
+                    <div
+                        class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white backdrop-blur-sm"
+                    >
+                        <i class="pi pi-heart-fill text-red-400" style="font-size: 0.65rem"></i>
+                        {{ recipe.favoriteCount }}
+                    </div>
+                    }
+                </div>
+
+                <!-- Content -->
+                <div class="flex flex-col gap-2 p-4">
+                    @if (recipe.categoryName) {
+                    <span class="text-primary text-xs font-semibold tracking-wide uppercase"
+                        >{{ recipe.categoryName }}</span
+                    >
+                    }
+                    <h3
+                        class="group-hover:text-primary m-0 line-clamp-2 text-base leading-snug font-bold transition-colors"
+                    >
+                        {{ recipe.title }}
+                    </h3>
+                    @if (recipe.description) {
+                    <p class="text-color-secondary m-0 line-clamp-2 text-sm">{{ recipe.description }}</p>
+                    }
+
+                    <!-- Dietary tags -->
+                    @if (recipe.dietaryTags.length > 0) {
+                    <div class="flex flex-wrap gap-1">
+                        @for (tag of recipe.dietaryTags.slice(0, 3); track tag) {
+                        <span
+                            class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        >
+                            {{ t('recipes.dietary.' + tag) }}
+                        </span>
+                        }
+                    </div>
+                    }
+
+                    <!-- Meta -->
+                    <div
+                        class="text-color-secondary border-surface mt-auto flex flex-wrap items-center gap-3 border-t pt-2 text-xs"
+                    >
+                        @if (recipe.prepTime || recipe.cookTime) {
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-clock"></i>
+                            {{ formatTime((recipe.prepTime ?? 0) + (recipe.cookTime ?? 0)) }}
+                        </span>
+                        } @if (recipe.servings) {
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-users"></i>
+                            {{ recipe.servings }}
+                        </span>
+                        } @if (recipe.averageRating > 0) {
+                        <span class="flex items-center gap-1">
+                            <i class="pi pi-star-fill text-yellow-500" style="font-size: 0.65rem"></i>
+                            {{ recipe.averageRating.toFixed(1) }}
+                        </span>
+                        }
+                        <span class="ml-auto flex items-center gap-1">
+                            <i class="pi pi-user"></i>
+                            {{ recipe.authorName }}
+                        </span>
+                    </div>
+                </div>
             </div>
+            }
+        </div>
         }
     </div>
 </ng-container>

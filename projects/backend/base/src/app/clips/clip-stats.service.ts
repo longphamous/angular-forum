@@ -154,7 +154,13 @@ export class ClipStatsService {
         const commentRate = totalViews > 0 ? clip.commentCount / totalViews : 0;
         const shareRate = totalViews > 0 ? clip.shareCount / totalViews : 0;
         const avgCompletion = Number(viewAggregates?.avgCompletionPercent ?? 0);
-        const engagementScore = this.computeEngagementScore(totalViews, clip.likeCount, clip.commentCount, clip.shareCount, avgCompletion);
+        const engagementScore = this.computeEngagementScore(
+            totalViews,
+            clip.likeCount,
+            clip.commentCount,
+            clip.shareCount,
+            avgCompletion
+        );
 
         const sourceMap: Record<string, number> = {};
         for (const row of viewsBySource) {
@@ -220,7 +226,13 @@ export class ClipStatsService {
             clipId: c.id,
             title: c.title,
             viewCount: c.viewCount,
-            engagementScore: this.computeEngagementScore(c.viewCount, c.likeCount, c.commentCount, c.shareCount, avgComp)
+            engagementScore: this.computeEngagementScore(
+                c.viewCount,
+                c.likeCount,
+                c.commentCount,
+                c.shareCount,
+                avgComp
+            )
         }));
         scored.sort((a, b) => b.engagementScore - a.engagementScore);
 
@@ -282,7 +294,10 @@ export class ClipStatsService {
 
         const clipMap = new Map(clips.map((c) => [c.id, c]));
         const authorIds = [...new Set(clips.map((c) => c.authorId))];
-        const users = await this.userRepo.createQueryBuilder("u").where("u.id IN (:...authorIds)", { authorIds }).getMany();
+        const users = await this.userRepo
+            .createQueryBuilder("u")
+            .where("u.id IN (:...authorIds)", { authorIds })
+            .getMany();
         const userMap = new Map(users.map((u) => [u.id, u]));
 
         const trending: TrendingClipResponse[] = [];
@@ -339,7 +354,13 @@ export class ClipStatsService {
         const likeRate = clip.likeCount / totalViews;
         const commentRate = clip.commentCount / totalViews;
         const shareRate = clip.shareCount / totalViews;
-        const engagementScore = this.computeEngagementScore(totalViews, clip.likeCount, clip.commentCount, clip.shareCount, avgComp);
+        const engagementScore = this.computeEngagementScore(
+            totalViews,
+            clip.likeCount,
+            clip.commentCount,
+            clip.shareCount,
+            avgComp
+        );
         const rv = Number(recentViews?.count ?? 0);
         const trendingScore = rv * 1 + clip.likeCount * 0.5;
         const ageHours = (Date.now() - clip.createdAt.getTime()) / (1000 * 60 * 60);
@@ -360,13 +381,22 @@ export class ClipStatsService {
 
     // ── Engagement score formula ─────────────────────────────────
 
-    private computeEngagementScore(views: number, likes: number, comments: number, shares: number, avgCompletionPercent: number): number {
+    private computeEngagementScore(
+        views: number,
+        likes: number,
+        comments: number,
+        shares: number,
+        avgCompletionPercent: number
+    ): number {
         const v = Math.max(views, 1);
         const likeWeight = 2;
         const commentWeight = 3;
         const shareWeight = 4;
         const completionWeight = 0.5;
 
-        return (likes * likeWeight + comments * commentWeight + shares * shareWeight) / v * 100 + (avgCompletionPercent * completionWeight);
+        return (
+            ((likes * likeWeight + comments * commentWeight + shares * shareWeight) / v) * 100 +
+            avgCompletionPercent * completionWeight
+        );
     }
 }

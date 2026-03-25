@@ -1,10 +1,10 @@
 import { DynamicModule, Global, Logger, Module } from "@nestjs/common";
 
 import { PushGateway } from "./push.gateway";
-import { PushHealthController } from "./push-health.controller";
 import { PushService } from "./push.service";
 import { PushServiceNoop } from "./push.service.noop";
 import { PushServiceRemote } from "./push.service.remote";
+import { PushHealthController } from "./push-health.controller";
 
 /**
  * Global push module providing real-time WebSocket events.

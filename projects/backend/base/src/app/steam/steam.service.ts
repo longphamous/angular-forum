@@ -227,10 +227,7 @@ export class SteamService {
         }
     }
 
-    private async fetchPlayerAchievements(
-        steamId: string,
-        appId: string
-    ): Promise<SteamAchievement[] | null> {
+    private async fetchPlayerAchievements(steamId: string, appId: string): Promise<SteamAchievement[] | null> {
         if (!this.apiKey) return null;
 
         const cacheKey = `achievements:${steamId}:${appId}`;

@@ -2,8 +2,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { NotificationsService } from "../notifications/notifications.service";
-import { UserController } from "./user.controller";
 import { UserProfile } from "./models/user.model";
+import { UserController } from "./user.controller";
 import { OnlineUserDto, UserService } from "./user.service";
 
 const mockUserService: Partial<jest.Mocked<UserService>> = {
@@ -202,7 +202,13 @@ describe("UserController", () => {
     describe("getOnlineUsers", () => {
         it("should return online users with default params", async () => {
             const users: OnlineUserDto[] = [
-                { userId: "u1", username: "alice", displayName: "Alice", avatarUrl: null, lastSeenAt: "2026-03-01T10:00:00Z" }
+                {
+                    userId: "u1",
+                    username: "alice",
+                    displayName: "Alice",
+                    avatarUrl: null,
+                    lastSeenAt: "2026-03-01T10:00:00Z"
+                }
             ];
             (mockUserService.findOnlineUsers as jest.Mock).mockResolvedValue(users);
 

@@ -5,7 +5,13 @@
         <!-- Header -->
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <p-button (onClick)="goBack()" [text]="true" icon="pi pi-arrow-left" [label]="navHistory.backLabel()" severity="secondary" />
+                <p-button
+                    (onClick)="goBack()"
+                    [label]="navHistory.backLabel()"
+                    [text]="true"
+                    icon="pi pi-arrow-left"
+                    severity="secondary"
+                />
                 <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">
                     {{ isEditMode() ? t("blog.editPost") : t("blog.writePost") }}
                 </h1>
@@ -171,7 +177,12 @@
                     >
                         {{ t("blog.coverImage") }}
                     </h3>
-                    <media-upload sourceModule="blog" category="cover" accept="image/*" (uploaded)="onCoverImageUploaded($event)" />
+                    <media-upload
+                        (uploaded)="onCoverImageUploaded($event)"
+                        accept="image/*"
+                        category="cover"
+                        sourceModule="blog"
+                    />
                     <input
                         class="w-full"
                         (ngModelChange)="setCoverImageUrl($event)"

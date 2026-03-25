@@ -1,5 +1,18 @@
 export type MediaAccessLevel = "public" | "members_only" | "private" | "unlisted";
-export type SourceModule = "blog" | "gallery" | "clips" | "user" | "chronik" | "marketplace" | "slideshow" | "shop" | "recipes" | "lexicon" | "tcg" | "forum" | "general";
+export type SourceModule =
+    | "blog"
+    | "gallery"
+    | "clips"
+    | "user"
+    | "chronik"
+    | "marketplace"
+    | "slideshow"
+    | "shop"
+    | "recipes"
+    | "lexicon"
+    | "tcg"
+    | "forum"
+    | "general";
 
 export interface MediaVariant {
     variantKey: string;
