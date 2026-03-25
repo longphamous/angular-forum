@@ -795,6 +795,8 @@
     "animeListDesc": "See which anime {{name}} watches or has completed.",
     "animeListBtn": "View {{name}}'s anime list",
     "notFound": "User not found.",
+    "viewProfile": "View profile",
+    "sendMessage": "Send message",
     "editProfile": "Edit profile",
     "changeCover": "Change cover photo",
     "coverUrl": "Cover image URL",

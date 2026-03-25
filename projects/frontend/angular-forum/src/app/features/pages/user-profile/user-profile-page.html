@@ -416,6 +416,7 @@
                                             <a
                                                 class="text-sm font-semibold no-underline hover:underline"
                                                 [routerLink]="['/users', entry.authorId]"
+                                                [userPopover]="entry.authorId"
                                                 >{{ entry.authorDisplayName }}</a
                                             >
                                             <div class="text-color-secondary flex items-center gap-2 text-xs">

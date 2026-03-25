@@ -795,6 +795,8 @@
     "animeListDesc": "Schau dir an, welche Anime {{name}} schaut oder abgeschlossen hat.",
     "animeListBtn": "Anime-Liste von {{name}} ansehen",
     "notFound": "Benutzer nicht gefunden.",
+    "viewProfile": "Profil ansehen",
+    "sendMessage": "Nachricht senden",
     "editProfile": "Profil bearbeiten",
     "changeCover": "Titelbild ändern",
     "coverUrl": "Titelbild-URL",

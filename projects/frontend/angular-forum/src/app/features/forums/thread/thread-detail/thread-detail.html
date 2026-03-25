@@ -683,7 +683,7 @@
                     ></div>
 
                     <!-- Avatar -->
-                    <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]">
+                    <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]" [userPopover]="post.authorId">
                         <div class="relative inline-block">
                             @if (post.authorAvatarUrl) {
                             <img
@@ -708,6 +708,7 @@
                     <a
                         class="text-surface-900 dark:text-surface-0 relative z-10 mt-2.5 max-w-full truncate text-center text-sm leading-tight font-bold no-underline hover:underline"
                         [routerLink]="['/users', post.authorId]"
+                        [userPopover]="post.authorId"
                         >{{ post.authorName }}</a
                     >
 

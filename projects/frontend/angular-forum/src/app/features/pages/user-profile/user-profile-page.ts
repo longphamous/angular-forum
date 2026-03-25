@@ -48,6 +48,7 @@ import { FriendsFacade } from "../../../facade/friends/friends-facade";
 import { ClipThumbnail } from "../../../shared/components/clip-thumbnail/clip-thumbnail";
 import { MediaUpload } from "../../../shared/components/media-upload/media-upload";
 import { OnlineIndicator } from "../../../shared/components/online-indicator/online-indicator";
+import { UserPopoverDirective } from "../../../shared/directives/user-popover.directive";
 
 interface BlogPostSummary {
     id: string;
@@ -114,7 +115,8 @@ interface XpHistoryEvent {
         TooltipModule,
         TranslocoModule,
         MediaUpload,
-        OnlineIndicator
+        OnlineIndicator,
+        UserPopoverDirective
     ],
     selector: "app-user-profile-page",
     styleUrl: "./user-profile-page.css",

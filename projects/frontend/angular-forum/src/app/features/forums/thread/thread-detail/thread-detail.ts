@@ -35,6 +35,7 @@ import { ForumFacade } from "../../../../facade/forum/forum-facade";
 import { OnlineIndicator } from "../../../../shared/components/online-indicator/online-indicator";
 import { RichContent } from "../../../../shared/components/rich-content/rich-content";
 import { RichEmbed } from "../../../../shared/components/rich-embed/rich-embed";
+import { UserPopoverDirective } from "../../../../shared/directives/user-popover.directive";
 
 @Component({
     selector: "thread-detail",
@@ -58,7 +59,8 @@ import { RichEmbed } from "../../../../shared/components/rich-embed/rich-embed";
         TagModule,
         TextareaModule,
         TooltipModule,
-        TranslocoModule
+        TranslocoModule,
+        UserPopoverDirective
     ],
     templateUrl: "./thread-detail.html",
     styleUrl: "./thread-detail.scss",
