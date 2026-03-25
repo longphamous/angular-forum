@@ -23,6 +23,7 @@ export const FORUM_ROUTES = {
         update: (postId: string) => `/forum/posts/${postId}`,
         react: (postId: string) => `/forum/posts/${postId}/react`,
         highlight: (postId: string) => `/forum/posts/${postId}/highlight`,
+        official: (postId: string) => `/forum/posts/${postId}/official`,
         bestAnswer: (threadId: string, postId: string) => `/forum/threads/${threadId}/best-answer/${postId}`
     }
 } as const;

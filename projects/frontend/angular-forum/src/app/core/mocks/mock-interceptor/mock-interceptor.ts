@@ -336,6 +336,26 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(reacted);
         }
 
+        // PATCH /api/forum/posts/:id/official
+        const postOfficialMatch = lowerUrl.match(/\/api\/forum\/posts\/([^/]+)\/official$/);
+        if (method === "PATCH" && postOfficialMatch) {
+            const postId = postOfficialMatch[1]!;
+            const post = mockPosts[postId];
+            if (!post) return this.error("Post not found", 404);
+            post.isOfficial = !post.isOfficial;
+            return this.ok({ ...post });
+        }
+
+        // PATCH /api/forum/posts/:id/highlight
+        const postHighlightMatch = lowerUrl.match(/\/api\/forum\/posts\/([^/]+)\/highlight$/);
+        if (method === "PATCH" && postHighlightMatch) {
+            const postId = postHighlightMatch[1]!;
+            const post = mockPosts[postId];
+            if (!post) return this.error("Post not found", 404);
+            post.isHighlighted = !post.isHighlighted;
+            return this.ok({ ...post });
+        }
+
         // POST /api/forum/posts/:id/react
         const postReactMatch = lowerUrl.match(/\/api\/forum\/posts\/([^/]+)\/react$/);
         if (method === "POST" && postReactMatch) {
@@ -396,6 +416,7 @@ export class MockInterceptor implements HttpInterceptor {
                 isFirstPost: false,
                 isBestAnswer: false,
                 isHighlighted: false,
+                isOfficial: !!(payload as { isOfficial?: boolean }).isOfficial,
                 isEdited: false,
                 editCount: 0,
                 reactionCount: 0,
@@ -3014,6 +3035,77 @@ export class MockInterceptor implements HttpInterceptor {
             const asset = mockMediaAssets.find((m) => m.id === mediaId);
             if (!asset) return this.error("Media not found", 404);
             return this.ok({ ...asset });
+        }
+
+        // GET /api/embeds?url=...
+        if (method === "GET" && lowerUrl.includes("/api/embeds") && !lowerUrl.includes("/batch")) {
+            const embedUrl = new URL(url, "http://localhost").searchParams.get("url") ?? "";
+            let domain = "";
+            try {
+                domain = new URL(embedUrl).hostname.replace(/^www\./, "");
+            } catch {
+                /* ignore */
+            }
+
+            const mockEmbeds: Record<
+                string,
+                { title: string; description: string; imageUrl: string | null; siteName: string }
+            > = {
+                "github.com": {
+                    title: "GitHub Repository",
+                    description: "Where the world builds software. Millions of developers use GitHub.",
+                    imageUrl: "https://github.githubassets.com/images/modules/open_graph/github-octocat.png",
+                    siteName: "GitHub"
+                },
+                "youtube.com": {
+                    title: "YouTube Video",
+                    description:
+                        "Enjoy the videos and music you love, upload original content, and share it all with friends.",
+                    imageUrl: "https://www.youtube.com/img/desktop/yt_1200.png",
+                    siteName: "YouTube"
+                },
+                "youtu.be": {
+                    title: "YouTube Video",
+                    description: "Enjoy the videos and music you love.",
+                    imageUrl: "https://www.youtube.com/img/desktop/yt_1200.png",
+                    siteName: "YouTube"
+                }
+            };
+
+            const match = Object.entries(mockEmbeds).find(([key]) => domain.includes(key));
+            return this.ok({
+                url: embedUrl,
+                title: match?.[1].title ?? `Page on ${domain}`,
+                description: match?.[1].description ?? null,
+                imageUrl: match?.[1].imageUrl ?? null,
+                siteName: match?.[1].siteName ?? domain,
+                faviconUrl: `https://${domain}/favicon.ico`,
+                domain
+            });
+        }
+
+        // POST /api/embeds/batch
+        if (method === "POST" && lowerUrl.includes("/api/embeds/batch")) {
+            const urls = ((req.body as { urls?: string[] })?.urls ?? []);
+            return this.ok(
+                urls.map((u: string) => {
+                    let d = "";
+                    try {
+                        d = new URL(u).hostname.replace(/^www\./, "");
+                    } catch {
+                        /* ignore */
+                    }
+                    return {
+                        url: u,
+                        title: `Page on ${d}`,
+                        description: null,
+                        imageUrl: null,
+                        siteName: d,
+                        faviconUrl: null,
+                        domain: d
+                    };
+                })
+            );
         }
 
         // Fallback: durchreichen

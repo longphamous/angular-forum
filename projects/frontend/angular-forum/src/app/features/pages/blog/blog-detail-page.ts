@@ -18,6 +18,7 @@ import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import { BlogComment, BlogPostDetail, BlogType } from "../../../core/models/blog/blog";
 import { NavigationHistoryService } from "../../../core/services/navigation-history.service";
 import { AuthFacade } from "../../../facade/auth/auth-facade";
+import { RichContent } from "../../../shared/components/rich-content/rich-content";
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +31,7 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
         RouterModule,
         SkeletonModule,
         TagModule,
+        RichContent,
         TextareaModule,
         ToastModule,
         TranslocoModule

@@ -212,6 +212,7 @@
     "replyHeader": "Reply",
     "replyPlaceholder": "Your reply...",
     "replySend": "Send reply",
+    "embedPreview": "Link Preview",
     "lockedMessage": "This thread is locked. No more replies possible.",
     "newPostHint": "{{author}} posted a new reply.",
     "newPostShow": "Show",
@@ -281,6 +282,11 @@
     "unhighlight": "Remove Highlight",
     "highlightTooltip": "Mark as interesting post",
     "unhighlightTooltip": "Remove interesting post mark",
+    "officialPost": "Official Post",
+    "markOfficial": "Mark as official",
+    "unmarkOfficial": "Remove official mark",
+    "officialTooltip": "Mark as an official post",
+    "unofficialTooltip": "Remove official post mark",
     "knowledgeSource": "Source",
     "knowledgeSourcePlaceholder": "Where do you know this from? (optional)",
     "gender": {
@@ -930,7 +936,18 @@
     "orderDesc": "Descending"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "navigation": "Navigation",
+    "connect": "Connect",
+    "about": "About",
+    "aboutText": "Aniverse is a community platform for anime fans. Discuss, share and discover content about anime, manga and Japanese culture.",
+    "privacy": "Privacy Policy",
+    "legal": "Legal Notice",
+    "stat": {
+      "members": "Members",
+      "guests": "Guests",
+      "online": "{{count}} online"
+    }
   },
   "adminSlideshow": {
     "title": "Teaser Slideshow",

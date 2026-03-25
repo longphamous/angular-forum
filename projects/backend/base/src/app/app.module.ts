@@ -15,6 +15,7 @@ import { ChronikModule } from "./chronik/chronik.module";
 import { CommunityBotModule } from "./community-bot/community-bot.module";
 import { CreditModule } from "./credit/credit.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
+import { EmbedModule } from "./embed/embed.module";
 import { DatabaseModule } from "./database/database.module";
 import { FeedModule } from "./feed/feed.module";
 import { ForumModule } from "./forum/forum.module";
@@ -78,7 +79,8 @@ import { WeatherModule } from "./weather/weather.module";
         SteamModule,
         TcgModule,
         WeatherModule,
-        ClipsModule
+        ClipsModule,
+        EmbedModule
     ],
     controllers: [AppController],
     providers: [AppService]

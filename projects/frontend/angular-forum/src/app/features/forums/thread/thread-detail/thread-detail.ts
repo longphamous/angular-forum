@@ -33,6 +33,8 @@ import { PushService } from "../../../../core/services/push.service";
 import { AuthFacade } from "../../../../facade/auth/auth-facade";
 import { ForumFacade } from "../../../../facade/forum/forum-facade";
 import { OnlineIndicator } from "../../../../shared/components/online-indicator/online-indicator";
+import { RichContent } from "../../../../shared/components/rich-content/rich-content";
+import { RichEmbed } from "../../../../shared/components/rich-embed/rich-embed";
 
 @Component({
     selector: "thread-detail",
@@ -47,6 +49,8 @@ import { OnlineIndicator } from "../../../../shared/components/online-indicator/
         InputTextModule,
         LevelBadge,
         OnlineIndicator,
+        RichContent,
+        RichEmbed,
         MessageModule,
         PaginatorModule,
         RouterModule,
@@ -75,6 +79,8 @@ export class ThreadDetail implements OnInit, OnDestroy {
     replyKnowledgeSource = "";
     submittingReply = false;
     replyError: string | null = null;
+    readonly replyEmbedUrls = signal<string[]>([]);
+    private embedDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     readonly reportVisible = signal(false);
     readonly reportSuccess = signal(false);
@@ -165,8 +171,14 @@ export class ThreadDetail implements OnInit, OnDestroy {
         this.facade.loadPosts(this.threadId, this.currentPage, rows);
     }
 
+    /** Check if HTML content from Quill editor has actual visible text. */
+    hasContent(html: string): boolean {
+        const text = html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        return text.length > 0;
+    }
+
     submitReply(): void {
-        if (!this.replyContent.trim()) return;
+        if (!this.hasContent(this.replyContent)) return;
         this.submittingReply = true;
         this.replyError = null;
         this.facade
@@ -398,7 +410,7 @@ export class ThreadDetail implements OnInit, OnDestroy {
     }
 
     submitEdit(): void {
-        if (!this.editContent.trim()) return;
+        if (!this.hasContent(this.editContent)) return;
         this.editSubmitting = true;
         this.facade.updatePost(this.editPostId, this.editContent, this.editReason || undefined).subscribe({
             next: () => {
@@ -506,6 +518,43 @@ export class ThreadDetail implements OnInit, OnDestroy {
 
     toggleHighlight(post: Post): void {
         this.facade.toggleHighlight(post.id).subscribe({
+            next: () => {
+                this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
+                this.cd.markForCheck();
+            }
+        });
+    }
+
+    onReplyContentChange(): void {
+        if (this.embedDebounceTimer) clearTimeout(this.embedDebounceTimer);
+        this.embedDebounceTimer = setTimeout(() => {
+            const urls: string[] = [];
+
+            // 1. Extract href values from <a> tags
+            const hrefRegex = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*>/gi;
+            let match: RegExpExecArray | null;
+            while ((match = hrefRegex.exec(this.replyContent)) !== null) {
+                if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
+            }
+
+            // 2. Also extract URLs from visible text (Quill may not auto-link yet)
+            const plainText = this.replyContent.replace(/<[^>]+>/g, " ");
+            const textUrlRegex = /https?:\/\/[^\s<>"']+/gi;
+            let textMatch: RegExpExecArray | null;
+            while ((textMatch = textUrlRegex.exec(plainText)) !== null) {
+                if (!urls.includes(textMatch[0])) urls.push(textMatch[0]);
+            }
+
+            const current = this.replyEmbedUrls();
+            if (urls.length !== current.length || urls.some((u, i) => u !== current[i])) {
+                this.replyEmbedUrls.set(urls);
+                this.cd.markForCheck();
+            }
+        }, 500);
+    }
+
+    toggleOfficial(post: Post): void {
+        this.facade.toggleOfficial(post.id).subscribe({
             next: () => {
                 this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
                 this.cd.markForCheck();

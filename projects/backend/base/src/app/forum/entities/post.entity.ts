@@ -62,6 +62,9 @@ export class ForumPostEntity {
     @Column({ name: "highlighted_by", type: "uuid", nullable: true })
     highlightedBy?: string;
 
+    @Column({ name: "is_official", default: false })
+    isOfficial!: boolean;
+
     @Column({ name: "knowledge_source", type: "text", nullable: true })
     knowledgeSource?: string;
 

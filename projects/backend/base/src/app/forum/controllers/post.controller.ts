@@ -116,6 +116,18 @@ export class PostController {
     }
 
     /**
+     * PATCH /forum/posts/:id/official
+     * Toggles the official flag on a post. Only admins/moderators may call this.
+     */
+    @Patch("posts/:id/official")
+    toggleOfficial(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PostDto> {
+        return this.postService.toggleOfficial(id, user.userId, user.role);
+    }
+
+    /**
      * POST /forum/posts/:id/react
      * Adds or updates a reaction on a post. Requires authentication.
      */

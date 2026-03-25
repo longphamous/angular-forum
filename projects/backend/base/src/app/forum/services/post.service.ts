@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
@@ -62,6 +62,7 @@ function toDto(entity: ForumPostEntity, author?: AuthorInfo, isViewerAuthenticat
         isBestAnswer: entity.isBestAnswer,
         isHighlighted: entity.isHighlighted,
         highlightedBy: entity.highlightedBy,
+        isOfficial: entity.isOfficial,
         knowledgeSource: entity.knowledgeSource,
         isEdited: entity.isEdited,
         editedAt: entity.editedAt?.toISOString(),
@@ -166,6 +167,9 @@ export class PostService {
     }
 
     async create(threadId: string, authorId: string, dto: CreatePostDto): Promise<PostDto> {
+        const textContent = dto.content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        if (!textContent) throw new BadRequestException("Post content must not be empty");
+
         const thread = await this.threadRepo.findOneBy({ id: threadId });
         if (!thread) throw new NotFoundException(`Thread "${threadId}" not found`);
 
@@ -174,7 +178,8 @@ export class PostService {
             threadId,
             authorId,
             content: dto.content,
-            ...(dto.knowledgeSource?.trim() ? { knowledgeSource: dto.knowledgeSource.trim() } : {})
+            ...(dto.knowledgeSource?.trim() ? { knowledgeSource: dto.knowledgeSource.trim() } : {}),
+            ...(dto.isOfficial ? { isOfficial: true } : {})
         });
         await this.postRepo.save(post);
 
@@ -206,6 +211,9 @@ export class PostService {
     }
 
     async update(id: string, dto: UpdatePostDto, userId: string, userRole: UserRole): Promise<PostDto> {
+        const textContent = dto.content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+        if (!textContent) throw new BadRequestException("Post content must not be empty");
+
         const entity = await this.findEntityById(id);
         if (!canModify(entity.authorId, userId, userRole)) {
             throw new ForbiddenException("You do not have permission to update this post");
@@ -370,6 +378,17 @@ export class PostService {
         const entity = await this.findEntityById(postId);
         entity.isHighlighted = !entity.isHighlighted;
         entity.highlightedBy = entity.isHighlighted ? userId : undefined;
+        await this.postRepo.save(entity);
+        return toDto(entity);
+    }
+
+    async toggleOfficial(postId: string, userId: string, userRole: UserRole): Promise<PostDto> {
+        if (userRole !== "admin" && userRole !== "moderator") {
+            throw new ForbiddenException("Only admins or moderators can mark posts as official");
+        }
+
+        const entity = await this.findEntityById(postId);
+        entity.isOfficial = !entity.isOfficial;
         await this.postRepo.save(entity);
         return toDto(entity);
     }

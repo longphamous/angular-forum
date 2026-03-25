@@ -101,6 +101,7 @@ export interface PostDto {
     isBestAnswer: boolean;
     isHighlighted: boolean;
     highlightedBy?: string;
+    isOfficial: boolean;
     knowledgeSource?: string;
     isEdited: boolean;
     editedAt?: string;

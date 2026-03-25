@@ -191,6 +191,10 @@ export class ForumFacade {
         return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.highlight(postId)}`, {});
     }
 
+    toggleOfficial(postId: string): Observable<Post> {
+        return this.http.patch<Post>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.posts.official(postId)}`, {});
+    }
+
     getMyReactions(threadId: string): Observable<string[]> {
         return this.http.get<string[]>(`${this.apiConfig.baseUrl}${FORUM_ROUTES.threads.myReactions(threadId)}`);
     }

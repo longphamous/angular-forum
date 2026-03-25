@@ -103,7 +103,7 @@
         }
 
         <!-- Post content -->
-        <div class="blog-content prose prose-surface dark:prose-invert mb-8 max-w-none" [innerHTML]="safeContent"></div>
+        <rich-content class="blog-content prose prose-surface dark:prose-invert mb-8 max-w-none" [html]="post()!.content" />
 
         <!-- Tags -->
         @if (post()!.tags.length > 0) {
