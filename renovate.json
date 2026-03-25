@@ -1,0 +1,74 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":automergeMinor",
+    "group:allNonMajor"
+  ],
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Angular framework packages — group together",
+      "matchPackagePatterns": ["^@angular/", "^@angular-devkit/"],
+      "groupName": "Angular",
+      "groupSlug": "angular"
+    },
+    {
+      "description": "NestJS packages — group together",
+      "matchPackagePatterns": ["^@nestjs/"],
+      "groupName": "NestJS",
+      "groupSlug": "nestjs"
+    },
+    {
+      "description": "PrimeNG packages — group together",
+      "matchPackagePatterns": ["^primeng", "^primeicons"],
+      "groupName": "PrimeNG",
+      "groupSlug": "primeng"
+    },
+    {
+      "description": "TypeORM packages",
+      "matchPackagePatterns": ["^typeorm"],
+      "groupName": "TypeORM"
+    },
+    {
+      "description": "Nx packages — group together",
+      "matchPackagePatterns": ["^@nx/", "^nx$"],
+      "groupName": "Nx",
+      "groupSlug": "nx"
+    },
+    {
+      "description": "Transloco packages",
+      "matchPackagePatterns": ["^@jsverse/transloco"],
+      "groupName": "Transloco"
+    },
+    {
+      "description": "Lint & formatting tools",
+      "matchPackagePatterns": ["eslint", "prettier"],
+      "groupName": "Linting",
+      "automerge": true
+    },
+    {
+      "description": "Test frameworks",
+      "matchPackagePatterns": ["jest", "vitest", "cypress"],
+      "groupName": "Testing",
+      "automerge": true
+    },
+    {
+      "description": "TypeScript — separate PR",
+      "matchPackageNames": ["typescript"],
+      "groupName": "TypeScript"
+    },
+    {
+      "description": "Major updates need manual review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major"]
+    }
+  ],
+  "schedule": ["before 6am on Monday"],
+  "timezone": "Europe/Berlin",
+  "prConcurrentLimit": 5,
+  "ignoreDeps": []
+}
