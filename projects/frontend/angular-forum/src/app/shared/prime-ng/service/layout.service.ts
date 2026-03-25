@@ -24,19 +24,34 @@ interface MenuChangeEvent {
     routeEvent?: boolean;
 }
 
-// Injectable Service
+const STORAGE_KEY = "aniverse_layout_config";
 
-@Injectable({
-    providedIn: "root"
-})
-export class LayoutService {
-    _config: LayoutConfig = {
+function loadPersistedConfig(): LayoutConfig {
+    const defaults: LayoutConfig = {
         preset: "Aura",
         primary: "emerald",
         surface: null,
         darkTheme: true,
         menuMode: "static"
     };
+    if (typeof localStorage === "undefined") return defaults;
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaults;
+        const saved = JSON.parse(raw) as Partial<LayoutConfig>;
+        return { ...defaults, ...saved };
+    } catch {
+        return defaults;
+    }
+}
+
+// Injectable Service
+
+@Injectable({
+    providedIn: "root"
+})
+export class LayoutService {
+    _config: LayoutConfig = loadPersistedConfig();
 
     _state: LayoutState = {
         staticMenuDesktopInactive: false,
@@ -78,6 +93,9 @@ export class LayoutService {
     private resetSource: Subject<boolean> = new Subject<boolean>();
 
     constructor() {
+        // Apply persisted dark mode on startup
+        this.toggleDarkMode(this._config);
+
         effect(() => {
             const config = this.layoutConfig();
             if (config) {
@@ -151,6 +169,16 @@ export class LayoutService {
     onConfigUpdate(): void {
         this._config = { ...this.layoutConfig() };
         this.configUpdate.next(this.layoutConfig());
+        this.persistConfig();
+    }
+
+    private persistConfig(): void {
+        if (typeof localStorage === "undefined") return;
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(this._config));
+        } catch {
+            // Storage full or unavailable — silently ignore
+        }
     }
 
     onMenuStateChange(event: MenuChangeEvent): void {
