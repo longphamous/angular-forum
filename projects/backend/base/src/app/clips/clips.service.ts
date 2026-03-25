@@ -2,8 +2,10 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, IsNull, Repository } from "typeorm";
 
+import { ActivityService } from "../activity/activity.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { ClipEntity } from "./entities/clip.entity";
 import { ClipCommentEntity } from "./entities/clip-comment.entity";
@@ -89,7 +91,9 @@ export class ClipsService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
-        private readonly mediaService: MediaService
+        private readonly mediaService: MediaService,
+        private readonly activityService: ActivityService,
+        private readonly notificationsService: NotificationsService
     ) {}
 
     async getFeed(
@@ -178,6 +182,7 @@ export class ClipsService {
 
         const saved = await this.clipRepo.save(clip);
         void this.gamificationService.awardXp(authorId, "create_clip", saved.id);
+        void this.activityService.create(authorId, "clip_uploaded", `Neuer Clip: "${saved.title}"`, undefined, `/clips`);
         return this.enrichClip(saved, authorId);
     }
 
@@ -230,6 +235,18 @@ export class ClipsService {
         await this.likeRepo.save(like);
         clip.likeCount += 1;
         await this.clipRepo.save(clip);
+
+        // Notify clip author about the like (unless self-like)
+        if (clip.authorId !== userId) {
+            void this.notificationsService.create(
+                clip.authorId,
+                "clip_liked",
+                "Clip geliked",
+                `Jemand hat deinen Clip "${clip.title}" geliked.`,
+                `/clips`
+            );
+        }
+
         return { liked: true, likeCount: clip.likeCount };
     }
 
@@ -319,6 +336,17 @@ export class ClipsService {
 
         clip.commentCount += 1;
         await this.clipRepo.save(clip);
+
+        // Notify clip author about the comment (unless self-comment)
+        if (clip.authorId !== userId) {
+            void this.notificationsService.create(
+                clip.authorId,
+                "clip_commented",
+                "Neuer Kommentar",
+                `Jemand hat deinen Clip "${clip.title}" kommentiert.`,
+                `/clips`
+            );
+        }
 
         const author = await this.userRepo.findOne({ where: { id: userId } });
 

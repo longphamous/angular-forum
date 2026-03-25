@@ -4,6 +4,7 @@ import { In, Repository } from "typeorm";
 
 import { ActivityService } from "../../activity/activity.service";
 import { GamificationService } from "../../gamification/gamification.service";
+import { NotificationsService } from "../../notifications/notifications.service";
 import { UserXpData } from "../../gamification/level.config";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreateThreadDto } from "../dto/create-thread.dto";
@@ -85,7 +86,8 @@ export class ThreadService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
-        private readonly activityService: ActivityService
+        private readonly activityService: ActivityService,
+        private readonly notificationsService: NotificationsService
     ) {}
 
     async findByForum(forumId: string, query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
@@ -213,6 +215,8 @@ export class ThreadService {
         }
 
         const isMod = userRole === "admin" || userRole === "moderator";
+        const previousIsLocked = entity.isLocked;
+        const previousIsPinned = entity.isPinned;
 
         if (dto.title !== undefined) {
             entity.title = dto.title;
@@ -233,6 +237,36 @@ export class ThreadService {
         }
 
         await this.threadRepo.save(entity);
+
+        // Notify thread author about lock/unlock changes
+        if (isMod && dto.isLocked !== undefined && dto.isLocked !== previousIsLocked) {
+            void this.notificationsService.create(
+                entity.authorId,
+                "thread_locked",
+                entity.isLocked ? "Thema gesperrt" : "Thema entsperrt",
+                `Dein Thema "${entity.title}" wurde ${entity.isLocked ? "gesperrt" : "entsperrt"}.`,
+                `/forum/threads/${entity.id}`
+            );
+        }
+
+        // Notify thread author about pin and create activity
+        if (isMod && dto.isPinned !== undefined && dto.isPinned !== previousIsPinned && entity.isPinned) {
+            void this.notificationsService.create(
+                entity.authorId,
+                "thread_pinned",
+                "Thema angeheftet",
+                `Dein Thema "${entity.title}" wurde angeheftet.`,
+                `/forum/threads/${entity.id}`
+            );
+            void this.activityService.create(
+                userId,
+                "thread_pinned",
+                `"${entity.title}" wurde angeheftet`,
+                undefined,
+                `/forum/threads/${entity.id}`
+            );
+        }
+
         return toDto(entity);
     }
 
@@ -258,6 +292,15 @@ export class ThreadService {
         await this.forumRepo.increment({ id: targetForumId }, "postCount", postCount);
 
         entity.forumId = targetForumId;
+
+        // Notify thread author about move
+        void this.notificationsService.create(
+            entity.authorId,
+            "thread_moved",
+            "Thema verschoben",
+            `Dein Thema "${entity.title}" wurde in ein anderes Forum verschoben.`,
+            `/forum/threads/${entity.id}`
+        );
     }
 
     async remove(id: string, userId: string, userRole: UserRole): Promise<void> {

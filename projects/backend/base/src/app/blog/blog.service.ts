@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { ActivityService } from "../activity/activity.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogCategoryEntity } from "./entities/blog-category.entity";
 import { BlogCommentEntity } from "./entities/blog-comment.entity";
@@ -58,7 +59,8 @@ export class BlogService {
         private readonly userRepo: Repository<UserEntity>,
         private readonly activityService: ActivityService,
         private readonly gamificationService: GamificationService,
-        private readonly mediaService: MediaService
+        private readonly mediaService: MediaService,
+        private readonly notificationsService: NotificationsService
     ) {}
 
     async getPosts(options: {
@@ -245,6 +247,18 @@ export class BlogService {
 
         const comment = this.commentRepo.create({ postId, authorId, content, parentId: parentId ?? null });
         const saved = await this.commentRepo.save(comment);
+
+        // Notify blog post author about new comment (unless self-comment)
+        if (post.authorId !== authorId) {
+            void this.notificationsService.create(
+                post.authorId,
+                "blog_comment",
+                "Neuer Blog-Kommentar",
+                `Jemand hat deinen Artikel "${post.title}" kommentiert.`,
+                `/blog/${post.slug}`
+            );
+        }
+
         return this.enrichComment(saved);
     }
 

@@ -11,7 +11,36 @@ export type NotificationType =
     | "mention"
     | "friend_request"
     | "friend_accepted"
-    | "system";
+    | "system"
+    // Moderation
+    | "thread_moved"
+    | "thread_locked"
+    | "thread_title_changed"
+    | "post_edited_by_mod"
+    | "post_deleted_by_mod"
+    | "best_answer_selected"
+    // Forum
+    | "thread_pinned"
+    | "post_quoted"
+    // Content modules
+    | "blog_comment"
+    | "lexicon_comment"
+    | "gallery_comment"
+    | "gallery_rated"
+    | "recipe_comment"
+    | "recipe_rated"
+    | "clip_liked"
+    | "clip_commented"
+    // Lotto
+    | "lotto_draw_result"
+    | "lotto_win"
+    // Marketplace
+    | "marketplace_offer"
+    | "marketplace_offer_accepted"
+    | "marketplace_offer_declined"
+    // TCG
+    | "tcg_trade_offer"
+    | "tcg_rare_pull";
 
 @Entity("notifications")
 export class NotificationEntity {

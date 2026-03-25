@@ -8,7 +8,16 @@ export type ActivityType =
     | "level_up"
     | "friend_added"
     | "profile_updated"
-    | "lexicon_published";
+    | "lexicon_published"
+    // New types
+    | "clip_uploaded"
+    | "gallery_uploaded"
+    | "recipe_published"
+    | "lotto_jackpot_won"
+    | "marketplace_listing"
+    | "best_answer_marked"
+    | "thread_pinned"
+    | "tcg_rare_pull";
 
 @Entity("activities")
 export class ActivityEntity {

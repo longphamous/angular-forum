@@ -6,7 +6,16 @@ export type ActivityType =
     | "level_up"
     | "friend_added"
     | "profile_updated"
-    | "lexicon_published";
+    | "lexicon_published"
+    // New types
+    | "clip_uploaded"
+    | "gallery_uploaded"
+    | "recipe_published"
+    | "lotto_jackpot_won"
+    | "marketplace_listing"
+    | "best_answer_marked"
+    | "thread_pinned"
+    | "tcg_rare_pull";
 
 export interface Activity {
     id: string;
@@ -30,7 +39,15 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
     level_up: "pi-arrow-up",
     friend_added: "pi-users",
     profile_updated: "pi-user-edit",
-    lexicon_published: "pi-book"
+    lexicon_published: "pi-book",
+    clip_uploaded: "pi-video",
+    gallery_uploaded: "pi-image",
+    recipe_published: "pi-clipboard",
+    lotto_jackpot_won: "pi-trophy",
+    marketplace_listing: "pi-shopping-cart",
+    best_answer_marked: "pi-check-circle",
+    thread_pinned: "pi-thumbtack",
+    tcg_rare_pull: "pi-star-fill"
 };
 
 export const ACTIVITY_COLORS: Record<ActivityType, string> = {
@@ -41,5 +58,13 @@ export const ACTIVITY_COLORS: Record<ActivityType, string> = {
     level_up: "text-purple-500",
     friend_added: "text-cyan-500",
     profile_updated: "text-orange-500",
-    lexicon_published: "text-teal-500"
+    lexicon_published: "text-teal-500",
+    clip_uploaded: "text-purple-500",
+    gallery_uploaded: "text-cyan-500",
+    recipe_published: "text-orange-500",
+    lotto_jackpot_won: "text-yellow-500",
+    marketplace_listing: "text-blue-500",
+    best_answer_marked: "text-green-500",
+    thread_pinned: "text-blue-500",
+    tcg_rare_pull: "text-yellow-500"
 };

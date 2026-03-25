@@ -2,9 +2,11 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { ActivityService } from "../../activity/activity.service";
 import { CreditService } from "../../credit/credit.service";
 import { GamificationService } from "../../gamification/gamification.service";
 import { UserXpData } from "../../gamification/level.config";
+import { NotificationsService } from "../../notifications/notifications.service";
 import { PushService } from "../../push/push.service";
 import { PushThreadNewPost } from "../../push/push-event.types";
 import { FieldVisibility, UserEntity, UserRole } from "../../user/entities/user.entity";
@@ -104,7 +106,9 @@ export class PostService {
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
         private readonly creditService: CreditService,
-        private readonly pushService: PushService
+        private readonly pushService: PushService,
+        private readonly notificationsService: NotificationsService,
+        private readonly activityService: ActivityService
     ) {}
 
     async findByThread(threadId: string, query: ForumQueryDto, viewerId?: string): Promise<PaginatedResult<PostDto>> {
@@ -207,6 +211,19 @@ export class PostService {
             preview: dto.content.replace(/<[^>]+>/g, "").slice(0, 150)
         };
         this.pushService.sendToThread(threadId, "thread:newPost", pushPayload);
+
+        // Notify thread author about new reply (unless self-reply)
+        const authorName = author?.displayName ?? author?.username ?? "Someone";
+        if (thread.authorId !== authorId) {
+            void this.notificationsService.create(
+                thread.authorId,
+                "thread_reply",
+                "Neue Antwort",
+                `${authorName} hat auf dein Thema "${thread.title}" geantwortet.`,
+                `/forum/threads/${threadId}`,
+                { threadId, postId: post.id }
+            );
+        }
 
         return toDto(post);
     }
@@ -352,6 +369,26 @@ export class PostService {
             await this.threadRepo.update(threadId, { bestAnswerPostId: postId });
             await this.postRepo.update({ id: postId }, { isBestAnswer: true });
             post.isBestAnswer = true;
+
+            // Activity: best answer marked
+            void this.activityService.create(
+                userId,
+                "best_answer_marked",
+                `Hilfreichste Antwort markiert in "${thread.title}"`,
+                undefined,
+                `/forum/threads/${thread.id}`
+            );
+
+            // Notify the answer author
+            if (post.authorId !== userId) {
+                void this.notificationsService.create(
+                    post.authorId,
+                    "best_answer_selected",
+                    "Hilfreichste Antwort!",
+                    `Deine Antwort wurde als hilfreichste Antwort markiert.`,
+                    `/forum/threads/${post.threadId}`
+                );
+            }
         }
 
         return toDto(post);

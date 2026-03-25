@@ -441,6 +441,13 @@ export class LottoService implements OnModuleInit {
                     `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
                     "/lotto"
                 );
+                void this.notificationsService.create(
+                    winner.userId,
+                    "lotto_win",
+                    "Lottogewinn!",
+                    `Du hast ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
+                );
             } catch (err) {
                 this.logger.error(`Failed to credit user ${winner.userId}: ${(err as Error).message}`);
             }
@@ -919,6 +926,13 @@ export class LottoService implements OnModuleInit {
                     "coins_received",
                     "Sonderziehung Gewinn!",
                     `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
+                    "/lotto"
+                );
+                void this.notificationsService.create(
+                    winner.userId,
+                    "lotto_win",
+                    "Lottogewinn!",
+                    `Du hast ${winner.prizeAmount} Coins gewonnen!`,
                     "/lotto"
                 );
             } catch (err) {

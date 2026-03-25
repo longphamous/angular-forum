@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
+import { ActivityService } from "../activity/activity.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushLevelUp } from "../push/push-event.types";
@@ -54,7 +55,8 @@ export class GamificationService implements OnModuleInit {
         private readonly dataSource: DataSource,
         private readonly achievementService: AchievementService,
         private readonly pushService: PushService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly activityService: ActivityService
     ) {}
 
     onModuleInit(): void {
@@ -124,6 +126,13 @@ export class GamificationService implements OnModuleInit {
                 "level_up",
                 `Level ${record.level} erreicht!`,
                 `Du bist jetzt ${newLevelData.name} (Level ${record.level})!`,
+                "/profile"
+            );
+            void this.activityService.create(
+                userId,
+                "level_up",
+                `Level ${record.level} erreicht!`,
+                `${newLevelData.name}`,
                 "/profile"
             );
             this.logger.log(`User ${userId} leveled up: ${previousLevel} → ${record.level} (${newLevelData.name})`);
