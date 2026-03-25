@@ -8,6 +8,14 @@
   ],
   "labels": ["dependencies"],
   "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on Monday"]
+  },
+  "postUpdateOptions": ["pnpmDedupe"],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
   "packageRules": [
     {
       "description": "Angular framework packages — group together",
