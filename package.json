@@ -128,7 +128,7 @@
     "jasmine-core": "~6.1.0",
     "jest": "^30.3.0",
     "jiti": "2.6.1",
-    "jsdom": "~22.1.0",
+    "jsdom": "~29.0.1",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
