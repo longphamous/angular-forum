@@ -1,5 +1,6 @@
 export const GAMIFICATION_ROUTES = {
     userProgress: (userId: string) => `/gamification/users/${userId}/progress`,
+    userHistory: (userId: string) => `/gamification/users/${userId}/history`,
     config: {
         list: () => "/gamification/config",
         update: (eventType: string) => `/gamification/config/${eventType}`

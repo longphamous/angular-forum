@@ -1,7 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { Public, Roles } from "../auth/auth.decorators";
-import { GamificationService, XpConfigDto } from "./gamification.service";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { AuthenticatedUser } from "../auth/models/jwt.model";
+import { GamificationService, XpConfigDto, XpHistoryEvent } from "./gamification.service";
 import { UserXpData } from "./level.config";
 
 interface UpdateXpConfigDto {
@@ -18,6 +20,19 @@ export class GamificationController {
     @Get("users/:userId/progress")
     getUserProgress(@Param("userId") userId: string): Promise<UserXpData> {
         return this.gamificationService.getUserXpData(userId);
+    }
+
+    @Get("users/:userId/history")
+    getXpHistory(
+        @Param("userId") userId: string,
+        @Query("limit") limit?: string,
+        @Query("offset") offset?: string,
+        @CurrentUser() user?: AuthenticatedUser
+    ): Promise<{ events: XpHistoryEvent[]; total: number }> {
+        if (!user || (user.userId !== userId && user.role !== "admin")) {
+            throw new BadRequestException("You can only view your own XP history");
+        }
+        return this.gamificationService.getXpHistory(userId, Number(limit) || 50, Number(offset) || 0);
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────────

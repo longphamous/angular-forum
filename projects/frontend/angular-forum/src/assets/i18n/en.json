@@ -55,7 +55,11 @@
     "replyTo": "Reply to",
     "reportedBy": "Reported by",
     "resolve": "Resolve",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "learnMore": "Learn more",
+    "success": "Success",
+    "saveFailed": "Save failed",
+    "all": "All"
   },
   "nav": {
     "profile": "Profile",
@@ -795,8 +799,13 @@
     "tabLexicon": "Lexicon",
     "tabGallery": "Gallery",
     "tabRecipes": "Recipes",
+    "tabXpHistory": "XP History",
     "noContent": "No content yet.",
     "items": "items",
+    "xpHistory": {
+      "noEvents": "No XP events yet.",
+      "totalEvents": "Total events"
+    },
     "roles": {
       "admin": "Administrator",
       "moderator": "Moderator",
@@ -816,6 +825,18 @@
       "members": "Members only",
       "nobody": "Nobody"
     }
+  },
+  "xpHistory": {
+    "createThread": "Thread created",
+    "createPost": "Post written",
+    "receiveReaction": "Reaction received",
+    "giveReaction": "Reaction given",
+    "createClip": "Clip uploaded",
+    "createBlogPost": "Blog post",
+    "uploadGallery": "Gallery upload",
+    "createLexiconArticle": "Lexicon article",
+    "createRecipe": "Recipe created",
+    "buyLottoTicket": "Lotto ticket purchased"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -880,7 +901,9 @@
       "content": "Content",
       "social": "Social",
       "milestones": "Milestones"
-    }
+    },
+    "levelUp": "Level Up!",
+    "xpCollected": "{{xp}} XP collected"
   },
   "session": {
     "expiredTitle": "Session Expired",
@@ -1004,7 +1027,9 @@
     "confirmMsg": "Buy \"{{name}}\" for {{price}} Coins?",
     "successMsg": "Purchase successful!",
     "inventory": "My Inventory",
-    "inventoryEmpty": "Your inventory is empty."
+    "inventoryEmpty": "Your inventory is empty.",
+    "itemPurchased": "{{name}} purchased!",
+    "purchaseFailed": "Purchase failed"
   },
   "adminShop": {
     "title": "Shop Management",
@@ -1103,7 +1128,10 @@
       "byDay": "On which days",
       "recurrenceUntil": "Repeat until",
       "recurrenceUntilHint": "Leave empty for no end date"
-    }
+    },
+    "eventDeleted": "Event deleted",
+    "rsvpSaved": "RSVP saved",
+    "invitesSent": "Invitations sent"
   },
   "adminCalendar": {
     "title": "Calendar Management",
@@ -1289,7 +1317,11 @@
     "searchPlaceholder": "Search",
     "backToList": "Back",
     "pageOf": "{{current}} of {{total}}",
-    "noResults": "No messages found."
+    "noResults": "No messages found.",
+    "sent": "Message sent",
+    "sendError": "Failed to send",
+    "draftSaved": "Draft saved",
+    "draftDeleted": "Draft deleted"
   },
   "adminLotto": {
     "title": "Lotto Management",
@@ -1436,6 +1468,8 @@
       "withdraw": "Withdraw"
     },
     "report": "Report Listing",
+    "confirmDeleteListing": "Do you really want to delete this listing?",
+    "deleteListingHeader": "Delete listing",
     "admin": {
       "title": "Marketplace Management",
       "pendingListings": "Pending Listings",
@@ -1493,6 +1527,14 @@
     "typeLabel": "Article Type",
     "statusLabel": "Status",
     "categoryLabel": "Category",
+    "confirmDelete": "Really delete this article?",
+    "write": {
+      "requiredFields": "Required fields",
+      "titleContentRequired": "Title and content are required.",
+      "articleUpdated": "Article updated.",
+      "articleCreated": "Article created.",
+      "saveFailed": "Article could not be saved."
+    },
     "admin": {
       "title": "Blog Management",
       "allPosts": "All Articles",
@@ -1523,7 +1565,12 @@
     "pinned": "Pinned",
     "locked": "Locked",
     "end": "You've seen it all!",
-    "empty": "No posts yet."
+    "empty": "No posts yet.",
+    "sort": {
+      "hot": "Hot",
+      "new": "New",
+      "top": "Top"
+    }
   },
   "adminFeed": {
     "title": "Feed Management",
@@ -1601,7 +1648,10 @@
         "phone": "Contact phone"
       },
       "submitBtn": "Submit link",
-      "pending": "Your link will be reviewed and published by a moderator."
+      "pending": "Your link will be reviewed and published by a moderator.",
+      "submitted": "Submitted",
+      "submitSuccess": "Your link was submitted successfully.",
+      "submitFailed": "Submission failed."
     },
     "admin": {
       "pending": "Pending Links",
@@ -1779,6 +1829,8 @@
     "unhide": "Unhide",
     "delete": "Delete",
     "deleteConfirm": "Really delete this post?",
+    "confirmDeleteEntry": "Really delete this entry?",
+    "confirmDeleteComment": "Delete comment?",
     "loadMore": "Load more",
     "noEntries": "Nothing here yet.",
     "noFollowingEntries": "No posts from people you follow.",

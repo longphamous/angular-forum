@@ -100,13 +100,18 @@ export class AuthFacade {
     }
 
     logout(): void {
+        this.clearTokens();
+        this.router.navigate(["/login"]);
+    }
+
+    /** Remove all auth tokens from memory and storage without navigating. */
+    clearTokens(): void {
         this.pushService.disconnect();
         this._accessToken.set(null);
         this._currentUser.set(null);
         localStorage.removeItem(STORAGE_TOKEN);
         localStorage.removeItem(STORAGE_REFRESH);
         localStorage.removeItem(STORAGE_PROFILE);
-        this.router.navigate(["/login"]);
     }
 
     private _persist(session: AuthSession, profile: UserProfile): void {

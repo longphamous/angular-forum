@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal, ViewChild } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { Popover, PopoverModule } from "primeng/popover";
 import { SkeletonModule } from "primeng/skeleton";
@@ -35,6 +35,7 @@ export class NotificationBell implements OnInit, OnDestroy {
     protected readonly notifService = inject(NotificationService);
     private readonly friendsFacade = inject(FriendsFacade);
     private readonly router = inject(Router);
+    private readonly translocoService = inject(TranslocoService);
 
     protected readonly activeTab = signal<NotificationCategory>("all");
 
@@ -144,12 +145,15 @@ export class NotificationBell implements OnInit, OnDestroy {
     protected formatTime(dateStr: string): string {
         const diff = Date.now() - new Date(dateStr).getTime();
         const min = Math.floor(diff / 60_000);
-        if (min < 1) return "Gerade eben";
-        if (min < 60) return `${min} Min.`;
+        if (min < 1) return this.translocoService.translate("common.justNow");
+        if (min < 60) return this.translocoService.translate("common.minutesAgo", { count: min });
         const h = Math.floor(min / 60);
-        if (h < 24) return `${h} Std.`;
+        if (h < 24) return this.translocoService.translate("common.hoursAgo", { count: h });
         const d = Math.floor(h / 24);
-        if (d < 7) return `${d} Tag${d > 1 ? "e" : ""}`;
-        return new Date(dateStr).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+        if (d < 7) {
+            const key = d > 1 ? "common.daysAgoPlural" : "common.daysAgo";
+            return this.translocoService.translate(key, { count: d });
+        }
+        return new Date(dateStr).toLocaleDateString(this.translocoService.getActiveLang(), { day: "numeric", month: "short" });
     }
 }

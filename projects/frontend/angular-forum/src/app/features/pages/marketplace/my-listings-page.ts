@@ -1,7 +1,7 @@
 import { CurrencyPipe } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ConfirmationService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
@@ -34,6 +34,7 @@ import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facad
 export class MyListingsPage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
     private readonly confirmationService = inject(ConfirmationService);
+    private readonly translocoService = inject(TranslocoService);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly tabService = inject(TabPersistenceService);
 
@@ -51,8 +52,8 @@ export class MyListingsPage implements OnInit {
 
     confirmDelete(id: string): void {
         this.confirmationService.confirm({
-            message: "Möchtest du dieses Inserat wirklich löschen?",
-            header: "Inserat löschen",
+            message: this.translocoService.translate('marketplace.confirmDeleteListing'),
+            header: this.translocoService.translate('marketplace.deleteListingHeader'),
             icon: "pi pi-exclamation-triangle",
             accept: () => {
                 this.facade.deleteListing(id).subscribe({

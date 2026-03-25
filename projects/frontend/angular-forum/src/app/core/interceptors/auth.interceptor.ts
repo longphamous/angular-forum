@@ -31,6 +31,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
                 return authFacade.refreshToken().pipe(
                     switchMap((session) => {
                         isRefreshing = false;
+                        sessionService.resetExpiredState();
                         const retryReq = req.clone({
                             setHeaders: { Authorization: `Bearer ${session.accessToken}` }
                         });

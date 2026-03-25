@@ -145,7 +145,7 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                             rel="noopener noreferrer"
                             target="_blank"
                         >
-                            {{ slide.linkLabel || "Mehr erfahren" }}
+                            {{ slide.linkLabel || learnMoreLabel }}
                             <i class="pi pi-arrow-right text-xs"></i>
                         </a>
                     } @else {
@@ -154,7 +154,7 @@ import { TeaserSlide } from "../../models/slideshow/teaser-slide";
                             [routerLink]="normalizeUrl(slide.linkUrl!)"
                             (click)="$event.stopPropagation()"
                         >
-                            {{ slide.linkLabel || "Mehr erfahren" }}
+                            {{ slide.linkLabel || learnMoreLabel }}
                             <i class="pi pi-arrow-right text-xs"></i>
                         </a>
                     }
@@ -205,6 +205,9 @@ export class TeaserSlideshowComponent implements OnInit, OnDestroy {
     protected readonly slides = signal<TeaserSlide[]>([]);
     protected readonly currentIndex = signal(0);
     protected readonly currentLang = signal(this.transloco.getActiveLang());
+    protected get learnMoreLabel(): string {
+        return this.transloco.translate("common.learnMore");
+    }
 
     private timer: ReturnType<typeof setInterval> | null = null;
     private paused = false;

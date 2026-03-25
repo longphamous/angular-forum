@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { ChipModule } from "primeng/chip";
@@ -43,6 +43,7 @@ export class LinkSubmitPage implements OnInit {
     private readonly router = inject(Router);
     private readonly cd = inject(ChangeDetectorRef);
     private readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
 
     protected readonly saving = signal(false);
 
@@ -108,8 +109,8 @@ export class LinkSubmitPage implements OnInit {
                     this.saving.set(false);
                     this.messageService.add({
                         severity: "success",
-                        summary: "Eingereicht",
-                        detail: "Dein Link wurde erfolgreich eingereicht."
+                        summary: this.translocoService.translate('links.submit.submitted'),
+                        detail: this.translocoService.translate('links.submit.submitSuccess')
                     });
                     setTimeout(() => void this.router.navigate(["/links", link.id]), 1500);
                     this.cd.markForCheck();
@@ -118,8 +119,8 @@ export class LinkSubmitPage implements OnInit {
                     this.saving.set(false);
                     this.messageService.add({
                         severity: "error",
-                        summary: "Fehler",
-                        detail: "Einreichen fehlgeschlagen."
+                        summary: this.translocoService.translate('common.error'),
+                        detail: this.translocoService.translate('links.submit.submitFailed')
                     });
                     this.cd.markForCheck();
                 }

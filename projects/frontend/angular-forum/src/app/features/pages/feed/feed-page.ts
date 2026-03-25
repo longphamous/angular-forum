@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { SelectButtonModule } from "primeng/selectbutton";
 import { SkeletonModule } from "primeng/skeleton";
@@ -40,15 +40,18 @@ export class FeedPage implements OnInit, AfterViewInit, OnDestroy {
     readonly facade = inject(FeedFacade);
     private readonly router = inject(Router);
     private readonly cdr = inject(ChangeDetectorRef);
+    private readonly translocoService = inject(TranslocoService);
 
     selectedSort: FeedSort = "hot";
     private observer?: IntersectionObserver;
 
-    readonly sortOptions: SortOption[] = [
-        { label: "🔥 Hot", value: "hot", icon: "pi pi-fire" },
-        { label: "✨ Neu", value: "new", icon: "pi pi-sparkles" },
-        { label: "🏆 Top", value: "top", icon: "pi pi-trophy" }
-    ];
+    get sortOptions(): SortOption[] {
+        return [
+            { label: "🔥 " + this.translocoService.translate("feed.sort.hot"), value: "hot", icon: "pi pi-fire" },
+            { label: "✨ " + this.translocoService.translate("feed.sort.new"), value: "new", icon: "pi pi-sparkles" },
+            { label: "🏆 " + this.translocoService.translate("feed.sort.top"), value: "top", icon: "pi pi-trophy" }
+        ];
+    }
 
     ngOnInit(): void {
         this.facade.loadFeatured();
@@ -84,11 +87,14 @@ export class FeedPage implements OnInit, AfterViewInit, OnDestroy {
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
 
-        if (minutes < 1) return "Gerade eben";
-        if (minutes < 60) return `vor ${minutes} Min.`;
-        if (hours < 24) return `vor ${hours} Std.`;
-        if (days < 30) return `vor ${days} Tag${days !== 1 ? "en" : ""}`;
-        return new Date(dateStr).toLocaleDateString("de-DE");
+        if (minutes < 1) return this.translocoService.translate("common.justNow");
+        if (minutes < 60) return this.translocoService.translate("common.minutesAgo", { count: minutes });
+        if (hours < 24) return this.translocoService.translate("common.hoursAgo", { count: hours });
+        if (days < 30)
+            return this.translocoService.translate(days === 1 ? "common.daysAgo" : "common.daysAgoPlural", {
+                count: days
+            });
+        return new Date(dateStr).toLocaleDateString(this.translocoService.getActiveLang() === "en" ? "en-US" : "de-DE");
     }
 
     featuredTrackBy(_idx: number, item: { id: string }): string {

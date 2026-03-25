@@ -2,6 +2,9 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
+import { NotificationsService } from "../notifications/notifications.service";
+import { PushLevelUp } from "../push/push-event.types";
+import { PushService } from "../push/push.service";
 import { AchievementEntity } from "./entities/achievement.entity";
 import { UserAchievementEntity } from "./entities/user-achievement.entity";
 import { AchievementService } from "./achievement.service";
@@ -15,6 +18,14 @@ export interface XpConfigDto {
     xpAmount: number;
     label: string;
     description?: string;
+}
+
+export interface XpHistoryEvent {
+    id: string;
+    eventType: string;
+    xpGained: number;
+    referenceId: string | null;
+    createdAt: string;
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -41,7 +52,9 @@ export class GamificationService implements OnModuleInit {
         private readonly userAchievementRepo: Repository<UserAchievementEntity>,
         @InjectDataSource()
         private readonly dataSource: DataSource,
-        private readonly achievementService: AchievementService
+        private readonly achievementService: AchievementService,
+        private readonly pushService: PushService,
+        private readonly notificationsService: NotificationsService
     ) {}
 
     onModuleInit(): void {
@@ -89,12 +102,32 @@ export class GamificationService implements OnModuleInit {
             record = this.userXpRepo.create({ userId, xp: 0, level: 1 });
         }
 
+        const previousLevel = record.level;
         record.xp += amount;
-        record.level = getLevelForXp(record.xp).level;
+        const newLevelData = getLevelForXp(record.xp);
+        record.level = newLevelData.level;
         await this.userXpRepo.save(record);
 
         const event = this.xpEventRepo.create({ userId, eventType, xpGained: amount, referenceId });
         await this.xpEventRepo.save(event);
+
+        // Level-up notification
+        if (record.level > previousLevel) {
+            const payload: PushLevelUp = {
+                newLevel: record.level,
+                levelName: newLevelData.name,
+                totalXp: record.xp
+            };
+            this.pushService.sendToUser(userId, "level:up", payload);
+            void this.notificationsService.create(
+                userId,
+                "level_up",
+                `Level ${record.level} erreicht!`,
+                `Du bist jetzt ${newLevelData.name} (Level ${record.level})!`,
+                "/profile"
+            );
+            this.logger.log(`User ${userId} leveled up: ${previousLevel} → ${record.level} (${newLevelData.name})`);
+        }
 
         // Fire-and-forget achievement check
         void this.achievementService.checkAndAward(userId, eventType).catch(() => undefined);
@@ -115,6 +148,27 @@ export class GamificationService implements OnModuleInit {
             if (!map.has(id)) map.set(id, this.toXpData(0));
         }
         return map;
+    }
+
+    // ── XP History ─────────────────────────────────────────────────────────────
+
+    async getXpHistory(userId: string, limit = 50, offset = 0): Promise<{ events: XpHistoryEvent[]; total: number }> {
+        const [entities, total] = await this.xpEventRepo.findAndCount({
+            where: { userId },
+            order: { createdAt: "DESC" },
+            take: Math.min(limit, 100),
+            skip: offset
+        });
+        return {
+            events: entities.map((e) => ({
+                id: e.id,
+                eventType: e.eventType,
+                xpGained: e.xpGained,
+                referenceId: e.referenceId ?? null,
+                createdAt: e.createdAt.toISOString()
+            })),
+            total
+        };
     }
 
     // ── Recalculate ───────────────────────────────────────────────────────────

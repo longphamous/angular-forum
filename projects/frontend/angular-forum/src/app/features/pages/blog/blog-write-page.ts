@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { ChipModule } from "primeng/chip";
@@ -45,6 +45,7 @@ export class BlogWritePage implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
     readonly navHistory = inject(NavigationHistoryService);
 
     protected readonly loading = signal(false);
@@ -152,8 +153,8 @@ export class BlogWritePage implements OnInit {
         if (!f.title.trim() || !f.content.trim()) {
             this.messageService.add({
                 severity: "warn",
-                summary: "Pflichtfelder",
-                detail: "Titel und Inhalt sind erforderlich."
+                summary: this.translocoService.translate('blog.write.requiredFields'),
+                detail: this.translocoService.translate('blog.write.titleContentRequired')
             });
             return;
         }
@@ -175,8 +176,8 @@ export class BlogWritePage implements OnInit {
                 this.saving.set(false);
                 this.messageService.add({
                     severity: "success",
-                    summary: "Gespeichert",
-                    detail: this.isEditMode() ? "Artikel aktualisiert." : "Artikel erstellt."
+                    summary: this.translocoService.translate('common.saved'),
+                    detail: this.translocoService.translate(this.isEditMode() ? 'blog.write.articleUpdated' : 'blog.write.articleCreated')
                 });
                 void this.router.navigate(["/blog", post.slug]);
             },
@@ -184,8 +185,8 @@ export class BlogWritePage implements OnInit {
                 this.saving.set(false);
                 this.messageService.add({
                     severity: "error",
-                    summary: "Fehler",
-                    detail: "Artikel konnte nicht gespeichert werden."
+                    summary: this.translocoService.translate('common.error'),
+                    detail: this.translocoService.translate('blog.write.saveFailed')
                 });
             }
         });

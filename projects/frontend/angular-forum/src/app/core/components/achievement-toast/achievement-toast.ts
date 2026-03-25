@@ -7,11 +7,21 @@ import {
     OnInit,
     signal
 } from "@angular/core";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { Subscription } from "rxjs";
 
-import { PushAchievementUnlocked } from "../../models/push/push-events";
+import { PushAchievementUnlocked, PushLevelUp } from "../../models/push/push-events";
 import { PushService } from "../../services/push.service";
+
+interface ToastItem {
+    type: "achievement" | "levelup";
+    icon: string;
+    rarity: string;
+    label: string;
+    name: string;
+    description: string;
+    xpReward: number;
+}
 
 @Component({
     selector: "app-achievement-toast",
@@ -173,6 +183,7 @@ import { PushService } from "../../services/push.service";
         .ach-silver { --ach-gradient: linear-gradient(135deg, #c0c0c0, #a8a8a8); --ach-glow-color: rgba(192,192,192,0.4); --ach-accent: #c0c0c0; }
         .ach-gold   { --ach-gradient: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700); --ach-glow-color: rgba(255,215,0,0.5); --ach-accent: #ffd700; }
         .ach-platinum { --ach-gradient: linear-gradient(135deg, #00e5ff, #7c4dff, #00e5ff); --ach-glow-color: rgba(0,229,255,0.4); --ach-accent: #00e5ff; }
+        .ach-levelup  { --ach-gradient: linear-gradient(135deg, #f59e0b, #ef4444, #f59e0b); --ach-glow-color: rgba(245,158,11,0.5); --ach-accent: #f59e0b; }
 
         @keyframes ach-slide-in {
             0% { opacity: 0; transform: translateX(100px) scale(0.8); }
@@ -235,38 +246,39 @@ import { PushService } from "../../services/push.service";
         }
     `,
     template: `
-        @if (current(); as ach) {
+        @if (current(); as item) {
             <div class="ach-overlay">
                 <div
                     class="ach-card"
                     [class.ach-leaving]="leaving()"
-                    [class.ach-bronze]="ach.rarity === 'bronze'"
-                    [class.ach-silver]="ach.rarity === 'silver'"
-                    [class.ach-gold]="ach.rarity === 'gold'"
-                    [class.ach-platinum]="ach.rarity === 'platinum'"
+                    [class.ach-bronze]="item.rarity === 'bronze'"
+                    [class.ach-silver]="item.rarity === 'silver'"
+                    [class.ach-gold]="item.rarity === 'gold'"
+                    [class.ach-platinum]="item.rarity === 'platinum'"
+                    [class.ach-levelup]="item.type === 'levelup'"
                 >
                     <!-- Icon with glow -->
                     <div class="ach-icon-wrap">
                         <div class="ach-icon-glow"></div>
                         <div class="ach-ring" [style.border-color]="'var(--ach-accent)'"></div>
                         <div class="ach-icon-circle" [style.border-color]="'var(--ach-accent)'" [style.background]="'rgba(0,0,0,0.4)'">
-                            <i class="pi text-2xl" [class]="ach.icon" [style.color]="'var(--ach-accent)'"></i>
+                            <i class="pi text-2xl" [class]="item.icon" [style.color]="'var(--ach-accent)'"></i>
                         </div>
                     </div>
 
                     <!-- Content -->
                     <div class="ach-content" *transloco="let t">
                         <div class="ach-label" [style.color]="'var(--ach-accent)'">
-                            {{ t('achievements.unlocked') }}
+                            {{ item.label }}
                         </div>
-                        <div class="ach-name">{{ ach.name }}</div>
-                        @if (ach.description) {
-                            <div class="ach-desc">{{ ach.description }}</div>
+                        <div class="ach-name">{{ item.name }}</div>
+                        @if (item.description) {
+                            <div class="ach-desc">{{ item.description }}</div>
                         }
-                        @if (ach.xpReward > 0) {
+                        @if (item.xpReward > 0) {
                             <div class="ach-xp">
                                 <i class="pi pi-star-fill" style="font-size: 0.65rem"></i>
-                                +{{ ach.xpReward }} XP
+                                +{{ item.xpReward }} XP
                             </div>
                         }
                     </div>
@@ -288,28 +300,54 @@ import { PushService } from "../../services/push.service";
 export class AchievementToast implements OnInit, OnDestroy {
     private readonly pushService = inject(PushService);
     private readonly cd = inject(ChangeDetectorRef);
-    private sub?: Subscription;
+    private readonly translocoService = inject(TranslocoService);
+    private subs: Subscription[] = [];
     private dismissTimer?: ReturnType<typeof setTimeout>;
 
-    protected readonly current = signal<PushAchievementUnlocked | null>(null);
+    protected readonly current = signal<ToastItem | null>(null);
     protected readonly leaving = signal(false);
-    private readonly queue: PushAchievementUnlocked[] = [];
+    private readonly queue: ToastItem[] = [];
 
     ngOnInit(): void {
-        this.sub = this.pushService
-            .on<PushAchievementUnlocked>("achievement:unlocked")
-            .subscribe((ev) => {
-                this.queue.push(ev);
-                if (!this.current()) {
-                    this.showNext();
-                }
-                this.cd.markForCheck();
-            });
+        this.subs.push(
+            this.pushService
+                .on<PushAchievementUnlocked>("achievement:unlocked")
+                .subscribe((ev) => {
+                    this.enqueue({
+                        type: "achievement",
+                        icon: ev.icon,
+                        rarity: ev.rarity,
+                        label: this.translocoService.translate("achievements.unlocked"),
+                        name: ev.name,
+                        description: ev.description,
+                        xpReward: ev.xpReward
+                    });
+                }),
+            this.pushService
+                .on<PushLevelUp>("level:up")
+                .subscribe((ev) => {
+                    this.enqueue({
+                        type: "levelup",
+                        icon: "pi pi-arrow-up",
+                        rarity: "levelup",
+                        label: this.translocoService.translate("achievements.levelUp"),
+                        name: `Level ${ev.newLevel} — ${ev.levelName}`,
+                        description: this.translocoService.translate("achievements.xpCollected", { xp: ev.totalXp.toLocaleString() }),
+                        xpReward: 0
+                    });
+                })
+        );
     }
 
     ngOnDestroy(): void {
-        this.sub?.unsubscribe();
+        this.subs.forEach((s) => s.unsubscribe());
         if (this.dismissTimer) clearTimeout(this.dismissTimer);
+    }
+
+    private enqueue(item: ToastItem): void {
+        this.queue.push(item);
+        if (!this.current()) this.showNext();
+        this.cd.markForCheck();
     }
 
     protected dismiss(): void {

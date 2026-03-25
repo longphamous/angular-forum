@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { DialogModule } from "primeng/dialog";
@@ -58,6 +58,7 @@ export class TcgPage implements OnInit {
     readonly walletFacade = inject(WalletFacade);
     readonly authFacade = inject(AuthFacade);
     private readonly tabService = inject(TabPersistenceService);
+    private readonly translocoService = inject(TranslocoService);
 
     readonly activeTab = signal<string>(this.tabService.get("boosters"));
     readonly showOpenDialog = signal(false);
@@ -83,38 +84,44 @@ export class TcgPage implements OnInit {
     readonly rarityConfig = RARITY_CONFIG;
     readonly elementConfig = ELEMENT_CONFIG;
 
-    readonly rarityOptions: SelectOption<CardRarity | null>[] = [
-        { label: "Alle", value: null },
-        { label: "Gewöhnlich", value: "common" },
-        { label: "Ungewöhnlich", value: "uncommon" },
-        { label: "Selten", value: "rare" },
-        { label: "Episch", value: "epic" },
-        { label: "Legendär", value: "legendary" },
-        { label: "Mythisch", value: "mythic" }
-    ];
+    get rarityOptions(): SelectOption<CardRarity | null>[] {
+        return [
+            { label: this.translocoService.translate('common.all'), value: null },
+            { label: "Gewöhnlich", value: "common" },
+            { label: "Ungewöhnlich", value: "uncommon" },
+            { label: "Selten", value: "rare" },
+            { label: "Episch", value: "epic" },
+            { label: "Legendär", value: "legendary" },
+            { label: "Mythisch", value: "mythic" }
+        ];
+    }
 
-    readonly elementOptions: SelectOption<CardElement | null>[] = [
-        { label: "Alle", value: null },
-        { label: "Feuer", value: "fire" },
-        { label: "Wasser", value: "water" },
-        { label: "Erde", value: "earth" },
-        { label: "Wind", value: "wind" },
-        { label: "Licht", value: "light" },
-        { label: "Dunkel", value: "dark" },
-        { label: "Neutral", value: "neutral" }
-    ];
+    get elementOptions(): SelectOption<CardElement | null>[] {
+        return [
+            { label: this.translocoService.translate('common.all'), value: null },
+            { label: "Feuer", value: "fire" },
+            { label: "Wasser", value: "water" },
+            { label: "Erde", value: "earth" },
+            { label: "Wind", value: "wind" },
+            { label: "Licht", value: "light" },
+            { label: "Dunkel", value: "dark" },
+            { label: "Neutral", value: "neutral" }
+        ];
+    }
 
-    readonly ownershipOptions: SelectOption<OwnershipFilter>[] = [
-        { label: "Alle", value: "all" },
-        { label: "Im Besitz", value: "owned" },
-        { label: "Nicht im Besitz", value: "notOwned" }
-    ];
+    get ownershipOptions(): SelectOption<OwnershipFilter>[] {
+        return [
+            { label: this.translocoService.translate('common.all'), value: "all" },
+            { label: "Im Besitz", value: "owned" },
+            { label: "Nicht im Besitz", value: "notOwned" }
+        ];
+    }
 
     // Series options computed from cards
     readonly seriesOptions = computed<SelectOption<string | null>[]>(() => {
         const cards = this.tcgFacade.cards();
         const seriesSet = new Set(cards.map((c) => c.series));
-        const options: SelectOption<string | null>[] = [{ label: "Alle", value: null }];
+        const options: SelectOption<string | null>[] = [{ label: this.translocoService.translate('common.all'), value: null }];
         seriesSet.forEach((s) => options.push({ label: s, value: s }));
         return options;
     });

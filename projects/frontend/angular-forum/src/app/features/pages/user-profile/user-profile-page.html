@@ -217,6 +217,9 @@
                     <p-tab value="lexicon"><i class="pi pi-book mr-2"></i>{{ t('userProfile.tabLexicon') }}</p-tab>
                     <p-tab value="gallery"><i class="pi pi-images mr-2"></i>{{ t('userProfile.tabGallery') }}</p-tab>
                     <p-tab value="recipes"><i class="pi pi-clipboard mr-2"></i>{{ t('userProfile.tabRecipes') }}</p-tab>
+                    @if (isOwnProfile()) {
+                        <p-tab value="xp-history"><i class="pi pi-chart-line mr-2"></i>{{ t('userProfile.tabXpHistory') }}</p-tab>
+                    }
                 </p-tablist>
 
                 <p-tabpanels>
@@ -248,7 +251,7 @@
                                     </div>
                                 }
                                 <div class="mt-3 flex items-center justify-between gap-2">
-                                    <p-select (ngModelChange)="formVisibility.set($event)" [ngModel]="formVisibility()" [options]="visibilityOptions" optionLabel="label" optionValue="value" styleClass="w-40" />
+                                    <p-select (ngModelChange)="formVisibility.set($event)" [ngModel]="formVisibility()" [options]="visibilityOptions()" optionLabel="label" optionValue="value" styleClass="w-40" />
                                     <p-button (onClick)="submitEntry()" [disabled]="!formContent.trim()" [label]="t('chronik.post')" [loading]="saving()" icon="pi pi-send" />
                                 </div>
                             </div>
@@ -507,6 +510,49 @@
                             }
                         </div>
                     </p-tabpanel>
+
+                    <!-- ── XP History Tab (own profile only) ──────────────── -->
+                    @if (isOwnProfile()) {
+                    <p-tabpanel value="xp-history">
+                        <div class="flex flex-col gap-1 pt-4">
+                            @if (userXpHistory().length === 0) {
+                                <div class="flex flex-col items-center gap-3 rounded-xl border border-surface py-12 text-center">
+                                    <i class="pi pi-chart-line text-color-secondary text-5xl"></i>
+                                    <p class="text-color-secondary text-sm">{{ t('userProfile.xpHistory.noEvents') }}</p>
+                                </div>
+                            }
+
+                            <!-- Summary -->
+                            @if (userXpHistory().length > 0) {
+                                <div class="mb-3 rounded-xl bg-surface-50 dark:bg-surface-800 p-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-color-secondary">{{ t('userProfile.xpHistory.totalEvents') }}</span>
+                                        <span class="text-sm font-bold text-color">{{ userXpHistoryTotal() }}</span>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Event list -->
+                            @for (event of userXpHistory(); track event.id) {
+                                <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800">
+                                    <!-- Icon -->
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-100 dark:bg-surface-700">
+                                        <i [class]="xpEventLabel(event.eventType).icon" [class.text-sm]="true" [ngClass]="xpEventLabel(event.eventType).color"></i>
+                                    </div>
+                                    <!-- Details -->
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-medium text-color">{{ xpEventLabel(event.eventType).label }}</div>
+                                        <div class="text-xs text-color-secondary">{{ formatDate(event.createdAt, 'full') }}</div>
+                                    </div>
+                                    <!-- XP Badge -->
+                                    <span class="shrink-0 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-bold text-green-600 dark:text-green-400">
+                                        +{{ event.xpGained }} XP
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </p-tabpanel>
+                    }
                 </p-tabpanels>
             </p-tabs>
         </div>

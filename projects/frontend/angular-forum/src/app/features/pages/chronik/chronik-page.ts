@@ -1,7 +1,7 @@
 import { DatePipe, NgClass } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { AvatarModule } from "primeng/avatar";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
@@ -47,6 +47,7 @@ import { OnlineIndicator } from "../../../shared/components/online-indicator/onl
 })
 export class ChronikPage implements OnInit {
     readonly facade = inject(ChronikFacade);
+    private readonly translocoService = inject(TranslocoService);
 
     readonly feedMode = signal<"all" | "following">("all");
     readonly composerVisible = signal(true);
@@ -65,11 +66,13 @@ export class ChronikPage implements OnInit {
     newComments = new Map<string, string>();
     loadedCommentEntries = new Set<string>();
 
-    readonly visibilityOptions = [
-        { label: "Public", value: "public" as ChronikVisibility },
-        { label: "Followers", value: "followers" as ChronikVisibility },
-        { label: "Private", value: "private" as ChronikVisibility }
-    ];
+    get visibilityOptions(): { label: string; value: ChronikVisibility }[] {
+        return [
+            { label: this.translocoService.translate('chronik.visibility.public'), value: "public" as ChronikVisibility },
+            { label: this.translocoService.translate('chronik.visibility.followers'), value: "followers" as ChronikVisibility },
+            { label: this.translocoService.translate('chronik.visibility.private'), value: "private" as ChronikVisibility }
+        ];
+    }
 
     ngOnInit(): void {
         this.facade.loadEntries({ offset: 0 });

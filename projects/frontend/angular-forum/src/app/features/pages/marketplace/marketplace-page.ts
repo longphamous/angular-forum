@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
@@ -41,6 +41,7 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
 })
 export class MarketplacePage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
+    private readonly translocoService = inject(TranslocoService);
 
     selectedCategoryId = signal<string | null>(null);
     selectedType = signal<ListingType | null>(null);
@@ -48,13 +49,15 @@ export class MarketplacePage implements OnInit {
     readonly pageSize = 12;
     currentPage = 1;
 
-    readonly typeOptions = [
-        { label: "Alle", value: null },
-        { label: "Verkaufen", value: "sell" },
-        { label: "Kaufen", value: "buy" },
-        { label: "Tauschen", value: "trade" },
-        { label: "Verschenken", value: "gift" }
-    ];
+    get typeOptions(): { label: string; value: string | null }[] {
+        return [
+            { label: this.translocoService.translate('common.all'), value: null },
+            { label: this.translocoService.translate('marketplace.type.sell'), value: "sell" },
+            { label: this.translocoService.translate('marketplace.type.buy'), value: "buy" },
+            { label: this.translocoService.translate('marketplace.type.trade'), value: "trade" },
+            { label: this.translocoService.translate('marketplace.type.gift'), value: "gift" }
+        ];
+    }
 
     ngOnInit(): void {
         this.facade.loadCategories();

@@ -5,6 +5,7 @@ export type NotificationType =
     | "thread_reply"
     | "post_like"
     | "achievement_unlocked"
+    | "level_up"
     | "coins_received"
     | "xp_gained"
     | "mention"

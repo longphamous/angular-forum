@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
 import { AvatarModule } from "primeng/avatar";
 import { BadgeModule } from "primeng/badge";
@@ -63,6 +63,7 @@ export class MessagesPage implements OnInit {
     private readonly tabService = inject(TabPersistenceService);
     protected readonly authFacade = inject(AuthFacade);
     protected readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
 
     // ─── State ────────────────────────────────────────────────────────────────
     protected readonly loading = signal(true);
@@ -264,11 +265,11 @@ export class MessagesPage implements OnInit {
                     });
                     this.replyContent.set("");
                     this.sending.set(false);
-                    this.messageService.add({ severity: "success", summary: "Nachricht gesendet", life: 2000 });
+                    this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.sent'), life: 2000 });
                 },
                 error: () => {
                     this.sending.set(false);
-                    this.messageService.add({ severity: "error", summary: "Fehler beim Senden", life: 3000 });
+                    this.messageService.add({ severity: "error", summary: this.translocoService.translate('messages.sendError'), life: 3000 });
                 }
             });
     }
@@ -305,11 +306,11 @@ export class MessagesPage implements OnInit {
                 this.composeVisible.set(false);
                 this.sending.set(false);
                 this.selectConversation(conv);
-                this.messageService.add({ severity: "success", summary: "Nachricht gesendet", life: 2000 });
+                this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.sent'), life: 2000 });
             },
             error: () => {
                 this.sending.set(false);
-                this.messageService.add({ severity: "error", summary: "Fehler beim Senden", life: 3000 });
+                this.messageService.add({ severity: "error", summary: this.translocoService.translate('messages.sendError'), life: 3000 });
             }
         });
     }
@@ -328,7 +329,7 @@ export class MessagesPage implements OnInit {
             next: (draft) => {
                 this.drafts.set([draft, ...this.drafts()]);
                 this.composeVisible.set(false);
-                this.messageService.add({ severity: "info", summary: "Entwurf gespeichert", life: 2000 });
+                this.messageService.add({ severity: "info", summary: this.translocoService.translate('messages.draftSaved'), life: 2000 });
             }
         });
     }
@@ -338,7 +339,7 @@ export class MessagesPage implements OnInit {
         this.http.delete(`${base}${MESSAGES_ROUTES.draft(draftId)}`).subscribe({
             next: () => {
                 this.drafts.set(this.drafts().filter((d) => d.id !== draftId));
-                this.messageService.add({ severity: "success", summary: "Entwurf gelöscht", life: 2000 });
+                this.messageService.add({ severity: "success", summary: this.translocoService.translate('messages.draftDeleted'), life: 2000 });
             }
         });
     }

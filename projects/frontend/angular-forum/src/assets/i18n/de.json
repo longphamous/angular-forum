@@ -55,7 +55,11 @@
     "replyTo": "Antwort an",
     "reportedBy": "Gemeldet von",
     "resolve": "Erledigen",
-    "dismiss": "Abweisen"
+    "dismiss": "Abweisen",
+    "learnMore": "Mehr erfahren",
+    "success": "Erfolg",
+    "saveFailed": "Fehler beim Speichern",
+    "all": "Alle"
   },
   "nav": {
     "profile": "Profil",
@@ -795,8 +799,13 @@
     "tabLexicon": "Lexikon",
     "tabGallery": "Galerie",
     "tabRecipes": "Rezepte",
+    "tabXpHistory": "XP-Verlauf",
     "noContent": "Noch keine Inhalte vorhanden.",
     "items": "Einträge",
+    "xpHistory": {
+      "noEvents": "Noch keine XP-Ereignisse vorhanden.",
+      "totalEvents": "Ereignisse gesamt"
+    },
     "roles": {
       "admin": "Administrator",
       "moderator": "Moderator",
@@ -816,6 +825,18 @@
       "members": "Nur Mitglieder",
       "nobody": "Niemand"
     }
+  },
+  "xpHistory": {
+    "createThread": "Thread erstellt",
+    "createPost": "Beitrag geschrieben",
+    "receiveReaction": "Reaktion erhalten",
+    "giveReaction": "Reaktion gegeben",
+    "createClip": "Clip hochgeladen",
+    "createBlogPost": "Blog-Beitrag",
+    "uploadGallery": "Galerie-Upload",
+    "createLexiconArticle": "Lexikon-Eintrag",
+    "createRecipe": "Rezept erstellt",
+    "buyLottoTicket": "Lottoticket gekauft"
   },
   "dashboard": {
     "welcome": "Willkommen",
@@ -880,7 +901,9 @@
       "content": "Inhalte",
       "social": "Sozial",
       "milestones": "Meilensteine"
-    }
+    },
+    "levelUp": "Level Up!",
+    "xpCollected": "{{xp}} XP gesammelt"
   },
   "session": {
     "expiredTitle": "Sitzung abgelaufen",
@@ -1004,7 +1027,9 @@
     "confirmMsg": "\"{{name}}\" für {{price}} Coins kaufen?",
     "successMsg": "Kauf erfolgreich!",
     "inventory": "Mein Inventar",
-    "inventoryEmpty": "Dein Inventar ist leer."
+    "inventoryEmpty": "Dein Inventar ist leer.",
+    "itemPurchased": "{{name}} gekauft!",
+    "purchaseFailed": "Kauf fehlgeschlagen"
   },
   "adminShop": {
     "title": "Shop Verwaltung",
@@ -1103,7 +1128,10 @@
       "byDay": "An welchen Tagen",
       "recurrenceUntil": "Wiederholen bis",
       "recurrenceUntilHint": "Leer lassen für kein Enddatum"
-    }
+    },
+    "eventDeleted": "Termin gelöscht",
+    "rsvpSaved": "Rückmeldung gespeichert",
+    "invitesSent": "Einladungen versendet"
   },
   "adminCalendar": {
     "title": "Kalender Verwaltung",
@@ -1289,7 +1317,11 @@
     "searchPlaceholder": "Suchen",
     "backToList": "Zurück",
     "pageOf": "{{current}} von {{total}}",
-    "noResults": "Keine Nachrichten gefunden."
+    "noResults": "Keine Nachrichten gefunden.",
+    "sent": "Nachricht gesendet",
+    "sendError": "Fehler beim Senden",
+    "draftSaved": "Entwurf gespeichert",
+    "draftDeleted": "Entwurf gelöscht"
   },
   "adminLotto": {
     "title": "Lotto Verwaltung",
@@ -1436,6 +1468,8 @@
       "withdraw": "Zurückziehen"
     },
     "report": "Inserat melden",
+    "confirmDeleteListing": "Möchtest du dieses Inserat wirklich löschen?",
+    "deleteListingHeader": "Inserat löschen",
     "admin": {
       "title": "Marktplatz Verwaltung",
       "pendingListings": "Ausstehende Inserate",
@@ -1493,6 +1527,14 @@
     "typeLabel": "Artikeltyp",
     "statusLabel": "Status",
     "categoryLabel": "Kategorie",
+    "confirmDelete": "Diesen Artikel wirklich löschen?",
+    "write": {
+      "requiredFields": "Pflichtfelder",
+      "titleContentRequired": "Titel und Inhalt sind erforderlich.",
+      "articleUpdated": "Artikel aktualisiert.",
+      "articleCreated": "Artikel erstellt.",
+      "saveFailed": "Artikel konnte nicht gespeichert werden."
+    },
     "admin": {
       "title": "Blog Verwaltung",
       "allPosts": "Alle Artikel",
@@ -1523,7 +1565,12 @@
     "pinned": "Angeheftet",
     "locked": "Gesperrt",
     "end": "Das war's! Du hast alles gesehen.",
-    "empty": "Keine Beiträge vorhanden."
+    "empty": "Keine Beiträge vorhanden.",
+    "sort": {
+      "hot": "Hot",
+      "new": "Neu",
+      "top": "Top"
+    }
   },
   "adminFeed": {
     "title": "Feed Verwaltung",
@@ -1601,7 +1648,10 @@
         "phone": "Kontakt-Telefon"
       },
       "submitBtn": "Link einreichen",
-      "pending": "Dein Link wird nach Prüfung durch ein Moderatoren freigeschaltet."
+      "pending": "Dein Link wird nach Prüfung durch ein Moderatoren freigeschaltet.",
+      "submitted": "Eingereicht",
+      "submitSuccess": "Dein Link wurde erfolgreich eingereicht.",
+      "submitFailed": "Einreichen fehlgeschlagen."
     },
     "admin": {
       "pending": "Ausstehende Links",
@@ -1779,6 +1829,8 @@
     "unhide": "Einblenden",
     "delete": "Löschen",
     "deleteConfirm": "Beitrag wirklich löschen?",
+    "confirmDeleteEntry": "Beitrag wirklich löschen?",
+    "confirmDeleteComment": "Kommentar löschen?",
     "loadMore": "Mehr laden",
     "noEntries": "Noch nichts hier.",
     "noFollowingEntries": "Keine Beiträge von Personen, denen du folgst.",

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@ang
 import { FormsModule } from "@angular/forms";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { MessageService } from "primeng/api";
 import { AvatarModule } from "primeng/avatar";
 import { ButtonModule } from "primeng/button";
@@ -45,6 +45,7 @@ export class BlogDetailPage implements OnInit {
     protected readonly navHistory = inject(NavigationHistoryService);
     private readonly sanitizer = inject(DomSanitizer);
     private readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
     protected readonly authFacade = inject(AuthFacade);
 
     protected readonly loading = signal(true);
@@ -182,7 +183,7 @@ export class BlogDetailPage implements OnInit {
 
     protected deletePost(): void {
         const post = this.post();
-        if (!post || !confirm("Diesen Artikel wirklich löschen?")) return;
+        if (!post || !confirm(this.translocoService.translate('blog.confirmDelete'))) return;
         this.deletingPost.set(true);
         this.http.delete(`${this.apiBase}${BLOG_ROUTES.deletePost(post.id)}`).subscribe({
             next: () => void this.router.navigate(["/blog"]),

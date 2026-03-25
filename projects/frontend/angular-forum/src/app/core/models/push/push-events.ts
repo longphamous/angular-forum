@@ -16,6 +16,7 @@ export const PUSH_EVENTS = [
     "thread:locked",
     "presence:update",
     "achievement:unlocked",
+    "level:up",
     "presence:userOnline",
     "presence:userOffline"
 ] as const;
@@ -97,6 +98,12 @@ export interface PushAchievementUnlocked {
     icon: string;
     rarity: string;
     xpReward: number;
+}
+
+export interface PushLevelUp {
+    newLevel: number;
+    levelName: string;
+    totalXp: number;
 }
 
 export interface PushPresenceUserOnline {

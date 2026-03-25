@@ -831,6 +831,24 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok(null);
         }
 
+        // GET /api/gamification/users/:userId/history
+        const xpHistoryMatch = lowerUrl.match(/\/api\/gamification\/users\/([^/]+)\/history/);
+        if (method === "GET" && xpHistoryMatch) {
+            const mockEvents = [
+                { id: "xp-1", eventType: "create_post", xpGained: 5, referenceId: "post-1", createdAt: new Date(Date.now() - 3600000).toISOString() },
+                { id: "xp-2", eventType: "create_thread", xpGained: 10, referenceId: "thread-1", createdAt: new Date(Date.now() - 7200000).toISOString() },
+                { id: "xp-3", eventType: "receive_reaction", xpGained: 3, referenceId: "post-2", createdAt: new Date(Date.now() - 10800000).toISOString() },
+                { id: "xp-4", eventType: "create_clip", xpGained: 8, referenceId: "clip-1", createdAt: new Date(Date.now() - 86400000).toISOString() },
+                { id: "xp-5", eventType: "create_blog_post", xpGained: 15, referenceId: "blog-1", createdAt: new Date(Date.now() - 172800000).toISOString() },
+                { id: "xp-6", eventType: "upload_gallery", xpGained: 5, referenceId: "gallery-1", createdAt: new Date(Date.now() - 259200000).toISOString() },
+                { id: "xp-7", eventType: "create_lexicon_article", xpGained: 20, referenceId: "lex-1", createdAt: new Date(Date.now() - 345600000).toISOString() },
+                { id: "xp-8", eventType: "create_recipe", xpGained: 12, referenceId: "recipe-1", createdAt: new Date(Date.now() - 432000000).toISOString() },
+                { id: "xp-9", eventType: "buy_lotto_ticket", xpGained: 2, referenceId: "ticket-1", createdAt: new Date(Date.now() - 518400000).toISOString() },
+                { id: "xp-10", eventType: "give_reaction", xpGained: 1, referenceId: "post-3", createdAt: new Date(Date.now() - 604800000).toISOString() }
+            ];
+            return this.ok({ events: mockEvents, total: mockEvents.length });
+        }
+
         // GET /api/gamification/config
         if (method === "GET" && lowerUrl.match(/\/api\/gamification\/config$/)) {
             return this.ok([

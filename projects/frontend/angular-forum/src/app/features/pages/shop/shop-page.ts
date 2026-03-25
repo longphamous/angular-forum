@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
@@ -257,6 +257,7 @@ export class ShopPage implements OnInit {
     });
 
     private readonly messageService = inject(MessageService);
+    private readonly translocoService = inject(TranslocoService);
 
     ngOnInit(): void {
         this.load();
@@ -283,14 +284,14 @@ export class ShopPage implements OnInit {
                 this.load();
                 this.messageService.add({
                     severity: "success",
-                    summary: "Erfolg",
-                    detail: `${item.name} gekauft!`,
+                    summary: this.translocoService.translate('common.success'),
+                    detail: this.translocoService.translate('shop.itemPurchased', { name: item.name }),
                     life: 3000
                 });
             },
             error: (err: { error?: { message?: string } }) => {
                 this.buying.set(null);
-                this.purchaseError.set(err?.error?.message ?? "Kauf fehlgeschlagen");
+                this.purchaseError.set(err?.error?.message ?? this.translocoService.translate('shop.purchaseFailed'));
             }
         });
     }
