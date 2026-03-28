@@ -1,0 +1,286 @@
+/* ── Container ────────────────────────────────────────────── */
+:host {
+    display: block;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────── */
+.compare-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.compare-mode-btn {
+    padding: 0.375rem 0.875rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    color: var(--text-color-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.compare-mode-btn:hover {
+    background: var(--surface-hover);
+}
+
+.compare-mode-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* ── Version selector ─────────────────────────────────────── */
+.version-selectors {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.version-selector-group {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.version-selector-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.version-arrow {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+    margin: 0 0.25rem;
+}
+
+/* ── Diff panel ───────────────────────────────────────────── */
+.diff-panel {
+    border: 1px solid var(--surface-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--surface-card);
+}
+
+.diff-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+}
+
+.diff-panel-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.diff-panel-date {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+.diff-panel-body {
+    padding: 1.25rem;
+    line-height: 1.7;
+    font-size: 0.9375rem;
+    overflow-x: auto;
+}
+
+/* ── Rendered diff styles ─────────────────────────────────── */
+.diff-ins {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+    text-decoration: none;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+:host-context(.dark) .diff-ins,
+:host-context([data-theme="dark"]) .diff-ins {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.diff-del {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+    text-decoration: line-through;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+:host-context(.dark) .diff-del,
+:host-context([data-theme="dark"]) .diff-del {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+/* ── Source diff styles ───────────────────────────────────── */
+.source-diff {
+    font-family: ui-monospace, "Cascadia Code", "Fira Code", Menlo, monospace;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.diff-ins-line {
+    display: inline;
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+    text-decoration: none;
+    border-left: 3px solid #22c55e;
+    padding-left: 0.5rem;
+}
+
+:host-context(.dark) .diff-ins-line,
+:host-context([data-theme="dark"]) .diff-ins-line {
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+}
+
+.diff-del-line {
+    display: inline;
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    text-decoration: line-through;
+    border-left: 3px solid #ef4444;
+    padding-left: 0.5rem;
+}
+
+:host-context(.dark) .diff-del-line,
+:host-context([data-theme="dark"]) .diff-del-line {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+}
+
+.diff-ctx-line {
+    display: inline;
+    color: var(--text-color-secondary);
+    border-left: 3px solid transparent;
+    padding-left: 0.5rem;
+}
+
+/* ── No changes banner ────────────────────────────────────── */
+.no-changes {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+}
+
+.no-changes i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    opacity: 0.4;
+}
+
+/* ── Legend ────────────────────────────────────────────────── */
+.diff-legend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+.diff-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.diff-legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+/* ── Version timeline ─────────────────────────────────────── */
+.version-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.version-entry {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background 0.12s;
+    font-size: 0.8125rem;
+    border: 1px solid transparent;
+}
+
+.version-entry:hover {
+    background: var(--surface-hover);
+}
+
+.version-entry.selected {
+    background: var(--primary-50, rgba(99, 102, 241, 0.08));
+    border-color: var(--primary-200, rgba(99, 102, 241, 0.25));
+}
+
+.version-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.version-entry-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.version-entry-label {
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+
+.version-entry-date {
+    font-size: 0.6875rem;
+    color: var(--text-color-secondary);
+}
+
+.version-entry-reason {
+    font-size: 0.6875rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .compare-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .version-selectors {
+        flex-direction: column;
+    }
+}

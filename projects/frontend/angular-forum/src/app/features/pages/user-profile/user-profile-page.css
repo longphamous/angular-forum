@@ -61,6 +61,7 @@
 /* Avatar overlapping cover */
 .profile-avatar-wrapper {
     margin-top: -48px;
+    margin-bottom: 6px;
     position: relative;
     z-index: 10;
     width: fit-content;

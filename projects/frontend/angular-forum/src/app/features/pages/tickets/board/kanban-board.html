@@ -1,0 +1,71 @@
+<div class="flex flex-col gap-4 p-6" *transloco="let t">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('tickets.board.title') }}</h1>
+        <div class="flex gap-2">
+            <input
+                class="w-60"
+                [ngModel]="filterSearch()"
+                [placeholder]="t('tickets.searchPlaceholder')"
+                (ngModelChange)="filterSearch.set($event)"
+                (keyup.enter)="onSearch()"
+                pInputText
+                type="text"
+            />
+            <p-button icon="pi pi-search" (onClick)="onSearch()" severity="secondary" />
+        </div>
+    </div>
+
+    @if (boardFacade.loading()) {
+    <div class="flex gap-4 overflow-x-auto">
+        @for (_ of [1,2,3,4]; track $index) {
+        <div class="w-72 shrink-0">
+            <p-skeleton height="2rem" styleClass="mb-3" />
+            <p-skeleton height="6rem" styleClass="mb-2" />
+            <p-skeleton height="6rem" styleClass="mb-2" />
+        </div>
+        }
+    </div>
+    } @else if (boardFacade.boardData(); as board) {
+    <!-- Board Columns -->
+    <div class="flex gap-4 overflow-x-auto pb-4" cdkDropListGroup>
+        @for (column of board.columns; track column.status.id) {
+        <div class="flex w-72 shrink-0 flex-col rounded-xl bg-surface-100 dark:bg-surface-800">
+            <!-- Column Header -->
+            <div class="flex items-center gap-2 px-4 py-3">
+                <span class="inline-block h-3 w-3 rounded-full" [style.background-color]="column.status.color"></span>
+                <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold">{{ column.status.name }}</span>
+                <span class="text-surface-400 ml-auto text-xs">{{ column.tickets.length }}</span>
+            </div>
+
+            <!-- Drop Zone -->
+            <div
+                class="flex min-h-[200px] flex-col gap-2 px-3 pb-3"
+                cdkDropList
+                [id]="'col-' + column.status.id"
+                [cdkDropListData]="column.tickets"
+                [cdkDropListConnectedTo]="getColumnIds()"
+                (cdkDropListDropped)="onDrop($event, column.status.id)"
+            >
+                @for (ticket of column.tickets; track ticket.id) {
+                <div cdkDrag [cdkDragData]="ticket">
+                    <board-card [ticket]="ticket" />
+                </div>
+                }
+
+                @if (column.tickets.length === 0) {
+                <div class="text-surface-400 flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-surface-200 text-sm dark:border-surface-700">
+                    {{ t('tickets.board.noCards') }}
+                </div>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    } @else if (boardFacade.error(); as err) {
+    <div class="surface-card rounded-xl p-8 text-center shadow">
+        <i class="pi pi-exclamation-triangle text-surface-400 mb-3 text-4xl"></i>
+        <p class="text-surface-500">{{ err }}</p>
+    </div>
+    }
+</div>

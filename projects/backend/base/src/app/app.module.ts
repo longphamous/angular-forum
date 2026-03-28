@@ -22,6 +22,7 @@ import { ForumModule } from "./forum/forum.module";
 import { FriendsModule } from "./friends/friends.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { GamificationModule } from "./gamification/gamification.module";
+import { I18nModule } from "./i18n/i18n.module";
 import { TcgModule } from "./gamification/tcg/tcg.module";
 import { GroupModule } from "./group/group.module";
 import { LexiconModule } from "./lexicon/lexicon.module";
@@ -36,6 +37,7 @@ import { RecipesModule } from "./recipes/recipes.module";
 import { ShopModule } from "./shop/shop.module";
 import { SlideshowModule } from "./slideshow/slideshow.module";
 import { SteamModule } from "./steam/steam.module";
+import { TicketModule } from "./ticket/ticket.module";
 import { UserModule } from "./user/user.module";
 import { WeatherModule } from "./weather/weather.module";
 
@@ -51,6 +53,7 @@ import { WeatherModule } from "./weather/weather.module";
         AdminLogsModule,
         AuthModule,
         GamificationModule,
+        I18nModule,
         CreditModule,
         UserModule,
         AnimeModule,
@@ -78,6 +81,7 @@ import { WeatherModule } from "./weather/weather.module";
         RecipesModule,
         SteamModule,
         TcgModule,
+        TicketModule,
         WeatherModule,
         ClipsModule,
         EmbedModule

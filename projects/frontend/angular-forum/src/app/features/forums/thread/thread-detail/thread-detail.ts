@@ -25,7 +25,8 @@ import { TooltipModule } from "primeng/tooltip";
 import { Subscription } from "rxjs";
 
 import { ForumBreadcrumb } from "../../../../core/components/forum-breadcrumb/forum-breadcrumb";
-import { LevelBadge } from "../../../../core/components/level-badge/level-badge";
+import { LevelBadge, LevelOrb } from "../../../../core/components/level-badge/level-badge";
+import { PostVersionCompare } from "../../../../core/components/post-version-compare/post-version-compare";
 import { Post, PostEditHistoryEntry } from "../../../../core/models/forum/post";
 import { PushThreadNewPost } from "../../../../core/models/push/push-events";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
@@ -49,7 +50,9 @@ import { UserPopoverDirective } from "../../../../shared/directives/user-popover
         ForumBreadcrumb,
         InputTextModule,
         LevelBadge,
+        LevelOrb,
         OnlineIndicator,
+        PostVersionCompare,
         RichContent,
         RichEmbed,
         MessageModule,
@@ -95,6 +98,8 @@ export class ThreadDetail implements OnInit, OnDestroy {
     readonly historyDialogVisible = signal(false);
     readonly availableForums = signal<{ id: string; name: string }[]>([]);
     readonly editHistory = signal<PostEditHistoryEntry[]>([]);
+    readonly historyCurrentContent = signal("");
+    private historyPostId = "";
     moveTargetForumId = "";
     reportReason = "";
     editPostId = "";
@@ -431,7 +436,19 @@ export class ThreadDetail implements OnInit, OnDestroy {
 
     openHistoryDialog(post: Post): void {
         this.editHistory.set(post.editHistory ?? []);
+        this.historyCurrentContent.set(post.content);
+        this.historyPostId = post.id;
         this.historyDialogVisible.set(true);
+    }
+
+    restoreVersion(entry: PostEditHistoryEntry): void {
+        if (!this.historyPostId) return;
+        this.facade.updatePost(this.historyPostId, entry.content, "Restored previous version").subscribe({
+            next: () => {
+                this.historyDialogVisible.set(false);
+                this.facade.loadPosts(this.threadId, this.currentPage, this.pageSize);
+            }
+        });
     }
 
     // ── Title editing ─────────────────────────────────────────────────────────

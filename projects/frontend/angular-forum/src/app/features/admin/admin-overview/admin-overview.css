@@ -1,0 +1,308 @@
+/* ── Dashboard header ─────────────────────────────────────── */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-welcome h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-welcome p {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+}
+
+/* ── Stat cards ──────────────────────────────────────────── */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-card);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+}
+
+.stat-card-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.stat-card-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    margin-top: 0.125rem;
+}
+
+/* ── Dynamic boxes ───────────────────────────────────────── */
+.dashboard-box {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 0.875rem;
+    overflow: hidden;
+}
+
+.dashboard-box-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--surface-border);
+    font-weight: 700;
+    font-size: 0.9375rem;
+}
+
+.dashboard-box-header i {
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.dashboard-box-body {
+    padding: 1rem 1.25rem;
+}
+
+/* ── Notice items ────────────────────────────────────────── */
+.notice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: background 0.15s;
+}
+
+.notice-item:hover {
+    background: var(--surface-hover);
+}
+
+.notice-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+/* ── Thread / member / poster rows ───────────────────────── */
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.5rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+}
+
+.list-row:hover {
+    background: var(--surface-hover);
+}
+
+.list-row-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.list-row-avatar-fallback {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-400));
+}
+
+.list-row-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.list-row-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-row-meta {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.125rem;
+}
+
+.list-row-badge {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+}
+
+/* ── Quick action grid ───────────────────────────────────── */
+.quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 1.25rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.quick-action:hover {
+    border-color: var(--primary-color);
+    background: var(--surface-card);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.quick-action-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.quick-action span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ── Log summary bars ────────────────────────────────────── */
+.log-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0;
+}
+
+.log-bar-label {
+    width: 5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+}
+
+.log-bar-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--surface-200);
+    overflow: hidden;
+}
+
+.log-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.log-bar-count {
+    width: 3rem;
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* ── Config dialog drag items ────────────────────────────── */
+.config-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 0.5rem;
+    background: var(--surface-card);
+    cursor: grab;
+    transition: box-shadow 0.15s;
+}
+
+.config-item:active {
+    cursor: grabbing;
+}
+
+.cdk-drag-preview {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    background: var(--surface-card);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.3;
+}
+
+.cdk-drag-animating {
+    transition: transform 200ms ease;
+}
+
+/* ── Forum structure items ───────────────────────────────── */
+.forum-category-item {
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--surface-border);
+    transition: background 0.15s;
+}
+
+.forum-category-item:hover {
+    background: var(--surface-hover);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stat-card-value {
+        font-size: 1.375rem;
+    }
+}

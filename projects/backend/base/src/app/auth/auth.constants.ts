@@ -6,7 +6,13 @@
 export const JWT_SECRET = process.env["JWT_SECRET"] || "UNSET_JWT_SECRET_PLEASE_CONFIGURE";
 
 /** Access token lifetime */
-export const JWT_EXPIRES_IN = "24h";
+export const JWT_EXPIRES_IN = "1h";
 
 /** Refresh token lifetime */
-export const JWT_REFRESH_EXPIRES_IN = "7d";
+export const JWT_REFRESH_EXPIRES_IN = "24h";
+
+/** Access token lifetime when "remember me" is checked */
+export const JWT_REMEMBER_EXPIRES_IN = "24h";
+
+/** Refresh token lifetime when "remember me" is checked */
+export const JWT_REMEMBER_REFRESH_EXPIRES_IN = "30d";

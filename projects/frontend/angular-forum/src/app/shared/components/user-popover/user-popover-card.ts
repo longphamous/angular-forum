@@ -6,6 +6,8 @@ import { ButtonModule } from "primeng/button";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { LevelOrb } from "../../../core/components/level-badge/level-badge";
+
 export interface UserCardData {
     id: string;
     username: string;
@@ -25,7 +27,7 @@ export interface UserCardData {
     selector: "user-popover-card",
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [AvatarModule, ButtonModule, RouterModule, TagModule, TooltipModule, TranslocoModule],
+    imports: [AvatarModule, ButtonModule, LevelOrb, RouterModule, TagModule, TooltipModule, TranslocoModule],
     styles: `
         :host {
             display: block;
@@ -135,14 +137,19 @@ export interface UserCardData {
                 <div class="upc-body">
                     <!-- Avatar -->
                     <div class="upc-avatar-wrap">
-                        <p-avatar
-                            [image]="u.avatarUrl ?? undefined"
-                            [label]="u.avatarUrl ? undefined : u.displayName.charAt(0).toUpperCase()"
-                            shape="circle"
-                            size="xlarge"
-                            styleClass="border-4 shadow-md"
-                            [style]="{ 'border-color': 'var(--surface-overlay)' }"
-                        />
+                        <div style="position: relative; display: inline-block;">
+                            <p-avatar
+                                [image]="u.avatarUrl ?? undefined"
+                                [label]="u.avatarUrl ? undefined : u.displayName.charAt(0).toUpperCase()"
+                                shape="circle"
+                                size="xlarge"
+                                styleClass="border-4 shadow-md"
+                                [style]="{ 'border-color': 'var(--surface-overlay)' }"
+                            />
+                            <div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); z-index: 2;">
+                                <level-orb [level]="u.level" [levelName]="u.levelName" size="sm" />
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Name + Role -->

@@ -2,7 +2,7 @@ import { KeyValuePipe } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
@@ -47,6 +47,7 @@ export class AchievementsPage implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly config = inject<ApiConfig>(API_CONFIG);
     private readonly authFacade = inject(AuthFacade);
+    private readonly translocoService = inject(TranslocoService);
 
     protected readonly loading = signal(true);
     protected readonly achievements = signal<AchievementProgress[]>([]);
@@ -133,6 +134,12 @@ export class AchievementsPage implements OnInit {
             },
             error: () => this.loading.set(false)
         });
+    }
+
+    protected categoryLabel(key: string): string {
+        const i18nKey = `achievements.categories.${key}`;
+        const translated = this.translocoService.translate(i18nKey);
+        return translated === i18nKey ? key : translated;
     }
 
     protected rarityStyle(rarity: AchievementRarity): { bg: string; text: string; border: string } {

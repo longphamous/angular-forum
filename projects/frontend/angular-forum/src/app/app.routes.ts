@@ -107,6 +107,27 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/pages/profile/profile-page").then((c) => c.ProfilePage)
             },
+            {
+                path: "tickets",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/ticket-list-page").then((c) => c.TicketListPage)
+            },
+            {
+                path: "tickets/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/ticket-detail-page").then((c) => c.TicketDetailPage)
+            },
+            {
+                path: "board/:projectId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/board/kanban-board").then((c) => c.KanbanBoard)
+            },
             { path: "admin", redirectTo: "admin/overview", pathMatch: "full" },
             {
                 path: "admin/overview",
@@ -464,6 +485,19 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
                 loadComponent: () => import("./features/admin/admin-media/admin-media").then((c) => c.AdminMedia)
+            },
+            {
+                path: "admin/i18n",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-i18n/admin-i18n").then((c) => c.AdminI18n)
+            },
+            {
+                path: "admin/tickets",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-tickets/admin-tickets").then((c) => c.AdminTickets)
             }
         ]
     }

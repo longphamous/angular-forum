@@ -70,6 +70,11 @@
                     <div class="absolute -right-1 bottom-1">
                         <online-indicator [userId]="p.id" size="lg" />
                     </div>
+                    @if (p.level) {
+                    <div class="absolute -bottom-3 left-1/2 z-20 -translate-x-1/2">
+                        <level-orb [level]="p.level" [levelName]="p.levelName" size="lg" />
+                    </div>
+                    }
                 </div>
 
                 <!-- Name + role + actions -->

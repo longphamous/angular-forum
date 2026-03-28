@@ -34,6 +34,11 @@
             "glob": "**/*",
             "input": "projects/frontend/angular-forum/src/assets/data",
             "output": "assets/data"
+          },
+          {
+            "glob": "**/*",
+            "input": "projects/frontend/angular-forum/src/assets/images",
+            "output": "assets/images"
           }
         ],
         "styles": ["projects/frontend/angular-forum/src/styles.scss"],

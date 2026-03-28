@@ -12,6 +12,7 @@ import { PushService } from "../../core/services/push.service";
 const STORAGE_TOKEN = "aniverse_access_token";
 const STORAGE_REFRESH = "aniverse_refresh_token";
 const STORAGE_PROFILE = "aniverse_user_profile";
+const STORAGE_REMEMBER_ME = "aniverse_remember_me";
 
 export interface RegisterPayload {
     username: string;
@@ -65,10 +66,18 @@ export class AuthFacade {
         return this._accessToken();
     }
 
-    login(username: string, password: string): Observable<LoginResponse> {
+    get rememberMe(): boolean {
+        return localStorage.getItem(STORAGE_REMEMBER_ME) === "true";
+    }
+
+    login(username: string, password: string, rememberMe = false): Observable<LoginResponse> {
         return this.http
-            .post<LoginResponse>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.login()}`, { username, password })
-            .pipe(tap((res) => this._persist(res.session, res.profile)));
+            .post<LoginResponse>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.login()}`, {
+                username,
+                password,
+                rememberMe
+            })
+            .pipe(tap((res) => this._persist(res.session, res.profile, rememberMe)));
     }
 
     register(payload: RegisterPayload): Observable<UserProfile> {
@@ -76,12 +85,13 @@ export class AuthFacade {
     }
 
     refreshToken(): Observable<AuthSession> {
-        const refreshToken = localStorage.getItem(STORAGE_REFRESH);
+        const storage = this.rememberMe ? localStorage : sessionStorage;
+        const refreshToken = storage.getItem(STORAGE_REFRESH);
         return this.http.post<AuthSession>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.refresh()}`, { refreshToken }).pipe(
             tap((session) => {
                 this._accessToken.set(session.accessToken);
-                localStorage.setItem(STORAGE_TOKEN, session.accessToken);
-                localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
+                storage.setItem(STORAGE_TOKEN, session.accessToken);
+                storage.setItem(STORAGE_REFRESH, session.refreshToken);
             })
         );
     }
@@ -90,7 +100,8 @@ export class AuthFacade {
         return this.http.patch<UserProfile>(`${this.apiConfig.baseUrl}${USER_ROUTES.profile()}`, payload).pipe(
             tap((updated) => {
                 this._currentUser.set(updated);
-                localStorage.setItem(STORAGE_PROFILE, JSON.stringify(updated));
+                const storage = this.rememberMe ? localStorage : sessionStorage;
+                storage.setItem(STORAGE_PROFILE, JSON.stringify(updated));
             })
         );
     }
@@ -109,24 +120,31 @@ export class AuthFacade {
         this.pushService.disconnect();
         this._accessToken.set(null);
         this._currentUser.set(null);
-        localStorage.removeItem(STORAGE_TOKEN);
-        localStorage.removeItem(STORAGE_REFRESH);
-        localStorage.removeItem(STORAGE_PROFILE);
+        for (const storage of [localStorage, sessionStorage]) {
+            storage.removeItem(STORAGE_TOKEN);
+            storage.removeItem(STORAGE_REFRESH);
+            storage.removeItem(STORAGE_PROFILE);
+        }
+        localStorage.removeItem(STORAGE_REMEMBER_ME);
     }
 
-    private _persist(session: AuthSession, profile: UserProfile): void {
+    private _persist(session: AuthSession, profile: UserProfile, rememberMe = false): void {
         this._accessToken.set(session.accessToken);
         this._currentUser.set(profile);
-        localStorage.setItem(STORAGE_TOKEN, session.accessToken);
-        localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
-        localStorage.setItem(STORAGE_PROFILE, JSON.stringify(profile));
+
+        localStorage.setItem(STORAGE_REMEMBER_ME, String(rememberMe));
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem(STORAGE_TOKEN, session.accessToken);
+        storage.setItem(STORAGE_REFRESH, session.refreshToken);
+        storage.setItem(STORAGE_PROFILE, JSON.stringify(profile));
         this.pushService.connect(session.accessToken);
     }
 
     private _restoreFromStorage(): void {
-        const token = localStorage.getItem(STORAGE_TOKEN);
-        const refreshToken = localStorage.getItem(STORAGE_REFRESH);
-        const raw = localStorage.getItem(STORAGE_PROFILE);
+        const storage = this.rememberMe ? localStorage : sessionStorage;
+        const token = storage.getItem(STORAGE_TOKEN);
+        const refreshToken = storage.getItem(STORAGE_REFRESH);
+        const raw = storage.getItem(STORAGE_PROFILE);
         if (!token || !raw) return;
 
         // Check if access token is expired
@@ -138,8 +156,8 @@ export class AuthFacade {
                     .subscribe({
                         next: (session) => {
                             this._accessToken.set(session.accessToken);
-                            localStorage.setItem(STORAGE_TOKEN, session.accessToken);
-                            localStorage.setItem(STORAGE_REFRESH, session.refreshToken);
+                            storage.setItem(STORAGE_TOKEN, session.accessToken);
+                            storage.setItem(STORAGE_REFRESH, session.refreshToken);
                             try {
                                 this._currentUser.set(JSON.parse(raw) as UserProfile);
                             } catch {
@@ -183,8 +201,11 @@ export class AuthFacade {
     private _clearStorage(): void {
         this._accessToken.set(null);
         this._currentUser.set(null);
-        localStorage.removeItem(STORAGE_TOKEN);
-        localStorage.removeItem(STORAGE_REFRESH);
-        localStorage.removeItem(STORAGE_PROFILE);
+        for (const storage of [localStorage, sessionStorage]) {
+            storage.removeItem(STORAGE_TOKEN);
+            storage.removeItem(STORAGE_REFRESH);
+            storage.removeItem(STORAGE_PROFILE);
+        }
+        localStorage.removeItem(STORAGE_REMEMBER_ME);
     }
 }

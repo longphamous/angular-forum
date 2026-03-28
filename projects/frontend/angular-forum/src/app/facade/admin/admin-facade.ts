@@ -3,12 +3,16 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 import { forkJoin, Observable } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
+import { ADMIN_LOGS_ROUTES } from "../../core/api/admin-logs.routes";
+import { DASHBOARD_ROUTES } from "../../core/api/dashboard.routes";
 import { FORUM_ROUTES } from "../../core/api/forum.routes";
 import { USER_ROUTES } from "../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
+import type { LogStats } from "../../core/models/admin-logs/admin-logs";
 import { Forum } from "../../core/models/forum/forum";
 import { ForumCategory } from "../../core/models/forum/forum-category";
 import { UserProfile, UserRole, UserStatus } from "../../core/models/user/user";
+import type { NewestMember, RecentThread, TopPoster } from "../dashboard/dashboard-facade";
 
 export interface AdminCreateUserPayload {
     displayName?: string;
@@ -72,6 +76,10 @@ export class AdminFacade {
     readonly users: Signal<UserProfile[]>;
     readonly usersLoading: Signal<boolean>;
     readonly usersError: Signal<string | null>;
+    readonly recentThreads: Signal<RecentThread[]>;
+    readonly newestMembers: Signal<NewestMember[]>;
+    readonly topPosters: Signal<TopPoster[]>;
+    readonly logStats: Signal<LogStats | null>;
 
     private readonly _categories = signal<ForumCategory[]>([]);
     private readonly _error = signal<string | null>(null);
@@ -80,6 +88,10 @@ export class AdminFacade {
     private readonly _users = signal<UserProfile[]>([]);
     private readonly _usersLoading = signal(false);
     private readonly _usersError = signal<string | null>(null);
+    private readonly _recentThreads = signal<RecentThread[]>([]);
+    private readonly _newestMembers = signal<NewestMember[]>([]);
+    private readonly _topPosters = signal<TopPoster[]>([]);
+    private readonly _logStats = signal<LogStats | null>(null);
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
 
@@ -91,6 +103,10 @@ export class AdminFacade {
         this.users = this._users.asReadonly();
         this.usersLoading = this._usersLoading.asReadonly();
         this.usersError = this._usersError.asReadonly();
+        this.recentThreads = this._recentThreads.asReadonly();
+        this.newestMembers = this._newestMembers.asReadonly();
+        this.topPosters = this._topPosters.asReadonly();
+        this.logStats = this._logStats.asReadonly();
     }
 
     loadCategories(): void {
@@ -197,6 +213,28 @@ export class AdminFacade {
 
     removeUserLocally(id: string): void {
         this._users.update((list) => list.filter((u) => u.id !== id));
+    }
+
+    loadDashboardData(): void {
+        this.http.get<RecentThread[]>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.recentThreads()}`).subscribe({
+            next: (data) => this._recentThreads.set(data),
+            error: () => this._recentThreads.set([])
+        });
+
+        this.http.get<NewestMember[]>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.newestMembers()}`).subscribe({
+            next: (data) => this._newestMembers.set(data),
+            error: () => this._newestMembers.set([])
+        });
+
+        this.http.get<TopPoster[]>(`${this.apiConfig.baseUrl}${DASHBOARD_ROUTES.topPosters()}`).subscribe({
+            next: (data) => this._topPosters.set(data),
+            error: () => this._topPosters.set([])
+        });
+
+        this.http.get<LogStats>(`${this.apiConfig.baseUrl}${ADMIN_LOGS_ROUTES.stats()}`).subscribe({
+            next: (data) => this._logStats.set(data),
+            error: () => this._logStats.set(null)
+        });
     }
 
     private _computeStats(categories: ForumCategory[]): void {

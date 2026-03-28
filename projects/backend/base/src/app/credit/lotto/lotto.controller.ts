@@ -168,6 +168,8 @@ export class LottoController {
     ): Promise<LottoTicket> {
         const user = req.user as { userId: string } | undefined;
         if (!user?.userId) throw new Error("Unauthorized");
-        return this.lottoService.purchaseSpecialTicket(user.userId, body.fields, body.superNumber, req.params["id"]);
+        const id = req.params["id"];
+        if (typeof id !== "string") throw new Error("Invalid ticket id");
+        return this.lottoService.purchaseSpecialTicket(user.userId, body.fields, body.superNumber, id);
     }
 }

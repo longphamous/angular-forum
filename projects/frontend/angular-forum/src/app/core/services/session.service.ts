@@ -63,10 +63,12 @@ export class SessionService {
             return;
         }
 
-        // Check inactivity
-        const lastActivity = Number(localStorage.getItem(STORAGE_LAST_ACTIVITY) ?? 0);
-        if (lastActivity > 0 && Date.now() - lastActivity > INACTIVITY_TIMEOUT_MS) {
-            this.ngZone.run(() => this.handleExpired("inactivity"));
+        // Check inactivity (skip when "remember me" is active)
+        if (!this.authFacade.rememberMe) {
+            const lastActivity = Number(localStorage.getItem(STORAGE_LAST_ACTIVITY) ?? 0);
+            if (lastActivity > 0 && Date.now() - lastActivity > INACTIVITY_TIMEOUT_MS) {
+                this.ngZone.run(() => this.handleExpired("inactivity"));
+            }
         }
     }
 

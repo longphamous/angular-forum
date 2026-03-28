@@ -27,7 +27,7 @@ import { LEXICON_ROUTES } from "../../../core/api/lexicon.routes";
 import { RECIPES_ROUTES } from "../../../core/api/recipes.routes";
 import { USER_ROUTES } from "../../../core/api/user.routes";
 import { AchievementBadge } from "../../../core/components/achievement-badge/achievement-badge";
-import { LevelProgress } from "../../../core/components/level-badge/level-badge";
+import { LevelOrb, LevelProgress } from "../../../core/components/level-badge/level-badge";
 import { API_CONFIG, ApiConfig } from "../../../core/config/api.config";
 import {
     ChronikEntry,
@@ -105,6 +105,7 @@ interface XpHistoryEvent {
         NgClass,
         FormsModule,
         InputTextModule,
+        LevelOrb,
         LevelProgress,
         RouterModule,
         SelectModule,

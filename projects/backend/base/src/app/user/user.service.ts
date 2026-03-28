@@ -123,7 +123,7 @@ export class UserService {
         user.lastLoginAt = new Date();
         await this.userRepo.save(user);
 
-        const tokens = this.authService.signTokens(user.id, user.username, user.role);
+        const tokens = this.authService.signTokens(user.id, user.username, user.role, dto.rememberMe);
         const session: AuthSession = { userId: user.id, ...tokens };
         return { session, profile: toProfile(user) };
     }

@@ -1,0 +1,305 @@
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
+    <p-toast />
+    <p-confirmDialog />
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('adminTickets.title') }}</h2>
+            <p class="text-surface-500 mt-1">{{ t('adminTickets.subtitle') }}</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    @if (facade.stats(); as stats) {
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="surface-card rounded-xl p-4 text-center shadow">
+            <div class="text-surface-500 text-sm">{{ t('tickets.stats.total') }}</div>
+            <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ stats.total }}</div>
+        </div>
+        <div class="surface-card rounded-xl p-4 text-center shadow">
+            <div class="text-sm text-blue-500">{{ t('tickets.status.open') }}</div>
+            <div class="text-2xl font-bold text-blue-600">{{ stats.open }}</div>
+        </div>
+        <div class="surface-card rounded-xl p-4 text-center shadow">
+            <div class="text-sm text-green-500">{{ t('tickets.status.resolved') }}</div>
+            <div class="text-2xl font-bold text-green-600">{{ stats.resolved }}</div>
+        </div>
+        <div class="surface-card rounded-xl p-4 text-center shadow">
+            <div class="text-surface-500 text-sm">{{ t('adminTickets.avgResolution') }}</div>
+            <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ stats.avgResolutionTimeHours | number:'1.0-1' }}h</div>
+        </div>
+    </div>
+    }
+
+    <!-- Tabs -->
+    <div class="surface-card rounded-xl shadow">
+        <p-tabs [(value)]="activeTab">
+            <p-tablist>
+                <p-tab value="0">{{ t('adminTickets.tabCategories') }}</p-tab>
+                <p-tab value="1">{{ t('adminTickets.tabLabels') }}</p-tab>
+                <p-tab value="2">{{ t('adminTickets.tabProjects') }}</p-tab>
+                <p-tab value="3">{{ t('tickets.workflow.title') }}</p-tab>
+            </p-tablist>
+
+            <p-tabpanels>
+                <!-- Categories -->
+                <p-tabpanel value="0">
+                    <div class="p-4">
+                        <div class="mb-4 flex justify-end">
+                            <p-button [label]="t('adminTickets.addCategory')" (onClick)="openCategoryDialog()" icon="pi pi-plus" size="small" />
+                        </div>
+                        <p-table [value]="facade.categories()" styleClass="p-datatable-sm p-datatable-striped">
+                            <ng-template #header>
+                                <tr>
+                                    <th>{{ t('adminTickets.colName') }}</th>
+                                    <th>{{ t('adminTickets.colDescription') }}</th>
+                                    <th class="w-24">{{ t('adminTickets.colColor') }}</th>
+                                    <th class="w-28">{{ t('adminTickets.colTickets') }}</th>
+                                    <th class="w-32">{{ t('adminTickets.colActions') }}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-cat>
+                                <tr>
+                                    <td class="font-medium">
+                                        @if (cat.icon) { <i [class]="cat.icon + ' mr-2'"></i> }
+                                        {{ cat.name }}
+                                    </td>
+                                    <td class="text-surface-500 text-sm">{{ cat.description ?? '—' }}</td>
+                                    <td>
+                                        @if (cat.color) {
+                                        <span class="inline-block h-5 w-5 rounded-full" [style.background-color]="cat.color"></span>
+                                        }
+                                    </td>
+                                    <td>{{ cat.ticketCount }}</td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <button (click)="openCategoryDialog(cat)" pButton text rounded size="small" icon="pi pi-pencil"></button>
+                                            <button (click)="deleteCategory(cat)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template #emptymessage>
+                                <tr><td colspan="5" class="text-center">{{ t('adminTickets.noCategories') }}</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Labels -->
+                <p-tabpanel value="1">
+                    <div class="p-4">
+                        <div class="mb-4 flex justify-end">
+                            <p-button [label]="t('adminTickets.addLabel')" (onClick)="openLabelDialog()" icon="pi pi-plus" size="small" />
+                        </div>
+                        <p-table [value]="facade.labels()" styleClass="p-datatable-sm p-datatable-striped">
+                            <ng-template #header>
+                                <tr>
+                                    <th>{{ t('adminTickets.colName') }}</th>
+                                    <th class="w-32">{{ t('adminTickets.colPreview') }}</th>
+                                    <th class="w-32">{{ t('adminTickets.colActions') }}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-lbl>
+                                <tr>
+                                    <td class="font-medium">{{ lbl.name }}</td>
+                                    <td>
+                                        <span class="rounded px-2 py-1 text-xs text-white" [style.background-color]="lbl.color">{{ lbl.name }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <button (click)="openLabelDialog(lbl)" pButton text rounded size="small" icon="pi pi-pencil"></button>
+                                            <button (click)="deleteLabel(lbl)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template #emptymessage>
+                                <tr><td colspan="3" class="text-center">{{ t('adminTickets.noLabels') }}</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Projects -->
+                <p-tabpanel value="2">
+                    <div class="p-4">
+                        <div class="mb-4 flex justify-end">
+                            <p-button [label]="t('adminTickets.addProject')" (onClick)="openProjectDialog()" icon="pi pi-plus" size="small" />
+                        </div>
+                        <p-table [value]="facade.projects()" styleClass="p-datatable-sm p-datatable-striped">
+                            <ng-template #header>
+                                <tr>
+                                    <th>{{ t('adminTickets.colName') }}</th>
+                                    <th class="w-28">{{ t('adminTickets.colStatus') }}</th>
+                                    <th class="w-28">{{ t('adminTickets.colTickets') }}</th>
+                                    <th class="w-28">{{ t('adminTickets.colOpen') }}</th>
+                                    <th class="w-36">{{ t('adminTickets.colDates') }}</th>
+                                    <th class="w-32">{{ t('adminTickets.colActions') }}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-proj>
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">{{ proj.name }}</div>
+                                        @if (proj.description) {
+                                        <div class="text-surface-400 mt-1 text-xs">{{ proj.description }}</div>
+                                        }
+                                    </td>
+                                    <td><p-tag [severity]="projectStatusSeverity(proj.status)" [value]="proj.status" /></td>
+                                    <td>{{ proj.ticketCount }}</td>
+                                    <td>{{ proj.openTicketCount }}</td>
+                                    <td class="text-xs">
+                                        @if (proj.startDate) { {{ proj.startDate }} }
+                                        @if (proj.startDate && proj.endDate) { — }
+                                        @if (proj.endDate) { {{ proj.endDate }} }
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <button (click)="openProjectDialog(proj)" pButton text rounded size="small" icon="pi pi-pencil"></button>
+                                            <button (click)="deleteProject(proj)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template #emptymessage>
+                                <tr><td colspan="6" class="text-center">{{ t('adminTickets.noProjects') }}</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Workflows -->
+                <p-tabpanel value="3">
+                    <div class="p-4">
+                        <div class="mb-4 flex justify-end">
+                            <p-button [label]="t('tickets.workflow.createDefault')" (onClick)="seedDefaultWorkflow()" icon="pi pi-plus" size="small" />
+                        </div>
+
+                        @if (facade.workflows().length === 0) {
+                        <div class="text-surface-400 py-8 text-center">{{ t('tickets.workflow.noWorkflows') }}</div>
+                        } @else {
+                        <div class="flex flex-col gap-4">
+                            @for (wf of facade.workflows(); track wf.id) {
+                            <div class="surface-card rounded-lg border border-surface-200 p-4 dark:border-surface-700">
+                                <div class="mb-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-surface-900 dark:text-surface-0 font-semibold">{{ wf.name }}</span>
+                                        @if (wf.isDefault) {
+                                        <p-tag [value]="t('tickets.workflow.default')" severity="info" styleClass="text-xs" />
+                                        }
+                                    </div>
+                                    <button (click)="deleteWorkflow(wf)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                </div>
+
+                                <!-- Status columns preview -->
+                                <div class="flex flex-wrap gap-2">
+                                    @for (status of wf.statuses; track status.id) {
+                                    <div class="flex items-center gap-1.5 rounded-lg bg-surface-50 px-3 py-1.5 dark:bg-surface-800">
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full" [style.background-color]="status.color"></span>
+                                        <span class="text-sm">{{ status.name }}</span>
+                                        <span class="text-surface-400 text-xs">({{ status.category }})</span>
+                                    </div>
+                                    }
+                                </div>
+
+                                <!-- Transitions info -->
+                                @if (wf.transitions.length > 0) {
+                                <div class="text-surface-400 mt-2 text-xs">
+                                    {{ wf.transitions.length }} {{ t('tickets.workflow.transitions') }}
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        }
+                    </div>
+                </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
+    </div>
+
+    <!-- Category Dialog -->
+    <p-dialog [(visible)]="catDialogVisible" [header]="catEditId() ? t('adminTickets.editCategory') : t('adminTickets.addCategory')" [modal]="true" [style]="{ width: '450px' }">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colName') }}</label>
+                <input [ngModel]="catName()" (ngModelChange)="catName.set($event)" pInputText type="text" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colDescription') }}</label>
+                <textarea [ngModel]="catDescription()" (ngModelChange)="catDescription.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colIcon') }}</label>
+                <input [ngModel]="catIcon()" (ngModelChange)="catIcon.set($event)" pInputText placeholder="pi pi-tag" type="text" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colColor') }}</label>
+                <p-colorPicker [ngModel]="catColor()" (ngModelChange)="catColor.set($event)" />
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="catDialogVisible.set(false)" severity="secondary" text />
+                <p-button [disabled]="!catName()" [label]="t('common.button.save')" (onClick)="saveCategory()" icon="pi pi-check" />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Label Dialog -->
+    <p-dialog [(visible)]="lblDialogVisible" [header]="lblEditId() ? t('adminTickets.editLabel') : t('adminTickets.addLabel')" [modal]="true" [style]="{ width: '400px' }">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colName') }}</label>
+                <input [ngModel]="lblName()" (ngModelChange)="lblName.set($event)" pInputText type="text" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colColor') }}</label>
+                <p-colorPicker [ngModel]="lblColor()" (ngModelChange)="lblColor.set($event)" />
+            </div>
+            @if (lblName() && lblColor()) {
+            <div>
+                <label class="font-medium">{{ t('adminTickets.colPreview') }}</label>
+                <div class="mt-1"><span class="rounded px-2 py-1 text-sm text-white" [style.background-color]="lblColor()">{{ lblName() }}</span></div>
+            </div>
+            }
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="lblDialogVisible.set(false)" severity="secondary" text />
+                <p-button [disabled]="!lblName()" [label]="t('common.button.save')" (onClick)="saveLabel()" icon="pi pi-check" />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Project Dialog -->
+    <p-dialog [(visible)]="projDialogVisible" [header]="projEditId() ? t('adminTickets.editProject') : t('adminTickets.addProject')" [modal]="true" [style]="{ width: '500px' }">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colName') }}</label>
+                <input [ngModel]="projName()" (ngModelChange)="projName.set($event)" pInputText type="text" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('adminTickets.colDescription') }}</label>
+                <textarea [ngModel]="projDescription()" (ngModelChange)="projDescription.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <label class="font-medium">{{ t('adminTickets.colStartDate') }}</label>
+                    <p-datePicker [ngModel]="projStartDate()" (ngModelChange)="projStartDate.set($event)" dateFormat="dd.mm.yy" [showIcon]="true" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="font-medium">{{ t('adminTickets.colEndDate') }}</label>
+                    <p-datePicker [ngModel]="projEndDate()" (ngModelChange)="projEndDate.set($event)" dateFormat="dd.mm.yy" [showIcon]="true" />
+                </div>
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="projDialogVisible.set(false)" severity="secondary" text />
+                <p-button [disabled]="!projName()" [label]="t('common.button.save')" (onClick)="saveProject()" icon="pi pi-check" />
+            </div>
+        </ng-template>
+    </p-dialog>
+</div>

@@ -3,6 +3,7 @@ import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
 import { PasswordModule } from "primeng/password";
@@ -11,7 +12,16 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 @Component({
     selector: "login-page",
-    imports: [FormsModule, ButtonModule, InputTextModule, PasswordModule, MessageModule, RouterLink, TranslocoModule],
+    imports: [
+        FormsModule,
+        ButtonModule,
+        CheckboxModule,
+        InputTextModule,
+        PasswordModule,
+        MessageModule,
+        RouterLink,
+        TranslocoModule
+    ],
     templateUrl: "./login-page.html",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -21,6 +31,7 @@ export class LoginPage {
 
     username = "";
     password = "";
+    rememberMe = false;
 
     private readonly authFacade = inject(AuthFacade);
     private readonly router = inject(Router);
@@ -32,7 +43,7 @@ export class LoginPage {
         this.loading.set(true);
         this.errorMessage.set(null);
 
-        this.authFacade.login(this.username, this.password).subscribe({
+        this.authFacade.login(this.username, this.password, this.rememberMe).subscribe({
             next: () => {
                 this.router.navigate(["/dashboard"]);
             },

@@ -1,0 +1,413 @@
+<div class="mx-auto max-w-5xl p-6" *transloco="let t">
+    <p-toast />
+    <p-confirmDialog />
+
+    <!-- Back Button -->
+    <p-button
+        [label]="t('tickets.backToList')"
+        (onClick)="goBack()"
+        icon="pi pi-arrow-left"
+        text
+        severity="secondary"
+        styleClass="mb-4"
+    />
+
+    @if (facade.loading()) {
+    <div class="flex flex-col gap-4">
+        <p-skeleton height="3rem" />
+        <p-skeleton height="10rem" />
+        <p-skeleton height="6rem" />
+    </div>
+    } @else if (facade.currentTicket(); as ticket) {
+    <div class="flex flex-col gap-6">
+        <!-- Parent Breadcrumb -->
+        @if (ticket.parentId && ticket.parentTitle) {
+        <div class="text-surface-400 flex items-center gap-1 text-sm">
+            <i class="pi pi-arrow-up text-xs"></i>
+            <a [routerLink]="['/tickets', ticket.parentId]" class="text-primary hover:underline">
+                {{ ticket.parentTitle }}
+            </a>
+            <span>/</span>
+            <span class="text-surface-600 font-medium">#{{ ticket.ticketNumber }}</span>
+        </div>
+        }
+
+        <!-- Ticket Header -->
+        <div class="surface-card rounded-xl p-6 shadow">
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex-1">
+                    <div class="mb-2 flex flex-wrap items-center gap-2">
+                        <span class="text-surface-400 font-mono text-sm">#{{ ticket.ticketNumber }}</span>
+                        <p-tag [severity]="typeSeverity(ticket.type)" [value]="t('tickets.type.' + ticket.type)" [icon]="typeIcon(ticket.type)" />
+                        <p-tag [severity]="statusSeverity(ticket.status)" [value]="t('tickets.status.' + ticket.status)" />
+                        <p-tag [severity]="prioritySeverity(ticket.priority)" [value]="t('tickets.priority.' + ticket.priority)" />
+                        @if (ticket.storyPoints != null) {
+                        <span class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2 py-0.5 text-xs font-medium">
+                            {{ ticket.storyPoints }} {{ t('tickets.storyPoints') }}
+                        </span>
+                        }
+                        @if (ticket.isPinned) {
+                        <i class="pi pi-thumbtack text-orange-400" [pTooltip]="t('tickets.pinned')"></i>
+                        }
+                    </div>
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-xl font-bold">{{ ticket.title }}</h1>
+                </div>
+                <div class="flex gap-2">
+                    @if (isStaff) {
+                    <p-button
+                        [pTooltip]="t(ticket.isPinned ? 'tickets.unpin' : 'tickets.pin')"
+                        (onClick)="togglePin()"
+                        [icon]="ticket.isPinned ? 'pi pi-thumbtack' : 'pi pi-thumbtack'"
+                        text
+                        rounded
+                    />
+                    }
+                    @if (ticket.status === 'resolved' || ticket.status === 'closed') {
+                    <p-button
+                        [label]="t('tickets.rateTicket')"
+                        (onClick)="ratingDialogVisible.set(true)"
+                        icon="pi pi-star"
+                        severity="warn"
+                        text
+                    />
+                    }
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="text-surface-700 dark:text-surface-200 mb-4 whitespace-pre-wrap">{{ ticket.description }}</div>
+
+            <!-- Labels -->
+            @if (ticket.labels.length > 0) {
+            <div class="mb-4 flex flex-wrap gap-1">
+                @for (label of ticket.labels; track label.id) {
+                <span class="rounded px-2 py-1 text-xs font-medium text-white" [style.background-color]="label.color">
+                    {{ label.name }}
+                </span>
+                }
+            </div>
+            }
+
+            <!-- Meta Info -->
+            <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-4 border-t pt-4 sm:grid-cols-4">
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldAuthor') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.authorName ?? ticket.authorId }}</div>
+                </div>
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.columnAssignee') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.assigneeName ?? '—' }}</div>
+                </div>
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldCategory') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.categoryName ?? '—' }}</div>
+                </div>
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.columnCreated') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.createdAt | date:'dd.MM.yyyy HH:mm' }}</div>
+                </div>
+                @if (ticket.dueDate) {
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldDueDate') }}</div>
+                    <div class="text-sm font-medium text-orange-500">{{ ticket.dueDate | date:'dd.MM.yyyy' }}</div>
+                </div>
+                }
+                @if (ticket.followUpDate) {
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldFollowUp') }}</div>
+                    <div class="text-sm font-medium text-blue-500">{{ ticket.followUpDate | date:'dd.MM.yyyy' }}</div>
+                </div>
+                }
+                @if (ticket.rating) {
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldRating') }}</div>
+                    <div class="text-sm font-medium text-yellow-500">
+                        @for (_ of [1,2,3,4,5]; track $index) {
+                        <i class="pi" [class]="$index < ticket.rating! ? 'pi-star-fill' : 'pi-star'"></i>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Status Actions (staff only) -->
+            @if (isStaff) {
+            <div class="border-surface-200 dark:border-surface-700 mt-4 flex flex-wrap gap-2 border-t pt-4">
+                @for (s of ['open', 'in_progress', 'waiting', 'follow_up', 'resolved', 'closed']; track s) {
+                    @if (s !== ticket.status) {
+                    <p-button
+                        [label]="t('tickets.status.' + s)"
+                        [severity]="statusSeverity(s)"
+                        (onClick)="updateStatus($any(s))"
+                        size="small"
+                        outlined
+                    />
+                    }
+                }
+            </div>
+            }
+        </div>
+
+        <!-- Tabs: Children, Links, Comments, Activity -->
+        <div class="surface-card rounded-xl shadow">
+            <p-tabs [(value)]="activeTab">
+                <p-tablist>
+                    <p-tab value="0">{{ t('tickets.comments') }} ({{ facade.comments().length }})</p-tab>
+                    @if (ticket.childCount > 0 || ticket.type === 'epic' || ticket.type === 'story') {
+                    <p-tab value="1">{{ t('tickets.children') }} ({{ facade.children().length }})</p-tab>
+                    }
+                    <p-tab value="2">{{ t('tickets.links.title') }} ({{ facade.links().length }})</p-tab>
+                    <p-tab value="3">{{ t('tickets.activity.title') }}</p-tab>
+                </p-tablist>
+
+                <p-tabpanels>
+                    <!-- Comments Tab -->
+                    <p-tabpanel value="0">
+                        <div class="p-6">
+                            <div class="flex flex-col gap-4">
+                                @for (comment of facade.comments(); track comment.id) {
+                                <div
+                                    class="rounded-lg p-4"
+                                    [class]="comment.isInternal ? 'bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800' : 'bg-surface-50 dark:bg-surface-800'"
+                                >
+                                    <div class="mb-2 flex items-center gap-2">
+                                        <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                                            {{ comment.authorName ?? comment.authorId }}
+                                        </span>
+                                        <span class="text-surface-400 text-xs">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
+                                        @if (comment.isInternal) {
+                                        <p-tag severity="warn" [value]="t('tickets.internalNote')" styleClass="text-xs" />
+                                        }
+                                        @if (comment.statusChange) {
+                                        <p-tag [severity]="statusSeverity(comment.statusChange)" [value]="t('tickets.status.' + comment.statusChange)" styleClass="text-xs" />
+                                        }
+                                    </div>
+                                    <div class="text-surface-700 dark:text-surface-200 whitespace-pre-wrap text-sm">{{ comment.content }}</div>
+                                </div>
+                                }
+
+                                @if (facade.comments().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.noComments') }}</p>
+                                }
+                            </div>
+
+                            <!-- Add Comment -->
+                            <div class="border-surface-200 dark:border-surface-700 mt-6 border-t pt-4">
+                                <textarea
+                                    [ngModel]="commentText()"
+                                    [placeholder]="t('tickets.commentPlaceholder')"
+                                    (ngModelChange)="commentText.set($event)"
+                                    class="w-full"
+                                    pTextarea
+                                    [rows]="3"
+                                ></textarea>
+                                <div class="mt-2 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        @if (isStaff) {
+                                        <label class="text-surface-500 flex cursor-pointer items-center gap-1 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                [checked]="commentInternal()"
+                                                (change)="commentInternal.set(!commentInternal())"
+                                            />
+                                            {{ t('tickets.markInternal') }}
+                                        </label>
+                                        }
+                                    </div>
+                                    <p-button
+                                        [disabled]="!commentText()"
+                                        [label]="t('tickets.submitComment')"
+                                        [loading]="commentSaving()"
+                                        (onClick)="submitComment()"
+                                        icon="pi pi-send"
+                                        size="small"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- Children Tab -->
+                    @if (ticket.childCount > 0 || ticket.type === 'epic' || ticket.type === 'story') {
+                    <p-tabpanel value="1">
+                        <div class="p-6">
+                            <div class="flex flex-col gap-2">
+                                @for (child of facade.children(); track child.id) {
+                                <div
+                                    class="bg-surface-50 dark:bg-surface-800 flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-surface-100 dark:hover:bg-surface-700"
+                                    (click)="openChildTicket(child.id)"
+                                >
+                                    <i [class]="typeIcon(child.type) + ' text-surface-400'"></i>
+                                    <span class="text-surface-400 font-mono text-xs">#{{ child.ticketNumber }}</span>
+                                    <span class="text-surface-900 dark:text-surface-0 flex-1 text-sm font-medium">{{ child.title }}</span>
+                                    <p-tag [severity]="statusSeverity(child.status)" [value]="t('tickets.status.' + child.status)" styleClass="text-xs" />
+                                    @if (child.storyPoints != null) {
+                                    <span class="bg-surface-200 dark:bg-surface-600 rounded-full px-2 py-0.5 text-xs">{{ child.storyPoints }} SP</span>
+                                    }
+                                    <span class="text-surface-400 text-xs">{{ child.assigneeName ?? '—' }}</span>
+                                </div>
+                                }
+
+                                @if (facade.children().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.noChildren') }}</p>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+                    }
+
+                    <!-- Links Tab -->
+                    <p-tabpanel value="2">
+                        <div class="p-6">
+                            <div class="mb-4 flex justify-end">
+                                <p-button [label]="t('tickets.links.add')" (onClick)="openLinkDialog()" icon="pi pi-link" size="small" />
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                @for (link of facade.links(); track link.id) {
+                                <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-3">
+                                    <p-tag [value]="t('tickets.links.' + link.linkType)" severity="secondary" styleClass="text-xs" />
+                                    @if (link.sourceTicketId === (facade.currentTicket()?.id ?? '')) {
+                                    <a [routerLink]="['/tickets', link.targetTicketId]" class="text-primary text-sm font-medium hover:underline">
+                                        #{{ link.targetTicketNumber }} {{ link.targetTicketTitle }}
+                                    </a>
+                                    } @else {
+                                    <a [routerLink]="['/tickets', link.sourceTicketId]" class="text-primary text-sm font-medium hover:underline">
+                                        #{{ link.sourceTicketNumber }} {{ link.sourceTicketTitle }}
+                                    </a>
+                                    }
+                                    <span class="flex-1"></span>
+                                    <button (click)="removeLink(link.id)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                </div>
+                                }
+
+                                @if (facade.links().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.links.noLinks') }}</p>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- Activity Tab -->
+                    <p-tabpanel value="3">
+                        <div class="p-6">
+                            <div class="flex flex-col gap-3">
+                                @for (entry of facade.activityLog(); track entry.id) {
+                                <div class="flex items-start gap-3 text-sm">
+                                    <div class="text-surface-400 mt-0.5 w-36 shrink-0 text-xs">{{ entry.createdAt | date:'dd.MM.yyyy HH:mm' }}</div>
+                                    <div class="flex-1">
+                                        <span class="text-surface-900 dark:text-surface-0 font-medium">{{ entry.userName ?? entry.userId }}</span>
+                                        @switch (entry.action) {
+                                            @case ('created') {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.created') }}</span>
+                                            }
+                                            @case ('commented') {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.commented') }}</span>
+                                            }
+                                            @case ('status_changed') {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.statusChanged') }}: </span>
+                                                <span class="line-through opacity-50">{{ entry.oldValue }}</span>
+                                                <span> → </span>
+                                                <span class="font-medium">{{ entry.newValue }}</span>
+                                            }
+                                            @case ('linked') {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.linked') }}: {{ entry.newValue }}</span>
+                                            }
+                                            @case ('unlinked') {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.unlinked') }}: {{ entry.oldValue }}</span>
+                                            }
+                                            @default {
+                                                <span class="text-surface-500"> {{ t('tickets.activity.updated') }} </span>
+                                                <span class="font-medium">{{ entry.field }}</span>
+                                                @if (entry.oldValue) {
+                                                    <span>: <span class="line-through opacity-50">{{ entry.oldValue }}</span> → {{ entry.newValue }}</span>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                }
+
+                                @if (facade.activityLog().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.activity.noActivity') }}</p>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+                </p-tabpanels>
+            </p-tabs>
+        </div>
+    </div>
+
+    <!-- Rating Dialog -->
+    <p-dialog
+        [(visible)]="ratingDialogVisible"
+        [header]="t('tickets.rateTicket')"
+        [modal]="true"
+        [style]="{ width: '400px' }"
+    >
+        <div class="flex flex-col gap-4">
+            <div class="flex justify-center gap-2 text-3xl">
+                @for (_ of [1,2,3,4,5]; track $index) {
+                <i
+                    class="pi cursor-pointer transition-colors"
+                    [class]="$index < ratingValue() ? 'pi-star-fill text-yellow-400' : 'pi-star text-surface-300'"
+                    (click)="ratingValue.set($index + 1)"
+                ></i>
+                }
+            </div>
+            <textarea
+                [ngModel]="ratingComment()"
+                [placeholder]="t('tickets.ratingCommentPlaceholder')"
+                (ngModelChange)="ratingComment.set($event)"
+                pTextarea
+                [rows]="3"
+                class="w-full"
+            ></textarea>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="ratingDialogVisible.set(false)" severity="secondary" text />
+                <p-button [label]="t('tickets.submitRating')" (onClick)="submitRating()" icon="pi pi-star" />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Link Dialog -->
+    <p-dialog
+        [(visible)]="linkDialogVisible"
+        [header]="t('tickets.links.add')"
+        [modal]="true"
+        [style]="{ width: '450px' }"
+        [contentStyle]="{ overflow: 'visible' }"
+    >
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('tickets.links.linkType') }}</label>
+                <p-select
+                    [ngModel]="linkType()"
+                    [options]="linkTypeOptions"
+                    (ngModelChange)="linkType.set($event)"
+                    optionLabel="label"
+                    optionValue="value"
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('tickets.links.targetTicket') }}</label>
+                <input
+                    [ngModel]="linkTargetId()"
+                    (ngModelChange)="linkTargetId.set($event)"
+                    pInputText
+                    type="text"
+                    placeholder="Ticket ID"
+                />
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="linkDialogVisible.set(false)" severity="secondary" text />
+                <p-button [disabled]="!linkTargetId()" [label]="t('tickets.links.add')" (onClick)="submitLink()" icon="pi pi-link" />
+            </div>
+        </ng-template>
+    </p-dialog>
+    }
+</div>

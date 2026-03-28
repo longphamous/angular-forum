@@ -341,16 +341,33 @@ export const mockPosts: Record<string, Post> = {
         authorLevelName: "Experte",
         authorSignature: "Moderatorin von Aniverse | Bei Fragen oder Problemen gerne eine PN schreiben.",
         content:
-            "<p>Hey NarutoFan99, herzlich willkommen! 😊 Dem Namen nach zu urteilen bist du ein echter Naruto-Fan!</p>",
+            "<p>Hey NarutoFan99, herzlich willkommen! 😊 Dem Namen nach zu urteilen bist du ein echter Naruto-Fan! Wir freuen uns, dich in der Community zu haben.</p>",
         isFirstPost: false,
         isBestAnswer: false,
         isHighlighted: false,
         isOfficial: false,
-        isEdited: false,
-        editCount: 0,
+        isEdited: true,
+        editedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+        editCount: 2,
+        editReason: "Begrüßung erweitert",
+        editHistory: [
+            {
+                content: "<p>Hey NarutoFan99, willkommen!</p>",
+                editedBy: "00000000-0000-0000-0000-000000000002",
+                editedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+                reason: null
+            },
+            {
+                content:
+                    "<p>Hey NarutoFan99, herzlich willkommen! 😊 Dem Namen nach zu urteilen bist du ein echter Naruto-Fan!</p>",
+                editedBy: "00000000-0000-0000-0000-000000000002",
+                editedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+                reason: "Begrüßung erweitert"
+            }
+        ],
         reactionCount: 2,
         createdAt: thirtySecondsAgo,
-        updatedAt: thirtySecondsAgo
+        updatedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
     }
 };
 

@@ -46,6 +46,18 @@
                     />
                 </div>
 
+                <div class="flex items-center gap-2">
+                    <p-checkbox
+                        [(ngModel)]="rememberMe"
+                        [binary]="true"
+                        inputId="rememberMe"
+                        name="rememberMe"
+                    />
+                    <label class="text-surface-600 dark:text-surface-300 cursor-pointer" for="rememberMe"
+                        >{{ t('login.rememberMe') }}</label
+                    >
+                </div>
+
                 <p-button
                     [disabled]="!username || !password"
                     [label]="t('login.submit')"

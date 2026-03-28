@@ -346,27 +346,17 @@
         [(visible)]="historyDialogVisible"
         [header]="t('threadDetail.historyDialog.header')"
         [modal]="true"
-        [style]="{ width: '40rem', maxWidth: '95vw' }"
+        [style]="{ width: '60rem', maxWidth: '95vw' }"
     >
-        <div class="flex flex-col gap-3">
-            @for (entry of editHistory(); track $index) {
-            <div class="border-surface-200 dark:border-surface-700 rounded-lg border p-3">
-                <div class="text-surface-500 mb-2 flex items-center gap-2 text-xs">
-                    <i class="pi pi-clock"></i>
-                    <span>{{ formatDate(entry.editedAt) }}</span>
-                    @if (entry.reason) {
-                    <span class="text-surface-400">— {{ entry.reason }}</span>
-                    }
-                </div>
-                <div
-                    class="text-surface-600 dark:text-surface-400 post-content max-h-40 overflow-y-auto text-sm"
-                    [innerHTML]="entry.content"
-                ></div>
-            </div>
-            } @empty {
-            <p class="text-surface-400 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
-            }
-        </div>
+        @if (editHistory().length > 0) {
+        <post-version-compare
+            [currentContent]="historyCurrentContent()"
+            [editHistory]="editHistory()"
+            (restore)="restoreVersion($event)"
+        />
+        } @else {
+        <p class="text-surface-400 py-6 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
+        }
     </p-dialog>
 
     <!-- Error -->
@@ -701,12 +691,16 @@
                             <div class="absolute -right-0.5 -bottom-0.5">
                                 <online-indicator [userId]="post.authorId" size="md" />
                             </div>
+                            <!-- Level orb anchored at bottom-center of avatar -->
+                            <div class="absolute -bottom-2.5 left-1/2 z-20 -translate-x-1/2">
+                                <level-orb [level]="post.authorLevel" [levelName]="post.authorLevelName" size="sm" />
+                            </div>
                         </div>
                     </a>
 
                     <!-- Name -->
                     <a
-                        class="text-surface-900 dark:text-surface-0 relative z-10 mt-2.5 max-w-full truncate text-center text-sm leading-tight font-bold no-underline hover:underline"
+                        class="text-surface-900 dark:text-surface-0 relative z-10 mt-4 max-w-full truncate text-center text-sm leading-tight font-bold no-underline hover:underline"
                         [routerLink]="['/users', post.authorId]"
                         [userPopover]="post.authorId"
                         >{{ post.authorName }}</a
@@ -742,11 +736,6 @@
 
                 <!-- Stats -->
                 <div class="flex flex-col gap-2 px-3 py-4">
-                    <!-- Level -->
-                    <div class="flex justify-center">
-                        <level-badge [level]="post.authorLevel" [levelName]="post.authorLevelName" />
-                    </div>
-
                     <!-- Post count -->
                     <div class="bg-surface-100 dark:bg-surface-800 flex items-center gap-2 rounded-lg px-2.5 py-1.5">
                         <i class="pi pi-comments text-surface-400 dark:text-surface-500 text-xs"></i>
