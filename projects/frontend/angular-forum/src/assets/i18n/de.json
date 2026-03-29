@@ -91,6 +91,7 @@
     "gamification": "Gamification",
     "achievements": "Achievements",
     "slideshow": "Teaser Slideshow",
+    "featuredItems": "Empfohlene Einträge",
     "shopSection": "Shop",
     "shop": "Virtueller Shop",
     "shopManagement": "Shop Verwaltung",
@@ -2875,6 +2876,38 @@
       "Rookie": "Rookie",
       "Recruit": "Rekrut",
       "Unknown": "Unbekannt"
+    }
+  },
+  "storefront": {
+    "featured": "Empfohlen",
+    "discounts": "Rabatte & Events",
+    "viewAll": "Alle anzeigen",
+    "free": "Kostenlos",
+    "noItems": "Noch keine Empfehlungen.",
+    "adminTitle": "Empfohlene Einträge",
+    "section": "Bereich",
+    "sourceType": "Quelle",
+    "badge": "Badge",
+    "badgeColor": "Badge-Farbe",
+    "originalPrice": "Originalpreis",
+    "discountPrice": "Rabattpreis",
+    "linkUrl": "Link-URL",
+    "imageUrl": "Bild-URL",
+    "addItem": "Eintrag hinzufügen",
+    "editItem": "Eintrag bearbeiten",
+    "selectSourceItem": "Quell-Element auswählen",
+    "selectSourceItemHint": "Wähle ein bestehendes Element zum automatischen Ausfüllen...",
+    "loadingSourceItems": "Verfügbare Elemente werden geladen...",
+    "sections": {
+      "featured": "Empfohlen",
+      "discount": "Rabatt",
+      "event": "Event"
+    },
+    "sources": {
+      "shop": "Shop",
+      "booster": "Booster-Pack",
+      "marketplace": "Marktplatz",
+      "custom": "Benutzerdefiniert"
     }
   }
 }

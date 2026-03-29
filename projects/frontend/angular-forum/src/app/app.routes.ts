@@ -265,6 +265,13 @@ export const routes: Routes = [
                     import("./features/admin/admin-slideshow/admin-slideshow").then((c) => c.AdminSlideshow)
             },
             {
+                path: "admin/featured",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-featured/admin-featured").then((c) => c.AdminFeatured)
+            },
+            {
                 path: "admin/shop",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],

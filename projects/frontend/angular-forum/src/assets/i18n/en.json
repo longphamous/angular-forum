@@ -91,6 +91,7 @@
     "gamification": "Gamification",
     "achievements": "Achievements",
     "slideshow": "Teaser Slideshow",
+    "featuredItems": "Featured Items",
     "shopSection": "Shop",
     "shop": "Virtual Shop",
     "shopManagement": "Shop Management",
@@ -2875,6 +2876,38 @@
       "Rookie": "Rookie",
       "Recruit": "Recruit",
       "Unknown": "Unknown"
+    }
+  },
+  "storefront": {
+    "featured": "Featured & Recommended",
+    "discounts": "Discounts & Events",
+    "viewAll": "View All",
+    "free": "Free",
+    "noItems": "No featured items yet.",
+    "adminTitle": "Featured Items",
+    "section": "Section",
+    "sourceType": "Source",
+    "badge": "Badge",
+    "badgeColor": "Badge Color",
+    "originalPrice": "Original Price",
+    "discountPrice": "Discount Price",
+    "linkUrl": "Link URL",
+    "imageUrl": "Image URL",
+    "addItem": "Add Featured Item",
+    "editItem": "Edit Featured Item",
+    "selectSourceItem": "Select Source Item",
+    "selectSourceItemHint": "Select an existing item to auto-fill fields...",
+    "loadingSourceItems": "Loading available items...",
+    "sections": {
+      "featured": "Featured",
+      "discount": "Discount",
+      "event": "Event"
+    },
+    "sources": {
+      "shop": "Shop",
+      "booster": "Booster Pack",
+      "marketplace": "Marketplace",
+      "custom": "Custom"
     }
   }
 }

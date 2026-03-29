@@ -111,9 +111,11 @@ export class MarketplaceService {
             });
         }
 
-        qb.orderBy("l.created_at", "DESC").skip(skip).take(limit);
+        const total = await qb.getCount();
 
-        const [listings, total] = await qb.getManyAndCount();
+        qb.orderBy("l.createdAt", "DESC").skip(skip).take(limit);
+
+        const listings = await qb.getMany();
         const data = await Promise.all(listings.map((l) => this.toListingDto(l)));
 
         return { data, total, page, limit };

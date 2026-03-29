@@ -282,6 +282,11 @@ export class AppMenu implements OnInit, OnDestroy {
                                   routerLink: ["/admin/slideshow"]
                               },
                               {
+                                  label: this.t("nav.featuredItems"),
+                                  icon: "pi pi-fw pi-star",
+                                  routerLink: ["/admin/featured"]
+                              },
+                              {
                                   label: this.t("nav.adminLogs"),
                                   icon: "pi pi-fw pi-list-check",
                                   routerLink: ["/admin/logs"]

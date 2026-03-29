@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 
+import { StorefrontWidget } from "../../../core/components/storefront-widget/storefront-widget";
 import { TeaserSlideshowComponent } from "../../../core/components/teaser-slideshow/teaser-slideshow";
 import { DashboardFacade } from "../../../facade/dashboard/dashboard-facade";
 import { ActiveForumsWidget } from "./components/active-forums-widget";
@@ -18,6 +19,7 @@ import { WeatherWidget } from "./components/weather-widget";
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        StorefrontWidget,
         TeaserSlideshowComponent,
         ActiveForumsWidget,
         ActivityFeedWidget,
@@ -50,6 +52,7 @@ import { WeatherWidget } from "./components/weather-widget";
     `,
     template: `
         <app-teaser-slideshow />
+        <app-storefront-widget class="mt-6" />
 
         <div class="mt-6 grid grid-cols-12 gap-6">
             <!-- Main (8 cols on xl) -->
