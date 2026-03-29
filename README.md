@@ -20,6 +20,8 @@
   - [Lotto](#lotto)
   - [Trading Card Game (TCG)](#trading-card-game-tcg)
   - [Dynamic Market](#dynamic-market)
+  - [Tickets & Project Management](#tickets--project-management)
+  - [Clans / Teams](#clans--teams)
   - [Friends](#friends)
   - [Calendar](#calendar)
   - [Messages](#messages)
@@ -37,6 +39,8 @@
   - [Gamification Settings](#gamification-settings)
   - [Feed Management](#feed-management)
   - [Shop Management](#shop-management)
+  - [Ticket Administration](#ticket-administration)
+  - [Clan Administration](#clan-administration)
   - [Slideshow](#slideshow)
   - [Admin Overview](#admin-overview)
 - [Development Setup](#development-setup)
@@ -62,6 +66,8 @@ Aniverse is designed as a complete community hub. Every feature is built around 
 - **Gamification** — XP system, levels, and achievements for participation
 - **Coin Economy** — Earn and spend virtual coins across the platform
 - **Trading Card Game** — Booster packs, collectible cards, and trading
+- **Ticket System** — Jira-like project management with Kanban boards, sprints, workflows, and reporting
+- **Clans/Teams** — Self-managed community groups with membership, pages, and custom roles
 - **Friends** — Social connections with friend requests and status tracking
 - **Real-time Push** — WebSocket-based notifications via Socket.IO
 - **Community Bot** — Automate greetings, re-engagement messages, and announcements
@@ -89,8 +95,10 @@ The sidebar on the left contains the main navigation grouped into three sections
 
 | Section | Contents |
 |---------|----------|
-| **Community** | Feed, Dashboard, Forum, Messages, Blog, Gallery, Calendar, Lotto, Shop, Marketplace, Link Database |
+| **Community** | Feed, Dashboard, Forum, Blog, Gallery, Calendar, Messages, Friends, Clans, Link Database |
+| **Tickets** | All Tickets, Board, Backlog, Roadmap, Reports |
 | **Anime** | Top List, Anime Database, My List |
+| **Gamification** | Achievements, Shop, Lotto, TCG, Dynamic Market, Marketplace |
 | **Admin** | All administrative tools (only visible to Admin group members) |
 
 The sidebar can be collapsed to maximize content space. Your active language and dark/light mode preferences are persisted across sessions.
@@ -410,6 +418,133 @@ The TCG module brings a collectible card game experience to the platform.
 **Route:** `/dynamic-market`
 
 An economy simulation feature where item prices fluctuate based on supply and demand, creating a dynamic trading experience for community members.
+
+---
+
+### Tickets & Project Management
+
+**Route:** `/tickets`
+
+A full-featured Jira-like project management system for tracking issues, sprints, and team work.
+
+#### Issue Types
+
+Tickets support a hierarchy of issue types inspired by Jira:
+
+- **Epic** — Large initiative containing multiple Stories
+- **Story** — User requirement or feature
+- **Task** — General work item
+- **Bug** — Defect report
+- **Sub-Task** — Child of any issue type
+
+#### Ticket Features
+
+- **Issue hierarchy** — Parent-child relationships between tickets (Epic > Story > Sub-Task)
+- **Issue links** — Link related tickets: Blocks, Blocked by, Relates to, Duplicates
+- **Story Points** — Estimate effort per ticket
+- **Assignee & Reporter** — Assign tickets to team members with searchable dropdown
+- **Labels, Categories, Projects** — Organize tickets flexibly
+- **Custom Fields** — JSONB-based extensible fields
+- **Activity Log** — Full audit trail of all changes
+- **Comments** — Threaded discussion with internal notes (staff-only)
+- **Watchers** — Subscribe to ticket updates
+- **Attachments** — File references per ticket
+- **Time Tracking** — Log work, track estimated vs. actual time
+- **Rating** — Rate support quality on resolved tickets
+
+#### Kanban Board
+
+**Route:** `/board/:projectId`
+
+Drag-and-drop board with columns defined by project workflows:
+- Filter by assignee, priority, type, or search
+- Quick-create tickets directly in columns
+- Cards show type icon, priority color, story points, assignee avatar
+
+#### Backlog & Sprints
+
+**Route:** `/backlog/:projectId`
+
+- Create sprints with name, goal, and date range
+- Drag tickets between backlog and sprints
+- Start/complete sprints — incomplete tickets return to backlog
+- Sprint progress bar with story point tracking
+
+#### Workflows
+
+Customizable per-project workflows define the lifecycle of tickets:
+- Create statuses with name, color, and category (To Do / In Progress / Done)
+- Define allowed transitions between statuses
+- Default workflow: To Do > In Progress > Review > Done
+
+#### Roadmap
+
+**Route:** `/roadmap/:projectId`
+
+Visual timeline of Epics with:
+- Monthly grid with horizontal bars showing Epic duration
+- Color-coded by status (grey=todo, yellow=in-progress, green=done)
+- Progress percentage from child ticket completion
+
+#### Reports
+
+**Route:** `/reports/:projectId`
+
+- **Burndown Chart** — Story points remaining vs. ideal line per sprint
+- **Velocity Chart** — Completed vs. committed points across sprints
+- **Sprint Report** — Completed/incomplete items, mid-sprint additions
+- **SLA Tracking** — First response and resolution time monitoring
+
+---
+
+### Clans / Teams
+
+**Route:** `/clans`
+
+A self-managed community group system that lets members create and run their own clans, teams, or interest groups.
+
+#### Creating a Clan
+
+1. Navigate to `/clans/create`
+2. Choose a **name**, **tag** (short abbreviation with customizable color), and **description**
+3. Select a **category** and **join type**
+4. Submit — you become the clan owner automatically
+
+#### Join Types
+
+| Type | How it works |
+|------|-------------|
+| **Open** | Anyone can join instantly |
+| **Invite Only** | Only clan admins/owners can send invitations |
+| **Application** | Members submit an application that must be approved |
+| **Moderated** | Only the clan can add members directly |
+
+#### Clan Profile
+
+Each clan has a public profile page (`/clans/:id`) with:
+- **Banner & Avatar** — Visual clan identity
+- **Clan Tag** — Colored tag with custom brackets (e.g., `[TAG]`)
+- **Overview Tab** — Description and custom fields
+- **Members Tab** — Member list with role badges
+- **Pages Tab** — Custom content pages created by clan admins
+- **Comments Tab** — Public comment wall
+
+#### Membership Roles
+
+| Role | Permissions |
+|------|------------|
+| **Owner** | Full control, can disband clan, manage all settings |
+| **Admin** | Manage members, accept applications, edit settings |
+| **Moderator** | Manage comments and pages |
+| **Member** | Participate in clan activities |
+
+#### Clan Settings
+
+Owners and admins can configure (`/clans/:id/settings`):
+- Clan name, tag, tag color, description
+- Join type and application template
+- Visibility toggles: show activity, show members, show comments
+- Danger zone: disband the clan
 
 ---
 
@@ -769,6 +904,32 @@ Configure XP rewards:
 - Configure stock: unlimited or limited quantity
 - Set maximum purchases per user
 - Enable/disable items without deleting them
+
+---
+
+### Ticket Administration
+
+**Route:** `/admin/tickets`
+
+Manage the ticket system infrastructure:
+
+- **Categories** — Create and manage ticket categories with icons and colors
+- **Labels** — Create color-coded labels for ticket tagging
+- **Projects** — Create projects with status, date ranges, and workflow assignment
+- **Workflows** — Create and edit workflow definitions:
+  - Define statuses (name, color, category: To Do/In Progress/Done)
+  - Configure allowed transitions between statuses
+  - Seed a default workflow (To Do > In Progress > Review > Done)
+- **SLA Configuration** — Set first-response and resolution time targets per priority level
+
+---
+
+### Clan Administration
+
+**Route:** `/admin/clans`
+
+- **Categories** — Create and manage clan categories
+- **Clan Moderation** — View all clans, activate/deactivate/disband clans
 
 ---
 

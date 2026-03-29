@@ -1,0 +1,118 @@
+<div class="flex flex-col gap-8 p-6" *transloco="let t">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl font-black tracking-wider">{{ t('bounty.title') }}</h1>
+        <p class="text-surface-500 mt-1">{{ t('bounty.subtitle') }}</p>
+    </div>
+
+    <!-- My Wanted Poster -->
+    @if (facade.myPoster(); as my) {
+    <div class="flex flex-col items-center gap-4">
+        <h2 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">{{ t('bounty.myPoster') }}</h2>
+        <wanted-poster [poster]="my" />
+
+        <!-- Breakdown -->
+        <div class="surface-card grid max-w-lg grid-cols-3 gap-3 rounded-xl p-4 shadow sm:grid-cols-4">
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.coins') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.coins) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.xp') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.xp) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.posts') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.posts) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.threads') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.threads) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.reactions') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.reactions) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.achievements') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.achievements) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.blog') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.blog) }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-surface-400 text-xs">{{ t('bounty.factors.lexicon') }}</div>
+                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.lexicon) }}</div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Leaderboard -->
+    <div>
+        <h2 class="text-surface-900 dark:text-surface-0 mb-6 text-center text-xl font-bold">{{ t('bounty.leaderboard') }}</h2>
+
+        @if (facade.loading()) {
+        <div class="flex flex-wrap justify-center gap-6">
+            @for (_ of [1,2,3,4,5,6]; track $index) {
+            <p-skeleton width="280px" height="420px" />
+            }
+        </div>
+        } @else {
+        <!-- Top 3 featured posters -->
+        @if (facade.leaderboard().length >= 3) {
+        <div class="mb-8 flex flex-wrap items-end justify-center gap-6">
+            <!-- #2 -->
+            <div class="opacity-90">
+                <wanted-poster [poster]="facade.leaderboard()[1]" />
+            </div>
+            <!-- #1 (featured, larger) -->
+            <div class="scale-110 transform">
+                <wanted-poster [poster]="facade.leaderboard()[0]" />
+            </div>
+            <!-- #3 -->
+            <div class="opacity-90">
+                <wanted-poster [poster]="facade.leaderboard()[2]" />
+            </div>
+        </div>
+        }
+
+        <!-- Rest of leaderboard as table -->
+        @if (facade.leaderboard().length > 3) {
+        <div class="surface-card mx-auto max-w-3xl rounded-xl shadow">
+            <div class="flex flex-col">
+                @for (poster of facade.leaderboard().slice(3); track poster.userId; let i = $index) {
+                <div class="border-surface-100 dark:border-surface-800 flex items-center gap-4 border-b p-4 last:border-b-0">
+                    <span class="text-surface-400 w-8 text-center font-mono text-lg font-bold">{{ i + 4 }}</span>
+                    @if (poster.avatarUrl) {
+                    <img [src]="poster.avatarUrl" [alt]="poster.displayName" class="h-10 w-10 rounded-full object-cover" />
+                    } @else {
+                    <div class="bg-primary/20 text-primary flex h-10 w-10 items-center justify-center rounded-full font-bold">
+                        {{ poster.displayName.charAt(0) }}
+                    </div>
+                    }
+                    <div class="flex-1">
+                        <a [routerLink]="['/users', poster.userId]" class="text-surface-900 dark:text-surface-0 font-semibold hover:underline">{{ poster.displayName }}</a>
+                        <div class="text-surface-400 text-xs italic">"{{ poster.epithet }}"</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-surface-900 dark:text-surface-0 font-mono text-lg font-bold">
+                            <span class="text-surface-400 text-sm line-through">B</span> {{ poster.bounty | number }}
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        @if (facade.leaderboard().length === 0) {
+        <div class="surface-card rounded-xl p-8 text-center shadow">
+            <i class="pi pi-map text-surface-300 mb-3 text-4xl"></i>
+            <p class="text-surface-400">{{ t('bounty.noBounties') }}</p>
+        </div>
+        }
+        }
+    </div>
+</div>

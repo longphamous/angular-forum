@@ -108,6 +108,13 @@ export const routes: Routes = [
                 loadComponent: () => import("./features/pages/profile/profile-page").then((c) => c.ProfilePage)
             },
             {
+                path: "wanted",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/bounty/bounty-page").then((c) => c.BountyPage)
+            },
+            {
                 path: "tickets",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],

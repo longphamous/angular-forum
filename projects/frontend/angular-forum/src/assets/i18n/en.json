@@ -147,7 +147,8 @@
     "ticketManagement": "Ticket Management",
     "mediaManagement": "Media Management",
     "clans": "Clans",
-    "clanManagement": "Clan Management"
+    "clanManagement": "Clan Management",
+    "wanted": "Wanted"
   },
   "login": {
     "title": "Welcome back",
@@ -2827,5 +2828,39 @@
     "addCategory": "Add Category",
     "editCategory": "Edit Category",
     "noCategories": "No categories yet."
+  },
+  "bounty": {
+    "title": "WANTED",
+    "subtitle": "The most wanted members of our community",
+    "myPoster": "Your Wanted Poster",
+    "leaderboard": "Bounty Leaderboard",
+    "noBounties": "No bounties calculated yet. Check back later!",
+    "rank": "Rank",
+    "epithet": "Epithet",
+    "totalBounty": "Total Bounty",
+    "factors": {
+      "coins": "Coins",
+      "xp": "XP",
+      "posts": "Posts",
+      "threads": "Threads",
+      "reactions": "Reactions",
+      "achievements": "Achievements",
+      "blog": "Blog",
+      "lexicon": "Lexicon",
+      "gallery": "Gallery",
+      "clans": "Clans",
+      "tickets": "Tickets"
+    },
+    "epithets": {
+      "Emperor": "Emperor",
+      "Warlord": "Warlord",
+      "Supernova": "Supernova",
+      "Captain": "Captain",
+      "Commander": "Commander",
+      "Fighter": "Fighter",
+      "Rookie": "Rookie",
+      "Recruit": "Recruit",
+      "Unknown": "Unknown"
+    }
   }
 }

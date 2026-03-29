@@ -147,7 +147,8 @@
     "ticketManagement": "Ticketverwaltung",
     "mediaManagement": "Medienverwaltung",
     "clans": "Clans",
-    "clanManagement": "Clan-Verwaltung"
+    "clanManagement": "Clan-Verwaltung",
+    "wanted": "Steckbrief"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -2827,5 +2828,39 @@
     "addCategory": "Kategorie hinzufügen",
     "editCategory": "Kategorie bearbeiten",
     "noCategories": "Noch keine Kategorien."
+  },
+  "bounty": {
+    "title": "WANTED",
+    "subtitle": "Die meistgesuchten Mitglieder unserer Community",
+    "myPoster": "Dein Steckbrief",
+    "leaderboard": "Kopfgeld-Rangliste",
+    "noBounties": "Noch keine Kopfgelder berechnet. Schau später nochmal vorbei!",
+    "rank": "Rang",
+    "epithet": "Beiname",
+    "totalBounty": "Gesamtes Kopfgeld",
+    "factors": {
+      "coins": "Münzen",
+      "xp": "EP",
+      "posts": "Beiträge",
+      "threads": "Themen",
+      "reactions": "Reaktionen",
+      "achievements": "Erfolge",
+      "blog": "Blog",
+      "lexicon": "Lexikon",
+      "gallery": "Galerie",
+      "clans": "Clans",
+      "tickets": "Tickets"
+    },
+    "epithets": {
+      "Emperor": "Kaiser",
+      "Warlord": "Samurai der Meere",
+      "Supernova": "Supernova",
+      "Captain": "Kapitän",
+      "Commander": "Kommandant",
+      "Fighter": "Kämpfer",
+      "Rookie": "Rookie",
+      "Recruit": "Rekrut",
+      "Unknown": "Unbekannt"
+    }
   }
 }

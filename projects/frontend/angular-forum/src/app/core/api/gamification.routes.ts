@@ -5,5 +5,11 @@ export const GAMIFICATION_ROUTES = {
         list: () => "/gamification/config",
         update: (eventType: string) => `/gamification/config/${eventType}`
     },
-    recalculate: () => "/gamification/recalculate"
+    recalculate: () => "/gamification/recalculate",
+    bounty: {
+        leaderboard: () => "/bounty/leaderboard",
+        me: () => "/bounty/me",
+        user: (userId: string) => `/bounty/${userId}`,
+        recalculate: () => "/bounty/recalculate"
+    }
 } as const;

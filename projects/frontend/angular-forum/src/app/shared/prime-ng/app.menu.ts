@@ -102,6 +102,7 @@ export class AppMenu implements OnInit, OnDestroy {
             {
                 label: this.t("nav.gamificationSection"),
                 items: [
+                    { label: this.t("nav.wanted"), icon: "pi pi-fw pi-flag", routerLink: ["/wanted"] },
                     {
                         label: this.t("nav.achievements"),
                         icon: "pi pi-fw pi-trophy",
