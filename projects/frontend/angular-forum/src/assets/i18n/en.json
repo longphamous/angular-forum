@@ -145,7 +145,9 @@
     "ticketRoadmap": "Roadmap",
     "ticketReports": "Reports",
     "ticketManagement": "Ticket Management",
-    "mediaManagement": "Media Management"
+    "mediaManagement": "Media Management",
+    "clans": "Clans",
+    "clanManagement": "Clan Management"
   },
   "login": {
     "title": "Welcome back",
@@ -2230,9 +2232,15 @@
     "title": "Tickets",
     "subtitle": "Create and track support requests, bug reports, and tasks",
     "projectNav": "Projects",
+    "selectProjectHint": "Select a project to continue.",
+    "noProjects": "No projects found. Create a project in the admin area first.",
+    "goToAdmin": "Go to Admin",
     "createTicket": "Create Ticket",
     "backToList": "Back to tickets",
     "searchPlaceholder": "Search tickets...",
+    "myTickets": "My Tickets",
+    "filterProject": "Project",
+    "selectProject": "Select project",
     "search": "Search",
     "filterAll": "All",
     "noTickets": "No tickets found.",
@@ -2315,8 +2323,11 @@
       "blockedBy": "Blocked by",
       "relatesTo": "Relates to",
       "duplicates": "Duplicates",
-      "noLinks": "No linked issues."
+      "noLinks": "No linked issues.",
+      "searchTicket": "Search for a ticket...",
+      "typeToSearch": "Type to search tickets"
     },
+    "clickToEdit": "Click to edit",
     "activity": {
       "title": "Activity",
       "created": "created this issue",
@@ -2331,7 +2342,9 @@
       "title": "Board",
       "noCards": "No items",
       "noProject": "Select a project to view its board.",
-      "moveCard": "Move"
+      "moveCard": "Move",
+      "addCard": "Add ticket",
+      "quickCreatePlaceholder": "What needs to be done?"
     },
     "workflow": {
       "title": "Workflows",
@@ -2344,6 +2357,7 @@
       "statusSlug": "Slug",
       "statusColor": "Color",
       "statusCategory": "Category",
+      "addStatus": "Add Status",
       "categories": {
         "todo": "To Do",
         "inProgress": "In Progress",
@@ -2423,6 +2437,7 @@
     "roadmap": {
       "title": "Roadmap",
       "noEpics": "No epics found. Create epics to see your roadmap.",
+      "epics": "Epics",
       "start": "Start",
       "due": "Due"
     },
@@ -2739,5 +2754,78 @@
       "saved": "Storage configuration saved.",
       "saveFailed": "Failed to save storage configuration."
     }
+  },
+  "clans": {
+    "title": "Clans",
+    "subtitle": "Find and join clans or create your own",
+    "createClan": "Create Clan",
+    "myClan": "My Clans",
+    "search": "Search clans...",
+    "noClans": "No clans found.",
+    "members": "Members",
+    "member": "Member",
+    "pages": "Pages",
+    "comments": "Comments",
+    "overview": "Overview",
+    "settings": "Settings",
+    "joinClan": "Join",
+    "leaveClan": "Leave",
+    "inviteMember": "Invite Member",
+    "applications": "Applications",
+    "accept": "Accept",
+    "decline": "Decline",
+    "kick": "Kick",
+    "promote": "Promote",
+    "noMembers": "No members.",
+    "noApplications": "No pending applications.",
+    "noPages": "No pages yet.",
+    "noComments": "No comments yet.",
+    "commentPlaceholder": "Write a comment...",
+    "submitComment": "Send",
+    "fieldName": "Clan Name",
+    "fieldTag": "Clan Tag",
+    "fieldTagColor": "Tag Color",
+    "fieldDescription": "Description",
+    "fieldCategory": "Category",
+    "fieldJoinType": "Join Type",
+    "fieldApplicationTemplate": "Application Template",
+    "joinTypes": {
+      "open": "Open",
+      "invite": "Invite Only",
+      "application": "Application Required",
+      "moderated": "Moderated"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "moderator": "Moderator",
+      "member": "Member"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "disbanded": "Disbanded"
+    },
+    "showActivity": "Show Activity",
+    "showMembers": "Show Members",
+    "showComments": "Show Comments",
+    "disbandClan": "Disband Clan",
+    "disbandConfirm": "Are you sure you want to disband this clan? This cannot be undone.",
+    "saved": "Saved",
+    "created": "Clan created",
+    "joined": "Joined clan",
+    "left": "Left clan",
+    "invited": "Invitation sent",
+    "applicationSent": "Application sent",
+    "accepted": "Application accepted",
+    "declined": "Application declined",
+    "kicked": "Member kicked",
+    "selectCategory": "Select category",
+    "dangerZone": "Danger Zone",
+    "adminTitle": "Clan Management",
+    "adminSubtitle": "Manage clan categories and moderate clans",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "noCategories": "No categories yet."
   }
 }

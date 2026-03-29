@@ -1,0 +1,131 @@
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
+    <p-toast />
+    <p-confirmDialog />
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('clans.adminTitle') }}</h2>
+            <p class="text-surface-500 mt-1">{{ t('clans.adminSubtitle') }}</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="surface-card rounded-xl shadow">
+        <p-tabs [(value)]="activeTab">
+            <p-tablist>
+                <p-tab value="0">{{ t('clans.fieldCategory') }}</p-tab>
+                <p-tab value="1">{{ t('clans.title') }}</p-tab>
+            </p-tablist>
+
+            <p-tabpanels>
+                <!-- Categories -->
+                <p-tabpanel value="0">
+                    <div class="p-4">
+                        <div class="mb-4 flex justify-end">
+                            <p-button [label]="t('clans.addCategory')" (onClick)="openCategoryDialog()" icon="pi pi-plus" size="small" />
+                        </div>
+                        <p-table [value]="facade.categories()" styleClass="p-datatable-sm p-datatable-striped">
+                            <ng-template #header>
+                                <tr>
+                                    <th>{{ t('common.name') }}</th>
+                                    <th>{{ t('common.description') }}</th>
+                                    <th class="w-24">{{ t('common.position') }}</th>
+                                    <th class="w-24">{{ t('common.status') }}</th>
+                                    <th class="w-32">{{ t('common.actions') }}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-cat>
+                                <tr>
+                                    <td class="font-medium">
+                                        @if (cat.icon) { <i [class]="cat.icon + ' mr-2'"></i> }
+                                        {{ cat.name }}
+                                    </td>
+                                    <td class="text-surface-500 text-sm">{{ cat.description ?? '—' }}</td>
+                                    <td>{{ cat.position }}</td>
+                                    <td>
+                                        <p-tag [severity]="cat.isActive ? 'success' : 'secondary'" [value]="cat.isActive ? t('common.active') : t('common.inactive')" />
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <button (click)="openCategoryDialog(cat)" pButton text rounded size="small" icon="pi pi-pencil"></button>
+                                            <button (click)="deleteCategory(cat)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template #emptymessage>
+                                <tr><td colspan="5" class="text-center">{{ t('clans.noCategories') }}</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Clan Moderation List -->
+                <p-tabpanel value="1">
+                    <div class="p-4">
+                        <p-table [value]="facade.clans()" styleClass="p-datatable-sm p-datatable-striped">
+                            <ng-template #header>
+                                <tr>
+                                    <th>{{ t('clans.fieldName') }}</th>
+                                    <th class="w-24">{{ t('clans.fieldTag') }}</th>
+                                    <th class="w-28">{{ t('clans.members') }}</th>
+                                    <th class="w-32">{{ t('clans.fieldJoinType') }}</th>
+                                    <th class="w-28">{{ t('common.status') }}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-clan>
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">{{ clan.name }}</div>
+                                        @if (clan.ownerName) {
+                                        <div class="text-surface-400 text-xs">{{ clan.ownerName }}</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (clan.tag) {
+                                        <span class="rounded px-1.5 py-0.5 text-xs font-bold text-white" [style.background-color]="clan.tagColor ?? '#6366f1'">{{ clan.tag }}</span>
+                                        } @else { — }
+                                    </td>
+                                    <td>{{ clan.memberCount }}</td>
+                                    <td>
+                                        <p-tag [severity]="joinTypeSeverity(clan.joinType)" [value]="t('clans.joinTypes.' + clan.joinType)" styleClass="text-xs" />
+                                    </td>
+                                    <td>
+                                        <p-tag [severity]="statusSeverity(clan.status)" [value]="t('clans.status.' + clan.status)" styleClass="text-xs" />
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template #emptymessage>
+                                <tr><td colspan="5" class="text-center">{{ t('clans.noClans') }}</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
+    </div>
+
+    <!-- Category Dialog -->
+    <p-dialog [(visible)]="catDialogVisible" [header]="catEditId() ? t('clans.editCategory') : t('clans.addCategory')" [modal]="true" [style]="{ width: '450px' }">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('common.name') }}</label>
+                <input [ngModel]="catName()" (ngModelChange)="catName.set($event)" pInputText type="text" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('common.description') }}</label>
+                <textarea [ngModel]="catDescription()" (ngModelChange)="catDescription.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">Icon</label>
+                <input [ngModel]="catIcon()" (ngModelChange)="catIcon.set($event)" pInputText placeholder="pi pi-tag" type="text" />
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="catDialogVisible.set(false)" severity="secondary" text />
+                <p-button [disabled]="!catName()" [label]="t('common.button.save')" (onClick)="saveCategory()" icon="pi pi-check" />
+            </div>
+        </ng-template>
+    </p-dialog>
+</div>

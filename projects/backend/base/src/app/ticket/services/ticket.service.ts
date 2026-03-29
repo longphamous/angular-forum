@@ -428,25 +428,26 @@ export class TicketService {
 
     private applySorting(qb: SelectQueryBuilder<TicketEntity>, query: TicketQueryDto): void {
         const dir = query.sortOrder === "ASC" ? "ASC" : "DESC";
-        // Always show pinned first, then apply requested sort.
-        // Use raw orderBy to avoid TypeORM's getManyAndCount metadata resolution crash.
+        // Use Entity property names (camelCase), NOT database column names (snake_case).
+        // TypeORM's getMany() validates ORDER BY against entity metadata and crashes with snake_case.
+        qb.orderBy("t.isPinned", "DESC");
+
         switch (query.sortBy) {
             case "priority":
-                // Sort by priority field directly (alphabetical: critical < high < low < normal)
-                // For correct severity order, the raw SQL uses quoted identifiers
-                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.priority", dir);
+                qb.addOrderBy("t.priority", dir);
                 break;
             case "ticketNumber":
-                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.ticket_number", dir);
+                qb.addOrderBy("t.ticketNumber", dir);
                 break;
             case "title":
-                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.title", dir);
+                qb.addOrderBy("t.title", dir);
                 break;
             case "dueDate":
-                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.due_date", dir, "NULLS LAST");
+                qb.addOrderBy("t.dueDate", dir, "NULLS LAST");
                 break;
+            case "createdAt":
             default:
-                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.created_at", dir);
+                qb.addOrderBy("t.createdAt", dir);
         }
     }
 

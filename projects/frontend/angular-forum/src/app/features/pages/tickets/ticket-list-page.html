@@ -64,49 +64,70 @@
 
     <!-- Filters -->
     <div class="surface-card rounded-xl p-4 shadow">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <input
-                class="flex-1"
-                [ngModel]="searchQuery()"
-                [placeholder]="t('tickets.searchPlaceholder')"
-                (ngModelChange)="searchQuery.set($event)"
-                (keyup.enter)="onFilterChange()"
-                pInputText
-                type="text"
-            />
-            <p-select
-                [ngModel]="filterStatus()"
-                [options]="statusOptions()"
-                (ngModelChange)="filterStatus.set($event); onFilterChange()"
-                [placeholder]="t('tickets.status.label')"
-                optionLabel="label"
-                optionValue="value"
-                styleClass="w-44"
-            />
-            <p-select
-                [ngModel]="filterPriority()"
-                [options]="priorityOptions()"
-                (ngModelChange)="filterPriority.set($event); onFilterChange()"
-                [placeholder]="t('tickets.priority.label')"
-                optionLabel="label"
-                optionValue="value"
-                styleClass="w-44"
-            />
-            <p-select
-                [ngModel]="filterType()"
-                [options]="typeFilterOptions()"
-                (ngModelChange)="filterType.set($event); onFilterChange()"
-                [placeholder]="t('tickets.type.label')"
-                optionLabel="label"
-                optionValue="value"
-                styleClass="w-44"
-            />
-            <p-button
-                [label]="t('tickets.search')"
-                (onClick)="onFilterChange()"
-                icon="pi pi-search"
-                severity="secondary"
-            />
+        <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <input
+                    class="flex-1"
+                    [ngModel]="searchQuery()"
+                    [placeholder]="t('tickets.searchPlaceholder')"
+                    (ngModelChange)="searchQuery.set($event)"
+                    (keyup.enter)="onFilterChange()"
+                    pInputText
+                    type="text"
+                />
+                <p-button
+                    [label]="t('tickets.myTickets')"
+                    (onClick)="toggleMyTickets()"
+                    [icon]="filterMyTickets() ? 'pi pi-user-check' : 'pi pi-user'"
+                    [severity]="filterMyTickets() ? 'primary' : 'secondary'"
+                    [outlined]="!filterMyTickets()"
+                    size="small"
+                />
+                <p-button
+                    icon="pi pi-search"
+                    (onClick)="onFilterChange()"
+                    severity="secondary"
+                />
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <p-select
+                    [ngModel]="filterProject()"
+                    [options]="facade.projects()"
+                    (ngModelChange)="filterProject.set($event); onFilterChange()"
+                    [placeholder]="t('tickets.filterProject')"
+                    optionLabel="name"
+                    optionValue="id"
+                    [showClear]="true"
+                    styleClass="w-44"
+                />
+                <p-select
+                    [ngModel]="filterStatus()"
+                    [options]="statusOptions()"
+                    (ngModelChange)="filterStatus.set($event); onFilterChange()"
+                    [placeholder]="t('tickets.status.label')"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-40"
+                />
+                <p-select
+                    [ngModel]="filterPriority()"
+                    [options]="priorityOptions()"
+                    (ngModelChange)="filterPriority.set($event); onFilterChange()"
+                    [placeholder]="t('tickets.priority.label')"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-40"
+                />
+                <p-select
+                    [ngModel]="filterType()"
+                    [options]="typeFilterOptions()"
+                    (ngModelChange)="filterType.set($event); onFilterChange()"
+                    [placeholder]="t('tickets.type.label')"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-40"
+                />
+            </div>
         </div>
     </div>
 
@@ -122,12 +143,20 @@
         <p-table [value]="facade.tickets()" styleClass="p-datatable-sm p-datatable-striped">
             <ng-template #header>
                 <tr>
-                    <th class="w-20">#</th>
-                    <th>{{ t('tickets.columnTitle') }}</th>
+                    <th class="w-20 cursor-pointer" (click)="onSort('ticketNumber')">
+                        # <i class="pi text-xs" [class]="sortField() === 'ticketNumber' ? (sortOrder() === 'ASC' ? 'pi-sort-up' : 'pi-sort-down') : 'pi-sort'"></i>
+                    </th>
+                    <th class="cursor-pointer" (click)="onSort('title')">
+                        {{ t('tickets.columnTitle') }} <i class="pi text-xs" [class]="sortField() === 'title' ? (sortOrder() === 'ASC' ? 'pi-sort-up' : 'pi-sort-down') : 'pi-sort'"></i>
+                    </th>
                     <th class="w-32">{{ t('tickets.status.label') }}</th>
-                    <th class="w-28">{{ t('tickets.priority.label') }}</th>
+                    <th class="w-28 cursor-pointer" (click)="onSort('priority')">
+                        {{ t('tickets.priority.label') }} <i class="pi text-xs" [class]="sortField() === 'priority' ? (sortOrder() === 'ASC' ? 'pi-sort-up' : 'pi-sort-down') : 'pi-sort'"></i>
+                    </th>
                     <th class="w-36">{{ t('tickets.columnAssignee') }}</th>
-                    <th class="w-36">{{ t('tickets.columnCreated') }}</th>
+                    <th class="w-36 cursor-pointer" (click)="onSort('createdAt')">
+                        {{ t('tickets.columnCreated') }} <i class="pi text-xs" [class]="sortField() === 'createdAt' ? (sortOrder() === 'ASC' ? 'pi-sort-up' : 'pi-sort-down') : 'pi-sort'"></i>
+                    </th>
                 </tr>
             </ng-template>
             <ng-template #body let-ticket>
@@ -233,19 +262,33 @@
                     />
                 </div>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.fieldAssignee') }}</label>
-                <p-select
-                    [ngModel]="createAssigneeId()"
-                    [options]="facade.assignableUsers()"
-                    (ngModelChange)="createAssigneeId.set($event)"
-                    optionLabel="displayName"
-                    optionValue="id"
-                    [showClear]="true"
-                    [placeholder]="t('tickets.selectAssignee')"
-                    [filter]="true"
-                    filterBy="displayName"
-                />
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.filterProject') }}</label>
+                    <p-select
+                        [ngModel]="createProjectId()"
+                        [options]="facade.projects()"
+                        (ngModelChange)="createProjectId.set($event)"
+                        optionLabel="name"
+                        optionValue="id"
+                        [showClear]="true"
+                        [placeholder]="t('tickets.selectProject')"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.fieldAssignee') }}</label>
+                    <p-select
+                        [ngModel]="createAssigneeId()"
+                        [options]="facade.assignableUsers()"
+                        (ngModelChange)="createAssigneeId.set($event)"
+                        optionLabel="displayName"
+                        optionValue="id"
+                        [showClear]="true"
+                        [placeholder]="t('tickets.selectAssignee')"
+                        [filter]="true"
+                        filterBy="displayName"
+                    />
+                </div>
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.storyPoints') }}</label>

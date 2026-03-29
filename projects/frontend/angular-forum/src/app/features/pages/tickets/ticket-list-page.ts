@@ -50,9 +50,13 @@ export class TicketListPage implements OnInit {
     readonly filterStatus = signal<TicketStatus | "">("");
     readonly filterPriority = signal<TicketPriority | "">("");
     readonly filterType = signal<TicketType | "">("");
+    readonly filterProject = signal("");
+    readonly filterMyTickets = signal(false);
     readonly searchQuery = signal("");
     readonly page = signal(1);
     readonly limit = signal(20);
+    readonly sortField = signal("createdAt");
+    readonly sortOrder = signal<"ASC" | "DESC">("DESC");
 
     // Create dialog
     readonly createDialogVisible = signal(false);
@@ -62,6 +66,7 @@ export class TicketListPage implements OnInit {
     readonly createType = signal<TicketType>("task");
     readonly createCategoryId = signal<string | null>(null);
     readonly createAssigneeId = signal<string | null>(null);
+    readonly createProjectId = signal<string | null>(null);
     readonly createStoryPoints = signal<number | null>(null);
     readonly createSaving = signal(false);
 
@@ -115,13 +120,34 @@ export class TicketListPage implements OnInit {
     loadTickets(): void {
         const params: Record<string, string | number> = {
             page: this.page(),
-            limit: this.limit()
+            limit: this.limit(),
+            sortBy: this.sortField(),
+            sortOrder: this.sortOrder()
         };
         if (this.filterStatus()) params["status"] = this.filterStatus();
         if (this.filterPriority()) params["priority"] = this.filterPriority();
         if (this.filterType()) params["type"] = this.filterType();
+        if (this.filterProject()) params["projectId"] = this.filterProject();
+        if (this.filterMyTickets()) params["assigneeId"] = this.authFacade.currentUser()?.id ?? "";
         if (this.searchQuery()) params["search"] = this.searchQuery();
         this.facade.loadTickets(params);
+    }
+
+    onSort(field: string): void {
+        if (this.sortField() === field) {
+            this.sortOrder.set(this.sortOrder() === "ASC" ? "DESC" : "ASC");
+        } else {
+            this.sortField.set(field);
+            this.sortOrder.set("ASC");
+        }
+        this.page.set(1);
+        this.loadTickets();
+    }
+
+    toggleMyTickets(): void {
+        this.filterMyTickets.set(!this.filterMyTickets());
+        this.page.set(1);
+        this.loadTickets();
     }
 
     onPageChange(event: { first?: number; rows?: number }): void {
@@ -148,6 +174,7 @@ export class TicketListPage implements OnInit {
         this.createType.set("task");
         this.createCategoryId.set(null);
         this.createAssigneeId.set(null);
+        this.createProjectId.set(null);
         this.createStoryPoints.set(null);
         this.createDialogVisible.set(true);
     }
@@ -164,6 +191,7 @@ export class TicketListPage implements OnInit {
                 type: this.createType(),
                 categoryId: this.createCategoryId() ?? undefined,
                 assigneeId: this.createAssigneeId() ?? undefined,
+                projectId: this.createProjectId() ?? undefined,
                 storyPoints: this.createStoryPoints() ?? undefined
             })
             .subscribe({

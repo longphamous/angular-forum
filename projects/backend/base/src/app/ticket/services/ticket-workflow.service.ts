@@ -208,7 +208,7 @@ export class TicketWorkflowService {
         if (query.type) qb.andWhere("t.type = :type", { type: query.type });
         if (query.search) qb.andWhere("(t.title ILIKE :search OR t.description ILIKE :search)", { search: `%${query.search}%` });
 
-        qb.addOrderBy("t.is_pinned", "DESC").addOrderBy("t.created_at", "ASC");
+        qb.addOrderBy("t.isPinned", "DESC").addOrderBy("t.createdAt", "ASC");
 
         const tickets = await qb.getMany();
 

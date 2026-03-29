@@ -40,7 +40,13 @@ export type NotificationType =
     | "marketplace_offer_declined"
     // TCG
     | "tcg_trade_offer"
-    | "tcg_rare_pull";
+    | "tcg_rare_pull"
+    // Clans
+    | "clan_application_received"
+    | "clan_application_accepted"
+    | "clan_application_declined"
+    | "clan_invitation"
+    | "clan_member_kicked";
 
 @Entity("notifications")
 export class NotificationEntity {

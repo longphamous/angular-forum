@@ -11,6 +11,7 @@ import { AuthModule } from "./auth/auth.module";
 import { BlogModule } from "./blog/blog.module";
 import { CalendarModule } from "./calendar/calendar.module";
 import { ChronikModule } from "./chronik/chronik.module";
+import { ClanModule } from "./clan/clan.module";
 import { ClipsModule } from "./clips/clips.module";
 import { CommunityBotModule } from "./community-bot/community-bot.module";
 import { CreditModule } from "./credit/credit.module";
@@ -59,6 +60,7 @@ import { WeatherModule } from "./weather/weather.module";
         AnimeModule,
         AnimeListModule,
         ForumModule,
+        ClanModule,
         GroupModule,
         SlideshowModule,
         ShopModule,

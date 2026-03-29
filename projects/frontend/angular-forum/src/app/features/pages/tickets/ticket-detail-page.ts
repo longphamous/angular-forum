@@ -63,10 +63,15 @@ export class TicketDetailPage implements OnInit {
     readonly ratingValue = signal(5);
     readonly ratingComment = signal("");
 
+    // Title inline edit
+    readonly editingTitle = signal(false);
+    readonly editTitleValue = signal("");
+
     // Link dialog
     readonly linkDialogVisible = signal(false);
     readonly linkTargetId = signal("");
     readonly linkType = signal<TicketLinkType>("relates_to");
+    readonly linkSearchResults = signal<{ label: string; value: string }[]>([]);
 
     // Work log dialog
     readonly workLogDialogVisible = signal(false);
@@ -160,12 +165,58 @@ export class TicketDetailPage implements OnInit {
             });
     }
 
+    // ── Title Inline Edit ────────────────────────────────────────────────────
+
+    startEditTitle(currentTitle: string): void {
+        this.editTitleValue.set(currentTitle);
+        this.editingTitle.set(true);
+    }
+
+    saveTitle(): void {
+        const newTitle = this.editTitleValue().trim();
+        if (!newTitle || newTitle === this.facade.currentTicket()?.title) {
+            this.editingTitle.set(false);
+            return;
+        }
+        this.facade.updateTicket(this.ticketId, { title: newTitle }).subscribe({
+            next: () => {
+                this.editingTitle.set(false);
+                this.facade.loadActivity(this.ticketId);
+            }
+        });
+    }
+
     // ── Links ────────────────────────────────────────────────────────────────
 
     openLinkDialog(): void {
         this.linkTargetId.set("");
         this.linkType.set("relates_to");
+        this.linkSearchResults.set([]);
+        // Pre-load recent tickets for the dropdown
+        this.facade.loadTickets({ limit: 20 });
+        setTimeout(() => {
+            const tickets = this.facade.tickets();
+            this.linkSearchResults.set(
+                tickets
+                    .filter((t) => t.id !== this.ticketId)
+                    .map((t) => ({ label: `#${t.ticketNumber} ${t.title}`, value: t.id }))
+            );
+        }, 500);
         this.linkDialogVisible.set(true);
+    }
+
+    onLinkSearch(event: { filter: string }): void {
+        const query = event.filter?.trim();
+        if (!query || query.length < 2) return;
+        this.facade.loadTickets({ search: query, limit: 10 });
+        setTimeout(() => {
+            const tickets = this.facade.tickets();
+            this.linkSearchResults.set(
+                tickets
+                    .filter((t) => t.id !== this.ticketId)
+                    .map((t) => ({ label: `#${t.ticketNumber} ${t.title}`, value: t.id }))
+            );
+        }, 500);
     }
 
     submitLink(): void {

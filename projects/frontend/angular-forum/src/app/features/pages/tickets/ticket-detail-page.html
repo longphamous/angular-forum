@@ -50,7 +50,25 @@
                         <i class="pi pi-thumbtack text-orange-400" [pTooltip]="t('tickets.pinned')"></i>
                         }
                     </div>
-                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-xl font-bold">{{ ticket.title }}</h1>
+                    @if (editingTitle()) {
+                    <input
+                        [ngModel]="editTitleValue()"
+                        (ngModelChange)="editTitleValue.set($event)"
+                        (blur)="saveTitle()"
+                        (keyup.enter)="saveTitle()"
+                        (keyup.escape)="editingTitle.set(false)"
+                        pInputText
+                        type="text"
+                        class="text-surface-900 dark:text-surface-0 m-0 w-full text-xl font-bold"
+                        autofocus
+                    />
+                    } @else {
+                    <h1
+                        class="text-surface-900 dark:text-surface-0 m-0 cursor-pointer text-xl font-bold hover:bg-surface-100 dark:hover:bg-surface-800 rounded px-1 -mx-1 transition-colors"
+                        (click)="startEditTitle(ticket.title)"
+                        [pTooltip]="t('tickets.clickToEdit')"
+                    >{{ ticket.title }}</h1>
+                    }
                 </div>
                 <div class="flex gap-2">
                     <p-button
@@ -491,12 +509,17 @@
             </div>
             <div class="flex flex-col gap-1">
                 <label class="font-medium">{{ t('tickets.links.targetTicket') }}</label>
-                <input
+                <p-select
                     [ngModel]="linkTargetId()"
+                    [options]="linkSearchResults()"
                     (ngModelChange)="linkTargetId.set($event)"
-                    pInputText
-                    type="text"
-                    placeholder="Ticket ID"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    (onFilter)="onLinkSearch($event)"
+                    [placeholder]="t('tickets.links.searchTicket')"
+                    [emptyFilterMessage]="t('tickets.links.typeToSearch')"
                 />
             </div>
         </div>

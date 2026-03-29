@@ -122,6 +122,34 @@ export const routes: Routes = [
                     import("./features/pages/tickets/ticket-detail-page").then((c) => c.TicketDetailPage)
             },
             {
+                path: "board-select",
+                data: { requiredGroups: ["Registrierte Benutzer"], targetRoute: "board", pageTitle: "Board" },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/project-select/project-select").then((c) => c.ProjectSelect)
+            },
+            {
+                path: "backlog-select",
+                data: { requiredGroups: ["Registrierte Benutzer"], targetRoute: "backlog", pageTitle: "Backlog" },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/project-select/project-select").then((c) => c.ProjectSelect)
+            },
+            {
+                path: "roadmap-select",
+                data: { requiredGroups: ["Registrierte Benutzer"], targetRoute: "roadmap", pageTitle: "Roadmap" },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/project-select/project-select").then((c) => c.ProjectSelect)
+            },
+            {
+                path: "reports-select",
+                data: { requiredGroups: ["Registrierte Benutzer"], targetRoute: "reports", pageTitle: "Reports" },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/project-select/project-select").then((c) => c.ProjectSelect)
+            },
+            {
                 path: "board/:projectId",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
@@ -148,6 +176,34 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/pages/tickets/roadmap/roadmap-view").then((c) => c.RoadmapView)
+            },
+            {
+                path: "clans",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clans/clan-list-page").then((c) => c.ClanListPage)
+            },
+            {
+                path: "clans/create",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clans/clan-create-page").then((c) => c.ClanCreatePage)
+            },
+            {
+                path: "clans/:id/settings",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clans/clan-settings-page").then((c) => c.ClanSettingsPage)
+            },
+            {
+                path: "clans/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/clans/clan-detail-page").then((c) => c.ClanDetailPage)
             },
             { path: "admin", redirectTo: "admin/overview", pathMatch: "full" },
             {
@@ -519,6 +575,13 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/admin/admin-tickets/admin-tickets").then((c) => c.AdminTickets)
+            },
+            {
+                path: "admin/clans",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-clans/admin-clans").then((c) => c.AdminClans)
             }
         ]
     }

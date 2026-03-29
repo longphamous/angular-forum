@@ -145,7 +145,9 @@
     "ticketRoadmap": "Roadmap",
     "ticketReports": "Berichte",
     "ticketManagement": "Ticketverwaltung",
-    "mediaManagement": "Medienverwaltung"
+    "mediaManagement": "Medienverwaltung",
+    "clans": "Clans",
+    "clanManagement": "Clan-Verwaltung"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -2230,9 +2232,15 @@
     "title": "Tickets",
     "subtitle": "Erstelle und verfolge Supportanfragen, Fehlermeldungen und Aufgaben",
     "projectNav": "Projekte",
+    "selectProjectHint": "Wähle ein Projekt, um fortzufahren.",
+    "noProjects": "Keine Projekte gefunden. Erstelle zuerst ein Projekt im Adminbereich.",
+    "goToAdmin": "Zum Adminbereich",
     "createTicket": "Ticket erstellen",
     "backToList": "Zurück zu Tickets",
     "searchPlaceholder": "Tickets durchsuchen...",
+    "myTickets": "Meine Tickets",
+    "filterProject": "Projekt",
+    "selectProject": "Projekt auswählen",
     "search": "Suchen",
     "filterAll": "Alle",
     "noTickets": "Keine Tickets gefunden.",
@@ -2315,8 +2323,11 @@
       "blockedBy": "Blockiert von",
       "relatesTo": "Bezieht sich auf",
       "duplicates": "Duplikat von",
-      "noLinks": "Keine verknüpften Aufgaben."
+      "noLinks": "Keine verknüpften Aufgaben.",
+      "searchTicket": "Ticket suchen...",
+      "typeToSearch": "Eingeben zum Suchen"
     },
+    "clickToEdit": "Klicken zum Bearbeiten",
     "activity": {
       "title": "Aktivität",
       "created": "hat diese Aufgabe erstellt",
@@ -2331,7 +2342,9 @@
       "title": "Board",
       "noCards": "Keine Einträge",
       "noProject": "Wähle ein Projekt, um das Board anzuzeigen.",
-      "moveCard": "Verschieben"
+      "moveCard": "Verschieben",
+      "addCard": "Ticket hinzufügen",
+      "quickCreatePlaceholder": "Was muss erledigt werden?"
     },
     "workflow": {
       "title": "Workflows",
@@ -2344,6 +2357,7 @@
       "statusSlug": "Slug",
       "statusColor": "Farbe",
       "statusCategory": "Kategorie",
+      "addStatus": "Status hinzufügen",
       "categories": {
         "todo": "Zu erledigen",
         "inProgress": "In Bearbeitung",
@@ -2423,6 +2437,7 @@
     "roadmap": {
       "title": "Roadmap",
       "noEpics": "Keine Epics gefunden. Erstelle Epics, um deine Roadmap zu sehen.",
+      "epics": "Epics",
       "start": "Start",
       "due": "Fällig"
     },
@@ -2739,5 +2754,78 @@
       "saved": "Speicherkonfiguration gespeichert.",
       "saveFailed": "Speicherkonfiguration konnte nicht gespeichert werden."
     }
+  },
+  "clans": {
+    "title": "Clans",
+    "subtitle": "Finde und trete Clans bei oder erstelle deinen eigenen",
+    "createClan": "Clan erstellen",
+    "myClan": "Meine Clans",
+    "search": "Clans suchen...",
+    "noClans": "Keine Clans gefunden.",
+    "members": "Mitglieder",
+    "member": "Mitglied",
+    "pages": "Seiten",
+    "comments": "Kommentare",
+    "overview": "Übersicht",
+    "settings": "Einstellungen",
+    "joinClan": "Beitreten",
+    "leaveClan": "Verlassen",
+    "inviteMember": "Mitglied einladen",
+    "applications": "Bewerbungen",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "kick": "Entfernen",
+    "promote": "Befördern",
+    "noMembers": "Keine Mitglieder.",
+    "noApplications": "Keine offenen Bewerbungen.",
+    "noPages": "Noch keine Seiten.",
+    "noComments": "Noch keine Kommentare.",
+    "commentPlaceholder": "Kommentar schreiben...",
+    "submitComment": "Senden",
+    "fieldName": "Clan-Name",
+    "fieldTag": "Clan-Tag",
+    "fieldTagColor": "Tag-Farbe",
+    "fieldDescription": "Beschreibung",
+    "fieldCategory": "Kategorie",
+    "fieldJoinType": "Beitrittsart",
+    "fieldApplicationTemplate": "Bewerbungsvorlage",
+    "joinTypes": {
+      "open": "Offen",
+      "invite": "Nur mit Einladung",
+      "application": "Bewerbung erforderlich",
+      "moderated": "Moderiert"
+    },
+    "roles": {
+      "owner": "Besitzer",
+      "admin": "Admin",
+      "moderator": "Moderator",
+      "member": "Mitglied"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "disbanded": "Aufgelöst"
+    },
+    "showActivity": "Aktivität anzeigen",
+    "showMembers": "Mitglieder anzeigen",
+    "showComments": "Kommentare anzeigen",
+    "disbandClan": "Clan auflösen",
+    "disbandConfirm": "Bist du sicher, dass du diesen Clan auflösen möchtest? Dies kann nicht rückgängig gemacht werden.",
+    "saved": "Gespeichert",
+    "created": "Clan erstellt",
+    "joined": "Clan beigetreten",
+    "left": "Clan verlassen",
+    "invited": "Einladung gesendet",
+    "applicationSent": "Bewerbung gesendet",
+    "accepted": "Bewerbung angenommen",
+    "declined": "Bewerbung abgelehnt",
+    "kicked": "Mitglied entfernt",
+    "selectCategory": "Kategorie wählen",
+    "dangerZone": "Gefahrenzone",
+    "adminTitle": "Clan-Verwaltung",
+    "adminSubtitle": "Clan-Kategorien verwalten und Clans moderieren",
+    "addCategory": "Kategorie hinzufügen",
+    "editCategory": "Kategorie bearbeiten",
+    "noCategories": "Noch keine Kategorien."
   }
 }

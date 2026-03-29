@@ -58,6 +58,12 @@ export class BacklogView implements OnInit {
     readonly sprintName = signal("");
     readonly sprintGoal = signal("");
 
+    // Edit sprint dialog
+    readonly editSprintDialogVisible = signal(false);
+    readonly editSprintId = signal("");
+    readonly editSprintName = signal("");
+    readonly editSprintGoal = signal("");
+
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get("projectId") ?? "";
         this.projectId.set(id);
@@ -109,6 +115,26 @@ export class BacklogView implements OnInit {
                         this.facade.loadBacklog(this.projectId());
                     }
                 });
+            }
+        });
+    }
+
+    openEditSprintDialog(sprint: Sprint): void {
+        this.editSprintId.set(sprint.id);
+        this.editSprintName.set(sprint.name);
+        this.editSprintGoal.set(sprint.goal ?? "");
+        this.editSprintDialogVisible.set(true);
+    }
+
+    saveEditSprint(): void {
+        if (!this.editSprintName()) return;
+        this.facade.updateSprint(this.editSprintId(), {
+            name: this.editSprintName(),
+            goal: this.editSprintGoal() || undefined
+        }).subscribe({
+            next: () => {
+                this.editSprintDialogVisible.set(false);
+                this.facade.loadSprints(this.projectId());
             }
         });
     }

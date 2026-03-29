@@ -18,7 +18,7 @@ import { TextareaModule } from "primeng/textarea";
 import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
 
-import type { Workflow } from "../../../core/models/ticket/board";
+import type { Workflow, WorkflowStatusInput } from "../../../core/models/ticket/board";
 import type { TicketCategory, TicketLabel, TicketProject } from "../../../core/models/ticket/ticket";
 import { TicketFacade } from "../../../facade/ticket/ticket-facade";
 
@@ -209,6 +209,57 @@ export class AdminTickets implements OnInit {
     }
 
     // ── Workflows ────────────────────────────────────────────────────────────
+
+    readonly wfDialogVisible = signal(false);
+    readonly wfEditId = signal("");
+    readonly wfEditName = signal("");
+    readonly wfEditStatuses = signal<WorkflowStatusInput[]>([]);
+
+    openEditWorkflowDialog(wf: Workflow): void {
+        this.wfEditId.set(wf.id);
+        this.wfEditName.set(wf.name);
+        this.wfEditStatuses.set(wf.statuses.map((s) => ({
+            name: s.name,
+            slug: s.slug,
+            color: s.color,
+            category: s.category,
+            position: s.position
+        })));
+        this.wfDialogVisible.set(true);
+    }
+
+    updateWfStatus(index: number, field: string, value: string): void {
+        this.wfEditStatuses.update((list) => {
+            const updated = [...list];
+            updated[index] = { ...updated[index], [field]: value };
+            if (field === "name") {
+                updated[index].slug = value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+            }
+            return updated;
+        });
+    }
+
+    addWfStatus(): void {
+        this.wfEditStatuses.update((list) => [
+            ...list,
+            { name: "New Status", slug: "new_status_" + list.length, color: "#6B7280", category: "todo" as const, position: list.length }
+        ]);
+    }
+
+    removeWfStatus(index: number): void {
+        this.wfEditStatuses.update((list) => list.filter((_, i) => i !== index));
+    }
+
+    saveWorkflow(): void {
+        const statuses = this.wfEditStatuses().map((s, i) => ({ ...s, position: i }));
+        this.facade.updateWorkflow(this.wfEditId(), { name: this.wfEditName(), statuses }).subscribe({
+            next: () => {
+                this.wfDialogVisible.set(false);
+                this.facade.loadWorkflows();
+                this.messageService.add({ severity: "success", summary: this.t.translate("tickets.saved") });
+            }
+        });
+    }
 
     seedDefaultWorkflow(): void {
         this.facade.seedDefaultWorkflow().subscribe({

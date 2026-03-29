@@ -189,24 +189,29 @@
                                         <p-tag [value]="t('tickets.workflow.default')" severity="info" styleClass="text-xs" />
                                         }
                                     </div>
-                                    <button (click)="deleteWorkflow(wf)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                    <div class="flex gap-1">
+                                        <button (click)="openEditWorkflowDialog(wf)" pButton text rounded size="small" icon="pi pi-pencil"></button>
+                                        <button (click)="deleteWorkflow(wf)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                    </div>
                                 </div>
 
-                                <!-- Status columns preview -->
-                                <div class="flex flex-wrap gap-2">
-                                    @for (status of wf.statuses; track status.id) {
-                                    <div class="flex items-center gap-1.5 rounded-lg bg-surface-50 px-3 py-1.5 dark:bg-surface-800">
+                                <!-- Status flow visualization -->
+                                <div class="flex flex-wrap items-center gap-1">
+                                    @for (status of wf.statuses; track status.id; let last = $last) {
+                                    <div class="flex items-center gap-1.5 rounded-lg px-3 py-1.5" [style.background-color]="status.color + '20'" [style.border]="'1px solid ' + status.color">
                                         <span class="inline-block h-2.5 w-2.5 rounded-full" [style.background-color]="status.color"></span>
-                                        <span class="text-sm">{{ status.name }}</span>
-                                        <span class="text-surface-400 text-xs">({{ status.category }})</span>
+                                        <span class="text-sm font-medium">{{ status.name }}</span>
                                     </div>
+                                    @if (!last) {
+                                    <i class="pi pi-arrow-right text-surface-300 text-xs"></i>
+                                    }
                                     }
                                 </div>
 
-                                <!-- Transitions info -->
+                                <!-- Transitions count -->
                                 @if (wf.transitions.length > 0) {
                                 <div class="text-surface-400 mt-2 text-xs">
-                                    {{ wf.transitions.length }} {{ t('tickets.workflow.transitions') }}
+                                    <i class="pi pi-directions mr-1"></i>{{ wf.transitions.length }} {{ t('tickets.workflow.transitions') }}
                                 </div>
                                 }
                             </div>
@@ -299,6 +304,55 @@
             <div class="flex justify-end gap-2">
                 <p-button [label]="t('common.button.cancel')" (onClick)="projDialogVisible.set(false)" severity="secondary" text />
                 <p-button [disabled]="!projName()" [label]="t('common.button.save')" (onClick)="saveProject()" icon="pi pi-check" />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Edit Workflow Dialog -->
+    <p-dialog
+        [(visible)]="wfDialogVisible"
+        [header]="t('tickets.workflow.title') + ': ' + wfEditName()"
+        [modal]="true"
+        [style]="{ width: '600px' }"
+        [contentStyle]="{ overflow: 'visible' }"
+    >
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('tickets.workflow.name') }}</label>
+                <input [ngModel]="wfEditName()" (ngModelChange)="wfEditName.set($event)" pInputText type="text" />
+            </div>
+            <div>
+                <label class="mb-2 block font-medium">{{ t('tickets.workflow.statusName') }}</label>
+                <div class="flex flex-col gap-2">
+                    @for (status of wfEditStatuses(); track status.slug; let i = $index) {
+                    <div class="flex items-center gap-2 rounded-lg bg-surface-50 p-2 dark:bg-surface-800">
+                        <span class="inline-block h-4 w-4 rounded-full" [style.background-color]="status.color"></span>
+                        <input [value]="status.name" (input)="updateWfStatus(i, 'name', $any($event.target).value)" pInputText type="text" class="flex-1 text-sm" />
+                        <p-select
+                            [ngModel]="status.category"
+                            (ngModelChange)="updateWfStatus(i, 'category', $event)"
+                            [options]="[
+                                { label: t('tickets.workflow.categories.todo'), value: 'todo' },
+                                { label: t('tickets.workflow.categories.inProgress'), value: 'in_progress' },
+                                { label: t('tickets.workflow.categories.done'), value: 'done' }
+                            ]"
+                            optionLabel="label"
+                            optionValue="value"
+                            styleClass="w-36 text-sm"
+                        />
+                        <button (click)="removeWfStatus(i)" pButton text rounded size="small" icon="pi pi-times" severity="danger"></button>
+                    </div>
+                    }
+                    <button class="text-primary flex items-center gap-1 text-sm" (click)="addWfStatus()">
+                        <i class="pi pi-plus text-xs"></i> {{ t('tickets.workflow.addStatus') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="wfDialogVisible.set(false)" severity="secondary" text />
+                <p-button [label]="t('common.button.save')" (onClick)="saveWorkflow()" icon="pi pi-check" />
             </div>
         </ng-template>
     </p-dialog>
