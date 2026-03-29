@@ -53,6 +53,22 @@
                     <h1 class="text-surface-900 dark:text-surface-0 m-0 text-xl font-bold">{{ ticket.title }}</h1>
                 </div>
                 <div class="flex gap-2">
+                    <p-button
+                        [pTooltip]="isWatching ? t('tickets.watchers.unwatch') : t('tickets.watchers.watch')"
+                        (onClick)="toggleWatch()"
+                        [icon]="isWatching ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                        [severity]="isWatching ? 'warn' : 'secondary'"
+                        text
+                        rounded
+                    />
+                    <p-button
+                        [pTooltip]="t('tickets.timeTracking.logWork')"
+                        (onClick)="openWorkLogDialog()"
+                        icon="pi pi-clock"
+                        text
+                        rounded
+                        severity="secondary"
+                    />
                     @if (isStaff) {
                     <p-button
                         [pTooltip]="t(ticket.isPinned ? 'tickets.unpin' : 'tickets.pin')"
@@ -91,12 +107,23 @@
             <!-- Meta Info -->
             <div class="border-surface-200 dark:border-surface-700 grid grid-cols-2 gap-4 border-t pt-4 sm:grid-cols-4">
                 <div>
-                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldAuthor') }}</div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldReporter') }}</div>
                     <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.authorName ?? ticket.authorId }}</div>
                 </div>
                 <div>
-                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.columnAssignee') }}</div>
-                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ ticket.assigneeName ?? '—' }}</div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldAssignee') }}</div>
+                    <p-select
+                        [ngModel]="ticket.assigneeId"
+                        [options]="facade.assignableUsers()"
+                        (ngModelChange)="updateAssignee($event)"
+                        optionLabel="displayName"
+                        optionValue="id"
+                        [showClear]="true"
+                        [placeholder]="t('tickets.unassigned')"
+                        [filter]="true"
+                        filterBy="displayName"
+                        styleClass="w-full text-sm"
+                    />
                 </div>
                 <div>
                     <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldCategory') }}</div>
@@ -116,6 +143,23 @@
                 <div>
                     <div class="text-surface-400 text-xs uppercase">{{ t('tickets.fieldFollowUp') }}</div>
                     <div class="text-sm font-medium text-blue-500">{{ ticket.followUpDate | date:'dd.MM.yyyy' }}</div>
+                </div>
+                }
+                @if (ticket.originalEstimateMinutes || ticket.timeSpentMinutes) {
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.timeTracking.title') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">
+                        {{ formatMinutes(ticket.timeSpentMinutes) }}
+                        @if (ticket.originalEstimateMinutes) {
+                        / {{ formatMinutes(ticket.originalEstimateMinutes) }}
+                        }
+                    </div>
+                </div>
+                }
+                @if (facade.watchers().length > 0) {
+                <div>
+                    <div class="text-surface-400 text-xs uppercase">{{ t('tickets.watchers.title') }}</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ facade.watchers().length }}</div>
                 </div>
                 }
                 @if (ticket.rating) {
@@ -157,7 +201,9 @@
                     <p-tab value="1">{{ t('tickets.children') }} ({{ facade.children().length }})</p-tab>
                     }
                     <p-tab value="2">{{ t('tickets.links.title') }} ({{ facade.links().length }})</p-tab>
-                    <p-tab value="3">{{ t('tickets.activity.title') }}</p-tab>
+                    <p-tab value="3">{{ t('tickets.attachments.title') }} ({{ facade.attachments().length }})</p-tab>
+                    <p-tab value="4">{{ t('tickets.timeTracking.workLogs') }} ({{ facade.workLogs().length }})</p-tab>
+                    <p-tab value="5">{{ t('tickets.activity.title') }}</p-tab>
                 </p-tablist>
 
                 <p-tabpanels>
@@ -287,8 +333,60 @@
                         </div>
                     </p-tabpanel>
 
-                    <!-- Activity Tab -->
+                    <!-- Attachments Tab -->
                     <p-tabpanel value="3">
+                        <div class="p-6">
+                            <div class="flex flex-col gap-2">
+                                @for (att of facade.attachments(); track att.id) {
+                                <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-3">
+                                    <i class="pi pi-file text-surface-400"></i>
+                                    <div class="flex-1">
+                                        <div class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ att.fileName }}</div>
+                                        <div class="text-surface-400 text-xs">{{ att.uploadedByName }} · {{ att.createdAt | date:'dd.MM.yyyy HH:mm' }}</div>
+                                    </div>
+                                    <span class="text-surface-400 text-xs">{{ (att.fileSize / 1024) | number:'1.0-0' }} KB</span>
+                                    <button (click)="facade.deleteAttachment(ticketId, att.id).subscribe()" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                </div>
+                                }
+
+                                @if (facade.attachments().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.attachments.noAttachments') }}</p>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- Work Logs Tab -->
+                    <p-tabpanel value="4">
+                        <div class="p-6">
+                            <div class="mb-4 flex justify-end">
+                                <p-button [label]="t('tickets.timeTracking.logWork')" (onClick)="openWorkLogDialog()" icon="pi pi-clock" size="small" />
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                @for (log of facade.workLogs(); track log.id) {
+                                <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-3">
+                                    <i class="pi pi-clock text-surface-400"></i>
+                                    <div class="flex-1">
+                                        <span class="text-surface-900 dark:text-surface-0 text-sm font-medium">{{ log.userName }}</span>
+                                        <span class="text-surface-500 text-sm"> — {{ formatMinutes(log.timeSpentMinutes) }}</span>
+                                        @if (log.description) {
+                                        <div class="text-surface-400 mt-0.5 text-xs">{{ log.description }}</div>
+                                        }
+                                    </div>
+                                    <span class="text-surface-400 text-xs">{{ log.logDate }}</span>
+                                    <button (click)="facade.deleteWorkLog(ticketId, log.id).subscribe({ next: () => facade.loadTicket(ticketId) })" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                </div>
+                                }
+
+                                @if (facade.workLogs().length === 0) {
+                                <p class="text-surface-400 text-center text-sm">{{ t('tickets.timeTracking.noWorkLogs') }}</p>
+                                }
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- Activity Tab -->
+                    <p-tabpanel value="5">
                         <div class="p-6">
                             <div class="flex flex-col gap-3">
                                 @for (entry of facade.activityLog(); track entry.id) {
@@ -406,6 +504,34 @@
             <div class="flex justify-end gap-2">
                 <p-button [label]="t('common.button.cancel')" (onClick)="linkDialogVisible.set(false)" severity="secondary" text />
                 <p-button [disabled]="!linkTargetId()" [label]="t('tickets.links.add')" (onClick)="submitLink()" icon="pi pi-link" />
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Work Log Dialog -->
+    <p-dialog
+        [(visible)]="workLogDialogVisible"
+        [header]="t('tickets.timeTracking.logWork')"
+        [modal]="true"
+        [style]="{ width: '400px' }"
+    >
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('tickets.timeTracking.timeSpent') }}</label>
+                <div class="flex items-center gap-2">
+                    <input [ngModel]="workLogMinutes()" (ngModelChange)="workLogMinutes.set($event)" pInputText type="number" min="1" class="w-24" />
+                    <span class="text-surface-500 text-sm">{{ t('tickets.timeTracking.minutes') }}</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="font-medium">{{ t('tickets.timeTracking.description') }}</label>
+                <textarea [ngModel]="workLogDescription()" (ngModelChange)="workLogDescription.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button [label]="t('common.button.cancel')" (onClick)="workLogDialogVisible.set(false)" severity="secondary" text />
+                <p-button [label]="t('tickets.timeTracking.logWork')" (onClick)="submitWorkLog()" icon="pi pi-clock" />
             </div>
         </ng-template>
     </p-dialog>

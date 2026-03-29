@@ -45,6 +45,10 @@ export class UpdateTicketDto {
     @IsOptional()
     projectId?: string | null;
 
+    @IsUUID()
+    @IsOptional()
+    sprintId?: string | null;
+
     @IsArray()
     @IsUUID("4", { each: true })
     @IsOptional()
@@ -75,4 +79,14 @@ export class UpdateTicketDto {
     @IsObject()
     @IsOptional()
     customFields?: Record<string, unknown>;
+
+    @IsInt()
+    @Min(0)
+    @IsOptional()
+    originalEstimateMinutes?: number | null;
+
+    @IsInt()
+    @Min(0)
+    @IsOptional()
+    remainingEstimateMinutes?: number | null;
 }

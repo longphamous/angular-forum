@@ -139,6 +139,11 @@
     "adminI18n": "Sprachvariablen",
     "clips": "Clips",
     "tickets": "Tickets",
+    "ticketOverview": "Alle Tickets",
+    "ticketBoard": "Board",
+    "ticketBacklog": "Backlog",
+    "ticketRoadmap": "Roadmap",
+    "ticketReports": "Berichte",
     "ticketManagement": "Ticketverwaltung",
     "mediaManagement": "Medienverwaltung"
   },
@@ -2224,6 +2229,7 @@
   "tickets": {
     "title": "Tickets",
     "subtitle": "Erstelle und verfolge Supportanfragen, Fehlermeldungen und Aufgaben",
+    "projectNav": "Projekte",
     "createTicket": "Ticket erstellen",
     "backToList": "Zurück zu Tickets",
     "searchPlaceholder": "Tickets durchsuchen...",
@@ -2238,6 +2244,10 @@
     "fieldTitle": "Titel",
     "fieldDescription": "Beschreibung",
     "fieldAuthor": "Autor",
+    "fieldReporter": "Ersteller",
+    "fieldAssignee": "Zuständig",
+    "selectAssignee": "Zuständigen auswählen",
+    "unassigned": "Nicht zugewiesen",
     "fieldCategory": "Kategorie",
     "fieldDueDate": "Fälligkeitsdatum",
     "fieldFollowUp": "Wiedervorlage",
@@ -2339,6 +2349,126 @@
         "inProgress": "In Bearbeitung",
         "done": "Erledigt"
       }
+    },
+    "sprint": {
+      "title": "Sprints",
+      "name": "Sprint-Name",
+      "goal": "Sprint-Ziel",
+      "create": "Sprint erstellen",
+      "start": "Sprint starten",
+      "complete": "Sprint abschließen",
+      "started": "Sprint gestartet",
+      "completed": "Sprint abgeschlossen",
+      "confirmComplete": "Sprint abschließen? Offene Tickets werden zurück in das Backlog verschoben.",
+      "issues": "Aufgaben",
+      "velocity": "Velocity",
+      "status": {
+        "planning": "Planung",
+        "active": "Aktiv",
+        "completed": "Abgeschlossen"
+      }
+    },
+    "backlog": {
+      "title": "Backlog",
+      "subtitle": "Kommende Arbeit planen und priorisieren",
+      "noItems": "Backlog ist leer.",
+      "moveToSprint": "In aktiven Sprint verschieben",
+      "moveToBacklog": "Ins Backlog verschieben",
+      "dragHint": "Ziehen zum Sortieren"
+    },
+    "reports": {
+      "title": "Berichte",
+      "burndown": "Burndown-Diagramm",
+      "velocity": "Velocity",
+      "sprintReport": "Sprint-Bericht",
+      "selectSprint": "Sprint auswählen",
+      "selectSprintHint": "Wähle einen Sprint, um das Burndown-Diagramm anzuzeigen.",
+      "noData": "Noch keine Daten verfügbar.",
+      "completed": "Abgeschlossen",
+      "incomplete": "Offen",
+      "addedMidSprint": "Während Sprint hinzugefügt"
+    },
+    "sla": {
+      "title": "SLA",
+      "firstResponse": "Erste Antwort",
+      "resolution": "Lösung",
+      "breached": "Überschritten",
+      "atRisk": "Gefährdet",
+      "onTrack": "Im Zeitplan",
+      "noBreaches": "Keine SLA-Verstöße.",
+      "hours": "Stunden"
+    },
+    "watchers": {
+      "title": "Beobachter",
+      "watch": "Beobachten",
+      "unwatch": "Nicht mehr beobachten",
+      "watching": "Wird beobachtet"
+    },
+    "attachments": {
+      "title": "Anhänge",
+      "upload": "Hochladen",
+      "noAttachments": "Keine Anhänge."
+    },
+    "timeTracking": {
+      "title": "Zeiterfassung",
+      "logWork": "Zeit erfassen",
+      "timeSpent": "Aufgewendete Zeit",
+      "originalEstimate": "Ursprüngliche Schätzung",
+      "remainingEstimate": "Verbleibend",
+      "workLogs": "Zeiteinträge",
+      "noWorkLogs": "Noch keine Zeit erfasst.",
+      "minutes": "Minuten",
+      "description": "Beschreibung"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "noEpics": "Keine Epics gefunden. Erstelle Epics, um deine Roadmap zu sehen.",
+      "start": "Start",
+      "due": "Fällig"
+    },
+    "automation": {
+      "title": "Automatisierungen",
+      "name": "Regelname",
+      "noRules": "Noch keine Automatisierungsregeln.",
+      "triggerType": "Auslöser",
+      "actionType": "Aktion",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "triggers": {
+        "status_changed": "Status geändert",
+        "ticket_created": "Ticket erstellt",
+        "field_changed": "Feld geändert",
+        "assigned": "Zugewiesen"
+      },
+      "actions": {
+        "set_field": "Feld setzen",
+        "transition": "Übergang",
+        "assign": "Zuweisen",
+        "notify": "Benachrichtigen",
+        "add_label": "Label hinzufügen"
+      }
+    },
+    "projectMembers": {
+      "title": "Mitglieder",
+      "noMembers": "Keine Mitglieder zugewiesen.",
+      "addMember": "Mitglied hinzufügen",
+      "role": "Rolle",
+      "roles": {
+        "admin": "Admin",
+        "developer": "Entwickler",
+        "viewer": "Betrachter"
+      }
+    },
+    "customFields": {
+      "title": "Benutzerdefinierte Felder",
+      "noFields": "Keine benutzerdefinierten Felder.",
+      "addField": "Feld hinzufügen",
+      "fieldName": "Feldname",
+      "fieldKey": "Schlüssel",
+      "fieldType": "Typ",
+      "required": "Pflichtfeld",
+      "options": "Optionen",
+      "applicableTypes": "Anwendbare Typen"
     }
   },
   "adminTickets": {

@@ -1,4 +1,4 @@
-import { DatePipe } from "@angular/common";
+import { DatePipe, DecimalPipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -25,6 +25,7 @@ import { TicketFacade } from "../../../facade/ticket/ticket-facade";
     standalone: true,
     imports: [
         DatePipe,
+        DecimalPipe,
         FormsModule,
         RouterLink,
         TranslocoModule,
@@ -67,10 +68,15 @@ export class TicketDetailPage implements OnInit {
     readonly linkTargetId = signal("");
     readonly linkType = signal<TicketLinkType>("relates_to");
 
+    // Work log dialog
+    readonly workLogDialogVisible = signal(false);
+    readonly workLogMinutes = signal(60);
+    readonly workLogDescription = signal("");
+
     // Active detail tab
     readonly activeTab = signal("0");
 
-    private ticketId = "";
+    ticketId = "";
 
     readonly linkTypeOptions = [
         { label: "tickets.links.blocks", value: "blocks" as TicketLinkType },
@@ -87,6 +93,10 @@ export class TicketDetailPage implements OnInit {
             this.facade.loadChildren(this.ticketId);
             this.facade.loadLinks(this.ticketId);
             this.facade.loadActivity(this.ticketId);
+            this.facade.loadWatchers(this.ticketId);
+            this.facade.loadAttachments(this.ticketId);
+            this.facade.loadWorkLogs(this.ticketId);
+            this.facade.loadAssignableUsers();
         }
     }
 
@@ -180,6 +190,55 @@ export class TicketDetailPage implements OnInit {
                 });
             }
         });
+    }
+
+    // ── Assignee ─────────────────────────────────────────────────────────────
+
+    updateAssignee(assigneeId: string | null): void {
+        this.facade.updateTicket(this.ticketId, { assigneeId }).subscribe({
+            next: () => this.facade.loadActivity(this.ticketId)
+        });
+    }
+
+    // ── Watchers ─────────────────────────────────────────────────────────────
+
+    toggleWatch(): void {
+        const isWatching = this.facade.watchers().some((w) => w.userId === this.authFacade.currentUser()?.id);
+        if (isWatching) {
+            this.facade.unwatch(this.ticketId).subscribe();
+        } else {
+            this.facade.watch(this.ticketId).subscribe();
+        }
+    }
+
+    get isWatching(): boolean {
+        return this.facade.watchers().some((w) => w.userId === this.authFacade.currentUser()?.id);
+    }
+
+    // ── Work Logs ────────────────────────────────────────────────────────────
+
+    openWorkLogDialog(): void {
+        this.workLogMinutes.set(60);
+        this.workLogDescription.set("");
+        this.workLogDialogVisible.set(true);
+    }
+
+    submitWorkLog(): void {
+        this.facade.addWorkLog(this.ticketId, {
+            timeSpentMinutes: this.workLogMinutes(),
+            description: this.workLogDescription() || undefined
+        }).subscribe({
+            next: () => {
+                this.workLogDialogVisible.set(false);
+                this.facade.loadTicket(this.ticketId);
+            }
+        });
+    }
+
+    formatMinutes(minutes: number): string {
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
 
     // ── Navigation ───────────────────────────────────────────────────────────

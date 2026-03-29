@@ -139,6 +139,11 @@
     "adminI18n": "Language Variables",
     "clips": "Clips",
     "tickets": "Tickets",
+    "ticketOverview": "All Tickets",
+    "ticketBoard": "Board",
+    "ticketBacklog": "Backlog",
+    "ticketRoadmap": "Roadmap",
+    "ticketReports": "Reports",
     "ticketManagement": "Ticket Management",
     "mediaManagement": "Media Management"
   },
@@ -2224,6 +2229,7 @@
   "tickets": {
     "title": "Tickets",
     "subtitle": "Create and track support requests, bug reports, and tasks",
+    "projectNav": "Projects",
     "createTicket": "Create Ticket",
     "backToList": "Back to tickets",
     "searchPlaceholder": "Search tickets...",
@@ -2238,6 +2244,10 @@
     "fieldTitle": "Title",
     "fieldDescription": "Description",
     "fieldAuthor": "Author",
+    "fieldReporter": "Reporter",
+    "fieldAssignee": "Assignee",
+    "selectAssignee": "Select assignee",
+    "unassigned": "Unassigned",
     "fieldCategory": "Category",
     "fieldDueDate": "Due Date",
     "fieldFollowUp": "Follow-Up",
@@ -2339,6 +2349,126 @@
         "inProgress": "In Progress",
         "done": "Done"
       }
+    },
+    "sprint": {
+      "title": "Sprints",
+      "name": "Sprint Name",
+      "goal": "Sprint Goal",
+      "create": "Create Sprint",
+      "start": "Start Sprint",
+      "complete": "Complete Sprint",
+      "started": "Sprint started",
+      "completed": "Sprint completed",
+      "confirmComplete": "Complete this sprint? Incomplete tickets will be moved back to the backlog.",
+      "issues": "Issues",
+      "velocity": "Velocity",
+      "status": {
+        "planning": "Planning",
+        "active": "Active",
+        "completed": "Completed"
+      }
+    },
+    "backlog": {
+      "title": "Backlog",
+      "subtitle": "Plan and prioritize upcoming work",
+      "noItems": "Backlog is empty.",
+      "moveToSprint": "Move to active sprint",
+      "moveToBacklog": "Move to backlog",
+      "dragHint": "Drag to reorder"
+    },
+    "reports": {
+      "title": "Reports",
+      "burndown": "Burndown Chart",
+      "velocity": "Velocity",
+      "sprintReport": "Sprint Report",
+      "selectSprint": "Select Sprint",
+      "selectSprintHint": "Select a sprint to view its burndown chart.",
+      "noData": "No data available yet.",
+      "completed": "Completed",
+      "incomplete": "Incomplete",
+      "addedMidSprint": "Added Mid-Sprint"
+    },
+    "sla": {
+      "title": "SLA",
+      "firstResponse": "First Response",
+      "resolution": "Resolution",
+      "breached": "Breached",
+      "atRisk": "At Risk",
+      "onTrack": "On Track",
+      "noBreaches": "No SLA breaches.",
+      "hours": "hours"
+    },
+    "watchers": {
+      "title": "Watchers",
+      "watch": "Watch",
+      "unwatch": "Unwatch",
+      "watching": "Watching"
+    },
+    "attachments": {
+      "title": "Attachments",
+      "upload": "Upload",
+      "noAttachments": "No attachments."
+    },
+    "timeTracking": {
+      "title": "Time Tracking",
+      "logWork": "Log Work",
+      "timeSpent": "Time Spent",
+      "originalEstimate": "Original Estimate",
+      "remainingEstimate": "Remaining",
+      "workLogs": "Work Logs",
+      "noWorkLogs": "No work logged yet.",
+      "minutes": "minutes",
+      "description": "Description"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "noEpics": "No epics found. Create epics to see your roadmap.",
+      "start": "Start",
+      "due": "Due"
+    },
+    "automation": {
+      "title": "Automations",
+      "name": "Rule Name",
+      "noRules": "No automation rules yet.",
+      "triggerType": "Trigger",
+      "actionType": "Action",
+      "active": "Active",
+      "inactive": "Inactive",
+      "triggers": {
+        "status_changed": "Status Changed",
+        "ticket_created": "Ticket Created",
+        "field_changed": "Field Changed",
+        "assigned": "Assigned"
+      },
+      "actions": {
+        "set_field": "Set Field",
+        "transition": "Transition",
+        "assign": "Assign",
+        "notify": "Notify",
+        "add_label": "Add Label"
+      }
+    },
+    "projectMembers": {
+      "title": "Members",
+      "noMembers": "No members assigned.",
+      "addMember": "Add Member",
+      "role": "Role",
+      "roles": {
+        "admin": "Admin",
+        "developer": "Developer",
+        "viewer": "Viewer"
+      }
+    },
+    "customFields": {
+      "title": "Custom Fields",
+      "noFields": "No custom fields defined.",
+      "addField": "Add Field",
+      "fieldName": "Field Name",
+      "fieldKey": "Key",
+      "fieldType": "Type",
+      "required": "Required",
+      "options": "Options",
+      "applicableTypes": "Applicable Types"
     }
   },
   "adminTickets": {

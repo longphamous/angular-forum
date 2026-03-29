@@ -28,6 +28,14 @@ export interface Ticket {
     workflowStatusId?: string;
     workflowStatusName?: string;
     workflowStatusColor?: string;
+    sprintId?: string;
+    sprintName?: string;
+    backlogPosition?: number;
+    originalEstimateMinutes?: number;
+    remainingEstimateMinutes?: number;
+    timeSpentMinutes: number;
+    watcherCount: number;
+    attachmentCount: number;
     labels: TicketLabel[];
     dueDate?: string;
     followUpDate?: string;
@@ -170,6 +178,8 @@ export interface UpdateTicketPayload {
     rating?: number;
     ratingComment?: string;
     customFields?: Record<string, unknown>;
+    originalEstimateMinutes?: number | null;
+    remainingEstimateMinutes?: number | null;
 }
 
 export interface CreateCommentPayload {
@@ -181,4 +191,39 @@ export interface CreateCommentPayload {
 export interface CreateLinkPayload {
     targetTicketId: string;
     linkType: TicketLinkType;
+}
+
+export interface Watcher {
+    userId: string;
+    userName?: string;
+    createdAt: string;
+}
+
+export interface Attachment {
+    id: string;
+    ticketId: string;
+    fileName: string;
+    filePath: string;
+    fileSize: number;
+    mimeType?: string;
+    uploadedBy: string;
+    uploadedByName?: string;
+    createdAt: string;
+}
+
+export interface WorkLog {
+    id: string;
+    ticketId: string;
+    userId: string;
+    userName?: string;
+    timeSpentMinutes: number;
+    description?: string;
+    logDate: string;
+    createdAt: string;
+}
+
+export interface CreateWorkLogPayload {
+    timeSpentMinutes: number;
+    description?: string;
+    logDate?: string;
 }

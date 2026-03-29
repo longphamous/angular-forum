@@ -32,6 +32,14 @@ export interface TicketDto {
     workflowStatusId?: string;
     workflowStatusName?: string;
     workflowStatusColor?: string;
+    sprintId?: string;
+    sprintName?: string;
+    backlogPosition?: number;
+    originalEstimateMinutes?: number;
+    remainingEstimateMinutes?: number;
+    timeSpentMinutes: number;
+    watcherCount: number;
+    attachmentCount: number;
     labels: LabelDto[];
     dueDate?: string;
     followUpDate?: string;
@@ -141,6 +149,28 @@ export interface BoardDataDto {
     columns: BoardColumnDto[];
 }
 
+export interface SprintDto {
+    id: string;
+    projectId: string;
+    name: string;
+    goal?: string;
+    status: "planning" | "active" | "completed";
+    startDate?: string;
+    endDate?: string;
+    completedAt?: string;
+    ticketCount: number;
+    completedTicketCount: number;
+    totalStoryPoints: number;
+    completedStoryPoints: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface BacklogItemDto {
+    ticket: TicketDto;
+    backlogPosition: number;
+}
+
 export interface TicketCategoryDto {
     id: string;
     name: string;
@@ -167,4 +197,132 @@ export interface TicketStatsDto {
     resolved: number;
     closed: number;
     avgResolutionTimeHours: number;
+}
+
+// ── Reporting ────────────────────────────────────────────────────────────────
+
+export interface BurndownPointDto {
+    date: string;
+    remaining: number;
+    ideal: number;
+}
+
+export interface VelocityEntryDto {
+    sprintId: string;
+    sprintName: string;
+    completedPoints: number;
+    committedPoints: number;
+}
+
+export interface SprintReportDto {
+    sprintId: string;
+    sprintName: string;
+    startDate?: string;
+    endDate?: string;
+    completedItems: number;
+    incompleteItems: number;
+    addedMidSprint: number;
+    removedMidSprint: number;
+    completedPoints: number;
+    totalPoints: number;
+}
+
+export interface SlaConfigDto {
+    id: string;
+    projectId: string;
+    priority: string;
+    firstResponseHours: number;
+    resolutionHours: number;
+}
+
+export interface SlaStatusDto {
+    ticketId: string;
+    ticketNumber: number;
+    title: string;
+    priority: string;
+    firstResponse: "ok" | "at_risk" | "breached";
+    resolution: "ok" | "at_risk" | "breached";
+    firstResponseDeadline?: string;
+    resolutionDeadline?: string;
+}
+
+// ── Watchers, Attachments, Time Tracking ─────────────────────────────────
+
+export interface WatcherDto {
+    userId: string;
+    userName?: string;
+    createdAt: string;
+}
+
+export interface AttachmentDto {
+    id: string;
+    ticketId: string;
+    fileName: string;
+    filePath: string;
+    fileSize: number;
+    mimeType?: string;
+    uploadedBy: string;
+    uploadedByName?: string;
+    createdAt: string;
+}
+
+export interface WorkLogDto {
+    id: string;
+    ticketId: string;
+    userId: string;
+    userName?: string;
+    timeSpentMinutes: number;
+    description?: string;
+    logDate: string;
+    createdAt: string;
+}
+
+// ── Project Members, Automation, Custom Fields, Roadmap ──────────────────
+
+export interface ProjectMemberDto {
+    id: string;
+    projectId: string;
+    userId: string;
+    userName?: string;
+    role: "admin" | "developer" | "viewer";
+    createdAt: string;
+}
+
+export interface AutomationRuleDto {
+    id: string;
+    projectId: string;
+    name: string;
+    isActive: boolean;
+    triggerType: string;
+    triggerConfig: Record<string, unknown>;
+    actionType: string;
+    actionConfig: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CustomFieldDefDto {
+    id: string;
+    projectId: string;
+    name: string;
+    fieldKey: string;
+    fieldType: string;
+    options?: string[];
+    required: boolean;
+    applicableTypes: string[];
+    position: number;
+}
+
+export interface RoadmapEpicDto {
+    id: string;
+    ticketNumber: number;
+    title: string;
+    status: string;
+    priority: string;
+    startDate?: string;
+    dueDate?: string;
+    storyPoints?: number;
+    childCount: number;
+    completedChildCount: number;
+    completionPercent: number;
 }

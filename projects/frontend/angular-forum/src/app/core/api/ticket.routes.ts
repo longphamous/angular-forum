@@ -8,8 +8,31 @@ export const TICKET_ROUTES = {
     linkDetail: (ticketId: string, linkId: string) => `/tickets/${ticketId}/links/${linkId}`,
     activity: (id: string) => `/tickets/${id}/activity`,
     comments: (id: string) => `/tickets/${id}/comments`,
+    watchers: (id: string) => `/tickets/${id}/watchers`,
+    watch: (id: string) => `/tickets/${id}/watch`,
+    attachments: (id: string) => `/tickets/${id}/attachments`,
+    attachmentDetail: (ticketId: string, attachId: string) => `/tickets/${ticketId}/attachments/${attachId}`,
+    worklogs: (id: string) => `/tickets/${id}/worklogs`,
+    worklogDetail: (ticketId: string, logId: string) => `/tickets/${ticketId}/worklogs/${logId}`,
     board: (projectId: string) => `/tickets/board/${projectId}`,
     boardMove: () => "/tickets/board/move",
+    sprints: () => "/tickets/sprints",
+    sprintDetail: (id: string) => `/tickets/sprints/${id}`,
+    sprintStart: (id: string) => `/tickets/sprints/${id}/start`,
+    sprintComplete: (id: string) => `/tickets/sprints/${id}/complete`,
+    backlog: (projectId: string) => `/tickets/sprints/backlog/${projectId}`,
+    backlogReorder: (projectId: string) => `/tickets/sprints/backlog/${projectId}/reorder`,
+    moveToSprint: () => "/tickets/sprints/move-to-sprint",
+    moveToBacklog: () => "/tickets/sprints/move-to-backlog",
+    roadmap: (projectId: string) => `/tickets/roadmap/${projectId}`,
+    reports: {
+        burndown: (sprintId: string) => `/tickets/reports/burndown/${sprintId}`,
+        velocity: (projectId: string) => `/tickets/reports/velocity/${projectId}`,
+        sprint: (sprintId: string) => `/tickets/reports/sprint/${sprintId}`,
+        slaBreaches: (projectId: string) => `/tickets/reports/sla-breaches/${projectId}`,
+        slaConfigs: () => "/tickets/reports/sla",
+        slaConfigDetail: (id: string) => `/tickets/reports/sla/${id}`
+    },
     admin: {
         projects: () => "/tickets/admin/projects",
         projectDetail: (id: string) => `/tickets/admin/projects/${id}`,
@@ -19,6 +42,13 @@ export const TICKET_ROUTES = {
         labelDetail: (id: string) => `/tickets/admin/labels/${id}`,
         workflows: () => "/tickets/admin/workflows",
         workflowDetail: (id: string) => `/tickets/admin/workflows/${id}`,
-        seedDefaultWorkflow: () => "/tickets/admin/workflows/seed-default"
+        seedDefaultWorkflow: () => "/tickets/admin/workflows/seed-default",
+        projectMembers: (projectId: string) => `/tickets/admin/projects/${projectId}/members`,
+        projectMemberDetail: (projectId: string, memberId: string) => `/tickets/admin/projects/${projectId}/members/${memberId}`,
+        projectAutomations: (projectId: string) => `/tickets/admin/projects/${projectId}/automations`,
+        automationDetail: (id: string) => `/tickets/admin/automations/${id}`,
+        automationToggle: (id: string) => `/tickets/admin/automations/${id}/toggle`,
+        projectFields: (projectId: string) => `/tickets/admin/projects/${projectId}/fields`,
+        fieldDetail: (id: string) => `/tickets/admin/fields/${id}`
     }
 } as const;

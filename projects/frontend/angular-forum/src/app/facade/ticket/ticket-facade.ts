@@ -5,9 +5,11 @@ import { Observable, tap } from "rxjs";
 import { TICKET_ROUTES } from "../../core/api/ticket.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
 import type {
+    Attachment,
     CreateCommentPayload,
     CreateLinkPayload,
     CreateTicketPayload,
+    CreateWorkLogPayload,
     PaginatedActivity,
     PaginatedTickets,
     Ticket,
@@ -18,9 +20,13 @@ import type {
     TicketLink,
     TicketProject,
     TicketStats,
-    UpdateTicketPayload
+    UpdateTicketPayload,
+    Watcher,
+    WorkLog
 } from "../../core/models/ticket/ticket";
 import type { CreateWorkflowPayload, UpdateWorkflowPayload, Workflow } from "../../core/models/ticket/board";
+import type { UserProfile } from "../../core/models/user/user";
+import { USER_ROUTES } from "../../core/api/user.routes";
 
 @Injectable({ providedIn: "root" })
 export class TicketFacade {
@@ -31,11 +37,15 @@ export class TicketFacade {
     readonly children: Signal<Ticket[]>;
     readonly links: Signal<TicketLink[]>;
     readonly activityLog: Signal<TicketActivity[]>;
+    readonly watchers: Signal<Watcher[]>;
+    readonly attachments: Signal<Attachment[]>;
+    readonly workLogs: Signal<WorkLog[]>;
     readonly stats: Signal<TicketStats | null>;
     readonly projects: Signal<TicketProject[]>;
     readonly categories: Signal<TicketCategory[]>;
     readonly labels: Signal<TicketLabel[]>;
     readonly workflows: Signal<Workflow[]>;
+    readonly assignableUsers: Signal<UserProfile[]>;
     readonly loading: Signal<boolean>;
     readonly error: Signal<string | null>;
 
@@ -46,11 +56,15 @@ export class TicketFacade {
     private readonly _children = signal<Ticket[]>([]);
     private readonly _links = signal<TicketLink[]>([]);
     private readonly _activityLog = signal<TicketActivity[]>([]);
+    private readonly _watchers = signal<Watcher[]>([]);
+    private readonly _attachments = signal<Attachment[]>([]);
+    private readonly _workLogs = signal<WorkLog[]>([]);
     private readonly _stats = signal<TicketStats | null>(null);
     private readonly _projects = signal<TicketProject[]>([]);
     private readonly _categories = signal<TicketCategory[]>([]);
     private readonly _labels = signal<TicketLabel[]>([]);
     private readonly _workflows = signal<Workflow[]>([]);
+    private readonly _assignableUsers = signal<UserProfile[]>([]);
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly http = inject(HttpClient);
@@ -64,11 +78,15 @@ export class TicketFacade {
         this.children = this._children.asReadonly();
         this.links = this._links.asReadonly();
         this.activityLog = this._activityLog.asReadonly();
+        this.watchers = this._watchers.asReadonly();
+        this.attachments = this._attachments.asReadonly();
+        this.workLogs = this._workLogs.asReadonly();
         this.stats = this._stats.asReadonly();
         this.projects = this._projects.asReadonly();
         this.categories = this._categories.asReadonly();
         this.labels = this._labels.asReadonly();
         this.workflows = this._workflows.asReadonly();
+        this.assignableUsers = this._assignableUsers.asReadonly();
         this.loading = this._loading.asReadonly();
         this.error = this._error.asReadonly();
     }
@@ -196,6 +214,78 @@ export class TicketFacade {
             .pipe(tap((comment) => this._comments.update((list) => [...list, comment])));
     }
 
+    // ── Assignable Users ───────────────────────────────────────────────────
+
+    loadAssignableUsers(): void {
+        this.http.get<UserProfile[]>(`${this.apiConfig.baseUrl}${USER_ROUTES.admin.list()}`).subscribe({
+            next: (users) => this._assignableUsers.set(users),
+            error: () => this._assignableUsers.set([])
+        });
+    }
+
+    // ── Watchers ─────────────────────────────────────────────────────────────
+
+    loadWatchers(ticketId: string): void {
+        this.http.get<Watcher[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watchers(ticketId)}`).subscribe({
+            next: (data) => this._watchers.set(data),
+            error: () => this._watchers.set([])
+        });
+    }
+
+    watch(ticketId: string): Observable<{ success: boolean }> {
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`, {}).pipe(
+            tap(() => this.loadWatchers(ticketId))
+        );
+    }
+
+    unwatch(ticketId: string): Observable<{ success: boolean }> {
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`).pipe(
+            tap(() => this.loadWatchers(ticketId))
+        );
+    }
+
+    // ── Attachments ──────────────────────────────────────────────────────────
+
+    loadAttachments(ticketId: string): void {
+        this.http.get<Attachment[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachments(ticketId)}`).subscribe({
+            next: (data) => this._attachments.set(data),
+            error: () => this._attachments.set([])
+        });
+    }
+
+    addAttachment(ticketId: string, file: { fileName: string; filePath: string; fileSize: number; mimeType?: string }): Observable<Attachment> {
+        return this.http.post<Attachment>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachments(ticketId)}`, file).pipe(
+            tap((a) => this._attachments.update((list) => [a, ...list]))
+        );
+    }
+
+    deleteAttachment(ticketId: string, attachId: string): Observable<{ success: boolean }> {
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachmentDetail(ticketId, attachId)}`).pipe(
+            tap(() => this._attachments.update((list) => list.filter((a) => a.id !== attachId)))
+        );
+    }
+
+    // ── Work Logs ────────────────────────────────────────────────────────────
+
+    loadWorkLogs(ticketId: string): void {
+        this.http.get<WorkLog[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogs(ticketId)}`).subscribe({
+            next: (data) => this._workLogs.set(data),
+            error: () => this._workLogs.set([])
+        });
+    }
+
+    addWorkLog(ticketId: string, payload: CreateWorkLogPayload): Observable<WorkLog> {
+        return this.http.post<WorkLog>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogs(ticketId)}`, payload).pipe(
+            tap((log) => this._workLogs.update((list) => [log, ...list]))
+        );
+    }
+
+    deleteWorkLog(ticketId: string, logId: string): Observable<{ success: boolean }> {
+        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogDetail(ticketId, logId)}`).pipe(
+            tap(() => this._workLogs.update((list) => list.filter((l) => l.id !== logId)))
+        );
+    }
+
     // ── Admin: Projects ────────────────────────────────────────────────────────
 
     loadProjects(): void {
@@ -296,5 +386,8 @@ export class TicketFacade {
         this._children.set([]);
         this._links.set([]);
         this._activityLog.set([]);
+        this._watchers.set([]);
+        this._attachments.set([]);
+        this._workLogs.set([]);
     }
 }

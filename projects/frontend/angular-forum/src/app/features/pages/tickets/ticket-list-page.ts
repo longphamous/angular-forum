@@ -1,7 +1,7 @@
 import { DatePipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
@@ -24,6 +24,7 @@ import { TicketFacade } from "../../../facade/ticket/ticket-facade";
     imports: [
         DatePipe,
         FormsModule,
+        RouterLink,
         TranslocoModule,
         ButtonModule,
         DialogModule,
@@ -60,6 +61,7 @@ export class TicketListPage implements OnInit {
     readonly createPriority = signal<TicketPriority>("normal");
     readonly createType = signal<TicketType>("task");
     readonly createCategoryId = signal<string | null>(null);
+    readonly createAssigneeId = signal<string | null>(null);
     readonly createStoryPoints = signal<number | null>(null);
     readonly createSaving = signal(false);
 
@@ -106,6 +108,8 @@ export class TicketListPage implements OnInit {
         this.loadTickets();
         this.facade.loadStats();
         this.facade.loadCategories();
+        this.facade.loadProjects();
+        this.facade.loadAssignableUsers();
     }
 
     loadTickets(): void {
@@ -143,6 +147,7 @@ export class TicketListPage implements OnInit {
         this.createPriority.set("normal");
         this.createType.set("task");
         this.createCategoryId.set(null);
+        this.createAssigneeId.set(null);
         this.createStoryPoints.set(null);
         this.createDialogVisible.set(true);
     }
@@ -158,6 +163,7 @@ export class TicketListPage implements OnInit {
                 priority: this.createPriority(),
                 type: this.createType(),
                 categoryId: this.createCategoryId() ?? undefined,
+                assigneeId: this.createAssigneeId() ?? undefined,
                 storyPoints: this.createStoryPoints() ?? undefined
             })
             .subscribe({

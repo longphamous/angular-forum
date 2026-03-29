@@ -128,6 +128,27 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import("./features/pages/tickets/board/kanban-board").then((c) => c.KanbanBoard)
             },
+            {
+                path: "backlog/:projectId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/backlog/backlog-view").then((c) => c.BacklogView)
+            },
+            {
+                path: "reports/:projectId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/reports/project-reports").then((c) => c.ProjectReports)
+            },
+            {
+                path: "roadmap/:projectId",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/tickets/roadmap/roadmap-view").then((c) => c.RoadmapView)
+            },
             { path: "admin", redirectTo: "admin/overview", pathMatch: "full" },
             {
                 path: "admin/overview",

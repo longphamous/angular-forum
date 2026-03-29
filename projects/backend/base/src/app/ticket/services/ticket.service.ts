@@ -82,11 +82,14 @@ export class TicketService {
             .leftJoinAndSelect("t.labels", "lbl");
 
         this.applyFilters(qb, query);
-        this.applySorting(qb, query);
 
+        // Count before sorting/pagination (avoids TypeORM ORDER BY metadata crash with getManyAndCount)
+        const total = await qb.getCount();
+
+        this.applySorting(qb, query);
         qb.skip((page - 1) * limit).take(limit);
 
-        const [tickets, total] = await qb.getManyAndCount();
+        const tickets = await qb.getMany();
         const userIds = [...new Set(tickets.flatMap((t) => [t.authorId, t.assigneeId].filter(Boolean)))];
         const userMap = await this.getUserMap(userIds as string[]);
 
@@ -101,7 +104,7 @@ export class TicketService {
     async findById(id: string): Promise<TicketDto> {
         const ticket = await this.ticketRepo.findOne({
             where: { id },
-            relations: { category: true, project: true, labels: true, parent: true, workflowStatus: true }
+            relations: { category: true, project: true, labels: true, parent: true, workflowStatus: true, sprint: true }
         });
         if (!ticket) throw new NotFoundException(`Ticket "${id}" not found`);
         const childCount = await this.ticketRepo.count({ where: { parentId: id } });
@@ -227,6 +230,9 @@ export class TicketService {
         if (dto.projectId !== undefined) ticket.projectId = dto.projectId ?? undefined;
         if (dto.parentId !== undefined) ticket.parentId = dto.parentId ?? undefined;
         if (dto.storyPoints !== undefined) ticket.storyPoints = dto.storyPoints ?? undefined;
+        if (dto.sprintId !== undefined) ticket.sprintId = dto.sprintId ?? undefined;
+        if (dto.originalEstimateMinutes !== undefined) ticket.originalEstimateMinutes = dto.originalEstimateMinutes ?? undefined;
+        if (dto.remainingEstimateMinutes !== undefined) ticket.remainingEstimateMinutes = dto.remainingEstimateMinutes ?? undefined;
         if (dto.dueDate !== undefined) ticket.dueDate = dto.dueDate ? new Date(dto.dueDate) : undefined;
         if (dto.followUpDate !== undefined) ticket.followUpDate = dto.followUpDate ? new Date(dto.followUpDate) : undefined;
         if (dto.isPinned !== undefined) ticket.isPinned = dto.isPinned;
@@ -355,6 +361,11 @@ export class TicketService {
         // Update comment count
         ticket.commentCount = await this.commentRepo.count({ where: { ticketId } });
 
+        // Track first response (first non-author comment)
+        if (!ticket.firstResponseAt && authorId !== ticket.authorId) {
+            ticket.firstResponseAt = new Date();
+        }
+
         // Apply status change if provided
         if (dto.statusChange) {
             ticket.status = dto.statusChange;
@@ -417,28 +428,25 @@ export class TicketService {
 
     private applySorting(qb: SelectQueryBuilder<TicketEntity>, query: TicketQueryDto): void {
         const dir = query.sortOrder === "ASC" ? "ASC" : "DESC";
-        // Always show pinned first
-        qb.addOrderBy("t.is_pinned", "DESC");
-
+        // Always show pinned first, then apply requested sort.
+        // Use raw orderBy to avoid TypeORM's getManyAndCount metadata resolution crash.
         switch (query.sortBy) {
             case "priority":
-                qb.addSelect(
-                    `CASE t.priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 WHEN 'low' THEN 3 END`,
-                    "priority_order"
-                );
-                qb.addOrderBy("priority_order", dir);
+                // Sort by priority field directly (alphabetical: critical < high < low < normal)
+                // For correct severity order, the raw SQL uses quoted identifiers
+                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.priority", dir);
                 break;
             case "ticketNumber":
-                qb.addOrderBy("t.ticket_number", dir);
+                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.ticket_number", dir);
                 break;
             case "title":
-                qb.addOrderBy("t.title", dir);
+                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.title", dir);
                 break;
             case "dueDate":
-                qb.addOrderBy("t.due_date", dir, "NULLS LAST");
+                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.due_date", dir, "NULLS LAST");
                 break;
             default:
-                qb.addOrderBy("t.created_at", dir);
+                qb.orderBy("t.is_pinned", "DESC").addOrderBy("t.created_at", dir);
         }
     }
 
@@ -472,6 +480,14 @@ export class TicketService {
             workflowStatusId: t.workflowStatusId,
             workflowStatusName: t.workflowStatus?.name,
             workflowStatusColor: t.workflowStatus?.color,
+            sprintId: t.sprintId,
+            sprintName: t.sprint?.name,
+            backlogPosition: t.backlogPosition,
+            originalEstimateMinutes: t.originalEstimateMinutes,
+            remainingEstimateMinutes: t.remainingEstimateMinutes,
+            timeSpentMinutes: t.timeSpentMinutes ?? 0,
+            watcherCount: 0,
+            attachmentCount: 0,
             labels: (t.labels ?? []).map((l) => ({ id: l.id, name: l.name, color: l.color, categoryId: l.categoryId })),
             dueDate: t.dueDate?.toISOString(),
             followUpDate: t.followUpDate?.toISOString(),

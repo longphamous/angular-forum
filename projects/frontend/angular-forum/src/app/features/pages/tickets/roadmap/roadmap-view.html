@@ -1,0 +1,53 @@
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
+    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('tickets.roadmap.title') }}</h1>
+
+    @if (facade.loading()) {
+    <div class="flex flex-col gap-3">
+        @for (_ of [1,2,3]; track $index) {
+        <p-skeleton height="5rem" />
+        }
+    </div>
+    } @else if (facade.epics().length > 0) {
+    <div class="flex flex-col gap-4">
+        @for (epic of facade.epics(); track epic.id) {
+        <div class="surface-card rounded-xl p-5 shadow">
+            <div class="mb-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="pi pi-bolt text-yellow-500"></i>
+                    <a [routerLink]="['/tickets', epic.id]" class="text-surface-900 dark:text-surface-0 font-semibold hover:underline">
+                        #{{ epic.ticketNumber }} {{ epic.title }}
+                    </a>
+                    <p-tag [severity]="statusSeverity(epic.status)" [value]="t('tickets.status.' + epic.status)" styleClass="text-xs" />
+                    <p-tag [severity]="prioritySeverity(epic.priority)" [value]="t('tickets.priority.' + epic.priority)" styleClass="text-xs" />
+                </div>
+                <div class="text-surface-500 flex items-center gap-3 text-sm">
+                    @if (epic.storyPoints) {
+                    <span>{{ epic.storyPoints }} SP</span>
+                    }
+                    <span>{{ epic.completedChildCount }}/{{ epic.childCount }} {{ t('tickets.sprint.issues') }}</span>
+                    <span class="text-lg font-bold" [class]="epic.completionPercent === 100 ? 'text-green-500' : 'text-surface-600'">{{ epic.completionPercent }}%</span>
+                </div>
+            </div>
+
+            <p-progressBar [value]="epic.completionPercent" [showValue]="false" styleClass="h-2" />
+
+            @if (epic.startDate || epic.dueDate) {
+            <div class="text-surface-400 mt-2 flex gap-4 text-xs">
+                @if (epic.startDate) {
+                <span>{{ t('tickets.roadmap.start') }}: {{ epic.startDate }}</span>
+                }
+                @if (epic.dueDate) {
+                <span>{{ t('tickets.roadmap.due') }}: {{ epic.dueDate }}</span>
+                }
+            </div>
+            }
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="surface-card rounded-xl p-8 text-center shadow">
+        <i class="pi pi-map text-surface-300 mb-3 text-4xl"></i>
+        <p class="text-surface-400">{{ t('tickets.roadmap.noEpics') }}</p>
+    </div>
+    }
+</div>

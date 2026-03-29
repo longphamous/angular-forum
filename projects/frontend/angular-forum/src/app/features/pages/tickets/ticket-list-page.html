@@ -8,6 +8,30 @@
         <p-button [label]="t('tickets.createTicket')" (onClick)="openCreateDialog()" icon="pi pi-plus" />
     </div>
 
+    <!-- Project Quick Navigation -->
+    @if (facade.projects().length > 0) {
+    <div class="surface-card flex flex-wrap items-center gap-3 rounded-xl p-4 shadow">
+        <span class="text-surface-500 text-sm font-medium">{{ t('tickets.projectNav') }}:</span>
+        @for (project of facade.projects(); track project.id) {
+        <div class="flex items-center gap-1">
+            <span class="text-surface-700 dark:text-surface-200 text-sm font-medium">{{ project.name }}</span>
+            <a [routerLink]="['/board', project.id]" class="text-primary p-1 text-xs hover:underline" [pTooltip]="t('nav.ticketBoard')">
+                <i class="pi pi-objects-column"></i>
+            </a>
+            <a [routerLink]="['/backlog', project.id]" class="text-primary p-1 text-xs hover:underline" [pTooltip]="t('nav.ticketBacklog')">
+                <i class="pi pi-bars"></i>
+            </a>
+            <a [routerLink]="['/roadmap', project.id]" class="text-primary p-1 text-xs hover:underline" [pTooltip]="t('nav.ticketRoadmap')">
+                <i class="pi pi-map"></i>
+            </a>
+            <a [routerLink]="['/reports', project.id]" class="text-primary p-1 text-xs hover:underline" [pTooltip]="t('nav.ticketReports')">
+                <i class="pi pi-chart-bar"></i>
+            </a>
+        </div>
+        }
+    </div>
+    }
+
     <!-- Stats Cards -->
     @if (facade.stats(); as stats) {
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
@@ -208,6 +232,20 @@
                         optionValue="value"
                     />
                 </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.fieldAssignee') }}</label>
+                <p-select
+                    [ngModel]="createAssigneeId()"
+                    [options]="facade.assignableUsers()"
+                    (ngModelChange)="createAssigneeId.set($event)"
+                    optionLabel="displayName"
+                    optionValue="id"
+                    [showClear]="true"
+                    [placeholder]="t('tickets.selectAssignee')"
+                    [filter]="true"
+                    filterBy="displayName"
+                />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('tickets.storyPoints') }}</label>

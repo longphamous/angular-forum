@@ -1,0 +1,113 @@
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
+    <div class="flex items-center justify-between">
+        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('tickets.reports.title') }}</h1>
+    </div>
+
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab value="0">{{ t('tickets.reports.burndown') }}</p-tab>
+            <p-tab value="1">{{ t('tickets.reports.velocity') }}</p-tab>
+            <p-tab value="2">{{ t('tickets.reports.sprintReport') }}</p-tab>
+            <p-tab value="3">{{ t('tickets.sla.title') }}</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <!-- Burndown -->
+            <p-tabpanel value="0">
+                <div class="p-6">
+                    <div class="mb-4">
+                        <p-select
+                            [ngModel]="selectedSprintId()"
+                            [options]="sprintFacade.sprints()"
+                            (ngModelChange)="onSprintSelect($event)"
+                            optionLabel="name"
+                            optionValue="id"
+                            [placeholder]="t('tickets.reports.selectSprint')"
+                            styleClass="w-64"
+                        />
+                    </div>
+                    @if (burndownChartData(); as chartData) {
+                    <div class="h-80">
+                        <p-chart type="line" [data]="chartData" [options]="chartOptions" />
+                    </div>
+                    } @else {
+                    <p class="text-surface-400 text-center">{{ t('tickets.reports.selectSprintHint') }}</p>
+                    }
+                </div>
+            </p-tabpanel>
+
+            <!-- Velocity -->
+            <p-tabpanel value="1">
+                <div class="p-6">
+                    @if (velocityChartData(); as chartData) {
+                    <div class="h-80">
+                        <p-chart type="bar" [data]="chartData" [options]="chartOptions" />
+                    </div>
+                    } @else {
+                    <p class="text-surface-400 text-center">{{ t('tickets.reports.noData') }}</p>
+                    }
+                </div>
+            </p-tabpanel>
+
+            <!-- Sprint Report -->
+            <p-tabpanel value="2">
+                <div class="p-6">
+                    <div class="mb-4">
+                        <p-select
+                            [ngModel]="selectedSprintId()"
+                            [options]="sprintFacade.sprints()"
+                            (ngModelChange)="onSprintSelect($event)"
+                            optionLabel="name"
+                            optionValue="id"
+                            [placeholder]="t('tickets.reports.selectSprint')"
+                            styleClass="w-64"
+                        />
+                    </div>
+                    @if (reportingFacade.sprintReport(); as report) {
+                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <div class="surface-card rounded-xl p-4 text-center shadow">
+                            <div class="text-surface-500 text-sm">{{ t('tickets.reports.completed') }}</div>
+                            <div class="text-2xl font-bold text-green-600">{{ report.completedItems }}</div>
+                        </div>
+                        <div class="surface-card rounded-xl p-4 text-center shadow">
+                            <div class="text-surface-500 text-sm">{{ t('tickets.reports.incomplete') }}</div>
+                            <div class="text-2xl font-bold text-orange-600">{{ report.incompleteItems }}</div>
+                        </div>
+                        <div class="surface-card rounded-xl p-4 text-center shadow">
+                            <div class="text-surface-500 text-sm">{{ t('tickets.reports.addedMidSprint') }}</div>
+                            <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ report.addedMidSprint }}</div>
+                        </div>
+                        <div class="surface-card rounded-xl p-4 text-center shadow">
+                            <div class="text-surface-500 text-sm">{{ t('tickets.storyPoints') }}</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ report.completedPoints }}/{{ report.totalPoints }}</div>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </p-tabpanel>
+
+            <!-- SLA Breaches -->
+            <p-tabpanel value="3">
+                <div class="p-6">
+                    @if (reportingFacade.slaBreaches().length > 0) {
+                    <div class="flex flex-col gap-2">
+                        @for (sla of reportingFacade.slaBreaches(); track sla.ticketId) {
+                        <div class="flex items-center gap-3 rounded-lg bg-surface-50 p-3 dark:bg-surface-800">
+                            <span class="text-surface-400 font-mono text-xs">#{{ sla.ticketNumber }}</span>
+                            <a [routerLink]="['/tickets', sla.ticketId]" class="text-primary flex-1 text-sm font-medium hover:underline">{{ sla.title }}</a>
+                            <p-tag [value]="sla.priority" [severity]="sla.priority === 'critical' ? 'danger' : sla.priority === 'high' ? 'warn' : 'info'" styleClass="text-xs" />
+                            <div class="flex gap-2">
+                                <p-tag [value]="t('tickets.sla.firstResponse')" [severity]="slaSeverity(sla.firstResponse)" styleClass="text-xs" />
+                                <p-tag [value]="t('tickets.sla.resolution')" [severity]="slaSeverity(sla.resolution)" styleClass="text-xs" />
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    } @else {
+                    <p class="text-surface-400 text-center">{{ t('tickets.sla.noBreaches') }}</p>
+                    }
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

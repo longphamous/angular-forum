@@ -16,6 +16,7 @@ import { TicketCategoryEntity } from "./ticket-category.entity";
 import { TicketCommentEntity } from "./ticket-comment.entity";
 import { TicketLabelEntity } from "./ticket-label.entity";
 import { TicketProjectEntity } from "./ticket-project.entity";
+import { TicketSprintEntity } from "./ticket-sprint.entity";
 import { TicketWorkflowStatusEntity } from "./ticket-workflow-status.entity";
 
 export type TicketStatus = "open" | "in_progress" | "waiting" | "follow_up" | "resolved" | "closed";
@@ -103,6 +104,18 @@ export class TicketEntity {
     @JoinColumn({ name: "workflow_status_id" })
     workflowStatus?: TicketWorkflowStatusEntity;
 
+    // ── Sprint ───────────────────────────────────────────────────────────────
+
+    @Column({ name: "sprint_id", type: "uuid", nullable: true })
+    sprintId?: string;
+
+    @ManyToOne(() => TicketSprintEntity, (s) => s.tickets, { onDelete: "SET NULL" })
+    @JoinColumn({ name: "sprint_id" })
+    sprint?: TicketSprintEntity;
+
+    @Column({ name: "backlog_position", type: "int", nullable: true })
+    backlogPosition?: number;
+
     // ── Scheduling / Follow-Up ─────────────────────────────────────────────────
 
     @Column({ name: "due_date", type: "timestamptz", nullable: true })
@@ -127,7 +140,21 @@ export class TicketEntity {
     @Column({ name: "custom_fields", type: "jsonb", nullable: true })
     customFields?: Record<string, unknown>;
 
+    // ── Time Tracking ────────────────────────────────────────────────────────
+
+    @Column({ name: "original_estimate_minutes", type: "int", nullable: true })
+    originalEstimateMinutes?: number;
+
+    @Column({ name: "remaining_estimate_minutes", type: "int", nullable: true })
+    remainingEstimateMinutes?: number;
+
+    @Column({ name: "time_spent_minutes", type: "int", default: 0 })
+    timeSpentMinutes!: number;
+
     // ── Metadata ───────────────────────────────────────────────────────────────
+
+    @Column({ name: "first_response_at", type: "timestamptz", nullable: true })
+    firstResponseAt?: Date;
 
     @Column({ name: "comment_count", type: "int", default: 0 })
     commentCount!: number;

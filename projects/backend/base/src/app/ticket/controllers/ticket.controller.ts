@@ -5,17 +5,24 @@ import { AuthenticatedUser } from "../../auth/models/jwt.model";
 import { CreateCommentDto } from "../dto/create-comment.dto";
 import { CreateLinkDto } from "../dto/create-link.dto";
 import { CreateTicketDto } from "../dto/create-ticket.dto";
+import { CreateWorkLogDto } from "../dto/create-work-log.dto";
 import { TicketQueryDto } from "../dto/ticket-query.dto";
 import { UpdateTicketDto } from "../dto/update-ticket.dto";
-import type { PaginatedResult, TicketActivityDto, TicketCommentDto, TicketDto, TicketLinkDto, TicketStatsDto } from "../models/ticket.model";
+import type { AttachmentDto, PaginatedResult, TicketActivityDto, TicketCommentDto, TicketDto, TicketLinkDto, TicketStatsDto, WatcherDto, WorkLogDto } from "../models/ticket.model";
 import { TicketActivityService } from "../services/ticket-activity.service";
+import { TicketAttachmentService } from "../services/ticket-attachment.service";
+import { TicketWatcherService } from "../services/ticket-watcher.service";
+import { TicketWorkLogService } from "../services/ticket-work-log.service";
 import { TicketService } from "../services/ticket.service";
 
 @Controller("tickets")
 export class TicketController {
     constructor(
         private readonly ticketService: TicketService,
-        private readonly activityService: TicketActivityService
+        private readonly activityService: TicketActivityService,
+        private readonly watcherService: TicketWatcherService,
+        private readonly attachmentService: TicketAttachmentService,
+        private readonly workLogService: TicketWorkLogService
     ) {}
 
     /** POST /tickets — create a new ticket */
@@ -134,5 +141,77 @@ export class TicketController {
         @CurrentUser() user: AuthenticatedUser
     ): Promise<TicketCommentDto> {
         return this.ticketService.addComment(id, user.userId, dto);
+    }
+
+    // ── Watchers ─────────────────────────────────────────────────────────────
+
+    /** GET /tickets/:id/watchers */
+    @Get(":id/watchers")
+    getWatchers(@Param("id", ParseUUIDPipe) id: string): Promise<WatcherDto[]> {
+        return this.watcherService.getWatchers(id);
+    }
+
+    /** POST /tickets/:id/watch */
+    @Post(":id/watch")
+    async watch(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+        await this.watcherService.watch(id, user.userId);
+        return { success: true };
+    }
+
+    /** DELETE /tickets/:id/watch */
+    @Delete(":id/watch")
+    async unwatch(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+        await this.watcherService.unwatch(id, user.userId);
+        return { success: true };
+    }
+
+    // ── Attachments ──────────────────────────────────────────────────────────
+
+    /** GET /tickets/:id/attachments */
+    @Get(":id/attachments")
+    getAttachments(@Param("id", ParseUUIDPipe) id: string): Promise<AttachmentDto[]> {
+        return this.attachmentService.getAttachments(id);
+    }
+
+    /** POST /tickets/:id/attachments — simplified (file info in body, not multipart) */
+    @Post(":id/attachments")
+    addAttachment(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() body: { fileName: string; filePath: string; fileSize: number; mimeType?: string },
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<AttachmentDto> {
+        return this.attachmentService.addAttachment(id, user.userId, body);
+    }
+
+    /** DELETE /tickets/:id/attachments/:attachId */
+    @Delete(":id/attachments/:attachId")
+    async deleteAttachment(@Param("attachId", ParseUUIDPipe) attachId: string): Promise<{ success: boolean }> {
+        await this.attachmentService.deleteAttachment(attachId);
+        return { success: true };
+    }
+
+    // ── Work Logs ────────────────────────────────────────────────────────────
+
+    /** GET /tickets/:id/worklogs */
+    @Get(":id/worklogs")
+    getWorkLogs(@Param("id", ParseUUIDPipe) id: string): Promise<WorkLogDto[]> {
+        return this.workLogService.getWorkLogs(id);
+    }
+
+    /** POST /tickets/:id/worklogs */
+    @Post(":id/worklogs")
+    addWorkLog(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: CreateWorkLogDto,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<WorkLogDto> {
+        return this.workLogService.addWorkLog(id, user.userId, dto);
+    }
+
+    /** DELETE /tickets/:id/worklogs/:logId */
+    @Delete(":id/worklogs/:logId")
+    async deleteWorkLog(@Param("logId", ParseUUIDPipe) logId: string): Promise<{ success: boolean }> {
+        await this.workLogService.deleteWorkLog(logId);
+        return { success: true };
     }
 }

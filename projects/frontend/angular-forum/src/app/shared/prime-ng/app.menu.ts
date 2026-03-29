@@ -69,8 +69,18 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.recipes"), icon: "pi pi-fw pi-star", routerLink: ["/recipes"] },
                     { label: this.t("nav.messages"), icon: "pi pi-fw pi-envelope", routerLink: ["/messages"] },
                     { label: this.t("nav.friends"), icon: "pi pi-fw pi-users", routerLink: ["/friends"] },
-                    { label: this.t("nav.clips"), icon: "pi pi-fw pi-video", routerLink: ["/clips"] },
-                    { label: this.t("nav.tickets"), icon: "pi pi-fw pi-ticket", routerLink: ["/tickets"] }
+                    { label: this.t("nav.clips"), icon: "pi pi-fw pi-video", routerLink: ["/clips"] }
+                ]
+            },
+            // ── Tickets / Projektmanagement ─────────────────────────────
+            {
+                label: this.t("nav.tickets"),
+                items: [
+                    { label: this.t("nav.ticketOverview"), icon: "pi pi-fw pi-list", routerLink: ["/tickets"] },
+                    { label: this.t("nav.ticketBoard"), icon: "pi pi-fw pi-objects-column", routerLink: ["/tickets"] },
+                    { label: this.t("nav.ticketBacklog"), icon: "pi pi-fw pi-bars", routerLink: ["/tickets"] },
+                    { label: this.t("nav.ticketRoadmap"), icon: "pi pi-fw pi-map", routerLink: ["/tickets"] },
+                    { label: this.t("nav.ticketReports"), icon: "pi pi-fw pi-chart-bar", routerLink: ["/tickets"] }
                 ]
             },
             // ── Anime ─────────────────────────────────────────────────
