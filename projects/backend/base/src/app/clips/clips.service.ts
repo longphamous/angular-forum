@@ -182,7 +182,13 @@ export class ClipsService {
 
         const saved = await this.clipRepo.save(clip);
         void this.gamificationService.awardXp(authorId, "create_clip", saved.id);
-        void this.activityService.create(authorId, "clip_uploaded", `Neuer Clip: "${saved.title}"`, undefined, `/clips`);
+        void this.activityService.create(
+            authorId,
+            "clip_uploaded",
+            `Neuer Clip: "${saved.title}"`,
+            undefined,
+            "/clips"
+        );
         return this.enrichClip(saved, authorId);
     }
 
@@ -243,7 +249,7 @@ export class ClipsService {
                 "clip_liked",
                 "Clip geliked",
                 `Jemand hat deinen Clip "${clip.title}" geliked.`,
-                `/clips`
+                "/clips"
             );
         }
 
@@ -344,7 +350,7 @@ export class ClipsService {
                 "clip_commented",
                 "Neuer Kommentar",
                 `Jemand hat deinen Clip "${clip.title}" kommentiert.`,
-                `/clips`
+                "/clips"
             );
         }
 

@@ -9,18 +9,12 @@ import { CreateClanDto } from "../dto/create-clan.dto";
 import { CreateCommentDto } from "../dto/create-comment.dto";
 import { CreatePageDto } from "../dto/create-page.dto";
 import { UpdateClanDto } from "../dto/update-clan.dto";
+import { ClanEntity } from "../entities/clan.entity";
 import { ClanCategoryEntity } from "../entities/clan-category.entity";
 import { ClanCommentEntity } from "../entities/clan-comment.entity";
-import { ClanEntity } from "../entities/clan.entity";
 import { ClanMemberEntity } from "../entities/clan-member.entity";
 import { ClanPageEntity } from "../entities/clan-page.entity";
-import type {
-    ClanCommentDto,
-    ClanDto,
-    ClanListItemDto,
-    ClanPageDto,
-    PaginatedResult
-} from "../models/clan.model";
+import type { ClanCommentDto, ClanDto, ClanListItemDto, ClanPageDto, PaginatedResult } from "../models/clan.model";
 
 @Injectable()
 export class ClanService {
@@ -44,10 +38,7 @@ export class ClanService {
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
 
-        const qb = this.clanRepo
-            .createQueryBuilder("c")
-            .leftJoin("c.category", "cat")
-            .addSelect(["cat.name"]);
+        const qb = this.clanRepo.createQueryBuilder("c").leftJoin("c.category", "cat").addSelect(["cat.name"]);
 
         // Default: only active clans
         if (query.status) {

@@ -4,7 +4,7 @@ import { In, Repository } from "typeorm";
 
 import { UserEntity } from "../../user/entities/user.entity";
 import { ManageProjectMemberDto } from "../dto/manage-project-member.dto";
-import { TicketProjectMemberEntity, type ProjectMemberRole } from "../entities/ticket-project-member.entity";
+import { type ProjectMemberRole, TicketProjectMemberEntity } from "../entities/ticket-project-member.entity";
 import type { ProjectMemberDto } from "../models/ticket.model";
 
 @Injectable()

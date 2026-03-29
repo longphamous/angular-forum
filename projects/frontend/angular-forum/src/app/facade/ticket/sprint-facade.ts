@@ -99,17 +99,16 @@ export class SprintFacade {
     }
 
     moveToSprint(ticketId: string, sprintId: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${TICKET_ROUTES.moveToSprint()}`,
-            { ticketId, sprintId }
-        );
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.moveToSprint()}`, {
+            ticketId,
+            sprintId
+        });
     }
 
     moveToBacklog(ticketId: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${TICKET_ROUTES.moveToBacklog()}`,
-            { ticketId }
-        );
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.moveToBacklog()}`, {
+            ticketId
+        });
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

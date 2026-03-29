@@ -4,11 +4,7 @@ import { Observable, tap } from "rxjs";
 
 import { I18N_ROUTES } from "../../core/api/i18n.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
-import type {
-    I18nSettings,
-    TranslationOverride,
-    UpsertTranslationPayload
-} from "../../core/models/i18n/i18n";
+import type { I18nSettings, TranslationOverride, UpsertTranslationPayload } from "../../core/models/i18n/i18n";
 
 @Injectable({ providedIn: "root" })
 export class I18nFacade {
@@ -39,9 +35,9 @@ export class I18nFacade {
     }
 
     updateSettings(payload: Partial<I18nSettings>): Observable<I18nSettings> {
-        return this.http.patch<I18nSettings>(`${this.apiConfig.baseUrl}${I18N_ROUTES.settings()}`, payload).pipe(
-            tap((s) => this._settings.set(s))
-        );
+        return this.http
+            .patch<I18nSettings>(`${this.apiConfig.baseUrl}${I18N_ROUTES.settings()}`, payload)
+            .pipe(tap((s) => this._settings.set(s)));
     }
 
     loadOverrides(): void {

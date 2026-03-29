@@ -17,18 +17,18 @@
                 <div class="p-6">
                     <div class="mb-4">
                         <p-select
+                            (ngModelChange)="onSprintSelect($event)"
                             [ngModel]="selectedSprintId()"
                             [options]="sprintFacade.sprints()"
-                            (ngModelChange)="onSprintSelect($event)"
+                            [placeholder]="t('tickets.reports.selectSprint')"
                             optionLabel="name"
                             optionValue="id"
-                            [placeholder]="t('tickets.reports.selectSprint')"
                             styleClass="w-64"
                         />
                     </div>
                     @if (burndownChartData(); as chartData) {
                     <div class="h-80">
-                        <p-chart type="line" [data]="chartData" [options]="chartOptions" />
+                        <p-chart [data]="chartData" [options]="chartOptions" type="line" />
                     </div>
                     } @else {
                     <p class="text-surface-400 text-center">{{ t('tickets.reports.selectSprintHint') }}</p>
@@ -41,7 +41,7 @@
                 <div class="p-6">
                     @if (velocityChartData(); as chartData) {
                     <div class="h-80">
-                        <p-chart type="bar" [data]="chartData" [options]="chartOptions" />
+                        <p-chart [data]="chartData" [options]="chartOptions" type="bar" />
                     </div>
                     } @else {
                     <p class="text-surface-400 text-center">{{ t('tickets.reports.noData') }}</p>
@@ -54,12 +54,12 @@
                 <div class="p-6">
                     <div class="mb-4">
                         <p-select
+                            (ngModelChange)="onSprintSelect($event)"
                             [ngModel]="selectedSprintId()"
                             [options]="sprintFacade.sprints()"
-                            (ngModelChange)="onSprintSelect($event)"
+                            [placeholder]="t('tickets.reports.selectSprint')"
                             optionLabel="name"
                             optionValue="id"
-                            [placeholder]="t('tickets.reports.selectSprint')"
                             styleClass="w-64"
                         />
                     </div>
@@ -75,11 +75,15 @@
                         </div>
                         <div class="surface-card rounded-xl p-4 text-center shadow">
                             <div class="text-surface-500 text-sm">{{ t('tickets.reports.addedMidSprint') }}</div>
-                            <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">{{ report.addedMidSprint }}</div>
+                            <div class="text-surface-900 dark:text-surface-0 text-2xl font-bold">
+                                {{ report.addedMidSprint }}
+                            </div>
                         </div>
                         <div class="surface-card rounded-xl p-4 text-center shadow">
                             <div class="text-surface-500 text-sm">{{ t('tickets.storyPoints') }}</div>
-                            <div class="text-2xl font-bold text-blue-600">{{ report.completedPoints }}/{{ report.totalPoints }}</div>
+                            <div class="text-2xl font-bold text-blue-600">
+                                {{ report.completedPoints }}/{{ report.totalPoints }}
+                            </div>
                         </div>
                     </div>
                     }
@@ -92,13 +96,29 @@
                     @if (reportingFacade.slaBreaches().length > 0) {
                     <div class="flex flex-col gap-2">
                         @for (sla of reportingFacade.slaBreaches(); track sla.ticketId) {
-                        <div class="flex items-center gap-3 rounded-lg bg-surface-50 p-3 dark:bg-surface-800">
+                        <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-3">
                             <span class="text-surface-400 font-mono text-xs">#{{ sla.ticketNumber }}</span>
-                            <a [routerLink]="['/tickets', sla.ticketId]" class="text-primary flex-1 text-sm font-medium hover:underline">{{ sla.title }}</a>
-                            <p-tag [value]="sla.priority" [severity]="sla.priority === 'critical' ? 'danger' : sla.priority === 'high' ? 'warn' : 'info'" styleClass="text-xs" />
+                            <a
+                                class="text-primary flex-1 text-sm font-medium hover:underline"
+                                [routerLink]="['/tickets', sla.ticketId]"
+                                >{{ sla.title }}</a
+                            >
+                            <p-tag
+                                [severity]="sla.priority === 'critical' ? 'danger' : sla.priority === 'high' ? 'warn' : 'info'"
+                                [value]="sla.priority"
+                                styleClass="text-xs"
+                            />
                             <div class="flex gap-2">
-                                <p-tag [value]="t('tickets.sla.firstResponse')" [severity]="slaSeverity(sla.firstResponse)" styleClass="text-xs" />
-                                <p-tag [value]="t('tickets.sla.resolution')" [severity]="slaSeverity(sla.resolution)" styleClass="text-xs" />
+                                <p-tag
+                                    [severity]="slaSeverity(sla.firstResponse)"
+                                    [value]="t('tickets.sla.firstResponse')"
+                                    styleClass="text-xs"
+                                />
+                                <p-tag
+                                    [severity]="slaSeverity(sla.resolution)"
+                                    [value]="t('tickets.sla.resolution')"
+                                    styleClass="text-xs"
+                                />
                             </div>
                         </div>
                         }

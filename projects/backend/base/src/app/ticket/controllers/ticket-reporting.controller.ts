@@ -2,7 +2,13 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query
 
 import { Roles } from "../../auth/auth.decorators";
 import { CreateSlaConfigDto } from "../dto/create-sla-config.dto";
-import type { BurndownPointDto, SlaConfigDto, SlaStatusDto, SprintReportDto, VelocityEntryDto } from "../models/ticket.model";
+import type {
+    BurndownPointDto,
+    SlaConfigDto,
+    SlaStatusDto,
+    SprintReportDto,
+    VelocityEntryDto
+} from "../models/ticket.model";
 import { TicketReportingService } from "../services/ticket-reporting.service";
 import { TicketSlaService } from "../services/ticket-sla.service";
 
@@ -56,7 +62,10 @@ export class TicketReportingController {
     /** PATCH /tickets/reports/sla/:id */
     @Roles("admin")
     @Patch("sla/:id")
-    updateSlaConfig(@Param("id", ParseUUIDPipe) id: string, @Body() dto: Partial<CreateSlaConfigDto>): Promise<SlaConfigDto> {
+    updateSlaConfig(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: Partial<CreateSlaConfigDto>
+    ): Promise<SlaConfigDto> {
         return this.slaService.updateConfig(id, dto);
     }
 

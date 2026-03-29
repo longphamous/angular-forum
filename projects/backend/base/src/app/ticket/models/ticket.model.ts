@@ -1,6 +1,6 @@
+import type { TicketPriority, TicketStatus, TicketType } from "../entities/ticket.entity";
 import type { TicketActivityAction } from "../entities/ticket-activity-log.entity";
 import type { TicketLinkType } from "../entities/ticket-link.entity";
-import type { TicketPriority, TicketStatus, TicketType } from "../entities/ticket.entity";
 
 export interface PaginatedResult<T> {
     data: T[];

@@ -10,13 +10,24 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 
-import { SprintFacade } from "../../../../facade/ticket/sprint-facade";
 import { ReportingFacade } from "../../../../facade/ticket/reporting-facade";
+import { SprintFacade } from "../../../../facade/ticket/sprint-facade";
 
 @Component({
     selector: "project-reports",
     standalone: true,
-    imports: [DecimalPipe, FormsModule, RouterLink, TranslocoModule, ButtonModule, ChartModule, SelectModule, SkeletonModule, TabsModule, TagModule],
+    imports: [
+        DecimalPipe,
+        FormsModule,
+        RouterLink,
+        TranslocoModule,
+        ButtonModule,
+        ChartModule,
+        SelectModule,
+        SkeletonModule,
+        TabsModule,
+        TagModule
+    ],
     templateUrl: "./project-reports.html",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -35,8 +46,21 @@ export class ProjectReports implements OnInit {
         return {
             labels: data.map((p) => p.date),
             datasets: [
-                { label: "Remaining", data: data.map((p) => p.remaining), borderColor: "#EF4444", tension: 0.3, fill: false },
-                { label: "Ideal", data: data.map((p) => p.ideal), borderColor: "#9CA3AF", borderDash: [5, 5], tension: 0, fill: false }
+                {
+                    label: "Remaining",
+                    data: data.map((p) => p.remaining),
+                    borderColor: "#EF4444",
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: "Ideal",
+                    data: data.map((p) => p.ideal),
+                    borderColor: "#9CA3AF",
+                    borderDash: [5, 5],
+                    tension: 0,
+                    fill: false
+                }
             ]
         };
     });
@@ -53,7 +77,11 @@ export class ProjectReports implements OnInit {
         };
     });
 
-    readonly chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" as const } } };
+    readonly chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom" as const } }
+    };
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get("projectId") ?? "";
@@ -74,7 +102,11 @@ export class ProjectReports implements OnInit {
     }
 
     slaSeverity(status: string): "success" | "warn" | "danger" {
-        const map: Record<string, "success" | "warn" | "danger"> = { ok: "success", at_risk: "warn", breached: "danger" };
+        const map: Record<string, "success" | "warn" | "danger"> = {
+            ok: "success",
+            at_risk: "warn",
+            breached: "danger"
+        };
         return map[status] ?? "success";
     }
 }

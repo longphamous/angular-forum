@@ -8,6 +8,7 @@ export const GAMIFICATION_ROUTES = {
     recalculate: () => "/gamification/recalculate",
     bounty: {
         leaderboard: () => "/bounty/leaderboard",
+        config: () => "/bounty/config",
         me: () => "/bounty/me",
         user: (userId: string) => `/bounty/${userId}`,
         recalculate: () => "/bounty/recalculate"

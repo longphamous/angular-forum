@@ -1,118 +1,118 @@
-<div class="flex flex-col gap-8 p-6" *transloco="let t">
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
     <!-- Header -->
     <div class="text-center">
-        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-3xl font-black tracking-wider">{{ t('bounty.title') }}</h1>
-        <p class="text-surface-500 mt-1">{{ t('bounty.subtitle') }}</p>
+        <h1 class="m-0 text-4xl font-black tracking-[0.3em] text-amber-700 dark:text-amber-400">
+            {{ t('bounty.title') }}
+        </h1>
+        <p class="mt-2 text-amber-600/60 dark:text-amber-500/60">{{ t('bounty.subtitle') }}</p>
     </div>
 
-    <!-- My Wanted Poster -->
-    @if (facade.myPoster(); as my) {
-    <div class="flex flex-col items-center gap-4">
-        <h2 class="text-surface-700 dark:text-surface-300 text-lg font-semibold">{{ t('bounty.myPoster') }}</h2>
-        <wanted-poster [poster]="my" />
+    <!-- Tabs -->
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab value="0">{{ t('bounty.leaderboard') }}</p-tab>
+            <p-tab value="1">{{ t('bounty.myPoster') }}</p-tab>
+        </p-tablist>
 
-        <!-- Breakdown -->
-        <div class="surface-card grid max-w-lg grid-cols-3 gap-3 rounded-xl p-4 shadow sm:grid-cols-4">
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.coins') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.coins) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.xp') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.xp) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.posts') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.posts) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.threads') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.threads) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.reactions') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.reactions) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.achievements') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.achievements) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.blog') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.blog) }}</div>
-            </div>
-            <div class="text-center">
-                <div class="text-surface-400 text-xs">{{ t('bounty.factors.lexicon') }}</div>
-                <div class="text-surface-900 dark:text-surface-0 text-sm font-bold">{{ formatBounty(my.breakdown.lexicon) }}</div>
-            </div>
-        </div>
-    </div>
-    }
-
-    <!-- Leaderboard -->
-    <div>
-        <h2 class="text-surface-900 dark:text-surface-0 mb-6 text-center text-xl font-bold">{{ t('bounty.leaderboard') }}</h2>
-
-        @if (facade.loading()) {
-        <div class="flex flex-wrap justify-center gap-6">
-            @for (_ of [1,2,3,4,5,6]; track $index) {
-            <p-skeleton width="280px" height="420px" />
-            }
-        </div>
-        } @else {
-        <!-- Top 3 featured posters -->
-        @if (facade.leaderboard().length >= 3) {
-        <div class="mb-8 flex flex-wrap items-end justify-center gap-6">
-            <!-- #2 -->
-            <div class="opacity-90">
-                <wanted-poster [poster]="facade.leaderboard()[1]" />
-            </div>
-            <!-- #1 (featured, larger) -->
-            <div class="scale-110 transform">
-                <wanted-poster [poster]="facade.leaderboard()[0]" />
-            </div>
-            <!-- #3 -->
-            <div class="opacity-90">
-                <wanted-poster [poster]="facade.leaderboard()[2]" />
-            </div>
-        </div>
-        }
-
-        <!-- Rest of leaderboard as table -->
-        @if (facade.leaderboard().length > 3) {
-        <div class="surface-card mx-auto max-w-3xl rounded-xl shadow">
-            <div class="flex flex-col">
-                @for (poster of facade.leaderboard().slice(3); track poster.userId; let i = $index) {
-                <div class="border-surface-100 dark:border-surface-800 flex items-center gap-4 border-b p-4 last:border-b-0">
-                    <span class="text-surface-400 w-8 text-center font-mono text-lg font-bold">{{ i + 4 }}</span>
-                    @if (poster.avatarUrl) {
-                    <img [src]="poster.avatarUrl" [alt]="poster.displayName" class="h-10 w-10 rounded-full object-cover" />
-                    } @else {
-                    <div class="bg-primary/20 text-primary flex h-10 w-10 items-center justify-center rounded-full font-bold">
-                        {{ poster.displayName.charAt(0) }}
+        <p-tabpanels>
+            <!-- Leaderboard Tab -->
+            <p-tabpanel value="0">
+                <div class="py-6">
+                    @if (facade.loading()) {
+                    <div class="flex flex-wrap justify-center gap-8">
+                        @for (_ of [1,2,3]; track $index) {
+                        <p-skeleton height="440px" width="300px" />
+                        }
                     </div>
-                    }
-                    <div class="flex-1">
-                        <a [routerLink]="['/users', poster.userId]" class="text-surface-900 dark:text-surface-0 font-semibold hover:underline">{{ poster.displayName }}</a>
-                        <div class="text-surface-400 text-xs italic">"{{ poster.epithet }}"</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-surface-900 dark:text-surface-0 font-mono text-lg font-bold">
-                            <span class="text-surface-400 text-sm line-through">B</span> {{ poster.bounty | number }}
+                    } @else if (facade.leaderboard().length > 0) {
+
+                    <!-- Top 3 Podium -->
+                    @if (facade.leaderboard().length >= 3) {
+                    <div class="mb-12 flex flex-wrap items-end justify-center gap-8">
+                        <div class="mt-8 opacity-95">
+                            <wanted-poster [poster]="facade.leaderboard()[1]" />
+                        </div>
+                        <div class="scale-110">
+                            <wanted-poster [poster]="facade.leaderboard()[0]" />
+                        </div>
+                        <div class="mt-8 opacity-95">
+                            <wanted-poster [poster]="facade.leaderboard()[2]" />
                         </div>
                     </div>
-                </div>
-                }
-            </div>
-        </div>
-        }
+                    } @else {
+                    <div class="mb-8 flex flex-wrap justify-center gap-6">
+                        @for (poster of facade.leaderboard(); track poster.userId) {
+                        <wanted-poster [poster]="poster" />
+                        }
+                    </div>
+                    }
 
-        @if (facade.leaderboard().length === 0) {
-        <div class="surface-card rounded-xl p-8 text-center shadow">
-            <i class="pi pi-map text-surface-300 mb-3 text-4xl"></i>
-            <p class="text-surface-400">{{ t('bounty.noBounties') }}</p>
-        </div>
-        }
-        }
-    </div>
+                    <!-- Rest of leaderboard -->
+                    @if (facade.leaderboard().length > 3) {
+                    <div class="mx-auto max-w-3xl overflow-hidden rounded-xl border border-amber-200/20 dark:border-amber-800/20">
+                        @for (poster of facade.leaderboard().slice(3); track poster.userId; let i = $index) {
+                        <div class="flex items-center gap-4 border-b border-amber-100/30 p-4 transition-colors last:border-b-0 hover:bg-amber-50/50 dark:border-amber-900/20 dark:hover:bg-amber-950/20">
+                            <span class="w-8 text-center font-mono text-lg font-bold text-amber-600/60 dark:text-amber-500/50">{{ i + 4 }}</span>
+                            @if (poster.avatarUrl) {
+                            <img class="h-10 w-10 rounded-full border-2 border-amber-300/30 object-cover dark:border-amber-700/30" [alt]="poster.displayName" [src]="poster.avatarUrl" />
+                            } @else {
+                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-200/30 font-bold text-amber-800 dark:bg-amber-800/30 dark:text-amber-300">
+                                {{ poster.displayName.charAt(0) }}
+                            </div>
+                            }
+                            <div class="flex-1">
+                                <a class="font-semibold text-amber-900 hover:underline dark:text-amber-100" [routerLink]="['/users', poster.userId]">{{ poster.displayName }}</a>
+                                <div class="text-xs italic text-amber-600/50 dark:text-amber-500/50">"{{ poster.epithet }}"</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-mono text-lg font-bold text-amber-900 dark:text-amber-200">
+                                    <span class="text-sm text-amber-500/50 line-through">B</span> {{ poster.bounty | number }}
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+
+                    } @else {
+                    <div class="rounded-xl border border-amber-200/20 p-12 text-center dark:border-amber-800/20">
+                        <i class="pi pi-flag mb-3 text-4xl text-amber-400/30"></i>
+                        <p class="text-amber-600/50 dark:text-amber-500/40">{{ t('bounty.noBounties') }}</p>
+                    </div>
+                    }
+                </div>
+            </p-tabpanel>
+
+            <!-- My Poster Tab -->
+            <p-tabpanel value="1">
+                <div class="py-6">
+                    @if (facade.myPoster(); as my) {
+                    <div class="flex flex-col items-center gap-6">
+                        <wanted-poster [poster]="my" />
+
+                        <!-- Breakdown -->
+                        <div class="grid max-w-xl grid-cols-4 gap-3 rounded-xl border border-amber-200/30 bg-amber-950/5 p-5 dark:border-amber-700/20 dark:bg-amber-950/20">
+                            @for (factor of breakdownFactors(my); track factor.key) {
+                            <div class="text-center">
+                                <div class="text-xs text-amber-700/60 dark:text-amber-400/60">{{ t(factor.labelKey) }}</div>
+                                <div class="text-sm font-bold text-amber-900 dark:text-amber-200">{{ formatBounty(factor.value) }}</div>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- All factors explanation -->
+                        <div class="max-w-md text-center text-xs text-amber-600/40 dark:text-amber-500/30">
+                            {{ t('bounty.factorHint') }}
+                        </div>
+                    </div>
+                    } @else {
+                    <div class="rounded-xl border border-amber-200/20 p-12 text-center dark:border-amber-800/20">
+                        <i class="pi pi-user mb-3 text-4xl text-amber-400/30"></i>
+                        <p class="text-amber-600/50 dark:text-amber-500/40">{{ t('bounty.noPoster') }}</p>
+                    </div>
+                    }
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
 </div>

@@ -4,8 +4,8 @@ import { Repository } from "typeorm";
 
 import { ClanQueryDto } from "../dto/clan-query.dto";
 import { CreateCategoryDto } from "../dto/create-category.dto";
-import { ClanCategoryEntity } from "../entities/clan-category.entity";
 import { ClanEntity, type ClanStatus } from "../entities/clan.entity";
+import { ClanCategoryEntity } from "../entities/clan-category.entity";
 import type { ClanCategoryDto, ClanListItemDto, PaginatedResult } from "../models/clan.model";
 
 @Injectable()
@@ -57,10 +57,7 @@ export class ClanAdminService {
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
 
-        const qb = this.clanRepo
-            .createQueryBuilder("c")
-            .leftJoin("c.category", "cat")
-            .addSelect(["cat.name"]);
+        const qb = this.clanRepo.createQueryBuilder("c").leftJoin("c.category", "cat").addSelect(["cat.name"]);
 
         if (query.status) {
             qb.where("c.status = :status", { status: query.status });

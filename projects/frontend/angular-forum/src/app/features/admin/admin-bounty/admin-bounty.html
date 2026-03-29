@@ -1,0 +1,138 @@
+<div class="flex flex-col gap-6 p-6" *transloco="let t">
+    <p-toast />
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('bounty.adminTitle') }}</h2>
+            <p class="text-surface-500 mt-1">{{ t('bounty.adminSubtitle') }}</p>
+        </div>
+        <p-button
+            (onClick)="recalculate()"
+            [label]="t('bounty.recalculateAll')"
+            [loading]="facade.recalculating()"
+            icon="pi pi-refresh"
+            severity="warn"
+        />
+    </div>
+
+    <!-- Bounty Factors -->
+    <div class="surface-card rounded-xl p-5 shadow">
+        <h3 class="text-surface-900 dark:text-surface-0 mt-0 mb-4 text-lg font-semibold">
+            {{ t('bounty.factorOverview') }}
+        </h3>
+        <p class="text-surface-500 mb-4 text-sm">{{ t('bounty.factorDescription') }}</p>
+
+        @if (facade.config(); as cfg) {
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            @for (entry of getMultiplierEntries(); track entry.key) {
+            <div class="border-surface-200 dark:border-surface-700 flex items-center gap-3 rounded-lg border p-4">
+                <div class="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                    <i [class]="entry.icon + ' text-primary'"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold">
+                        {{ t(entry.labelKey) }}
+                    </div>
+                    <div class="text-surface-400 text-xs">
+                        1 {{ t(entry.labelKey) }} = {{ entry.value | number }} {{ t('bounty.bountyPoints') }}
+                    </div>
+                </div>
+                <div class="text-primary text-lg font-bold">x{{ entry.value | number }}</div>
+            </div>
+            }
+        </div>
+
+        <!-- Epithet Tiers -->
+        <h3 class="text-surface-900 dark:text-surface-0 mt-6 mb-3 text-lg font-semibold">
+            {{ t('bounty.epithetTiers') }}
+        </h3>
+        <div class="flex flex-wrap gap-2">
+            @for (tier of cfg.epithets; track tier.epithet) {
+            <div class="border-surface-200 dark:border-surface-700 flex items-center gap-2 rounded-lg border px-4 py-2">
+                <span class="text-surface-900 dark:text-surface-0 text-sm font-bold">"{{ tier.epithet }}"</span>
+                <span class="text-surface-400 text-xs">{{ tier.min | number }}+</span>
+            </div>
+            }
+        </div>
+        } @else {
+        <div class="flex flex-col gap-2">
+            @for (_ of [1,2,3,4]; track $index) {
+            <p-skeleton height="3rem" />
+            }
+        </div>
+        }
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="surface-card rounded-xl shadow">
+        <div class="flex items-center justify-between p-4">
+            <h3 class="text-surface-900 dark:text-surface-0 m-0 text-lg font-semibold">
+                {{ t('bounty.leaderboard') }}
+            </h3>
+            <span class="text-surface-400 text-sm">{{ facade.leaderboardTotal() }} {{ t('bounty.totalUsers') }}</span>
+        </div>
+
+        <p-table [value]="facade.leaderboard()" styleClass="p-datatable-sm p-datatable-striped">
+            <ng-template #header>
+                <tr>
+                    <th class="w-16">{{ t('bounty.rank') }}</th>
+                    <th>{{ t('bounty.user') }}</th>
+                    <th class="w-32">{{ t('bounty.epithet') }}</th>
+                    <th class="w-40 text-right">{{ t('bounty.totalBounty') }}</th>
+                    <th class="w-28 text-right">{{ t('bounty.factors.coins') }}</th>
+                    <th class="w-28 text-right">{{ t('bounty.factors.xp') }}</th>
+                    <th class="w-28 text-right">{{ t('bounty.factors.posts') }}</th>
+                    <th class="w-28 text-right">{{ t('bounty.factors.achievements') }}</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-poster>
+                <tr>
+                    <td class="font-mono font-bold">
+                        @if (poster.rank <= 3) {
+                        <span
+                            class="text-lg"
+                            [class]="poster.rank === 1 ? 'text-yellow-500' : poster.rank === 2 ? 'text-gray-400' : 'text-amber-700'"
+                        >
+                            #{{ poster.rank }}
+                        </span>
+                        } @else { #{{ poster.rank }} }
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            @if (poster.avatarUrl) {
+                            <img class="h-8 w-8 rounded-full object-cover" [src]="poster.avatarUrl" />
+                            } @else {
+                            <div
+                                class="bg-primary/20 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                            >
+                                {{ poster.displayName.charAt(0) }}
+                            </div>
+                            }
+                            <span class="text-surface-900 dark:text-surface-0 font-medium"
+                                >{{ poster.displayName }}</span
+                            >
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-surface-500 text-sm italic">"{{ poster.epithet }}"</span>
+                    </td>
+                    <td class="text-right font-mono font-bold">
+                        <span class="text-surface-400 text-xs line-through">B</span> {{ poster.bounty | number }}
+                    </td>
+                    <td class="text-surface-500 text-right text-sm">{{ formatBounty(poster.breakdown.coins) }}</td>
+                    <td class="text-surface-500 text-right text-sm">{{ formatBounty(poster.breakdown.xp) }}</td>
+                    <td class="text-surface-500 text-right text-sm">{{ formatBounty(poster.breakdown.posts) }}</td>
+                    <td class="text-surface-500 text-right text-sm">
+                        {{ formatBounty(poster.breakdown.achievements) }}
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td class="text-center" colspan="8">{{ t('bounty.noBounties') }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

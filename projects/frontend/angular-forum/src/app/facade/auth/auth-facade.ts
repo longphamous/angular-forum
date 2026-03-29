@@ -147,43 +147,67 @@ export class AuthFacade {
         const raw = storage.getItem(STORAGE_PROFILE);
         if (!token || !raw) return;
 
-        // Check if access token is expired
-        if (this._isTokenExpired(token)) {
-            // Try to refresh silently
-            if (refreshToken) {
-                this.http
-                    .post<AuthSession>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.refresh()}`, { refreshToken })
-                    .subscribe({
-                        next: (session) => {
-                            this._accessToken.set(session.accessToken);
-                            storage.setItem(STORAGE_TOKEN, session.accessToken);
-                            storage.setItem(STORAGE_REFRESH, session.refreshToken);
-                            try {
-                                this._currentUser.set(JSON.parse(raw) as UserProfile);
-                            } catch {
-                                // profile parse failed
-                            }
-                            this.pushService.connect(session.accessToken);
-                        },
-                        error: () => {
-                            // Refresh failed — clear everything, redirect to login
-                            this._clearStorage();
-                            this.router.navigate(["/login"]);
-                        }
-                    });
-            } else {
-                this._clearStorage();
-                this.router.navigate(["/login"]);
+        let profile: UserProfile;
+        try {
+            profile = JSON.parse(raw) as UserProfile;
+        } catch {
+            this._clearStorage();
+            return;
+        }
+
+        // Token is still valid — restore session immediately
+        if (!this._isTokenExpired(token)) {
+            this._accessToken.set(token);
+            this._currentUser.set(profile);
+            this.pushService.connect(token);
+
+            // Proactively refresh if token expires within 5 minutes
+            if (this._tokenExpiresWithin(token, 5 * 60)) {
+                this._silentRefresh(storage, profile);
             }
             return;
         }
 
-        try {
-            this._accessToken.set(token);
-            this._currentUser.set(JSON.parse(raw) as UserProfile);
-            this.pushService.connect(token);
-        } catch {
+        // Token expired — attempt refresh before restoring user state
+        if (refreshToken) {
+            this._silentRefresh(storage, profile);
+        } else {
             this._clearStorage();
+        }
+    }
+
+    /** Attempt silent token refresh. Only sets user state on success. */
+    private _silentRefresh(storage: Storage, profile: UserProfile): void {
+        const refreshToken = storage.getItem(STORAGE_REFRESH);
+        if (!refreshToken) {
+            this._clearStorage();
+            return;
+        }
+
+        this.http.post<AuthSession>(`${this.apiConfig.baseUrl}${AUTH_ROUTES.refresh()}`, { refreshToken }).subscribe({
+            next: (session) => {
+                this._accessToken.set(session.accessToken);
+                this._currentUser.set(profile);
+                storage.setItem(STORAGE_TOKEN, session.accessToken);
+                storage.setItem(STORAGE_REFRESH, session.refreshToken);
+                this.pushService.connect(session.accessToken);
+            },
+            error: () => {
+                // Refresh failed — session is truly expired
+                this._clearStorage();
+            }
+        });
+    }
+
+    /** Check if token expires within the given seconds. */
+    private _tokenExpiresWithin(token: string, seconds: number): boolean {
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            const exp = payload.exp as number | undefined;
+            if (!exp) return false;
+            return exp * 1000 - Date.now() < seconds * 1000;
+        } catch {
+            return true;
         }
     }
 

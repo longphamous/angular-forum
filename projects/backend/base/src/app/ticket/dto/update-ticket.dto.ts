@@ -1,4 +1,16 @@
-import { IsArray, IsBoolean, IsEnum, IsInt, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from "class-validator";
+import {
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsObject,
+    IsOptional,
+    IsString,
+    IsUUID,
+    Max,
+    MaxLength,
+    Min
+} from "class-validator";
 
 import type { TicketPriority, TicketStatus, TicketType } from "../entities/ticket.entity";
 

@@ -111,15 +111,13 @@ export const routes: Routes = [
                 path: "wanted",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/bounty/bounty-page").then((c) => c.BountyPage)
+                loadComponent: () => import("./features/pages/bounty/bounty-page").then((c) => c.BountyPage)
             },
             {
                 path: "tickets",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/tickets/ticket-list-page").then((c) => c.TicketListPage)
+                loadComponent: () => import("./features/pages/tickets/ticket-list-page").then((c) => c.TicketListPage)
             },
             {
                 path: "tickets/:id",
@@ -160,15 +158,13 @@ export const routes: Routes = [
                 path: "board/:projectId",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/tickets/board/kanban-board").then((c) => c.KanbanBoard)
+                loadComponent: () => import("./features/pages/tickets/board/kanban-board").then((c) => c.KanbanBoard)
             },
             {
                 path: "backlog/:projectId",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/tickets/backlog/backlog-view").then((c) => c.BacklogView)
+                loadComponent: () => import("./features/pages/tickets/backlog/backlog-view").then((c) => c.BacklogView)
             },
             {
                 path: "reports/:projectId",
@@ -181,36 +177,31 @@ export const routes: Routes = [
                 path: "roadmap/:projectId",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/tickets/roadmap/roadmap-view").then((c) => c.RoadmapView)
+                loadComponent: () => import("./features/pages/tickets/roadmap/roadmap-view").then((c) => c.RoadmapView)
             },
             {
                 path: "clans",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clans/clan-list-page").then((c) => c.ClanListPage)
+                loadComponent: () => import("./features/pages/clans/clan-list-page").then((c) => c.ClanListPage)
             },
             {
                 path: "clans/create",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clans/clan-create-page").then((c) => c.ClanCreatePage)
+                loadComponent: () => import("./features/pages/clans/clan-create-page").then((c) => c.ClanCreatePage)
             },
             {
                 path: "clans/:id/settings",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clans/clan-settings-page").then((c) => c.ClanSettingsPage)
+                loadComponent: () => import("./features/pages/clans/clan-settings-page").then((c) => c.ClanSettingsPage)
             },
             {
                 path: "clans/:id",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/pages/clans/clan-detail-page").then((c) => c.ClanDetailPage)
+                loadComponent: () => import("./features/pages/clans/clan-detail-page").then((c) => c.ClanDetailPage)
             },
             { path: "admin", redirectTo: "admin/overview", pathMatch: "full" },
             {
@@ -580,15 +571,19 @@ export const routes: Routes = [
                 path: "admin/tickets",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/admin/admin-tickets/admin-tickets").then((c) => c.AdminTickets)
+                loadComponent: () => import("./features/admin/admin-tickets/admin-tickets").then((c) => c.AdminTickets)
             },
             {
                 path: "admin/clans",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],
-                loadComponent: () =>
-                    import("./features/admin/admin-clans/admin-clans").then((c) => c.AdminClans)
+                loadComponent: () => import("./features/admin/admin-clans/admin-clans").then((c) => c.AdminClans)
+            },
+            {
+                path: "admin/bounty",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/admin/admin-bounty/admin-bounty").then((c) => c.AdminBounty)
             }
         ]
     }

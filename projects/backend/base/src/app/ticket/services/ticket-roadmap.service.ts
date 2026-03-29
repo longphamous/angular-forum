@@ -7,9 +7,7 @@ import type { RoadmapEpicDto } from "../models/ticket.model";
 
 @Injectable()
 export class TicketRoadmapService {
-    constructor(
-        @InjectRepository(TicketEntity) private readonly ticketRepo: Repository<TicketEntity>
-    ) {}
+    constructor(@InjectRepository(TicketEntity) private readonly ticketRepo: Repository<TicketEntity>) {}
 
     async getRoadmap(projectId: string): Promise<RoadmapEpicDto[]> {
         // Get all epics for this project

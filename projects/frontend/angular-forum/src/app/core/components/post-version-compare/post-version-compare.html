@@ -5,8 +5,8 @@
         <div class="flex items-center gap-1">
             <button
                 class="compare-mode-btn"
-                [class.active]="mode() === 'rendered'"
                 (click)="setMode('rendered')"
+                [class.active]="mode() === 'rendered'"
                 type="button"
             >
                 <i class="pi pi-eye mr-1 text-xs"></i>
@@ -14,8 +14,8 @@
             </button>
             <button
                 class="compare-mode-btn"
-                [class.active]="mode() === 'source'"
                 (click)="setMode('source')"
+                [class.active]="mode() === 'source'"
                 type="button"
             >
                 <i class="pi pi-code mr-1 text-xs"></i>
@@ -28,12 +28,12 @@
             <div class="version-selector-group">
                 <span class="version-selector-label">{{ t('threadDetail.historyDialog.from') }}</span>
                 <p-select
-                    [options]="versionOptions()"
-                    [ngModel]="effectiveLeft()"
                     (ngModelChange)="selectLeft($event)"
+                    [ngModel]="effectiveLeft()"
+                    [options]="versionOptions()"
+                    [style]="{ width: '7rem', fontSize: '0.8125rem' }"
                     optionLabel="label"
                     optionValue="value"
-                    [style]="{ width: '7rem', fontSize: '0.8125rem' }"
                     size="small"
                 />
             </div>
@@ -41,12 +41,12 @@
             <div class="version-selector-group">
                 <span class="version-selector-label">{{ t('threadDetail.historyDialog.to') }}</span>
                 <p-select
-                    [options]="versionOptions()"
-                    [ngModel]="effectiveRight()"
                     (ngModelChange)="selectRight($event)"
+                    [ngModel]="effectiveRight()"
+                    [options]="versionOptions()"
+                    [style]="{ width: '7rem', fontSize: '0.8125rem' }"
                     optionLabel="label"
                     optionValue="value"
-                    [style]="{ width: '7rem', fontSize: '0.8125rem' }"
                     size="small"
                 />
             </div>
@@ -57,15 +57,15 @@
     <div class="flex flex-col gap-4 lg:flex-row">
         <!-- Version timeline (left sidebar) -->
         <div class="w-full shrink-0 lg:w-56">
-            <div class="text-surface-500 mb-2 text-xs font-semibold uppercase tracking-wider">
+            <div class="text-surface-500 mb-2 text-xs font-semibold tracking-wider uppercase">
                 {{ t('threadDetail.historyDialog.versions') }}
             </div>
             <div class="version-timeline">
                 @for (ver of allVersions(); track $index; let i = $index) {
                 <div
                     class="version-entry"
-                    [class.selected]="i === effectiveLeft() || i === effectiveRight()"
                     (click)="selectLeft(i)"
+                    [class.selected]="i === effectiveLeft() || i === effectiveRight()"
                 >
                     <div
                         class="version-dot"
@@ -75,22 +75,20 @@
                     ></div>
                     <div class="version-entry-info">
                         <div class="version-entry-label">
-                            @if (i === allVersions().length - 1) {
-                            {{ t('threadDetail.historyDialog.currentVersion') }}
-                            } @else {
-                            {{ t('threadDetail.historyDialog.version') }} #{{ i + 1 }}
-                            }
+                            @if (i === allVersions().length - 1) { {{ t('threadDetail.historyDialog.currentVersion') }}
+                            } @else { {{ t('threadDetail.historyDialog.version') }} #{{ i + 1 }} }
                         </div>
                         <div class="version-entry-date">{{ formatVersionDate(ver.editedAt) }}</div>
                         @if (ver.reason) {
-                        <div class="version-entry-reason" [pTooltip]="ver.reason" tooltipPosition="right">{{ ver.reason }}</div>
+                        <div class="version-entry-reason" [pTooltip]="ver.reason" tooltipPosition="right">
+                            {{ ver.reason }}
+                        </div>
                         }
                     </div>
                     @if (i === effectiveLeft()) {
-                    <p-tag value="A" severity="warn" styleClass="text-[10px]" />
-                    }
-                    @if (i === effectiveRight()) {
-                    <p-tag value="B" severity="info" styleClass="text-[10px]" />
+                    <p-tag severity="warn" styleClass="text-[10px]" value="A" />
+                    } @if (i === effectiveRight()) {
+                    <p-tag severity="info" styleClass="text-[10px]" value="B" />
                     }
                 </div>
                 }
@@ -148,10 +146,10 @@
                 <p-button
                     (onClick)="onRestoreLeft()"
                     [label]="t('threadDetail.historyDialog.restore')"
+                    [outlined]="true"
                     icon="pi pi-history"
                     severity="warn"
                     size="small"
-                    [outlined]="true"
                 />
             </div>
             }

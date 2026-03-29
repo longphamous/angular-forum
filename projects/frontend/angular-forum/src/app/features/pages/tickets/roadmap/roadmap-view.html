@@ -13,20 +13,33 @@
     <div class="surface-card overflow-x-auto rounded-xl shadow">
         <div class="min-w-[800px]">
             <!-- Month headers -->
-            <div class="border-surface-200 dark:border-surface-700 grid border-b" [style.grid-template-columns]="'250px repeat(' + months().length + ', 1fr)'">
+            <div
+                class="border-surface-200 dark:border-surface-700 grid border-b"
+                [style.grid-template-columns]="'250px repeat(' + months().length + ', 1fr)'"
+            >
                 <div class="text-surface-500 p-3 text-sm font-medium">{{ t('tickets.roadmap.epics') }}</div>
                 @for (month of months(); track month.key) {
-                <div class="text-surface-400 border-surface-200 dark:border-surface-700 border-l p-3 text-center text-xs">{{ month.label }}</div>
+                <div
+                    class="text-surface-400 border-surface-200 dark:border-surface-700 border-l p-3 text-center text-xs"
+                >
+                    {{ month.label }}
+                </div>
                 }
             </div>
 
             <!-- Epic rows -->
             @for (epic of facade.epics(); track epic.id) {
-            <div class="border-surface-100 dark:border-surface-800 grid border-b last:border-b-0 hover:bg-surface-50 dark:hover:bg-surface-800/50" [style.grid-template-columns]="'250px repeat(' + months().length + ', 1fr)'">
+            <div
+                class="border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/50 grid border-b last:border-b-0"
+                [style.grid-template-columns]="'250px repeat(' + months().length + ', 1fr)'"
+            >
                 <!-- Epic info -->
                 <div class="flex items-center gap-2 p-3">
                     <i class="pi pi-bolt text-sm text-yellow-500"></i>
-                    <a [routerLink]="['/tickets', epic.id]" class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium hover:underline">
+                    <a
+                        class="text-surface-900 dark:text-surface-0 truncate text-sm font-medium hover:underline"
+                        [routerLink]="['/tickets', epic.id]"
+                    >
                         #{{ epic.ticketNumber }} {{ epic.title }}
                     </a>
                 </div>
@@ -36,16 +49,16 @@
                     @if (getBarStyle(epic, mi); as bar) {
                     <div
                         class="absolute top-1/2 h-6 -translate-y-1/2 rounded"
+                        [pTooltip]="epic.title + ' (' + epic.completionPercent + '%)'"
+                        [style.background-color]="statusColor(epic.status)"
                         [style.left]="bar.left"
                         [style.width]="bar.width"
-                        [style.background-color]="statusColor(epic.status)"
-                        [pTooltip]="epic.title + ' (' + epic.completionPercent + '%)'"
                     >
                         <!-- Progress fill inside bar -->
                         <div
                             class="h-full rounded opacity-50"
                             [style.width]="epic.completionPercent + '%'"
-                            style="background: rgba(255,255,255,0.3)"
+                            style="background: rgba(255, 255, 255, 0.3)"
                         ></div>
                     </div>
                     }
@@ -58,9 +71,18 @@
 
     <!-- Legend -->
     <div class="flex flex-wrap gap-4 text-xs">
-        <div class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded" style="background:#6B7280"></span> {{ t('tickets.workflow.categories.todo') }}</div>
-        <div class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded" style="background:#F59E0B"></span> {{ t('tickets.workflow.categories.inProgress') }}</div>
-        <div class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded" style="background:#10B981"></span> {{ t('tickets.workflow.categories.done') }}</div>
+        <div class="flex items-center gap-1">
+            <span class="inline-block h-3 w-3 rounded" style="background: #6b7280"></span> {{
+            t('tickets.workflow.categories.todo') }}
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="inline-block h-3 w-3 rounded" style="background: #f59e0b"></span> {{
+            t('tickets.workflow.categories.inProgress') }}
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="inline-block h-3 w-3 rounded" style="background: #10b981"></span> {{
+            t('tickets.workflow.categories.done') }}
+        </div>
     </div>
 
     <!-- Epic Details List -->
@@ -68,14 +90,25 @@
         @for (epic of facade.epics(); track epic.id) {
         <div class="surface-card flex items-center gap-4 rounded-lg p-4 shadow-sm">
             <i class="pi pi-bolt text-yellow-500"></i>
-            <a [routerLink]="['/tickets', epic.id]" class="text-surface-900 dark:text-surface-0 min-w-0 flex-1 truncate font-medium hover:underline">
+            <a
+                class="text-surface-900 dark:text-surface-0 min-w-0 flex-1 truncate font-medium hover:underline"
+                [routerLink]="['/tickets', epic.id]"
+            >
                 #{{ epic.ticketNumber }} {{ epic.title }}
             </a>
-            <p-tag [severity]="statusSeverity(epic.status)" [value]="t('tickets.status.' + epic.status)" styleClass="text-xs" />
-            <p-tag [severity]="prioritySeverity(epic.priority)" [value]="t('tickets.priority.' + epic.priority)" styleClass="text-xs" />
+            <p-tag
+                [severity]="statusSeverity(epic.status)"
+                [value]="t('tickets.status.' + epic.status)"
+                styleClass="text-xs"
+            />
+            <p-tag
+                [severity]="prioritySeverity(epic.priority)"
+                [value]="t('tickets.priority.' + epic.priority)"
+                styleClass="text-xs"
+            />
             <span class="text-surface-500 text-sm">{{ epic.completedChildCount }}/{{ epic.childCount }}</span>
             <div class="w-24">
-                <p-progressBar [value]="epic.completionPercent" [showValue]="false" styleClass="h-1.5" />
+                <p-progressBar [showValue]="false" [value]="epic.completionPercent" styleClass="h-1.5" />
             </div>
             <span class="text-surface-600 text-sm font-medium">{{ epic.completionPercent }}%</span>
         </div>

@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { UserEntity } from "../../user/entities/user.entity";
-import { TicketActivityLogEntity, type TicketActivityAction } from "../entities/ticket-activity-log.entity";
-import type { TicketActivityDto, PaginatedResult } from "../models/ticket.model";
+import { type TicketActivityAction, TicketActivityLogEntity } from "../entities/ticket-activity-log.entity";
+import type { PaginatedResult, TicketActivityDto } from "../models/ticket.model";
 
 @Injectable()
 export class TicketActivityService {
@@ -23,9 +23,7 @@ export class TicketActivityService {
         oldValue?: string,
         newValue?: string
     ): Promise<void> {
-        await this.activityRepo.save(
-            this.activityRepo.create({ ticketId, userId, action, field, oldValue, newValue })
-        );
+        await this.activityRepo.save(this.activityRepo.create({ ticketId, userId, action, field, oldValue, newValue }));
     }
 
     async logFieldChanges(

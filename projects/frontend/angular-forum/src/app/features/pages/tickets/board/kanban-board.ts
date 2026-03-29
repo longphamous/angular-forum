@@ -62,10 +62,7 @@ export class KanbanBoard implements OnInit {
         const ticket = event.item.data as Ticket;
         if (ticket.workflowStatusId === targetStatusId) return;
 
-        this.boardFacade.moveCard(
-            { ticketId: ticket.id, toStatusId: targetStatusId },
-            this.projectId()
-        );
+        this.boardFacade.moveCard({ ticketId: ticket.id, toStatusId: targetStatusId }, this.projectId());
     }
 
     applyFilters(): void {
@@ -95,17 +92,19 @@ export class KanbanBoard implements OnInit {
         const title = this.quickCreateTitle().trim();
         if (!title) return;
 
-        this.ticketFacade.createTicket({
-            title,
-            description: "",
-            projectId: this.projectId()
-        }).subscribe({
-            next: () => {
-                this.quickCreateColumnId.set(null);
-                this.quickCreateTitle.set("");
-                this.boardFacade.loadBoard(this.projectId());
-            }
-        });
+        this.ticketFacade
+            .createTicket({
+                title,
+                description: "",
+                projectId: this.projectId()
+            })
+            .subscribe({
+                next: () => {
+                    this.quickCreateColumnId.set(null);
+                    this.quickCreateTitle.set("");
+                    this.boardFacade.loadBoard(this.projectId());
+                }
+            });
     }
 
     cancelQuickCreate(): void {

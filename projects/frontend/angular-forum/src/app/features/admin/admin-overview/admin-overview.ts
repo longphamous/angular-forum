@@ -9,8 +9,8 @@ import { MessageModule } from "primeng/message";
 import { SkeletonModule } from "primeng/skeleton";
 import { TooltipModule } from "primeng/tooltip";
 
-import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { AdminFacade } from "../../../facade/admin/admin-facade";
+import { AuthFacade } from "../../../facade/auth/auth-facade";
 
 export interface DashboardBox {
     id: string;

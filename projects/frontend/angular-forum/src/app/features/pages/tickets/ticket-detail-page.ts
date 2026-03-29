@@ -221,15 +221,17 @@ export class TicketDetailPage implements OnInit {
 
     submitLink(): void {
         if (!this.linkTargetId()) return;
-        this.facade.createLink(this.ticketId, {
-            targetTicketId: this.linkTargetId(),
-            linkType: this.linkType()
-        }).subscribe({
-            next: () => {
-                this.linkDialogVisible.set(false);
-                this.facade.loadActivity(this.ticketId);
-            }
-        });
+        this.facade
+            .createLink(this.ticketId, {
+                targetTicketId: this.linkTargetId(),
+                linkType: this.linkType()
+            })
+            .subscribe({
+                next: () => {
+                    this.linkDialogVisible.set(false);
+                    this.facade.loadActivity(this.ticketId);
+                }
+            });
     }
 
     removeLink(linkId: string): void {
@@ -275,15 +277,17 @@ export class TicketDetailPage implements OnInit {
     }
 
     submitWorkLog(): void {
-        this.facade.addWorkLog(this.ticketId, {
-            timeSpentMinutes: this.workLogMinutes(),
-            description: this.workLogDescription() || undefined
-        }).subscribe({
-            next: () => {
-                this.workLogDialogVisible.set(false);
-                this.facade.loadTicket(this.ticketId);
-            }
-        });
+        this.facade
+            .addWorkLog(this.ticketId, {
+                timeSpentMinutes: this.workLogMinutes(),
+                description: this.workLogDescription() || undefined
+            })
+            .subscribe({
+                next: () => {
+                    this.workLogDialogVisible.set(false);
+                    this.facade.loadTicket(this.ticketId);
+                }
+            });
     }
 
     formatMinutes(minutes: number): string {
@@ -307,30 +311,48 @@ export class TicketDetailPage implements OnInit {
 
     typeSeverity(type: string): "success" | "info" | "warn" | "danger" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "danger" | "secondary"> = {
-            epic: "warn", story: "success", bug: "danger", task: "info", sub_task: "secondary", support: "info", feature: "success"
+            epic: "warn",
+            story: "success",
+            bug: "danger",
+            task: "info",
+            sub_task: "secondary",
+            support: "info",
+            feature: "success"
         };
         return map[type] ?? "info";
     }
 
     typeIcon(type: string): string {
         const map: Record<string, string> = {
-            epic: "pi pi-bolt", story: "pi pi-bookmark", bug: "pi pi-bug",
-            task: "pi pi-check-square", sub_task: "pi pi-minus", support: "pi pi-question-circle", feature: "pi pi-star"
+            epic: "pi pi-bolt",
+            story: "pi pi-bookmark",
+            bug: "pi pi-bug",
+            task: "pi pi-check-square",
+            sub_task: "pi pi-minus",
+            support: "pi pi-question-circle",
+            feature: "pi pi-star"
         };
         return map[type] ?? "pi pi-ticket";
     }
 
     statusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" {
         const map: Record<string, "success" | "info" | "warn" | "danger" | "secondary" | "contrast"> = {
-            open: "info", in_progress: "warn", waiting: "secondary",
-            follow_up: "contrast", resolved: "success", closed: "secondary"
+            open: "info",
+            in_progress: "warn",
+            waiting: "secondary",
+            follow_up: "contrast",
+            resolved: "success",
+            closed: "secondary"
         };
         return map[status] ?? "info";
     }
 
     prioritySeverity(p: string): "success" | "info" | "warn" | "danger" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "danger" | "secondary"> = {
-            low: "secondary", normal: "info", high: "warn", critical: "danger"
+            low: "secondary",
+            normal: "info",
+            high: "warn",
+            critical: "danger"
         };
         return map[p] ?? "info";
     }

@@ -6,10 +6,10 @@ import { CreateCategoryDto } from "../dto/create-category.dto";
 import { CreateLabelDto } from "../dto/create-label.dto";
 import { CreateProjectDto } from "../dto/create-project.dto";
 import { UpdateProjectDto } from "../dto/update-project.dto";
+import { TicketEntity } from "../entities/ticket.entity";
 import { TicketCategoryEntity } from "../entities/ticket-category.entity";
 import { TicketLabelEntity } from "../entities/ticket-label.entity";
 import { TicketProjectEntity } from "../entities/ticket-project.entity";
-import { TicketEntity } from "../entities/ticket.entity";
 import type { LabelDto, TicketCategoryDto, TicketProjectDto } from "../models/ticket.model";
 
 @Injectable()

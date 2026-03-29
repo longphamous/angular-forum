@@ -28,3 +28,8 @@ export interface BountyLeaderboard {
     data: WantedPoster[];
     total: number;
 }
+
+export interface BountyConfig {
+    multipliers: Record<string, number>;
+    epithets: { min: number; epithet: string }[];
+}

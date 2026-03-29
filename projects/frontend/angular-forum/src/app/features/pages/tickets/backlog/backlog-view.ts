@@ -83,16 +83,18 @@ export class BacklogView implements OnInit {
 
     createSprint(): void {
         if (!this.sprintName()) return;
-        this.facade.createSprint({
-            projectId: this.projectId(),
-            name: this.sprintName(),
-            goal: this.sprintGoal() || undefined
-        }).subscribe({
-            next: () => {
-                this.sprintDialogVisible.set(false);
-                this.facade.loadSprints(this.projectId());
-            }
-        });
+        this.facade
+            .createSprint({
+                projectId: this.projectId(),
+                name: this.sprintName(),
+                goal: this.sprintGoal() || undefined
+            })
+            .subscribe({
+                next: () => {
+                    this.sprintDialogVisible.set(false);
+                    this.facade.loadSprints(this.projectId());
+                }
+            });
     }
 
     startSprint(sprint: Sprint): void {
@@ -110,7 +112,10 @@ export class BacklogView implements OnInit {
             accept: () => {
                 this.facade.completeSprint(sprint.id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: "success", summary: this.t.translate("tickets.sprint.completed") });
+                        this.messageService.add({
+                            severity: "success",
+                            summary: this.t.translate("tickets.sprint.completed")
+                        });
                         this.facade.loadSprints(this.projectId());
                         this.facade.loadBacklog(this.projectId());
                     }
@@ -128,15 +133,17 @@ export class BacklogView implements OnInit {
 
     saveEditSprint(): void {
         if (!this.editSprintName()) return;
-        this.facade.updateSprint(this.editSprintId(), {
-            name: this.editSprintName(),
-            goal: this.editSprintGoal() || undefined
-        }).subscribe({
-            next: () => {
-                this.editSprintDialogVisible.set(false);
-                this.facade.loadSprints(this.projectId());
-            }
-        });
+        this.facade
+            .updateSprint(this.editSprintId(), {
+                name: this.editSprintName(),
+                goal: this.editSprintGoal() || undefined
+            })
+            .subscribe({
+                next: () => {
+                    this.editSprintDialogVisible.set(false);
+                    this.facade.loadSprints(this.projectId());
+                }
+            });
     }
 
     deleteSprint(sprint: Sprint): void {
@@ -158,7 +165,12 @@ export class BacklogView implements OnInit {
     onBacklogDrop(event: CdkDragDrop<Ticket[]>): void {
         const backlog = [...this.facade.backlog()];
         moveItemInArray(backlog, event.previousIndex, event.currentIndex);
-        this.facade.reorderBacklog(this.projectId(), backlog.map((t) => t.id)).subscribe();
+        this.facade
+            .reorderBacklog(
+                this.projectId(),
+                backlog.map((t) => t.id)
+            )
+            .subscribe();
     }
 
     moveToSprint(ticket: Ticket, sprintId: string): void {
@@ -194,15 +206,22 @@ export class BacklogView implements OnInit {
 
     sprintStatusSeverity(status: string): "success" | "info" | "warn" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "secondary"> = {
-            planning: "secondary", active: "success", completed: "info"
+            planning: "secondary",
+            active: "success",
+            completed: "info"
         };
         return map[status] ?? "info";
     }
 
     typeIcon(type: string): string {
         const map: Record<string, string> = {
-            epic: "pi pi-bolt", story: "pi pi-bookmark", bug: "pi pi-bug",
-            task: "pi pi-check-square", sub_task: "pi pi-minus", support: "pi pi-question-circle", feature: "pi pi-star"
+            epic: "pi pi-bolt",
+            story: "pi pi-bookmark",
+            bug: "pi pi-bug",
+            task: "pi pi-check-square",
+            sub_task: "pi pi-minus",
+            support: "pi pi-question-circle",
+            feature: "pi pi-star"
         };
         return map[type] ?? "pi pi-ticket";
     }

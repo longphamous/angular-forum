@@ -1,6 +1,6 @@
+import type { ClanJoinType, ClanStatus } from "../entities/clan.entity";
 import type { ClanApplicationStatus, ClanApplicationType } from "../entities/clan-application.entity";
 import type { ClanMemberRole } from "../entities/clan-member.entity";
-import type { ClanJoinType, ClanStatus } from "../entities/clan.entity";
 
 export interface PaginatedResult<T> {
     data: T[];

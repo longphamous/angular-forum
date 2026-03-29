@@ -8,12 +8,22 @@ import { CreateTicketDto } from "../dto/create-ticket.dto";
 import { CreateWorkLogDto } from "../dto/create-work-log.dto";
 import { TicketQueryDto } from "../dto/ticket-query.dto";
 import { UpdateTicketDto } from "../dto/update-ticket.dto";
-import type { AttachmentDto, PaginatedResult, TicketActivityDto, TicketCommentDto, TicketDto, TicketLinkDto, TicketStatsDto, WatcherDto, WorkLogDto } from "../models/ticket.model";
+import type {
+    AttachmentDto,
+    PaginatedResult,
+    TicketActivityDto,
+    TicketCommentDto,
+    TicketDto,
+    TicketLinkDto,
+    TicketStatsDto,
+    WatcherDto,
+    WorkLogDto
+} from "../models/ticket.model";
+import { TicketService } from "../services/ticket.service";
 import { TicketActivityService } from "../services/ticket-activity.service";
 import { TicketAttachmentService } from "../services/ticket-attachment.service";
 import { TicketWatcherService } from "../services/ticket-watcher.service";
 import { TicketWorkLogService } from "../services/ticket-work-log.service";
-import { TicketService } from "../services/ticket.service";
 
 @Controller("tickets")
 export class TicketController {
@@ -45,7 +55,10 @@ export class TicketController {
 
     /** GET /tickets/my — list tickets created by or assigned to current user */
     @Get("my")
-    findMy(@Query() query: TicketQueryDto, @CurrentUser() user: AuthenticatedUser): Promise<PaginatedResult<TicketDto>> {
+    findMy(
+        @Query() query: TicketQueryDto,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<PaginatedResult<TicketDto>> {
         // Fetch tickets where user is author or assignee
         return this.ticketService.findAll({ ...query, assigneeId: undefined, search: undefined });
     }
@@ -153,14 +166,20 @@ export class TicketController {
 
     /** POST /tickets/:id/watch */
     @Post(":id/watch")
-    async watch(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async watch(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ success: boolean }> {
         await this.watcherService.watch(id, user.userId);
         return { success: true };
     }
 
     /** DELETE /tickets/:id/watch */
     @Delete(":id/watch")
-    async unwatch(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
+    async unwatch(
+        @Param("id", ParseUUIDPipe) id: string,
+        @CurrentUser() user: AuthenticatedUser
+    ): Promise<{ success: boolean }> {
         await this.watcherService.unwatch(id, user.userId);
         return { success: true };
     }

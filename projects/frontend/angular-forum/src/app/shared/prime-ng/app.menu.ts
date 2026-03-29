@@ -5,6 +5,7 @@ import { MenuItem } from "primeng/api";
 import { Subscription } from "rxjs";
 import { startWith, switchMap } from "rxjs/operators";
 
+import { AuthFacade } from "../../facade/auth/auth-facade";
 import { AppMenuitem } from "./app.menuitem";
 
 @Component({
@@ -26,6 +27,7 @@ export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
 
     private readonly translocoService = inject(TranslocoService);
+    private readonly authFacade = inject(AuthFacade);
     private langSub?: Subscription;
 
     ngOnInit() {
@@ -46,6 +48,7 @@ export class AppMenu implements OnInit, OnDestroy {
     }
 
     private buildMenu(): void {
+        const isAdmin = this.authFacade.isAdmin();
         this.model = [
             // ── Startseite ────────────────────────────────────────────
             {
@@ -78,10 +81,18 @@ export class AppMenu implements OnInit, OnDestroy {
                 label: this.t("nav.tickets"),
                 items: [
                     { label: this.t("nav.ticketOverview"), icon: "pi pi-fw pi-list", routerLink: ["/tickets"] },
-                    { label: this.t("nav.ticketBoard"), icon: "pi pi-fw pi-objects-column", routerLink: ["/board-select"] },
+                    {
+                        label: this.t("nav.ticketBoard"),
+                        icon: "pi pi-fw pi-objects-column",
+                        routerLink: ["/board-select"]
+                    },
                     { label: this.t("nav.ticketBacklog"), icon: "pi pi-fw pi-bars", routerLink: ["/backlog-select"] },
                     { label: this.t("nav.ticketRoadmap"), icon: "pi pi-fw pi-map", routerLink: ["/roadmap-select"] },
-                    { label: this.t("nav.ticketReports"), icon: "pi pi-fw pi-chart-bar", routerLink: ["/reports-select"] }
+                    {
+                        label: this.t("nav.ticketReports"),
+                        icon: "pi pi-fw pi-chart-bar",
+                        routerLink: ["/reports-select"]
+                    }
                 ]
             },
             // ── Anime ─────────────────────────────────────────────────
@@ -119,169 +130,171 @@ export class AppMenu implements OnInit, OnDestroy {
                     }
                 ]
             },
-            // ── Administration ────────────────────────────────────────
-            {
-                label: this.t("nav.adminSection"),
-                items: [
-                    { label: this.t("nav.overview"), icon: "pi pi-fw pi-chart-bar", routerLink: ["/admin/overview"] },
-                    {
-                        label: this.t("nav.adminUsers"),
-                        icon: "pi pi-fw pi-users",
-                        items: [
-                            {
-                                label: this.t("nav.userManagement"),
-                                icon: "pi pi-fw pi-user",
-                                routerLink: ["/admin/users"]
-                            },
-                            {
-                                label: this.t("nav.groupManagement"),
-                                icon: "pi pi-fw pi-shield",
-                                routerLink: ["/admin/groups"]
-                            },
-                            {
-                                label: this.t("nav.moderation"),
-                                icon: "pi pi-fw pi-verified",
-                                routerLink: ["/admin/moderation"]
-                            },
-                            {
-                                label: this.t("nav.pagePermissions"),
-                                icon: "pi pi-fw pi-lock",
-                                routerLink: ["/admin/permissions"]
-                            }
-                        ]
-                    },
-                    {
-                        label: this.t("nav.adminCommunity"),
-                        icon: "pi pi-fw pi-comments",
-                        items: [
-                            {
-                                label: this.t("nav.forumStructure"),
-                                icon: "pi pi-fw pi-sitemap",
-                                routerLink: ["/admin/forum"]
-                            },
-                            {
-                                label: this.t("nav.blogManagement"),
-                                icon: "pi pi-fw pi-file-edit",
-                                routerLink: ["/admin/blog"]
-                            },
-                            {
-                                label: this.t("nav.galleryManagement"),
-                                icon: "pi pi-fw pi-images",
-                                routerLink: ["/admin/gallery"]
-                            },
-                            {
-                                label: this.t("nav.calendarManagement"),
-                                icon: "pi pi-fw pi-calendar",
-                                routerLink: ["/admin/calendar"]
-                            },
-                            {
-                                label: this.t("nav.lexiconManagement"),
-                                icon: "pi pi-fw pi-book",
-                                routerLink: ["/admin/lexicon"]
-                            },
-                            {
-                                label: this.t("nav.linkDatabaseManagement"),
-                                icon: "pi pi-fw pi-link",
-                                routerLink: ["/admin/link-database"]
-                            },
-                            {
-                                label: this.t("nav.feedManagement"),
-                                icon: "pi pi-fw pi-th-large",
-                                routerLink: ["/admin/feed"]
-                            },
-                            {
-                                label: this.t("nav.communityBot"),
-                                icon: "pi pi-fw pi-robot",
-                                routerLink: ["/admin/community-bot"]
-                            },
-                            {
-                                label: this.t("nav.mediaManagement"),
-                                icon: "pi pi-fw pi-cloud",
-                                routerLink: ["/admin/media"]
-                            },
-                            {
-                                label: this.t("nav.ticketManagement"),
-                                icon: "pi pi-fw pi-ticket",
-                                routerLink: ["/admin/tickets"]
-                            },
-                            {
-                                label: this.t("nav.clanManagement"),
-                                icon: "pi pi-fw pi-users",
-                                routerLink: ["/admin/clans"]
-                            }
-                        ]
-                    },
-                    {
-                        label: this.t("nav.adminGamification"),
-                        icon: "pi pi-fw pi-trophy",
-                        items: [
-                            {
-                                label: this.t("nav.gamification"),
-                                icon: "pi pi-fw pi-star",
-                                routerLink: ["/admin/gamification"]
-                            },
-                            {
-                                label: this.t("nav.achievements"),
-                                icon: "pi pi-fw pi-trophy",
-                                routerLink: ["/admin/achievements"]
-                            },
-                            {
-                                label: this.t("nav.shopManagement"),
-                                icon: "pi pi-fw pi-shopping-bag",
-                                routerLink: ["/admin/shop"]
-                            },
-                            {
-                                label: this.t("nav.lottoManagement"),
-                                icon: "pi pi-fw pi-ticket",
-                                routerLink: ["/admin/lotto"]
-                            },
-                            { label: this.t("nav.adminTcg"), icon: "pi pi-fw pi-id-card", routerLink: ["/admin/tcg"] },
-                            {
-                                label: this.t("nav.dynamicMarketManagement"),
-                                icon: "pi pi-fw pi-chart-line",
-                                routerLink: ["/admin/market"]
-                            },
-                            {
-                                label: this.t("nav.coinManagement"),
-                                icon: "pi pi-fw pi-bitcoin",
-                                routerLink: ["/admin/coins"]
-                            },
-                            {
-                                label: this.t("nav.marketplaceManagement"),
-                                icon: "pi pi-fw pi-shopping-cart",
-                                routerLink: ["/admin/marketplace"]
-                            }
-                        ]
-                    },
-                    {
-                        label: this.t("nav.adminAppearance"),
-                        icon: "pi pi-fw pi-palette",
-                        items: [
-                            {
-                                label: this.t("nav.slideshow"),
-                                icon: "pi pi-fw pi-images",
-                                routerLink: ["/admin/slideshow"]
-                            }
-                        ]
-                    },
-                    {
-                        label: this.t("nav.adminSystem"),
-                        icon: "pi pi-fw pi-cog",
-                        items: [
-                            {
-                                label: this.t("nav.adminLogs"),
-                                icon: "pi pi-fw pi-list-check",
-                                routerLink: ["/admin/logs"]
-                            },
-                            {
-                                label: this.t("nav.adminI18n"),
-                                icon: "pi pi-fw pi-language",
-                                routerLink: ["/admin/i18n"]
-                            }
-                        ]
-                    }
-                ]
-            }
+            // ── Administration (multiple sections, visible only for admins) ──
+            ...(isAdmin
+                ? [
+                      {
+                          label: this.t("nav.adminSection"),
+                          items: [
+                              {
+                                  label: this.t("nav.overview"),
+                                  icon: "pi pi-fw pi-chart-bar",
+                                  routerLink: ["/admin/overview"]
+                              },
+                              {
+                                  label: this.t("nav.userManagement"),
+                                  icon: "pi pi-fw pi-user",
+                                  routerLink: ["/admin/users"]
+                              },
+                              {
+                                  label: this.t("nav.groupManagement"),
+                                  icon: "pi pi-fw pi-shield",
+                                  routerLink: ["/admin/groups"]
+                              },
+                              {
+                                  label: this.t("nav.moderation"),
+                                  icon: "pi pi-fw pi-verified",
+                                  routerLink: ["/admin/moderation"]
+                              },
+                              {
+                                  label: this.t("nav.pagePermissions"),
+                                  icon: "pi pi-fw pi-lock",
+                                  routerLink: ["/admin/permissions"]
+                              }
+                          ]
+                      },
+                      {
+                          label: this.t("nav.adminCommunity"),
+                          items: [
+                              {
+                                  label: this.t("nav.forumStructure"),
+                                  icon: "pi pi-fw pi-sitemap",
+                                  routerLink: ["/admin/forum"]
+                              },
+                              {
+                                  label: this.t("nav.blogManagement"),
+                                  icon: "pi pi-fw pi-file-edit",
+                                  routerLink: ["/admin/blog"]
+                              },
+                              {
+                                  label: this.t("nav.galleryManagement"),
+                                  icon: "pi pi-fw pi-images",
+                                  routerLink: ["/admin/gallery"]
+                              },
+                              {
+                                  label: this.t("nav.calendarManagement"),
+                                  icon: "pi pi-fw pi-calendar",
+                                  routerLink: ["/admin/calendar"]
+                              },
+                              {
+                                  label: this.t("nav.lexiconManagement"),
+                                  icon: "pi pi-fw pi-book",
+                                  routerLink: ["/admin/lexicon"]
+                              },
+                              {
+                                  label: this.t("nav.linkDatabaseManagement"),
+                                  icon: "pi pi-fw pi-link",
+                                  routerLink: ["/admin/link-database"]
+                              },
+                              {
+                                  label: this.t("nav.feedManagement"),
+                                  icon: "pi pi-fw pi-th-large",
+                                  routerLink: ["/admin/feed"]
+                              },
+                              {
+                                  label: this.t("nav.communityBot"),
+                                  icon: "pi pi-fw pi-robot",
+                                  routerLink: ["/admin/community-bot"]
+                              },
+                              {
+                                  label: this.t("nav.mediaManagement"),
+                                  icon: "pi pi-fw pi-cloud",
+                                  routerLink: ["/admin/media"]
+                              },
+                              {
+                                  label: this.t("nav.ticketManagement"),
+                                  icon: "pi pi-fw pi-ticket",
+                                  routerLink: ["/admin/tickets"]
+                              },
+                              {
+                                  label: this.t("nav.clanManagement"),
+                                  icon: "pi pi-fw pi-users",
+                                  routerLink: ["/admin/clans"]
+                              }
+                          ]
+                      },
+                      {
+                          label: this.t("nav.adminGamification"),
+                          items: [
+                              {
+                                  label: this.t("nav.gamification"),
+                                  icon: "pi pi-fw pi-star",
+                                  routerLink: ["/admin/gamification"]
+                              },
+                              {
+                                  label: this.t("nav.achievements"),
+                                  icon: "pi pi-fw pi-trophy",
+                                  routerLink: ["/admin/achievements"]
+                              },
+                              {
+                                  label: this.t("nav.shopManagement"),
+                                  icon: "pi pi-fw pi-shopping-bag",
+                                  routerLink: ["/admin/shop"]
+                              },
+                              {
+                                  label: this.t("nav.lottoManagement"),
+                                  icon: "pi pi-fw pi-ticket",
+                                  routerLink: ["/admin/lotto"]
+                              },
+                              {
+                                  label: this.t("nav.adminTcg"),
+                                  icon: "pi pi-fw pi-id-card",
+                                  routerLink: ["/admin/tcg"]
+                              },
+                              {
+                                  label: this.t("nav.bountyManagement"),
+                                  icon: "pi pi-fw pi-flag",
+                                  routerLink: ["/admin/bounty"]
+                              },
+                              {
+                                  label: this.t("nav.dynamicMarketManagement"),
+                                  icon: "pi pi-fw pi-chart-line",
+                                  routerLink: ["/admin/market"]
+                              },
+                              {
+                                  label: this.t("nav.coinManagement"),
+                                  icon: "pi pi-fw pi-bitcoin",
+                                  routerLink: ["/admin/coins"]
+                              },
+                              {
+                                  label: this.t("nav.marketplaceManagement"),
+                                  icon: "pi pi-fw pi-shopping-cart",
+                                  routerLink: ["/admin/marketplace"]
+                              }
+                          ]
+                      },
+                      {
+                          label: this.t("nav.adminSystem"),
+                          items: [
+                              {
+                                  label: this.t("nav.slideshow"),
+                                  icon: "pi pi-fw pi-images",
+                                  routerLink: ["/admin/slideshow"]
+                              },
+                              {
+                                  label: this.t("nav.adminLogs"),
+                                  icon: "pi pi-fw pi-list-check",
+                                  routerLink: ["/admin/logs"]
+                              },
+                              {
+                                  label: this.t("nav.adminI18n"),
+                                  icon: "pi pi-fw pi-language",
+                                  routerLink: ["/admin/i18n"]
+                              }
+                          ]
+                      }
+                  ]
+                : [])
         ];
     }
 }

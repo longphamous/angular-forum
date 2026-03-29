@@ -206,15 +206,26 @@ export class TicketListPage implements OnInit {
 
     typeSeverity(type: string): "success" | "info" | "warn" | "danger" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "danger" | "secondary"> = {
-            epic: "warn", story: "success", bug: "danger", task: "info", sub_task: "secondary", support: "info", feature: "success"
+            epic: "warn",
+            story: "success",
+            bug: "danger",
+            task: "info",
+            sub_task: "secondary",
+            support: "info",
+            feature: "success"
         };
         return map[type] ?? "info";
     }
 
     typeIcon(type: string): string {
         const map: Record<string, string> = {
-            epic: "pi pi-bolt", story: "pi pi-bookmark", bug: "pi pi-bug",
-            task: "pi pi-check-square", sub_task: "pi pi-minus", support: "pi pi-question-circle", feature: "pi pi-star"
+            epic: "pi pi-bolt",
+            story: "pi pi-bookmark",
+            bug: "pi pi-bug",
+            task: "pi pi-check-square",
+            sub_task: "pi pi-minus",
+            support: "pi pi-question-circle",
+            feature: "pi pi-star"
         };
         return map[type] ?? "pi pi-ticket";
     }

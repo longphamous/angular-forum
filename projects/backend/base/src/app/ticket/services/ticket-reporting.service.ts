@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { TicketSprintEntity } from "../entities/ticket-sprint.entity";
 import { TicketEntity } from "../entities/ticket.entity";
+import { TicketSprintEntity } from "../entities/ticket-sprint.entity";
 import type { BurndownPointDto, SprintReportDto, VelocityEntryDto } from "../models/ticket.model";
 
 @Injectable()

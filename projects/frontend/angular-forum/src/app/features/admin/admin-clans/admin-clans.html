@@ -22,7 +22,12 @@
                 <p-tabpanel value="0">
                     <div class="p-4">
                         <div class="mb-4 flex justify-end">
-                            <p-button [label]="t('clans.addCategory')" (onClick)="openCategoryDialog()" icon="pi pi-plus" size="small" />
+                            <p-button
+                                (onClick)="openCategoryDialog()"
+                                [label]="t('clans.addCategory')"
+                                icon="pi pi-plus"
+                                size="small"
+                            />
                         </div>
                         <p-table [value]="facade.categories()" styleClass="p-datatable-sm p-datatable-striped">
                             <ng-template #header>
@@ -37,24 +42,43 @@
                             <ng-template #body let-cat>
                                 <tr>
                                     <td class="font-medium">
-                                        @if (cat.icon) { <i [class]="cat.icon + ' mr-2'"></i> }
-                                        {{ cat.name }}
+                                        @if (cat.icon) { <i [class]="cat.icon + ' mr-2'"></i> } {{ cat.name }}
                                     </td>
                                     <td class="text-surface-500 text-sm">{{ cat.description ?? '—' }}</td>
                                     <td>{{ cat.position }}</td>
                                     <td>
-                                        <p-tag [severity]="cat.isActive ? 'success' : 'secondary'" [value]="cat.isActive ? t('common.active') : t('common.inactive')" />
+                                        <p-tag
+                                            [severity]="cat.isActive ? 'success' : 'secondary'"
+                                            [value]="cat.isActive ? t('common.active') : t('common.inactive')"
+                                        />
                                     </td>
                                     <td>
                                         <div class="flex gap-1">
-                                            <button (click)="openCategoryDialog(cat)" pButton text rounded size="small" icon="pi pi-pencil"></button>
-                                            <button (click)="deleteCategory(cat)" pButton text rounded size="small" icon="pi pi-trash" severity="danger"></button>
+                                            <button
+                                                (click)="openCategoryDialog(cat)"
+                                                icon="pi pi-pencil"
+                                                pButton
+                                                rounded
+                                                size="small"
+                                                text
+                                            ></button>
+                                            <button
+                                                (click)="deleteCategory(cat)"
+                                                icon="pi pi-trash"
+                                                pButton
+                                                rounded
+                                                severity="danger"
+                                                size="small"
+                                                text
+                                            ></button>
                                         </div>
                                     </td>
                                 </tr>
                             </ng-template>
                             <ng-template #emptymessage>
-                                <tr><td colspan="5" class="text-center">{{ t('clans.noCategories') }}</td></tr>
+                                <tr>
+                                    <td class="text-center" colspan="5">{{ t('clans.noCategories') }}</td>
+                                </tr>
                             </ng-template>
                         </p-table>
                     </div>
@@ -83,20 +107,34 @@
                                     </td>
                                     <td>
                                         @if (clan.tag) {
-                                        <span class="rounded px-1.5 py-0.5 text-xs font-bold text-white" [style.background-color]="clan.tagColor ?? '#6366f1'">{{ clan.tag }}</span>
+                                        <span
+                                            class="rounded px-1.5 py-0.5 text-xs font-bold text-white"
+                                            [style.background-color]="clan.tagColor ?? '#6366f1'"
+                                            >{{ clan.tag }}</span
+                                        >
                                         } @else { — }
                                     </td>
                                     <td>{{ clan.memberCount }}</td>
                                     <td>
-                                        <p-tag [severity]="joinTypeSeverity(clan.joinType)" [value]="t('clans.joinTypes.' + clan.joinType)" styleClass="text-xs" />
+                                        <p-tag
+                                            [severity]="joinTypeSeverity(clan.joinType)"
+                                            [value]="t('clans.joinTypes.' + clan.joinType)"
+                                            styleClass="text-xs"
+                                        />
                                     </td>
                                     <td>
-                                        <p-tag [severity]="statusSeverity(clan.status)" [value]="t('clans.status.' + clan.status)" styleClass="text-xs" />
+                                        <p-tag
+                                            [severity]="statusSeverity(clan.status)"
+                                            [value]="t('clans.status.' + clan.status)"
+                                            styleClass="text-xs"
+                                        />
                                     </td>
                                 </tr>
                             </ng-template>
                             <ng-template #emptymessage>
-                                <tr><td colspan="5" class="text-center">{{ t('clans.noClans') }}</td></tr>
+                                <tr>
+                                    <td class="text-center" colspan="5">{{ t('clans.noClans') }}</td>
+                                </tr>
                             </ng-template>
                         </p-table>
                     </div>
@@ -106,25 +144,52 @@
     </div>
 
     <!-- Category Dialog -->
-    <p-dialog [(visible)]="catDialogVisible" [header]="catEditId() ? t('clans.editCategory') : t('clans.addCategory')" [modal]="true" [style]="{ width: '450px' }">
+    <p-dialog
+        [(visible)]="catDialogVisible"
+        [header]="catEditId() ? t('clans.editCategory') : t('clans.addCategory')"
+        [modal]="true"
+        [style]="{ width: '450px' }"
+    >
         <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-1">
                 <label class="font-medium">{{ t('common.name') }}</label>
-                <input [ngModel]="catName()" (ngModelChange)="catName.set($event)" pInputText type="text" />
+                <input (ngModelChange)="catName.set($event)" [ngModel]="catName()" pInputText type="text" />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="font-medium">{{ t('common.description') }}</label>
-                <textarea [ngModel]="catDescription()" (ngModelChange)="catDescription.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+                <textarea
+                    class="w-full"
+                    (ngModelChange)="catDescription.set($event)"
+                    [ngModel]="catDescription()"
+                    [rows]="3"
+                    pTextarea
+                ></textarea>
             </div>
             <div class="flex flex-col gap-1">
                 <label class="font-medium">Icon</label>
-                <input [ngModel]="catIcon()" (ngModelChange)="catIcon.set($event)" pInputText placeholder="pi pi-tag" type="text" />
+                <input
+                    (ngModelChange)="catIcon.set($event)"
+                    [ngModel]="catIcon()"
+                    pInputText
+                    placeholder="pi pi-tag"
+                    type="text"
+                />
             </div>
         </div>
         <ng-template #footer>
             <div class="flex justify-end gap-2">
-                <p-button [label]="t('common.button.cancel')" (onClick)="catDialogVisible.set(false)" severity="secondary" text />
-                <p-button [disabled]="!catName()" [label]="t('common.button.save')" (onClick)="saveCategory()" icon="pi pi-check" />
+                <p-button
+                    (onClick)="catDialogVisible.set(false)"
+                    [label]="t('common.button.cancel')"
+                    severity="secondary"
+                    text
+                />
+                <p-button
+                    (onClick)="saveCategory()"
+                    [disabled]="!catName()"
+                    [label]="t('common.button.save')"
+                    icon="pi pi-check"
+                />
             </div>
         </ng-template>
     </p-dialog>

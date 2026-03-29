@@ -44,7 +44,8 @@ export const TICKET_ROUTES = {
         workflowDetail: (id: string) => `/tickets/admin/workflows/${id}`,
         seedDefaultWorkflow: () => "/tickets/admin/workflows/seed-default",
         projectMembers: (projectId: string) => `/tickets/admin/projects/${projectId}/members`,
-        projectMemberDetail: (projectId: string, memberId: string) => `/tickets/admin/projects/${projectId}/members/${memberId}`,
+        projectMemberDetail: (projectId: string, memberId: string) =>
+            `/tickets/admin/projects/${projectId}/members/${memberId}`,
         projectAutomations: (projectId: string) => `/tickets/admin/projects/${projectId}/automations`,
         automationDetail: (id: string) => `/tickets/admin/automations/${id}`,
         automationToggle: (id: string) => `/tickets/admin/automations/${id}/toggle`,

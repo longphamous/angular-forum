@@ -9,49 +9,65 @@
     <div class="surface-card flex flex-col gap-4 rounded-xl p-6 shadow">
         <div class="flex flex-col gap-1">
             <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldName') }} *</label>
-            <input [ngModel]="name()" (ngModelChange)="name.set($event)" pInputText type="text" />
+            <input (ngModelChange)="name.set($event)" [ngModel]="name()" pInputText type="text" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldTag') }}</label>
-                <input [ngModel]="tag()" (ngModelChange)="tag.set($event)" pInputText type="text" maxlength="6" />
+                <input (ngModelChange)="tag.set($event)" [ngModel]="tag()" maxlength="6" pInputText type="text" />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldTagColor') }}</label>
                 <div class="flex items-center gap-2">
-                    <input [ngModel]="tagColor()" (ngModelChange)="tagColor.set($event)" pInputText type="color" class="h-10 w-16 cursor-pointer" />
+                    <input
+                        class="h-10 w-16 cursor-pointer"
+                        (ngModelChange)="tagColor.set($event)"
+                        [ngModel]="tagColor()"
+                        pInputText
+                        type="color"
+                    />
                     @if (tag()) {
-                    <span class="rounded px-2 py-1 text-sm font-bold text-white" [style.background-color]="tagColor()">{{ tag() }}</span>
+                    <span class="rounded px-2 py-1 text-sm font-bold text-white" [style.background-color]="tagColor()"
+                        >{{ tag() }}</span
+                    >
                     }
                 </div>
             </div>
         </div>
 
         <div class="flex flex-col gap-1">
-            <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldDescription') }} *</label>
-            <textarea [ngModel]="description()" (ngModelChange)="description.set($event)" pTextarea [rows]="5" class="w-full"></textarea>
+            <label class="text-surface-700 dark:text-surface-200 font-medium"
+                >{{ t('clans.fieldDescription') }} *</label
+            >
+            <textarea
+                class="w-full"
+                (ngModelChange)="description.set($event)"
+                [ngModel]="description()"
+                [rows]="5"
+                pTextarea
+            ></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldCategory') }}</label>
                 <p-select
+                    (ngModelChange)="categoryId.set($event)"
                     [ngModel]="categoryId()"
                     [options]="facade.categories()"
-                    (ngModelChange)="categoryId.set($event)"
+                    [placeholder]="t('clans.selectCategory')"
+                    [showClear]="true"
                     optionLabel="name"
                     optionValue="id"
-                    [showClear]="true"
-                    [placeholder]="t('clans.selectCategory')"
                 />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldJoinType') }}</label>
                 <p-select
+                    (ngModelChange)="joinType.set($event)"
                     [ngModel]="joinType()"
                     [options]="joinTypeOptions()"
-                    (ngModelChange)="joinType.set($event)"
                     optionLabel="label"
                     optionValue="value"
                 />
@@ -61,10 +77,10 @@
         <div class="flex justify-end gap-2 pt-2">
             <p-button [label]="t('common.button.cancel')" routerLink="/clans" severity="secondary" text />
             <p-button
+                (onClick)="submit()"
                 [disabled]="!name() || !description()"
                 [label]="t('clans.createClan')"
                 [loading]="saving()"
-                (onClick)="submit()"
                 icon="pi pi-check"
             />
         </div>

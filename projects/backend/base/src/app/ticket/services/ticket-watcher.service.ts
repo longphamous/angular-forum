@@ -4,8 +4,8 @@ import { In, Repository } from "typeorm";
 
 import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity } from "../../user/entities/user.entity";
-import { TicketWatcherEntity } from "../entities/ticket-watcher.entity";
 import { TicketEntity } from "../entities/ticket.entity";
+import { TicketWatcherEntity } from "../entities/ticket-watcher.entity";
 import type { WatcherDto } from "../models/ticket.model";
 
 @Injectable()
@@ -55,13 +55,7 @@ export class TicketWatcherService {
         const watchers = await this.watcherRepo.find({ where: { ticketId } });
         for (const watcher of watchers) {
             if (watcher.userId !== excludeUserId) {
-                void this.notificationsService.create(
-                    watcher.userId,
-                    "system",
-                    title,
-                    message,
-                    `/tickets/${ticketId}`
-                );
+                void this.notificationsService.create(watcher.userId, "system", title, message, `/tickets/${ticketId}`);
             }
         }
     }

@@ -5,32 +5,32 @@ import { DataSource, Repository } from "typeorm";
 import { UserEntity } from "../user/entities/user.entity";
 import { UserBountyEntity } from "./entities/user-bounty.entity";
 
-/** Bounty multipliers — how much each unit of activity is worth */
+/** Bounty multipliers — how much each unit of activity is worth (low values for slow growth) */
 const MULTIPLIERS = {
-    coins: 100,           // 1 coin = 100 bounty
-    xp: 50,               // 1 XP = 50 bounty
-    posts: 500,            // 1 post = 500 bounty
-    threads: 2000,         // 1 thread = 2000 bounty
-    reactionsReceived: 300, // 1 reaction received = 300 bounty
-    reactionsGiven: 100,   // 1 reaction given = 100 bounty
-    achievements: 5000,    // 1 achievement = 5000 bounty
-    lexiconArticles: 3000, // 1 lexicon article = 3000 bounty
-    blogPosts: 4000,       // 1 blog post = 4000 bounty
-    galleryUploads: 1500,  // 1 gallery upload = 1500 bounty
-    clanMemberships: 2000, // 1 clan membership = 2000 bounty
-    ticketsResolved: 1000  // 1 ticket resolved = 1000 bounty
+    coins: 0.5, // 1 coin = 0.5 bounty
+    xp: 0.3, // 1 XP = 0.3 bounty
+    posts: 1.0, // 1 post = 1 bounty
+    threads: 0.8, // 1 thread = 0.8 bounty (threads are fewer but not worth much more)
+    reactionsReceived: 0.5, // 1 reaction received = 0.5 bounty
+    reactionsGiven: 0.2, // 1 reaction given = 0.2 bounty
+    achievements: 0.8, // 1 achievement = 0.8 bounty
+    lexiconArticles: 0.7, // 1 lexicon article = 0.7 bounty
+    blogPosts: 0.9, // 1 blog post = 0.9 bounty
+    galleryUploads: 0.4, // 1 gallery upload = 0.4 bounty
+    clanMemberships: 0.3, // 1 clan membership = 0.3 bounty
+    ticketsResolved: 0.6 // 1 ticket resolved = 0.6 bounty
 };
 
-/** Epithets based on bounty ranges (One Piece inspired) */
+/** Epithets based on bounty ranges (scaled for slow growth) */
 const EPITHETS: { min: number; epithet: string }[] = [
-    { min: 50_000_000, epithet: "Emperor" },
-    { min: 10_000_000, epithet: "Warlord" },
-    { min: 5_000_000, epithet: "Supernova" },
-    { min: 1_000_000, epithet: "Captain" },
-    { min: 500_000, epithet: "Commander" },
-    { min: 100_000, epithet: "Fighter" },
-    { min: 50_000, epithet: "Rookie" },
-    { min: 10_000, epithet: "Recruit" },
+    { min: 50_000, epithet: "Emperor" },
+    { min: 20_000, epithet: "Warlord" },
+    { min: 10_000, epithet: "Supernova" },
+    { min: 5_000, epithet: "Captain" },
+    { min: 2_000, epithet: "Commander" },
+    { min: 500, epithet: "Fighter" },
+    { min: 100, epithet: "Rookie" },
+    { min: 10, epithet: "Recruit" },
     { min: 0, epithet: "Unknown" }
 ];
 
@@ -67,6 +67,11 @@ export class BountyService {
         @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
         private readonly dataSource: DataSource
     ) {}
+
+    /** Get the current multiplier config and epithet tiers */
+    getConfig(): { multipliers: Record<string, number>; epithets: { min: number; epithet: string }[] } {
+        return { multipliers: { ...MULTIPLIERS }, epithets: [...EPITHETS] };
+    }
 
     /** Get the wanted poster for a single user */
     async getWantedPoster(userId: string): Promise<WantedPosterDto | null> {
@@ -112,20 +117,32 @@ export class BountyService {
     async recalculateUser(userId: string): Promise<void> {
         const stats = await this.getUserStats(userId);
 
-        const coinValue = stats.coins * MULTIPLIERS.coins;
-        const xpValue = stats.xp * MULTIPLIERS.xp;
-        const postValue = stats.posts * MULTIPLIERS.posts;
-        const threadValue = stats.threads * MULTIPLIERS.threads;
-        const reactionValue = (stats.reactionsReceived * MULTIPLIERS.reactionsReceived) + (stats.reactionsGiven * MULTIPLIERS.reactionsGiven);
-        const achievementValue = stats.achievements * MULTIPLIERS.achievements;
-        const lexiconValue = stats.lexiconArticles * MULTIPLIERS.lexiconArticles;
-        const blogValue = stats.blogPosts * MULTIPLIERS.blogPosts;
-        const galleryValue = stats.galleryUploads * MULTIPLIERS.galleryUploads;
-        const clanValue = stats.clanMemberships * MULTIPLIERS.clanMemberships;
-        const ticketValue = stats.ticketsResolved * MULTIPLIERS.ticketsResolved;
+        const coinValue = Math.round(stats.coins * MULTIPLIERS.coins);
+        const xpValue = Math.round(stats.xp * MULTIPLIERS.xp);
+        const postValue = Math.round(stats.posts * MULTIPLIERS.posts);
+        const threadValue = Math.round(stats.threads * MULTIPLIERS.threads);
+        const reactionValue = Math.round(
+            stats.reactionsReceived * MULTIPLIERS.reactionsReceived + stats.reactionsGiven * MULTIPLIERS.reactionsGiven
+        );
+        const achievementValue = Math.round(stats.achievements * MULTIPLIERS.achievements);
+        const lexiconValue = Math.round(stats.lexiconArticles * MULTIPLIERS.lexiconArticles);
+        const blogValue = Math.round(stats.blogPosts * MULTIPLIERS.blogPosts);
+        const galleryValue = Math.round(stats.galleryUploads * MULTIPLIERS.galleryUploads);
+        const clanValue = Math.round(stats.clanMemberships * MULTIPLIERS.clanMemberships);
+        const ticketValue = Math.round(stats.ticketsResolved * MULTIPLIERS.ticketsResolved);
 
-        const totalBounty = coinValue + xpValue + postValue + threadValue + reactionValue +
-            achievementValue + lexiconValue + blogValue + galleryValue + clanValue + ticketValue;
+        const totalBounty =
+            coinValue +
+            xpValue +
+            postValue +
+            threadValue +
+            reactionValue +
+            achievementValue +
+            lexiconValue +
+            blogValue +
+            galleryValue +
+            clanValue +
+            ticketValue;
 
         const epithet = this.getEpithet(totalBounty);
 
@@ -173,26 +190,38 @@ export class BountyService {
 
     /** Gather stats from ALL modules for a user */
     private async getUserStats(userId: string): Promise<{
-        coins: number; xp: number; posts: number; threads: number;
-        reactionsReceived: number; reactionsGiven: number; achievements: number;
-        lexiconArticles: number; blogPosts: number; galleryUploads: number;
-        clanMemberships: number; ticketsResolved: number;
+        coins: number;
+        xp: number;
+        posts: number;
+        threads: number;
+        reactionsReceived: number;
+        reactionsGiven: number;
+        achievements: number;
+        lexiconArticles: number;
+        blogPosts: number;
+        galleryUploads: number;
+        clanMemberships: number;
+        ticketsResolved: number;
     }> {
-        const result = await this.dataSource.query(`
+        // Each subquery is wrapped to be fault-tolerant if a table doesn't exist yet
+        const result = await this.dataSource.query(
+            `
             SELECT
                 COALESCE((SELECT balance FROM user_wallets WHERE user_id = $1), 0) AS coins,
                 COALESCE((SELECT xp FROM user_xp WHERE user_id = $1), 0) AS xp,
-                (SELECT COUNT(*) FROM forum_posts WHERE author_id = $1 AND deleted_at IS NULL)::int AS posts,
-                (SELECT COUNT(*) FROM forum_threads WHERE author_id = $1 AND deleted_at IS NULL)::int AS threads,
+                (SELECT COUNT(*) FROM forum_posts WHERE author_id = $1)::int AS posts,
+                (SELECT COUNT(*) FROM forum_threads WHERE author_id = $1)::int AS threads,
                 (SELECT COUNT(*) FROM forum_post_reactions r JOIN forum_posts p ON r.post_id = p.id WHERE p.author_id = $1)::int AS reactions_received,
                 (SELECT COUNT(*) FROM forum_post_reactions WHERE user_id = $1)::int AS reactions_given,
                 (SELECT COUNT(*) FROM user_achievements WHERE user_id = $1)::int AS achievements,
-                COALESCE((SELECT COUNT(*) FROM lexicon_articles WHERE author_id = $1 AND deleted_at IS NULL), 0)::int AS lexicon_articles,
-                COALESCE((SELECT COUNT(*) FROM blog_posts WHERE author_id = $1 AND deleted_at IS NULL), 0)::int AS blog_posts,
+                COALESCE((SELECT COUNT(*) FROM lexicon_articles WHERE author_id = $1), 0)::int AS lexicon_articles,
+                COALESCE((SELECT COUNT(*) FROM blog_posts WHERE author_id = $1), 0)::int AS blog_posts,
                 COALESCE((SELECT COUNT(*) FROM gallery_media WHERE owner_id = $1), 0)::int AS gallery_uploads,
                 COALESCE((SELECT COUNT(*) FROM clan_members WHERE user_id = $1), 0)::int AS clan_memberships,
-                COALESCE((SELECT COUNT(*) FROM tickets WHERE assignee_id = $1 AND status IN ('resolved', 'closed') AND deleted_at IS NULL), 0)::int AS tickets_resolved
-        `, [userId]);
+                COALESCE((SELECT COUNT(*) FROM tickets WHERE assignee_id = $1 AND status IN ('resolved', 'closed')), 0)::int AS tickets_resolved
+        `,
+            [userId]
+        );
 
         const row = result[0] ?? {};
         return {

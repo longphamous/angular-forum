@@ -6,9 +6,9 @@ import { NotificationsService } from "../../notifications/notifications.service"
 import { UserEntity } from "../../user/entities/user.entity";
 import { CreateApplicationDto } from "../dto/create-application.dto";
 import { ManageMemberDto } from "../dto/manage-member.dto";
+import { ClanEntity } from "../entities/clan.entity";
 import { ClanApplicationEntity } from "../entities/clan-application.entity";
 import { ClanMemberEntity, type ClanMemberRole } from "../entities/clan-member.entity";
-import { ClanEntity } from "../entities/clan.entity";
 import type { ClanApplicationDto, ClanMemberDto } from "../models/clan.model";
 
 const ROLE_HIERARCHY: Record<ClanMemberRole, number> = {

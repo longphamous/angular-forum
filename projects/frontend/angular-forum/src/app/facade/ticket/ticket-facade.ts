@@ -3,7 +3,9 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 import { Observable, tap } from "rxjs";
 
 import { TICKET_ROUTES } from "../../core/api/ticket.routes";
+import { USER_ROUTES } from "../../core/api/user.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
+import type { CreateWorkflowPayload, UpdateWorkflowPayload, Workflow } from "../../core/models/ticket/board";
 import type {
     Attachment,
     CreateCommentPayload,
@@ -24,9 +26,7 @@ import type {
     Watcher,
     WorkLog
 } from "../../core/models/ticket/ticket";
-import type { CreateWorkflowPayload, UpdateWorkflowPayload, Workflow } from "../../core/models/ticket/board";
 import type { UserProfile } from "../../core/models/user/user";
-import { USER_ROUTES } from "../../core/api/user.routes";
 
 @Injectable({ providedIn: "root" })
 export class TicketFacade {
@@ -136,9 +136,9 @@ export class TicketFacade {
     }
 
     updateTicket(id: string, payload: UpdateTicketPayload): Observable<Ticket> {
-        return this.http.patch<Ticket>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.detail(id)}`, payload).pipe(
-            tap((ticket) => this._currentTicket.set(ticket))
-        );
+        return this.http
+            .patch<Ticket>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.detail(id)}`, payload)
+            .pipe(tap((ticket) => this._currentTicket.set(ticket)));
     }
 
     deleteTicket(id: string): Observable<{ success: boolean }> {
@@ -189,23 +189,19 @@ export class TicketFacade {
     // ── Activity ─────────────────────────────────────────────────────────────
 
     loadActivity(ticketId: string): void {
-        this.http
-            .get<PaginatedActivity>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.activity(ticketId)}`)
-            .subscribe({
-                next: (res) => this._activityLog.set(res.data),
-                error: () => this._activityLog.set([])
-            });
+        this.http.get<PaginatedActivity>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.activity(ticketId)}`).subscribe({
+            next: (res) => this._activityLog.set(res.data),
+            error: () => this._activityLog.set([])
+        });
     }
 
     // ── Comments ───────────────────────────────────────────────────────────────
 
     loadComments(ticketId: string): void {
-        this.http
-            .get<TicketComment[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.comments(ticketId)}`)
-            .subscribe({
-                next: (comments) => this._comments.set(comments),
-                error: () => this._comments.set([])
-            });
+        this.http.get<TicketComment[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.comments(ticketId)}`).subscribe({
+            next: (comments) => this._comments.set(comments),
+            error: () => this._comments.set([])
+        });
     }
 
     addComment(ticketId: string, payload: CreateCommentPayload): Observable<TicketComment> {
@@ -233,15 +229,15 @@ export class TicketFacade {
     }
 
     watch(ticketId: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`, {}).pipe(
-            tap(() => this.loadWatchers(ticketId))
-        );
+        return this.http
+            .post<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`, {})
+            .pipe(tap(() => this.loadWatchers(ticketId)));
     }
 
     unwatch(ticketId: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`).pipe(
-            tap(() => this.loadWatchers(ticketId))
-        );
+        return this.http
+            .delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.watch(ticketId)}`)
+            .pipe(tap(() => this.loadWatchers(ticketId)));
     }
 
     // ── Attachments ──────────────────────────────────────────────────────────
@@ -253,16 +249,21 @@ export class TicketFacade {
         });
     }
 
-    addAttachment(ticketId: string, file: { fileName: string; filePath: string; fileSize: number; mimeType?: string }): Observable<Attachment> {
-        return this.http.post<Attachment>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachments(ticketId)}`, file).pipe(
-            tap((a) => this._attachments.update((list) => [a, ...list]))
-        );
+    addAttachment(
+        ticketId: string,
+        file: { fileName: string; filePath: string; fileSize: number; mimeType?: string }
+    ): Observable<Attachment> {
+        return this.http
+            .post<Attachment>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachments(ticketId)}`, file)
+            .pipe(tap((a) => this._attachments.update((list) => [a, ...list])));
     }
 
     deleteAttachment(ticketId: string, attachId: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachmentDetail(ticketId, attachId)}`).pipe(
-            tap(() => this._attachments.update((list) => list.filter((a) => a.id !== attachId)))
-        );
+        return this.http
+            .delete<{
+                success: boolean;
+            }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.attachmentDetail(ticketId, attachId)}`)
+            .pipe(tap(() => this._attachments.update((list) => list.filter((a) => a.id !== attachId))));
     }
 
     // ── Work Logs ────────────────────────────────────────────────────────────
@@ -275,15 +276,15 @@ export class TicketFacade {
     }
 
     addWorkLog(ticketId: string, payload: CreateWorkLogPayload): Observable<WorkLog> {
-        return this.http.post<WorkLog>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogs(ticketId)}`, payload).pipe(
-            tap((log) => this._workLogs.update((list) => [log, ...list]))
-        );
+        return this.http
+            .post<WorkLog>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogs(ticketId)}`, payload)
+            .pipe(tap((log) => this._workLogs.update((list) => [log, ...list])));
     }
 
     deleteWorkLog(ticketId: string, logId: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogDetail(ticketId, logId)}`).pipe(
-            tap(() => this._workLogs.update((list) => list.filter((l) => l.id !== logId)))
-        );
+        return this.http
+            .delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.worklogDetail(ticketId, logId)}`)
+            .pipe(tap(() => this._workLogs.update((list) => list.filter((l) => l.id !== logId))));
     }
 
     // ── Admin: Projects ────────────────────────────────────────────────────────
@@ -295,16 +296,26 @@ export class TicketFacade {
         });
     }
 
-    createProject(payload: { name: string; description?: string; startDate?: string; endDate?: string }): Observable<TicketProject> {
+    createProject(payload: {
+        name: string;
+        description?: string;
+        startDate?: string;
+        endDate?: string;
+    }): Observable<TicketProject> {
         return this.http.post<TicketProject>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.projects()}`, payload);
     }
 
     updateProject(id: string, payload: Record<string, unknown>): Observable<TicketProject> {
-        return this.http.patch<TicketProject>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.projectDetail(id)}`, payload);
+        return this.http.patch<TicketProject>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.projectDetail(id)}`,
+            payload
+        );
     }
 
     deleteProject(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.projectDetail(id)}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.projectDetail(id)}`
+        );
     }
 
     // ── Admin: Categories ──────────────────────────────────────────────────────
@@ -316,16 +327,26 @@ export class TicketFacade {
         });
     }
 
-    createCategory(payload: { name: string; description?: string; icon?: string; color?: string }): Observable<TicketCategory> {
+    createCategory(payload: {
+        name: string;
+        description?: string;
+        icon?: string;
+        color?: string;
+    }): Observable<TicketCategory> {
         return this.http.post<TicketCategory>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.categories()}`, payload);
     }
 
     updateCategory(id: string, payload: Record<string, unknown>): Observable<TicketCategory> {
-        return this.http.patch<TicketCategory>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.categoryDetail(id)}`, payload);
+        return this.http.patch<TicketCategory>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.categoryDetail(id)}`,
+            payload
+        );
     }
 
     deleteCategory(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.categoryDetail(id)}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.categoryDetail(id)}`
+        );
     }
 
     // ── Admin: Labels ──────────────────────────────────────────────────────────
@@ -346,7 +367,9 @@ export class TicketFacade {
     }
 
     deleteLabel(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.labelDetail(id)}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.labelDetail(id)}`
+        );
     }
 
     // ── Admin: Workflows ──────────────────────────────────────────────────────
@@ -367,7 +390,11 @@ export class TicketFacade {
     seedDefaultWorkflow(projectId?: string): Observable<Workflow> {
         let params = new HttpParams();
         if (projectId) params = params.set("projectId", projectId);
-        return this.http.post<Workflow>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.seedDefaultWorkflow()}`, {}, { params });
+        return this.http.post<Workflow>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.seedDefaultWorkflow()}`,
+            {},
+            { params }
+        );
     }
 
     updateWorkflow(id: string, payload: UpdateWorkflowPayload): Observable<Workflow> {
@@ -375,7 +402,9 @@ export class TicketFacade {
     }
 
     deleteWorkflow(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.workflowDetail(id)}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.admin.workflowDetail(id)}`
+        );
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────

@@ -385,7 +385,7 @@ export class PostService {
                     post.authorId,
                     "best_answer_selected",
                     "Hilfreichste Antwort!",
-                    `Deine Antwort wurde als hilfreichste Antwort markiert.`,
+                    "Deine Antwort wurde als hilfreichste Antwort markiert.",
                     `/forum/threads/${post.threadId}`
                 );
             }

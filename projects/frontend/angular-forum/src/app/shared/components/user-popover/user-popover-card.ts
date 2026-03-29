@@ -44,7 +44,11 @@ export interface UserCardData {
 
         .upc-cover {
             height: 72px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, color-mix(in srgb, var(--primary-color) 60%, #000) 100%);
+            background: linear-gradient(
+                135deg,
+                var(--primary-color) 0%,
+                color-mix(in srgb, var(--primary-color) 60%, #000) 100%
+            );
             position: relative;
         }
 
@@ -141,12 +145,14 @@ export interface UserCardData {
                             <p-avatar
                                 [image]="u.avatarUrl ?? undefined"
                                 [label]="u.avatarUrl ? undefined : u.displayName.charAt(0).toUpperCase()"
+                                [style]="{ 'border-color': 'var(--surface-overlay)' }"
                                 shape="circle"
                                 size="xlarge"
                                 styleClass="border-4 shadow-md"
-                                [style]="{ 'border-color': 'var(--surface-overlay)' }"
                             />
-                            <div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); z-index: 2;">
+                            <div
+                                style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); z-index: 2;"
+                            >
                                 <level-orb [level]="u.level" [levelName]="u.levelName" size="sm" />
                             </div>
                         </div>
@@ -157,8 +163,8 @@ export interface UserCardData {
                     <div class="upc-username">&#64;{{ u.username }}</div>
                     <div style="margin-top: 0.375rem">
                         <p-tag
-                            [value]="t('userProfile.roles.' + u.role)"
                             [severity]="u.role === 'admin' ? 'danger' : u.role === 'moderator' ? 'warn' : 'info'"
+                            [value]="t('userProfile.roles.' + u.role)"
                             styleClass="text-xs"
                         />
                     </div>
@@ -171,15 +177,29 @@ export interface UserCardData {
                     <!-- Quick Actions -->
                     @if (!compact()) {
                         <div class="upc-actions">
-                            <p-button [routerLink]="['/users', u.id]" icon="pi pi-user" size="small" [rounded]="true" [text]="true" [pTooltip]="t('userProfile.viewProfile')" />
-                            <p-button [routerLink]="['/messages']" icon="pi pi-envelope" size="small" [rounded]="true" [text]="true" [pTooltip]="t('userProfile.sendMessage')" />
+                            <p-button
+                                [pTooltip]="t('userProfile.viewProfile')"
+                                [rounded]="true"
+                                [routerLink]="['/users', u.id]"
+                                [text]="true"
+                                icon="pi pi-user"
+                                size="small"
+                            />
+                            <p-button
+                                [pTooltip]="t('userProfile.sendMessage')"
+                                [rounded]="true"
+                                [routerLink]="['/messages']"
+                                [text]="true"
+                                icon="pi pi-envelope"
+                                size="small"
+                            />
                         </div>
                     }
 
                     <!-- Stats -->
                     <div class="upc-stats">
                         <div class="upc-stat">
-                            <div class="upc-stat-label">{{ t('userProfile.posts') }}</div>
+                            <div class="upc-stat-label">{{ t("userProfile.posts") }}</div>
                             <div class="upc-stat-value">{{ u.postCount }}</div>
                         </div>
                         <div class="upc-stat">

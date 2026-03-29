@@ -123,7 +123,9 @@ const ORB_GRADIENTS: Record<number, { from: string; to: string; glow: string }> 
     imports: [TooltipModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
-        :host { display: block; }
+        :host {
+            display: block;
+        }
 
         .level-orb {
             position: relative;
@@ -135,7 +137,9 @@ const ORB_GRADIENTS: Record<number, { from: string; to: string; glow: string }> 
             line-height: 1;
             user-select: none;
             cursor: default;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
         .level-orb:hover {
@@ -144,20 +148,25 @@ const ORB_GRADIENTS: Record<number, { from: string; to: string; glow: string }> 
 
         /* shiny highlight on upper-left */
         .level-orb::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 10%;
             left: 14%;
             width: 35%;
             height: 30%;
             border-radius: 50%;
-            background: radial-gradient(ellipse, rgba(255,255,255,0.55), transparent 70%);
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.55), transparent 70%);
             pointer-events: none;
         }
 
         @keyframes orb-pulse {
-            0%, 100% { box-shadow: var(--orb-shadow-base); }
-            50% { box-shadow: var(--orb-shadow-pulse); }
+            0%,
+            100% {
+                box-shadow: var(--orb-shadow-base);
+            }
+            50% {
+                box-shadow: var(--orb-shadow-pulse);
+            }
         }
 
         .level-orb--max {
@@ -168,8 +177,8 @@ const ORB_GRADIENTS: Record<number, { from: string; to: string; glow: string }> 
         <div
             class="level-orb"
             [class.level-orb--max]="level() >= 10"
-            [style]="orbStyle()"
             [pTooltip]="levelName()"
+            [style]="orbStyle()"
             tooltipPosition="top"
         >
             {{ level() }}
@@ -197,14 +206,14 @@ export class LevelOrb {
         const shadowPulse = `0 0 14px ${g.glow}, 0 0 4px ${g.glow}, inset 0 1px 2px rgba(255,255,255,0.25)`;
 
         return {
-            width: `${d.px}px`,
-            height: `${d.px}px`,
-            fontSize: d.font,
-            border: `${d.border}px solid rgba(255,255,255,0.25)`,
-            background: `linear-gradient(135deg, ${g.from}, ${g.to})`,
-            color: "white",
-            textShadow: `0 1px 3px rgba(0,0,0,0.4)`,
-            boxShadow: shadowBase,
+            "width": `${d.px}px`,
+            "height": `${d.px}px`,
+            "fontSize": d.font,
+            "border": `${d.border}px solid rgba(255,255,255,0.25)`,
+            "background": `linear-gradient(135deg, ${g.from}, ${g.to})`,
+            "color": "white",
+            "textShadow": "0 1px 3px rgba(0,0,0,0.4)",
+            "boxShadow": shadowBase,
             "--orb-shadow-base": shadowBase,
             "--orb-shadow-pulse": shadowPulse
         };

@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from "@angular/core";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { inject } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { TranslocoModule } from "@jsverse/transloco";
+import { Change, diffLines, diffWords } from "diff";
 import { ButtonModule } from "primeng/button";
 import { SelectModule } from "primeng/select";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
-import { FormsModule } from "@angular/forms";
-import { diffWords, diffLines, Change } from "diff";
 
 import { PostEditHistoryEntry } from "../../models/forum/post";
 
@@ -52,9 +52,7 @@ export class PostVersionCompare {
     readonly versionOptions = computed<VersionOption[]>(() => {
         const versions = this.allVersions();
         return versions.map((_, i) => ({
-            label: i === versions.length - 1
-                ? this.currentLabel
-                : `#${i + 1}`,
+            label: i === versions.length - 1 ? this.currentLabel : `#${i + 1}`,
             value: i
         }));
     });
@@ -170,11 +168,7 @@ export class PostVersionCompare {
     }
 
     private escapeHtml(text: string): string {
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     private changesToRenderedHtml(changes: Change[]): string {

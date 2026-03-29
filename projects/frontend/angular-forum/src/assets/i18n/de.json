@@ -148,7 +148,8 @@
     "mediaManagement": "Medienverwaltung",
     "clans": "Clans",
     "clanManagement": "Clan-Verwaltung",
-    "wanted": "Steckbrief"
+    "wanted": "Steckbrief",
+    "bountyManagement": "Kopfgeld-System"
   },
   "login": {
     "title": "Willkommen zurück",
@@ -2835,9 +2836,22 @@
     "myPoster": "Dein Steckbrief",
     "leaderboard": "Kopfgeld-Rangliste",
     "noBounties": "Noch keine Kopfgelder berechnet. Schau später nochmal vorbei!",
+    "noPoster": "Dein Kopfgeld wurde noch nicht berechnet.",
+    "factorHint": "Dein Kopfgeld berechnet sich aus deiner Aktivität in allen Modulen: Beiträge, EP, Münzen, Erfolge und mehr.",
     "rank": "Rang",
     "epithet": "Beiname",
     "totalBounty": "Gesamtes Kopfgeld",
+    "adminTitle": "Kopfgeld-Verwaltung",
+    "adminSubtitle": "Kopfgeld-Faktoren verwalten, Rangliste einsehen und Kopfgelder neu berechnen",
+    "recalculateAll": "Alle Kopfgelder neu berechnen",
+    "recalculated": "Neuberechnung abgeschlossen",
+    "usersProcessed": "Benutzer verarbeitet",
+    "factorOverview": "Kopfgeld-Faktoren",
+    "factorDescription": "Jede Benutzeraktivität trägt zum Gesamtkopfgeld bei. Unten sind die Multiplikatoren für jeden Faktor.",
+    "bountyPoints": "Kopfgeld",
+    "epithetTiers": "Beinamen-Ränge",
+    "totalUsers": "Benutzer gesamt",
+    "user": "Benutzer",
     "factors": {
       "coins": "Münzen",
       "xp": "EP",

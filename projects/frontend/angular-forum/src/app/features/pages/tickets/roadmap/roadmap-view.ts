@@ -82,22 +82,32 @@ export class RoadmapView implements OnInit {
 
     statusColor(status: string): string {
         const map: Record<string, string> = {
-            open: "#6B7280", in_progress: "#F59E0B", waiting: "#6B7280",
-            follow_up: "#6B7280", resolved: "#10B981", closed: "#10B981"
+            open: "#6B7280",
+            in_progress: "#F59E0B",
+            waiting: "#6B7280",
+            follow_up: "#6B7280",
+            resolved: "#10B981",
+            closed: "#10B981"
         };
         return map[status] ?? "#6B7280";
     }
 
     prioritySeverity(p: string): "success" | "info" | "warn" | "danger" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "danger" | "secondary"> = {
-            low: "secondary", normal: "info", high: "warn", critical: "danger"
+            low: "secondary",
+            normal: "info",
+            high: "warn",
+            critical: "danger"
         };
         return map[p] ?? "info";
     }
 
     statusSeverity(s: string): "success" | "info" | "warn" | "secondary" {
         const map: Record<string, "success" | "info" | "warn" | "secondary"> = {
-            open: "info", in_progress: "warn", resolved: "success", closed: "secondary"
+            open: "info",
+            in_progress: "warn",
+            resolved: "success",
+            closed: "secondary"
         };
         return map[s] ?? "info";
     }

@@ -10,27 +10,41 @@
             }
         </div>
         @if (facade.currentClan(); as clan) {
-        <p-button [label]="t('common.back')" [routerLink]="['/clans', clan.id]" icon="pi pi-arrow-left" severity="secondary" text />
+        <p-button
+            [label]="t('common.back')"
+            [routerLink]="['/clans', clan.id]"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            text
+        />
         }
     </div>
 
     <div class="surface-card flex flex-col gap-4 rounded-xl p-6 shadow">
         <div class="flex flex-col gap-1">
             <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldName') }}</label>
-            <input [ngModel]="name()" (ngModelChange)="name.set($event)" pInputText type="text" />
+            <input (ngModelChange)="name.set($event)" [ngModel]="name()" pInputText type="text" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldTag') }}</label>
-                <input [ngModel]="tag()" (ngModelChange)="tag.set($event)" pInputText type="text" maxlength="6" />
+                <input (ngModelChange)="tag.set($event)" [ngModel]="tag()" maxlength="6" pInputText type="text" />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldTagColor') }}</label>
                 <div class="flex items-center gap-2">
-                    <input [ngModel]="tagColor()" (ngModelChange)="tagColor.set($event)" pInputText type="color" class="h-10 w-16 cursor-pointer" />
+                    <input
+                        class="h-10 w-16 cursor-pointer"
+                        (ngModelChange)="tagColor.set($event)"
+                        [ngModel]="tagColor()"
+                        pInputText
+                        type="color"
+                    />
                     @if (tag()) {
-                    <span class="rounded px-2 py-1 text-sm font-bold text-white" [style.background-color]="tagColor()">{{ tag() }}</span>
+                    <span class="rounded px-2 py-1 text-sm font-bold text-white" [style.background-color]="tagColor()"
+                        >{{ tag() }}</span
+                    >
                     }
                 </div>
             </div>
@@ -38,46 +52,81 @@
 
         <div class="flex flex-col gap-1">
             <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldDescription') }}</label>
-            <textarea [ngModel]="description()" (ngModelChange)="description.set($event)" pTextarea [rows]="5" class="w-full"></textarea>
+            <textarea
+                class="w-full"
+                (ngModelChange)="description.set($event)"
+                [ngModel]="description()"
+                [rows]="5"
+                pTextarea
+            ></textarea>
         </div>
 
         <div class="flex flex-col gap-1">
             <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldJoinType') }}</label>
             <p-select
+                (ngModelChange)="joinType.set($event)"
                 [ngModel]="joinType()"
                 [options]="joinTypeOptions()"
-                (ngModelChange)="joinType.set($event)"
                 optionLabel="label"
                 optionValue="value"
             />
         </div>
 
         <div class="flex flex-col gap-1">
-            <label class="text-surface-700 dark:text-surface-200 font-medium">{{ t('clans.fieldApplicationTemplate') }}</label>
-            <textarea [ngModel]="applicationTemplate()" (ngModelChange)="applicationTemplate.set($event)" pTextarea [rows]="3" class="w-full"></textarea>
+            <label class="text-surface-700 dark:text-surface-200 font-medium"
+                >{{ t('clans.fieldApplicationTemplate') }}</label
+            >
+            <textarea
+                class="w-full"
+                (ngModelChange)="applicationTemplate.set($event)"
+                [ngModel]="applicationTemplate()"
+                [rows]="3"
+                pTextarea
+            ></textarea>
         </div>
 
         <div class="flex flex-col gap-3">
             <div class="flex items-center gap-2">
-                <p-checkbox [ngModel]="showActivity()" (ngModelChange)="showActivity.set($event)" [binary]="true" inputId="showActivity" />
-                <label for="showActivity" class="text-surface-700 dark:text-surface-200">{{ t('clans.showActivity') }}</label>
+                <p-checkbox
+                    (ngModelChange)="showActivity.set($event)"
+                    [binary]="true"
+                    [ngModel]="showActivity()"
+                    inputId="showActivity"
+                />
+                <label class="text-surface-700 dark:text-surface-200" for="showActivity"
+                    >{{ t('clans.showActivity') }}</label
+                >
             </div>
             <div class="flex items-center gap-2">
-                <p-checkbox [ngModel]="showMembers()" (ngModelChange)="showMembers.set($event)" [binary]="true" inputId="showMembers" />
-                <label for="showMembers" class="text-surface-700 dark:text-surface-200">{{ t('clans.showMembers') }}</label>
+                <p-checkbox
+                    (ngModelChange)="showMembers.set($event)"
+                    [binary]="true"
+                    [ngModel]="showMembers()"
+                    inputId="showMembers"
+                />
+                <label class="text-surface-700 dark:text-surface-200" for="showMembers"
+                    >{{ t('clans.showMembers') }}</label
+                >
             </div>
             <div class="flex items-center gap-2">
-                <p-checkbox [ngModel]="showComments()" (ngModelChange)="showComments.set($event)" [binary]="true" inputId="showComments" />
-                <label for="showComments" class="text-surface-700 dark:text-surface-200">{{ t('clans.showComments') }}</label>
+                <p-checkbox
+                    (ngModelChange)="showComments.set($event)"
+                    [binary]="true"
+                    [ngModel]="showComments()"
+                    inputId="showComments"
+                />
+                <label class="text-surface-700 dark:text-surface-200" for="showComments"
+                    >{{ t('clans.showComments') }}</label
+                >
             </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
             <p-button
+                (onClick)="save()"
                 [disabled]="!name()"
                 [label]="t('common.button.save')"
                 [loading]="saving()"
-                (onClick)="save()"
                 icon="pi pi-check"
             />
         </div>
@@ -87,6 +136,6 @@
     <div class="rounded-xl border-2 border-red-300 p-6 dark:border-red-800">
         <h3 class="m-0 mb-2 text-lg font-bold text-red-600">{{ t('clans.dangerZone') }}</h3>
         <p class="text-surface-500 mb-4 text-sm">{{ t('clans.disbandConfirm') }}</p>
-        <p-button [label]="t('clans.disbandClan')" (onClick)="disbandClan()" icon="pi pi-trash" severity="danger" />
+        <p-button (onClick)="disbandClan()" [label]="t('clans.disbandClan')" icon="pi pi-trash" severity="danger" />
     </div>
 </div>

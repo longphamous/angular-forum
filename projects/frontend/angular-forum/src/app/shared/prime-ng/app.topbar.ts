@@ -36,7 +36,7 @@ import { LayoutService } from "./service/layout.service";
                     <i class="pi pi-bars"></i>
                 </button>
                 <a class="layout-topbar-logo" routerLink="/">
-                    <img src="assets/images/logo.png" alt="Aniverse" style="height: 2.5rem; width: auto;" />
+                    <img alt="Aniverse" src="assets/images/logo.png" style="height: 2.5rem; width: auto;" />
                     <span>Aniverse</span>
                 </a>
             </div>

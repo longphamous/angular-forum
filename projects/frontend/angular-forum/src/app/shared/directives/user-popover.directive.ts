@@ -107,10 +107,20 @@ export class UserPopoverDirective implements OnDestroy {
             environmentInjector: this.injector,
             hostElement: this.popoverEl
         });
-        this.componentRef.setInput("user", this.userSignal() ?? {
-            id: userId, username: "...", displayName: "...", role: "member",
-            postCount: 0, level: 1, levelName: "", xp: 0, createdAt: ""
-        });
+        this.componentRef.setInput(
+            "user",
+            this.userSignal() ?? {
+                id: userId,
+                username: "...",
+                displayName: "...",
+                role: "member",
+                postCount: 0,
+                level: 1,
+                levelName: "",
+                xp: 0,
+                createdAt: ""
+            }
+        );
 
         this.appRef.attachView(this.componentRef.hostView);
         document.body.appendChild(this.popoverEl);

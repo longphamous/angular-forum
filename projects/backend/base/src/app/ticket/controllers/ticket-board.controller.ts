@@ -22,10 +22,7 @@ export class TicketBoardController {
 
     /** PATCH /tickets/board/move — move a ticket to a different status column */
     @Patch("move")
-    async moveCard(
-        @Body() dto: BoardMoveDto,
-        @CurrentUser() user: AuthenticatedUser
-    ): Promise<{ success: boolean }> {
+    async moveCard(@Body() dto: BoardMoveDto, @CurrentUser() user: AuthenticatedUser): Promise<{ success: boolean }> {
         await this.workflowService.moveCard(dto.ticketId, dto.toStatusId, user.userId);
         return { success: true };
     }

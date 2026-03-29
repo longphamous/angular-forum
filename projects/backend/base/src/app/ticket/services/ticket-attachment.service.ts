@@ -23,7 +23,11 @@ export class TicketAttachmentService {
         return attachments.map((a) => this.toDto(a, userMap));
     }
 
-    async addAttachment(ticketId: string, userId: string, file: { fileName: string; filePath: string; fileSize: number; mimeType?: string }): Promise<AttachmentDto> {
+    async addAttachment(
+        ticketId: string,
+        userId: string,
+        file: { fileName: string; filePath: string; fileSize: number; mimeType?: string }
+    ): Promise<AttachmentDto> {
         const attachment = this.attachmentRepo.create({
             ticketId,
             fileName: file.fileName,

@@ -39,6 +39,8 @@ export class ClanListPage implements OnInit {
     readonly searchQuery = signal("");
     readonly filterCategory = signal("");
     readonly filterJoinType = signal<ClanJoinType | "">("");
+    readonly showMyClans = signal(false);
+    readonly displayedClans = computed(() => this.showMyClans() ? this.facade.myClans() : this.facade.clans());
     readonly page = signal(1);
     readonly limit = signal(12);
 
@@ -66,8 +68,18 @@ export class ClanListPage implements OnInit {
         this.facade.loadClans(params);
     }
 
+    toggleMyClans(): void {
+        this.showMyClans.set(!this.showMyClans());
+        if (this.showMyClans()) {
+            this.facade.loadMyClans();
+        } else {
+            this.loadClans();
+        }
+    }
+
     onFilterChange(): void {
         this.page.set(1);
+        this.showMyClans.set(false);
         this.loadClans();
     }
 

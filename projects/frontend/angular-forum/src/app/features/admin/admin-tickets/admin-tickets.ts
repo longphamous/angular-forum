@@ -218,13 +218,15 @@ export class AdminTickets implements OnInit {
     openEditWorkflowDialog(wf: Workflow): void {
         this.wfEditId.set(wf.id);
         this.wfEditName.set(wf.name);
-        this.wfEditStatuses.set(wf.statuses.map((s) => ({
-            name: s.name,
-            slug: s.slug,
-            color: s.color,
-            category: s.category,
-            position: s.position
-        })));
+        this.wfEditStatuses.set(
+            wf.statuses.map((s) => ({
+                name: s.name,
+                slug: s.slug,
+                color: s.color,
+                category: s.category,
+                position: s.position
+            }))
+        );
         this.wfDialogVisible.set(true);
     }
 
@@ -233,7 +235,10 @@ export class AdminTickets implements OnInit {
             const updated = [...list];
             updated[index] = { ...updated[index], [field]: value };
             if (field === "name") {
-                updated[index].slug = value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+                updated[index].slug = value
+                    .toLowerCase()
+                    .replace(/\s+/g, "_")
+                    .replace(/[^a-z0-9_]/g, "");
             }
             return updated;
         });
@@ -242,7 +247,13 @@ export class AdminTickets implements OnInit {
     addWfStatus(): void {
         this.wfEditStatuses.update((list) => [
             ...list,
-            { name: "New Status", slug: "new_status_" + list.length, color: "#6B7280", category: "todo" as const, position: list.length }
+            {
+                name: "New Status",
+                slug: "new_status_" + list.length,
+                color: "#6B7280",
+                category: "todo" as const,
+                position: list.length
+            }
         ]);
     }
 

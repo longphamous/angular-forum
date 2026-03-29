@@ -148,7 +148,8 @@
     "mediaManagement": "Media Management",
     "clans": "Clans",
     "clanManagement": "Clan Management",
-    "wanted": "Wanted"
+    "wanted": "Wanted",
+    "bountyManagement": "Bounty System"
   },
   "login": {
     "title": "Welcome back",
@@ -2835,9 +2836,22 @@
     "myPoster": "Your Wanted Poster",
     "leaderboard": "Bounty Leaderboard",
     "noBounties": "No bounties calculated yet. Check back later!",
+    "noPoster": "Your bounty has not been calculated yet.",
+    "factorHint": "Your bounty is calculated from your activity across all modules: posts, XP, coins, achievements, and more.",
     "rank": "Rank",
     "epithet": "Epithet",
     "totalBounty": "Total Bounty",
+    "adminTitle": "Bounty Administration",
+    "adminSubtitle": "Manage bounty factors, view the leaderboard, and recalculate bounties",
+    "recalculateAll": "Recalculate All Bounties",
+    "recalculated": "Recalculation complete",
+    "usersProcessed": "users processed",
+    "factorOverview": "Bounty Factors",
+    "factorDescription": "Each user activity contributes to the total bounty value. Below are the multipliers for each factor.",
+    "bountyPoints": "Bounty",
+    "epithetTiers": "Epithet Tiers",
+    "totalUsers": "users total",
+    "user": "User",
     "factors": {
       "coins": "Coins",
       "xp": "XP",

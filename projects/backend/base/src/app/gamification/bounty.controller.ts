@@ -15,10 +15,13 @@ export class BountyController {
         @Query("limit") limit?: string,
         @Query("offset") offset?: string
     ): Promise<{ data: WantedPosterDto[]; total: number }> {
-        return this.bountyService.getLeaderboard(
-            limit ? parseInt(limit, 10) : 50,
-            offset ? parseInt(offset, 10) : 0
-        );
+        return this.bountyService.getLeaderboard(limit ? parseInt(limit, 10) : 50, offset ? parseInt(offset, 10) : 0);
+    }
+
+    /** GET /bounty/config — Get multiplier config and epithet tiers */
+    @Get("config")
+    getConfig(): { multipliers: Record<string, number>; epithets: { min: number; epithet: string }[] } {
+        return this.bountyService.getConfig();
     }
 
     /** GET /bounty/me — Current user's wanted poster */

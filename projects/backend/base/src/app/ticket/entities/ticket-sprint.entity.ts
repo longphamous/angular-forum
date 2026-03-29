@@ -1,7 +1,16 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 
-import { TicketProjectEntity } from "./ticket-project.entity";
 import { TicketEntity } from "./ticket.entity";
+import { TicketProjectEntity } from "./ticket-project.entity";
 
 export type SprintStatus = "planning" | "active" | "completed";
 

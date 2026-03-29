@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 import { Transform } from "class-transformer";
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 import type { TicketPriority, TicketStatus, TicketType } from "../entities/ticket.entity";
 

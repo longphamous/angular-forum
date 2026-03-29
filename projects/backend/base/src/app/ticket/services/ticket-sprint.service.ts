@@ -5,8 +5,8 @@ import { IsNull, Repository } from "typeorm";
 import { BacklogReorderDto } from "../dto/backlog-reorder.dto";
 import { CreateSprintDto } from "../dto/create-sprint.dto";
 import { UpdateSprintDto } from "../dto/update-sprint.dto";
-import { TicketSprintEntity } from "../entities/ticket-sprint.entity";
 import { TicketEntity } from "../entities/ticket.entity";
+import { TicketSprintEntity } from "../entities/ticket-sprint.entity";
 import type { PaginatedResult, SprintDto, TicketDto } from "../models/ticket.model";
 import { TicketService } from "./ticket.service";
 
@@ -152,7 +152,12 @@ export class TicketSprintService {
                 timeSpentMinutes: t.timeSpentMinutes ?? 0,
                 watcherCount: 0,
                 attachmentCount: 0,
-                labels: (t.labels ?? []).map((l) => ({ id: l.id, name: l.name, color: l.color, categoryId: l.categoryId })),
+                labels: (t.labels ?? []).map((l) => ({
+                    id: l.id,
+                    name: l.name,
+                    color: l.color,
+                    categoryId: l.categoryId
+                })),
                 dueDate: t.dueDate?.toISOString(),
                 followUpDate: t.followUpDate?.toISOString(),
                 isPinned: t.isPinned,
@@ -173,10 +178,7 @@ export class TicketSprintService {
 
     async reorderBacklog(projectId: string, dto: BacklogReorderDto): Promise<void> {
         for (let i = 0; i < dto.ticketIds.length; i++) {
-            await this.ticketRepo.update(
-                { id: dto.ticketIds[i], projectId },
-                { backlogPosition: i }
-            );
+            await this.ticketRepo.update({ id: dto.ticketIds[i], projectId }, { backlogPosition: i });
         }
     }
 

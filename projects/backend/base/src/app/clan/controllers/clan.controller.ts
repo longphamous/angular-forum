@@ -7,13 +7,7 @@ import { CreateClanDto } from "../dto/create-clan.dto";
 import { CreateCommentDto } from "../dto/create-comment.dto";
 import { CreatePageDto } from "../dto/create-page.dto";
 import { UpdateClanDto } from "../dto/update-clan.dto";
-import type {
-    ClanCommentDto,
-    ClanDto,
-    ClanListItemDto,
-    ClanPageDto,
-    PaginatedResult
-} from "../models/clan.model";
+import type { ClanCommentDto, ClanDto, ClanListItemDto, ClanPageDto, PaginatedResult } from "../models/clan.model";
 import { ClanService } from "../services/clan.service";
 
 @Controller("clans")
@@ -98,10 +92,7 @@ export class ClanController {
      * Creates a new page for a clan. Requires clan admin permissions.
      */
     @Post(":id/pages")
-    createPage(
-        @Param("id", ParseUUIDPipe) id: string,
-        @Body() dto: CreatePageDto
-    ): Promise<ClanPageDto> {
+    createPage(@Param("id", ParseUUIDPipe) id: string, @Body() dto: CreatePageDto): Promise<ClanPageDto> {
         return this.clanService.createPage(id, dto);
     }
 

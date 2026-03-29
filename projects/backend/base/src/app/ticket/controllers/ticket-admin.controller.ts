@@ -12,7 +12,15 @@ import { CreateWorkflowDto } from "../dto/create-workflow.dto";
 import { ManageProjectMemberDto } from "../dto/manage-project-member.dto";
 import { UpdateProjectDto } from "../dto/update-project.dto";
 import { UpdateWorkflowDto } from "../dto/update-workflow.dto";
-import type { AutomationRuleDto, CustomFieldDefDto, LabelDto, ProjectMemberDto, TicketCategoryDto, TicketProjectDto, WorkflowDto } from "../models/ticket.model";
+import type {
+    AutomationRuleDto,
+    CustomFieldDefDto,
+    LabelDto,
+    ProjectMemberDto,
+    TicketCategoryDto,
+    TicketProjectDto,
+    WorkflowDto
+} from "../models/ticket.model";
 import { TicketAdminService } from "../services/ticket-admin.service";
 import { TicketAutomationService } from "../services/ticket-automation.service";
 import { TicketCustomFieldService } from "../services/ticket-custom-field.service";
@@ -158,13 +166,19 @@ export class TicketAdminController {
     }
 
     @Post("projects/:id/automations")
-    createRule(@Param("id", ParseUUIDPipe) id: string, @Body() dto: CreateAutomationRuleDto): Promise<AutomationRuleDto> {
+    createRule(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: CreateAutomationRuleDto
+    ): Promise<AutomationRuleDto> {
         dto.projectId = id;
         return this.automationService.createRule(dto);
     }
 
     @Patch("automations/:id")
-    updateRule(@Param("id", ParseUUIDPipe) id: string, @Body() dto: Partial<CreateAutomationRuleDto>): Promise<AutomationRuleDto> {
+    updateRule(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: Partial<CreateAutomationRuleDto>
+    ): Promise<AutomationRuleDto> {
         return this.automationService.updateRule(id, dto);
     }
 
@@ -187,13 +201,19 @@ export class TicketAdminController {
     }
 
     @Post("projects/:id/fields")
-    createField(@Param("id", ParseUUIDPipe) id: string, @Body() dto: CreateCustomFieldDefDto): Promise<CustomFieldDefDto> {
+    createField(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: CreateCustomFieldDefDto
+    ): Promise<CustomFieldDefDto> {
         dto.projectId = id;
         return this.customFieldService.createField(dto);
     }
 
     @Patch("fields/:id")
-    updateField(@Param("id", ParseUUIDPipe) id: string, @Body() dto: Partial<CreateCustomFieldDefDto>): Promise<CustomFieldDefDto> {
+    updateField(
+        @Param("id", ParseUUIDPipe) id: string,
+        @Body() dto: Partial<CreateCustomFieldDefDto>
+    ): Promise<CustomFieldDefDto> {
         return this.customFieldService.updateField(id, dto);
     }
 

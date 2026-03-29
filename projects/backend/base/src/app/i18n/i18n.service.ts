@@ -7,9 +7,7 @@ import { UpsertTranslationDto } from "./dto/upsert-translation.dto";
 import { I18nSettingsEntity } from "./entities/i18n-settings.entity";
 import { TranslationOverrideEntity } from "./entities/translation-override.entity";
 
-export interface TranslationMap {
-    [key: string]: string;
-}
+export type TranslationMap = Record<string, string>;
 
 @Injectable()
 export class I18nService {

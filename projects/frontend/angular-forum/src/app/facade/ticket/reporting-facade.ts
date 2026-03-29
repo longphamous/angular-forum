@@ -4,7 +4,13 @@ import { Observable } from "rxjs";
 
 import { TICKET_ROUTES } from "../../core/api/ticket.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
-import type { BurndownPoint, SlaConfig, SlaStatus, SprintReport, VelocityEntry } from "../../core/models/ticket/reporting";
+import type {
+    BurndownPoint,
+    SlaConfig,
+    SlaStatus,
+    SprintReport,
+    VelocityEntry
+} from "../../core/models/ticket/reporting";
 
 @Injectable({ providedIn: "root" })
 export class ReportingFacade {
@@ -35,17 +41,27 @@ export class ReportingFacade {
 
     loadBurndown(sprintId: string): void {
         this._loading.set(true);
-        this.http.get<BurndownPoint[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.burndown(sprintId)}`).subscribe({
-            next: (data) => { this._burndown.set(data); this._loading.set(false); },
-            error: () => { this._burndown.set([]); this._loading.set(false); }
-        });
+        this.http
+            .get<BurndownPoint[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.burndown(sprintId)}`)
+            .subscribe({
+                next: (data) => {
+                    this._burndown.set(data);
+                    this._loading.set(false);
+                },
+                error: () => {
+                    this._burndown.set([]);
+                    this._loading.set(false);
+                }
+            });
     }
 
     loadVelocity(projectId: string): void {
-        this.http.get<VelocityEntry[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.velocity(projectId)}`).subscribe({
-            next: (data) => this._velocity.set(data),
-            error: () => this._velocity.set([])
-        });
+        this.http
+            .get<VelocityEntry[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.velocity(projectId)}`)
+            .subscribe({
+                next: (data) => this._velocity.set(data),
+                error: () => this._velocity.set([])
+            });
     }
 
     loadSprintReport(sprintId: string): void {
@@ -56,26 +72,37 @@ export class ReportingFacade {
     }
 
     loadSlaBreaches(projectId: string): void {
-        this.http.get<SlaStatus[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaBreaches(projectId)}`).subscribe({
-            next: (data) => this._slaBreaches.set(data),
-            error: () => this._slaBreaches.set([])
-        });
+        this.http
+            .get<SlaStatus[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaBreaches(projectId)}`)
+            .subscribe({
+                next: (data) => this._slaBreaches.set(data),
+                error: () => this._slaBreaches.set([])
+            });
     }
 
     loadSlaConfigs(projectId: string): void {
         const params = new HttpParams().set("projectId", projectId);
-        this.http.get<SlaConfig[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaConfigs()}`, { params }).subscribe({
-            next: (data) => this._slaConfigs.set(data),
-            error: () => this._slaConfigs.set([])
-        });
+        this.http
+            .get<SlaConfig[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaConfigs()}`, { params })
+            .subscribe({
+                next: (data) => this._slaConfigs.set(data),
+                error: () => this._slaConfigs.set([])
+            });
     }
 
-    createSlaConfig(payload: { projectId: string; priority: string; firstResponseHours: number; resolutionHours: number }): Observable<SlaConfig> {
+    createSlaConfig(payload: {
+        projectId: string;
+        priority: string;
+        firstResponseHours: number;
+        resolutionHours: number;
+    }): Observable<SlaConfig> {
         return this.http.post<SlaConfig>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaConfigs()}`, payload);
     }
 
     deleteSlaConfig(id: string): Observable<{ success: boolean }> {
-        return this.http.delete<{ success: boolean }>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaConfigDetail(id)}`);
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiConfig.baseUrl}${TICKET_ROUTES.reports.slaConfigDetail(id)}`
+        );
     }
 
     clear(): void {

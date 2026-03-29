@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CreateSlaConfigDto } from "../dto/create-sla-config.dto";
-import { TicketSlaConfigEntity } from "../entities/ticket-sla-config.entity";
 import { TicketEntity } from "../entities/ticket.entity";
+import { TicketSlaConfigEntity } from "../entities/ticket-sla-config.entity";
 import type { SlaConfigDto, SlaStatusDto } from "../models/ticket.model";
 
 @Injectable()

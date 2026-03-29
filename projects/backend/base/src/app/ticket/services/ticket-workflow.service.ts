@@ -5,20 +5,29 @@ import { DataSource, Repository } from "typeorm";
 import { BoardQueryDto } from "../dto/board-query.dto";
 import { CreateWorkflowDto } from "../dto/create-workflow.dto";
 import { UpdateWorkflowDto } from "../dto/update-workflow.dto";
+import { TicketEntity } from "../entities/ticket.entity";
+import { TicketWorkflowEntity } from "../entities/ticket-workflow.entity";
 import { TicketWorkflowStatusEntity } from "../entities/ticket-workflow-status.entity";
 import { TicketWorkflowTransitionEntity } from "../entities/ticket-workflow-transition.entity";
-import { TicketWorkflowEntity } from "../entities/ticket-workflow.entity";
-import { TicketEntity } from "../entities/ticket.entity";
-import type { BoardColumnDto, BoardDataDto, TicketDto, WorkflowDto, WorkflowStatusDto, WorkflowTransitionDto } from "../models/ticket.model";
-import { TicketActivityService } from "./ticket-activity.service";
+import type {
+    BoardColumnDto,
+    BoardDataDto,
+    TicketDto,
+    WorkflowDto,
+    WorkflowStatusDto,
+    WorkflowTransitionDto
+} from "../models/ticket.model";
 import { TicketService } from "./ticket.service";
+import { TicketActivityService } from "./ticket-activity.service";
 
 @Injectable()
 export class TicketWorkflowService {
     constructor(
         @InjectRepository(TicketWorkflowEntity) private readonly workflowRepo: Repository<TicketWorkflowEntity>,
-        @InjectRepository(TicketWorkflowStatusEntity) private readonly statusRepo: Repository<TicketWorkflowStatusEntity>,
-        @InjectRepository(TicketWorkflowTransitionEntity) private readonly transitionRepo: Repository<TicketWorkflowTransitionEntity>,
+        @InjectRepository(TicketWorkflowStatusEntity)
+        private readonly statusRepo: Repository<TicketWorkflowStatusEntity>,
+        @InjectRepository(TicketWorkflowTransitionEntity)
+        private readonly transitionRepo: Repository<TicketWorkflowTransitionEntity>,
         @InjectRepository(TicketEntity) private readonly ticketRepo: Repository<TicketEntity>,
         private readonly dataSource: DataSource,
         private readonly activityService: TicketActivityService,
@@ -206,7 +215,8 @@ export class TicketWorkflowService {
 
         if (query.assigneeId) qb.andWhere("t.assignee_id = :assigneeId", { assigneeId: query.assigneeId });
         if (query.type) qb.andWhere("t.type = :type", { type: query.type });
-        if (query.search) qb.andWhere("(t.title ILIKE :search OR t.description ILIKE :search)", { search: `%${query.search}%` });
+        if (query.search)
+            qb.andWhere("(t.title ILIKE :search OR t.description ILIKE :search)", { search: `%${query.search}%` });
 
         qb.addOrderBy("t.isPinned", "DESC").addOrderBy("t.createdAt", "ASC");
 
@@ -215,9 +225,7 @@ export class TicketWorkflowService {
         // Group tickets into columns
         const columns: BoardColumnDto[] = statuses.map((status) => ({
             status: this.toStatusDto(status),
-            tickets: tickets
-                .filter((t) => t.workflowStatusId === status.id)
-                .map((t) => this.toTicketDto(t))
+            tickets: tickets.filter((t) => t.workflowStatusId === status.id).map((t) => this.toTicketDto(t))
         }));
 
         // Add unassigned tickets (no workflow status) to first column
@@ -292,9 +300,7 @@ export class TicketWorkflowService {
     // ── Mapping ──────────────────────────────────────────────────────────────
 
     private toDto(wf: TicketWorkflowEntity): WorkflowDto {
-        const statuses = (wf.statuses ?? [])
-            .sort((a, b) => a.position - b.position)
-            .map((s) => this.toStatusDto(s));
+        const statuses = (wf.statuses ?? []).sort((a, b) => a.position - b.position).map((s) => this.toStatusDto(s));
 
         return {
             id: wf.id,

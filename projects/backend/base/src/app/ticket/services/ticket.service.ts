@@ -9,11 +9,17 @@ import { CreateLinkDto } from "../dto/create-link.dto";
 import { CreateTicketDto } from "../dto/create-ticket.dto";
 import { TicketQueryDto } from "../dto/ticket-query.dto";
 import { UpdateTicketDto } from "../dto/update-ticket.dto";
+import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
 import { TicketCommentEntity } from "../entities/ticket-comment.entity";
 import { TicketLabelEntity } from "../entities/ticket-label.entity";
 import { TicketLinkEntity, type TicketLinkType } from "../entities/ticket-link.entity";
-import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
-import type { PaginatedResult, TicketCommentDto, TicketDto, TicketLinkDto, TicketStatsDto } from "../models/ticket.model";
+import type {
+    PaginatedResult,
+    TicketCommentDto,
+    TicketDto,
+    TicketLinkDto,
+    TicketStatsDto
+} from "../models/ticket.model";
 import { TicketActivityService } from "./ticket-activity.service";
 
 @Injectable()
@@ -156,7 +162,14 @@ export class TicketService {
 
         const saved = await this.linkRepo.save(link);
 
-        void this.activityService.log(sourceTicketId, userId, "linked", "link", undefined, `${dto.linkType} #${target.ticketNumber}`);
+        void this.activityService.log(
+            sourceTicketId,
+            userId,
+            "linked",
+            "link",
+            undefined,
+            `${dto.linkType} #${target.ticketNumber}`
+        );
 
         const fullLink = await this.linkRepo.findOne({
             where: { id: saved.id },
@@ -231,10 +244,13 @@ export class TicketService {
         if (dto.parentId !== undefined) ticket.parentId = dto.parentId ?? undefined;
         if (dto.storyPoints !== undefined) ticket.storyPoints = dto.storyPoints ?? undefined;
         if (dto.sprintId !== undefined) ticket.sprintId = dto.sprintId ?? undefined;
-        if (dto.originalEstimateMinutes !== undefined) ticket.originalEstimateMinutes = dto.originalEstimateMinutes ?? undefined;
-        if (dto.remainingEstimateMinutes !== undefined) ticket.remainingEstimateMinutes = dto.remainingEstimateMinutes ?? undefined;
+        if (dto.originalEstimateMinutes !== undefined)
+            ticket.originalEstimateMinutes = dto.originalEstimateMinutes ?? undefined;
+        if (dto.remainingEstimateMinutes !== undefined)
+            ticket.remainingEstimateMinutes = dto.remainingEstimateMinutes ?? undefined;
         if (dto.dueDate !== undefined) ticket.dueDate = dto.dueDate ? new Date(dto.dueDate) : undefined;
-        if (dto.followUpDate !== undefined) ticket.followUpDate = dto.followUpDate ? new Date(dto.followUpDate) : undefined;
+        if (dto.followUpDate !== undefined)
+            ticket.followUpDate = dto.followUpDate ? new Date(dto.followUpDate) : undefined;
         if (dto.isPinned !== undefined) ticket.isPinned = dto.isPinned;
         if (dto.rating !== undefined) ticket.rating = dto.rating;
         if (dto.ratingComment !== undefined) ticket.ratingComment = dto.ratingComment;

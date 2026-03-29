@@ -60,7 +60,11 @@ export class TicketSprintController {
         @Query("page") page?: string,
         @Query("limit") limit?: string
     ): Promise<PaginatedResult<TicketDto>> {
-        return this.sprintService.getBacklog(projectId, page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 50);
+        return this.sprintService.getBacklog(
+            projectId,
+            page ? parseInt(page, 10) : 1,
+            limit ? parseInt(limit, 10) : 50
+        );
     }
 
     /** PATCH /tickets/sprints/backlog/:projectId/reorder — reorder backlog */

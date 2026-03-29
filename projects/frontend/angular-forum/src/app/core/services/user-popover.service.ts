@@ -1,10 +1,10 @@
 import { HttpClient } from "@angular/common/http";
-import { inject, Injectable, signal, Signal } from "@angular/core";
+import { inject, Injectable, Signal, signal } from "@angular/core";
 
+import { UserCardData } from "../../shared/components/user-popover/user-popover-card";
 import { USER_ROUTES } from "../api/user.routes";
 import { API_CONFIG, ApiConfig } from "../config/api.config";
 import { UserProfile } from "../models/user/user";
-import { UserCardData } from "../../shared/components/user-popover/user-popover-card";
 
 @Injectable({ providedIn: "root" })
 export class UserPopoverService {
@@ -23,31 +23,29 @@ export class UserPopoverService {
         const result = signal<UserCardData | null>(null);
         this.pending.set(userId, result);
 
-        this.http
-            .get<UserProfile>(`${this.config.baseUrl}${USER_ROUTES.publicProfile(userId)}`)
-            .subscribe({
-                next: (profile) => {
-                    const card: UserCardData = {
-                        id: profile.id,
-                        username: profile.username,
-                        displayName: profile.displayName,
-                        avatarUrl: profile.avatarUrl,
-                        coverUrl: profile.coverUrl,
-                        role: profile.role,
-                        bio: profile.bio,
-                        postCount: profile.postCount,
-                        level: profile.level,
-                        levelName: profile.levelName,
-                        xp: profile.xp,
-                        createdAt: profile.createdAt
-                    };
-                    this.cache.set(userId, card);
-                    result.set(card);
-                },
-                error: () => {
-                    this.pending.delete(userId);
-                }
-            });
+        this.http.get<UserProfile>(`${this.config.baseUrl}${USER_ROUTES.publicProfile(userId)}`).subscribe({
+            next: (profile) => {
+                const card: UserCardData = {
+                    id: profile.id,
+                    username: profile.username,
+                    displayName: profile.displayName,
+                    avatarUrl: profile.avatarUrl,
+                    coverUrl: profile.coverUrl,
+                    role: profile.role,
+                    bio: profile.bio,
+                    postCount: profile.postCount,
+                    level: profile.level,
+                    levelName: profile.levelName,
+                    xp: profile.xp,
+                    createdAt: profile.createdAt
+                };
+                this.cache.set(userId, card);
+                result.set(card);
+            },
+            error: () => {
+                this.pending.delete(userId);
+            }
+        });
 
         return result;
     }

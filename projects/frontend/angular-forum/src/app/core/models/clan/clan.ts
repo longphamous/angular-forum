@@ -1,6 +1,6 @@
-export type ClanJoinType = 'open' | 'invite' | 'application' | 'moderated';
-export type ClanStatus = 'active' | 'inactive' | 'disbanded';
-export type ClanMemberRole = 'owner' | 'admin' | 'moderator' | 'member';
+export type ClanJoinType = "open" | "invite" | "application" | "moderated";
+export type ClanStatus = "active" | "inactive" | "disbanded";
+export type ClanMemberRole = "owner" | "admin" | "moderator" | "member";
 
 export interface Clan {
     id: string;
@@ -45,9 +45,9 @@ export interface ClanApplication {
     userName?: string;
     invitedById?: string;
     invitedByName?: string;
-    type: 'application' | 'invitation';
+    type: "application" | "invitation";
     message?: string;
-    status: 'pending' | 'accepted' | 'declined';
+    status: "pending" | "accepted" | "declined";
     createdAt: string;
 }
 

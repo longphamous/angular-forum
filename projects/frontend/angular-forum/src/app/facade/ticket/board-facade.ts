@@ -32,18 +32,16 @@ export class BoardFacade {
             if (value) params = params.set(key, value);
         }
 
-        this.http
-            .get<BoardData>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.board(projectId)}`, { params })
-            .subscribe({
-                next: (data) => {
-                    this._boardData.set(data);
-                    this._loading.set(false);
-                },
-                error: () => {
-                    this._error.set("Failed to load board");
-                    this._loading.set(false);
-                }
-            });
+        this.http.get<BoardData>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.board(projectId)}`, { params }).subscribe({
+            next: (data) => {
+                this._boardData.set(data);
+                this._loading.set(false);
+            },
+            error: () => {
+                this._error.set("Failed to load board");
+                this._loading.set(false);
+            }
+        });
     }
 
     moveCard(payload: BoardMovePayload, projectId: string): void {

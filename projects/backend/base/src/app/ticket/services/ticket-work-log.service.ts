@@ -4,8 +4,8 @@ import { In, Repository } from "typeorm";
 
 import { UserEntity } from "../../user/entities/user.entity";
 import { CreateWorkLogDto } from "../dto/create-work-log.dto";
-import { TicketWorkLogEntity } from "../entities/ticket-work-log.entity";
 import { TicketEntity } from "../entities/ticket.entity";
+import { TicketWorkLogEntity } from "../entities/ticket-work-log.entity";
 import type { WorkLogDto } from "../models/ticket.model";
 
 @Injectable()

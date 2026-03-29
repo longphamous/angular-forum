@@ -350,9 +350,9 @@
     >
         @if (editHistory().length > 0) {
         <post-version-compare
+            (restore)="restoreVersion($event)"
             [currentContent]="historyCurrentContent()"
             [editHistory]="editHistory()"
-            (restore)="restoreVersion($event)"
         />
         } @else {
         <p class="text-surface-400 py-6 text-center text-sm">{{ t('threadDetail.historyDialog.empty') }}</p>
@@ -673,7 +673,11 @@
                     ></div>
 
                     <!-- Avatar -->
-                    <a class="relative z-10 no-underline" [routerLink]="['/users', post.authorId]" [userPopover]="post.authorId">
+                    <a
+                        class="relative z-10 no-underline"
+                        [routerLink]="['/users', post.authorId]"
+                        [userPopover]="post.authorId"
+                    >
                         <div class="relative inline-block">
                             @if (post.authorAvatarUrl) {
                             <img

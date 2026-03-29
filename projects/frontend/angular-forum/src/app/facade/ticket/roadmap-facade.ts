@@ -23,8 +23,14 @@ export class RoadmapFacade {
     loadRoadmap(projectId: string): void {
         this._loading.set(true);
         this.http.get<RoadmapEpic[]>(`${this.apiConfig.baseUrl}${TICKET_ROUTES.roadmap(projectId)}`).subscribe({
-            next: (data) => { this._epics.set(data); this._loading.set(false); },
-            error: () => { this._epics.set([]); this._loading.set(false); }
+            next: (data) => {
+                this._epics.set(data);
+                this._loading.set(false);
+            },
+            error: () => {
+                this._epics.set([]);
+                this._loading.set(false);
+            }
         });
     }
 

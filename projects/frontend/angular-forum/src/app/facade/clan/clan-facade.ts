@@ -110,9 +110,9 @@ export class ClanFacade {
     }
 
     updateClan(id: string, payload: UpdateClanPayload): Observable<Clan> {
-        return this.http.patch<Clan>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.detail(id)}`, payload).pipe(
-            tap((clan) => this._currentClan.set(clan))
-        );
+        return this.http
+            .patch<Clan>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.detail(id)}`, payload)
+            .pipe(tap((clan) => this._currentClan.set(clan)));
     }
 
     deleteClan(id: string): Observable<{ success: boolean }> {
@@ -144,35 +144,28 @@ export class ClanFacade {
     // ── Join / Leave / Invite ─────────────────────────────────────────────────
 
     joinClan(clanId: string, message?: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.join(clanId)}`,
-            { message }
-        );
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.join(clanId)}`, {
+            message
+        });
     }
 
     leaveClan(clanId: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.leave(clanId)}`,
-            {}
-        );
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.leave(clanId)}`, {});
     }
 
     inviteMember(clanId: string, userId: string): Observable<{ success: boolean }> {
-        return this.http.post<{ success: boolean }>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.invite(clanId)}`,
-            { userId }
-        );
+        return this.http.post<{ success: boolean }>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.invite(clanId)}`, {
+            userId
+        });
     }
 
     // ── Applications ──────────────────────────────────────────────────────────
 
     loadApplications(clanId: string): void {
-        this.http
-            .get<ClanApplication[]>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.applications(clanId)}`)
-            .subscribe({
-                next: (data) => this._applications.set(data),
-                error: () => this._applications.set([])
-            });
+        this.http.get<ClanApplication[]>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.applications(clanId)}`).subscribe({
+            next: (data) => this._applications.set(data),
+            error: () => this._applications.set([])
+        });
     }
 
     acceptApplication(clanId: string, appId: string): Observable<{ success: boolean }> {
@@ -199,17 +192,11 @@ export class ClanFacade {
     }
 
     createPage(clanId: string, payload: { title: string; content: string }): Observable<ClanPage> {
-        return this.http.post<ClanPage>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.pages(clanId)}`,
-            payload
-        );
+        return this.http.post<ClanPage>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.pages(clanId)}`, payload);
     }
 
     updatePage(clanId: string, pageId: string, payload: Record<string, unknown>): Observable<ClanPage> {
-        return this.http.patch<ClanPage>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.pageDetail(clanId, pageId)}`,
-            payload
-        );
+        return this.http.patch<ClanPage>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.pageDetail(clanId, pageId)}`, payload);
     }
 
     deletePage(clanId: string, pageId: string): Observable<{ success: boolean }> {
@@ -236,19 +223,14 @@ export class ClanFacade {
     // ── Admin: Categories ─────────────────────────────────────────────────────
 
     loadCategories(): void {
-        this.http
-            .get<ClanCategory[]>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.admin.categories()}`)
-            .subscribe({
-                next: (data) => this._categories.set(data),
-                error: () => this._categories.set([])
-            });
+        this.http.get<ClanCategory[]>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.admin.categories()}`).subscribe({
+            next: (data) => this._categories.set(data),
+            error: () => this._categories.set([])
+        });
     }
 
     createCategory(payload: { name: string; description?: string; icon?: string }): Observable<ClanCategory> {
-        return this.http.post<ClanCategory>(
-            `${this.apiConfig.baseUrl}${CLAN_ROUTES.admin.categories()}`,
-            payload
-        );
+        return this.http.post<ClanCategory>(`${this.apiConfig.baseUrl}${CLAN_ROUTES.admin.categories()}`, payload);
     }
 
     updateCategory(id: string, payload: Record<string, unknown>): Observable<ClanCategory> {

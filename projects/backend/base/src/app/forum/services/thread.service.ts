@@ -4,8 +4,8 @@ import { In, Repository } from "typeorm";
 
 import { ActivityService } from "../../activity/activity.service";
 import { GamificationService } from "../../gamification/gamification.service";
-import { NotificationsService } from "../../notifications/notifications.service";
 import { UserXpData } from "../../gamification/level.config";
+import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreateThreadDto } from "../dto/create-thread.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
