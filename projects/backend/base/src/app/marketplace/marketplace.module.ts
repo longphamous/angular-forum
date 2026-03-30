@@ -2,6 +2,11 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { UserEntity } from "../user/entities/user.entity";
+import { AuctionController } from "./auction.controller";
+import { AuctionService } from "./auction.service";
+import { AuctionBidEntity } from "./entities/auction-bid.entity";
+import { AuctionWatchEntity } from "./entities/auction-watch.entity";
+import { AuctionEntity } from "./entities/auction.entity";
 import { MarketCategoryEntity } from "./entities/market-category.entity";
 import { MarketCommentEntity } from "./entities/market-comment.entity";
 import { MarketListingEntity } from "./entities/market-listing.entity";
@@ -20,11 +25,14 @@ import { MarketplaceService } from "./marketplace.service";
             MarketCommentEntity,
             MarketRatingEntity,
             MarketReportEntity,
+            AuctionEntity,
+            AuctionBidEntity,
+            AuctionWatchEntity,
             UserEntity
         ])
     ],
-    controllers: [MarketplaceController],
-    providers: [MarketplaceService],
-    exports: [MarketplaceService]
+    controllers: [MarketplaceController, AuctionController],
+    providers: [MarketplaceService, AuctionService],
+    exports: [MarketplaceService, AuctionService]
 })
 export class MarketplaceModule {}

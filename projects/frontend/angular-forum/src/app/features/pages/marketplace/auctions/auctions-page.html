@@ -4,38 +4,34 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
-                    <i class="pi pi-shopping-cart text-primary"></i>
-                    {{ t("marketplace.title") }}
+                    <i class="pi pi-megaphone text-primary"></i>
+                    {{ t("marketplace.auction.title") }}
                     @if (authFacade.isAdmin()) {
-                    <a class="no-underline" routerLink="/admin/marketplace">
+                    <a class="no-underline" routerLink="/admin/auctions">
                         <p-button [pTooltip]="t('common.adminSettings')" [rounded]="true" [text]="true" icon="pi pi-cog" severity="secondary" size="small" tooltipPosition="bottom" />
                     </a>
                     }
                 </h1>
-                <p class="text-surface-500 mt-1 text-sm">{{ t("marketplace.subtitle") }}</p>
+                <p class="text-surface-500 mt-1 text-sm">{{ t("marketplace.auction.subtitle") }}</p>
             </div>
             <div class="flex gap-2">
-                <p-button
-                    [pTooltip]="t('marketplace.myListings')"
-                    [text]="true"
-                    icon="pi pi-list"
-                    routerLink="/marketplace/my"
-                />
-                <p-button [label]="t('marketplace.createListing')" icon="pi pi-plus" routerLink="/marketplace/create" />
+                <p-button [pTooltip]="t('marketplace.auction.myAuctions')" [text]="true" icon="pi pi-list" routerLink="/marketplace/auctions/my" />
+                <p-button [pTooltip]="t('marketplace.auction.myBids')" [text]="true" icon="pi pi-history" routerLink="/marketplace/auctions/bids" />
+                <p-button [label]="t('marketplace.auction.createAuction')" icon="pi pi-plus" routerLink="/marketplace/auctions/create" />
             </div>
         </div>
 
         <!-- Sub-navigation -->
         <div class="border-surface-200 dark:border-surface-700 -mx-5 -mb-5 mt-4 flex gap-0 border-t">
             <a
-                class="text-primary border-primary flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold no-underline"
+                class="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 flex items-center gap-2 border-b-2 border-transparent px-5 py-3 text-sm font-medium no-underline transition-colors"
                 routerLink="/marketplace"
             >
                 <i class="pi pi-shopping-cart text-xs"></i>
                 {{ t("marketplace.title") }}
             </a>
             <a
-                class="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 flex items-center gap-2 border-b-2 border-transparent px-5 py-3 text-sm font-medium no-underline transition-colors"
+                class="text-primary border-primary flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold no-underline"
                 routerLink="/marketplace/auctions"
             >
                 <i class="pi pi-megaphone text-xs"></i>
@@ -67,7 +63,7 @@
                             {{ t("marketplace.allCategories") }}
                         </button>
                     </li>
-                    @for (cat of facade.categories(); track cat.id) {
+                    @for (cat of marketFacade.categories(); track cat.id) {
                     <li>
                         <button
                             (click)="selectCategory(cat.id)"
@@ -86,6 +82,7 @@
                     }
                 </ul>
             </div>
+
         </div>
 
         <!-- Main content -->
@@ -94,9 +91,9 @@
             <div class="card">
                 <div class="flex flex-col gap-3">
                     <p-selectbutton
-                        (onChange)="onTypeChange()"
-                        [(ngModel)]="selectedType"
-                        [options]="typeOptions"
+                        (onChange)="onSortChange()"
+                        [(ngModel)]="selectedSort"
+                        [options]="sortOptions"
                         optionLabel="label"
                         optionValue="value"
                     />
@@ -118,7 +115,7 @@
             </div>
 
             <!-- Skeleton loading -->
-            @if (facade.loading() && facade.listings().length === 0) {
+            @if (facade.loading() && facade.auctions().length === 0) {
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
                 <div class="card overflow-hidden p-0">
@@ -131,54 +128,46 @@
                 </div>
                 }
             </div>
-            } @else if (facade.listings().length === 0) {
+            } @else if (facade.auctions().length === 0) {
             <!-- Empty state -->
             <div class="card flex flex-col items-center py-16 text-center">
-                <i class="pi pi-shopping-bag text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+                <i class="pi pi-megaphone text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
                 <h3 class="text-surface-700 dark:text-surface-300 mb-1 text-lg font-semibold">
-                    {{ t("marketplace.noListings") }}
+                    {{ t("marketplace.auction.noAuctions") }}
                 </h3>
-                <p class="text-surface-500 mb-4 text-sm">{{ t("marketplace.noListingsHint") }}</p>
-                <p-button [label]="t('marketplace.createListing')" icon="pi pi-plus" routerLink="/marketplace/create" />
+                <p class="text-surface-500 mb-4 text-sm">{{ t("marketplace.auction.noAuctionsHint") }}</p>
+                <p-button [label]="t('marketplace.auction.createAuction')" icon="pi pi-plus" routerLink="/marketplace/auctions/create" />
             </div>
             } @else {
-            <!-- Listing cards -->
+            <!-- Auction cards -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                @for (listing of facade.listings(); track listing.id) {
+                @for (auction of facade.auctions(); track auction.id) {
                 <div
                     class="card cursor-pointer overflow-hidden p-0 transition-shadow hover:shadow-lg"
-                    (keydown.enter)="$event.preventDefault()"
-                    [routerLink]="['/marketplace', listing.id]"
+                    [routerLink]="['/marketplace/auctions', auction.id]"
                     role="button"
                     tabindex="0"
                 >
                     <!-- Image / placeholder -->
-                    <div
-                        class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br"
-                    >
-                        @if (listing.images.length) {
-                        <img class="h-full w-full object-cover" [alt]="listing.title" [src]="listing.images[0]" />
+                    <div class="from-surface-100 to-surface-200 dark:from-surface-800 dark:to-surface-700 relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br">
+                        @if (auction.listing.images.length) {
+                        <img class="h-full w-full object-cover" [alt]="auction.listing.title" [src]="auction.listing.images[0]" />
                         } @else {
-                        <i
-                            [class]="'pi ' + typeIcon(listing.type) + ' text-surface-300 dark:text-surface-600 text-4xl'"
-                        ></i>
+                        <i class="pi pi-megaphone text-surface-300 dark:text-surface-600 text-4xl"></i>
                         }
-                        <!-- Type badge -->
+                        <!-- Time left badge -->
                         <div class="absolute top-2 left-2">
                             <p-tag
-                                [severity]="typeSeverity(listing.type)"
-                                [value]="typeLabel(listing.type)"
+                                [severity]="isEndingSoon(auction) ? 'danger' : 'info'"
+                                [value]="getTimeLeft(auction.endTime)"
                                 styleClass="text-xs"
+                                icon="pi pi-clock"
                             />
                         </div>
-                        <!-- Status badge (non-active) -->
-                        @if (listing.status !== 'active') {
+                        <!-- Buy now badge -->
+                        @if (auction.buyNowPrice) {
                         <div class="absolute top-2 right-2">
-                            <p-tag
-                                [severity]="statusSeverity(listing.status)"
-                                [value]="listing.status"
-                                styleClass="text-xs"
-                            />
+                            <p-tag severity="success" [value]="t('marketplace.auction.buyNow')" styleClass="text-xs" icon="pi pi-bolt" />
                         </div>
                         }
                     </div>
@@ -186,31 +175,26 @@
                     <!-- Card body -->
                     <div class="p-4">
                         <h3 class="text-surface-900 dark:text-surface-0 mb-1 truncate text-sm font-bold">
-                            {{ listing.title }}
+                            {{ auction.listing.title }}
                         </h3>
                         <div class="mb-2 flex items-center justify-between gap-2">
-                            <span class="text-primary text-lg font-bold">{{ formatPrice(listing) }}</span>
-                            <span class="text-surface-400 text-xs">{{ listing.categoryName }}</span>
+                            <span class="text-primary text-lg font-bold">{{ formatPrice(auction.currentPrice, auction.currency) }}</span>
+                            <span class="text-surface-400 text-xs">{{ auction.listing.categoryName }}</span>
                         </div>
-                        @if (listing.tags.length) {
+                        @if (auction.listing.tags.length) {
                         <div class="mb-2 flex flex-wrap gap-1">
-                            @for (tag of listing.tags.slice(0, 3); track tag) {
-                            <span
-                                class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs"
-                                >#{{ tag }}</span
-                            >
+                            @for (tag of auction.listing.tags.slice(0, 3); track tag) {
+                            <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs">#{{ tag }}</span>
                             }
                         </div>
                         }
-                        <div
-                            class="border-surface-100 dark:border-surface-700 text-surface-400 mt-2 flex items-center justify-between border-t pt-2 text-xs"
-                        >
+                        <div class="border-surface-100 dark:border-surface-700 text-surface-400 mt-2 flex items-center justify-between border-t pt-2 text-xs">
                             <span class="flex items-center gap-1">
-                                <i class="pi pi-user"></i>{{ listing.authorName }}
+                                <i class="pi pi-user"></i>{{ auction.listing.authorName }}
                             </span>
                             <div class="flex items-center gap-3">
-                                <span><i class="pi pi-comment mr-1"></i>{{ listing.commentCount }}</span>
-                                <span><i class="pi pi-send mr-1"></i>{{ listing.offerCount }}</span>
+                                <span><i class="pi pi-sort-amount-up mr-1"></i>{{ auction.bidCount }}</span>
+                                <span><i class="pi pi-eye mr-1"></i>{{ auction.watcherCount }}</span>
                             </div>
                         </div>
                     </div>
@@ -219,13 +203,14 @@
             </div>
 
             <!-- Paginator -->
-            @if (facade.listingsTotal() > pageSize) {
+            @if (facade.auctionsTotal() > pageSize) {
             <p-paginator
                 (onPageChange)="onPageChange($event)"
                 [rows]="pageSize"
-                [totalRecords]="facade.listingsTotal()"
+                [totalRecords]="facade.auctionsTotal()"
             />
-            } }
+            }
+            }
         </div>
     </div>
 </div>

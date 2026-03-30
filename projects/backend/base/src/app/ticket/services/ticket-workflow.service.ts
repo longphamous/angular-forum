@@ -193,9 +193,13 @@ export class TicketWorkflowService {
         });
         if (!project) throw new NotFoundException(`Project "${projectId}" not found`);
 
-        const workflowId = (project as { workflowId?: string }).workflowId;
+        let workflowId = (project as { workflowId?: string }).workflowId;
         if (!workflowId) {
-            throw new BadRequestException("Project has no workflow assigned. Create and assign a workflow first.");
+            const defaultWorkflow = await this.seedDefaultWorkflow(projectId);
+            workflowId = defaultWorkflow.id;
+            await this.dataSource
+                .getRepository("TicketProjectEntity")
+                .update(projectId, { workflowId });
         }
 
         // Load workflow statuses

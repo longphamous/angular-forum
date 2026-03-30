@@ -1,0 +1,154 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center gap-4">
+            <a routerLink="/marketplace/auctions">
+                <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" severity="secondary" />
+            </a>
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                    <i class="pi pi-megaphone text-primary"></i>
+                    {{ t("marketplace.auction.createAuction") }}
+                </h1>
+                <p class="text-surface-500 mt-1 text-sm">{{ t("marketplace.auction.subtitle") }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <div class="mx-auto flex max-w-2xl flex-col gap-5">
+            @if (error) {
+            <p-message severity="error" [text]="error" />
+            }
+
+            <!-- Title -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold" for="title">
+                    {{ t("common.title") }} *
+                </label>
+                <input [(ngModel)]="title" id="title" pInputText type="text" class="w-full" />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold" for="desc">
+                    {{ t("marketplace.auction.description") }} *
+                </label>
+                <textarea [(ngModel)]="description" id="desc" pTextarea [rows]="5" class="w-full"></textarea>
+            </div>
+
+            <!-- Category -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                    {{ t("marketplace.auction.category") }} *
+                </label>
+                <p-select
+                    [(ngModel)]="selectedCategoryId"
+                    [options]="flatCategories"
+                    optionLabel="name"
+                    optionValue="id"
+                    [placeholder]="t('marketplace.auction.category')"
+                    styleClass="w-full"
+                />
+            </div>
+
+            <!-- Start Price & Buy Now Price -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                        {{ t("marketplace.auction.startPrice") }} *
+                    </label>
+                    <p-inputnumber
+                        [(ngModel)]="startPrice"
+                        mode="currency"
+                        currency="EUR"
+                        locale="de-DE"
+                        [minFractionDigits]="2"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                        {{ t("marketplace.auction.buyNowPrice") }}
+                    </label>
+                    <p-inputnumber
+                        [(ngModel)]="buyNowPrice"
+                        mode="currency"
+                        currency="EUR"
+                        locale="de-DE"
+                        [minFractionDigits]="2"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Bid Increment -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                    {{ t("marketplace.auction.bidIncrement") }}
+                </label>
+                <p-inputnumber
+                    [(ngModel)]="bidIncrement"
+                    mode="currency"
+                    currency="EUR"
+                    locale="de-DE"
+                    [minFractionDigits]="2"
+                    styleClass="w-full"
+                />
+            </div>
+
+            <!-- Duration -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                    {{ t("marketplace.auction.duration") }}
+                </label>
+                <p-selectbutton
+                    [(ngModel)]="selectedDuration"
+                    [options]="durationOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                />
+            </div>
+
+            <!-- Tags -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                    {{ t("marketplace.auction.tags") }}
+                </label>
+                <div class="flex items-center gap-2">
+                    <input
+                        [(ngModel)]="tagInput"
+                        (keyup.enter)="addTag()"
+                        pInputText
+                        type="text"
+                        class="flex-1"
+                        placeholder="Tag hinzufügen..."
+                    />
+                    <p-button (onClick)="addTag()" icon="pi pi-plus" severity="secondary" />
+                </div>
+                @if (tags.length) {
+                <div class="mt-2 flex flex-wrap gap-1">
+                    @for (tag of tags; track tag) {
+                    <p-chip [label]="tag" [removable]="true" (onRemove)="removeTag(tag)" />
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-2 pt-4">
+                <a routerLink="/marketplace/auctions">
+                    <p-button [label]="t('common.button.cancel')" severity="secondary" [text]="true" />
+                </a>
+                <p-button
+                    (onClick)="submit()"
+                    [label]="t('marketplace.auction.createAuction')"
+                    [loading]="submitting"
+                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId || !startPrice"
+                    icon="pi pi-megaphone"
+                />
+            </div>
+        </div>
+    </div>
+</div>

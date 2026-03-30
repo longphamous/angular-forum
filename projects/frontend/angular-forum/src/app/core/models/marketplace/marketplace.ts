@@ -1,4 +1,4 @@
-export type ListingType = "sell" | "buy" | "trade" | "gift";
+export type ListingType = "sell" | "buy" | "trade" | "gift" | "auction";
 export type ListingStatus = "draft" | "pending" | "active" | "sold" | "closed" | "expired" | "archived";
 export type OfferStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "countered";
 export type ReportStatus = "pending" | "reviewed" | "dismissed" | "actioned";

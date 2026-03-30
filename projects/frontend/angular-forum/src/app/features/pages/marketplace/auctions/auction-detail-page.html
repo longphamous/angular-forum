@@ -1,0 +1,285 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    @if (facade.loading() && !facade.currentAuction()) {
+    <div class="card flex items-center justify-center py-20">
+        <i class="pi pi-spin pi-spinner text-primary text-4xl"></i>
+    </div>
+    } @else if (facade.currentAuction(); as auction) {
+    <!-- Header -->
+    <div class="card">
+        <div class="flex items-center gap-4">
+            <a routerLink="/marketplace/auctions">
+                <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" severity="secondary" />
+            </a>
+            <div class="flex-1">
+                <h1 class="text-surface-900 dark:text-surface-0 text-xl font-bold">
+                    {{ auction.listing.title }}
+                </h1>
+                <div class="mt-1 flex items-center gap-2">
+                    <p-tag [severity]="statusSeverity(auction.status)" [value]="t('marketplace.auction.status.' + auction.status)" styleClass="text-xs" />
+                    <span class="text-surface-400 text-sm">{{ auction.listing.categoryName }}</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <p-button
+                    (onClick)="toggleWatch()"
+                    [icon]="auction.isWatched ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                    [pTooltip]="auction.isWatched ? t('marketplace.auction.unwatch') : t('marketplace.auction.watch')"
+                    [rounded]="true"
+                    [text]="true"
+                    [severity]="auction.isWatched ? 'danger' : 'secondary'"
+                    tooltipPosition="bottom"
+                />
+                @if (isOwner() && auction.bidCount === 0 && auction.status === 'active') {
+                <p-button
+                    (onClick)="showCancelDialog = true"
+                    [pTooltip]="t('marketplace.auction.cancelAuction')"
+                    [rounded]="true"
+                    [text]="true"
+                    icon="pi pi-times"
+                    severity="danger"
+                    tooltipPosition="bottom"
+                />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Main content -->
+        <div class="flex flex-col gap-6 lg:col-span-2">
+            <!-- Image -->
+            @if (auction.listing.images.length) {
+            <div class="card overflow-hidden p-0">
+                <img class="h-64 w-full object-cover" [alt]="auction.listing.title" [src]="auction.listing.images[0]" />
+            </div>
+            }
+
+            <!-- Description -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-3 text-lg font-bold">{{ t("marketplace.auction.description") }}</h2>
+                <div class="text-surface-700 dark:text-surface-300 prose dark:prose-invert max-w-none text-sm" [innerHTML]="auction.listing.description"></div>
+
+                @if (auction.listing.tags.length) {
+                <div class="mt-4 flex flex-wrap gap-1">
+                    @for (tag of auction.listing.tags; track tag) {
+                    <span class="bg-primary-50 dark:bg-primary-900/30 text-primary rounded-full px-2 py-0.5 text-xs">#{{ tag }}</span>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Bid History -->
+            <div class="card">
+                <h2 class="text-surface-900 dark:text-surface-0 mb-3 text-lg font-bold">
+                    {{ t("marketplace.auction.bidHistory") }}
+                    <span class="text-surface-400 text-sm font-normal">({{ facade.bidHistory().length }})</span>
+                </h2>
+                @if (facade.bidHistory().length === 0) {
+                <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noBids") }}</p>
+                } @else {
+                <p-table [value]="facade.bidHistory()" styleClass="p-datatable-sm" [scrollable]="true" scrollHeight="300px">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>{{ t("marketplace.auction.bidder") }}</th>
+                            <th>{{ t("marketplace.auction.amount") }}</th>
+                            <th>{{ t("marketplace.auction.time") }}</th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-bid>
+                        <tr>
+                            <td>
+                                <span class="flex items-center gap-2">
+                                    <i class="pi pi-user text-surface-400"></i>
+                                    {{ bid.bidderName }}
+                                </span>
+                            </td>
+                            <td class="font-bold">{{ formatPrice(bid.amount, auction.currency) }}</td>
+                            <td class="text-surface-500 text-xs">{{ bid.createdAt | date: "dd.MM.yyyy HH:mm" }}</td>
+                            <td>
+                                @if (bid.isAutoBid) {
+                                <p-tag severity="info" [value]="t('marketplace.auction.autoBid')" styleClass="text-xs" />
+                                }
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="flex flex-col gap-4">
+            <!-- Price & Timer -->
+            <div class="card">
+                <div class="flex flex-col gap-4">
+                    <!-- Countdown -->
+                    <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4 text-center">
+                        <span class="text-surface-500 block text-xs font-semibold uppercase">{{ t("marketplace.auction.timeLeft") }}</span>
+                        <span class="text-surface-900 dark:text-surface-0 mt-1 block text-2xl font-bold" [class.text-red-500]="isEndingSoon()">
+                            {{ timeLeft() }}
+                        </span>
+                    </div>
+
+                    <!-- Current price -->
+                    <div class="text-center">
+                        <span class="text-surface-500 block text-xs font-semibold uppercase">{{ t("marketplace.auction.currentPrice") }}</span>
+                        <span class="text-primary mt-1 block text-3xl font-bold">
+                            {{ formatPrice(auction.currentPrice, auction.currency) }}
+                        </span>
+                        <span class="text-surface-400 mt-1 block text-xs">
+                            {{ t("marketplace.auction.startPrice") }}: {{ formatPrice(auction.startPrice, auction.currency) }}
+                            · {{ auction.bidCount }} {{ t("marketplace.auction.bids") }}
+                        </span>
+                    </div>
+
+                    @if (auction.highestBidderName) {
+                    <div class="text-center">
+                        @if (auction.highestBidderId === authFacade.currentUser()?.id) {
+                        <p-message severity="success" [text]="t('marketplace.auction.youAreWinning')" styleClass="w-full" />
+                        } @else if (auction.hasUserBid) {
+                        <p-message severity="warn" [text]="t('marketplace.auction.youAreOutbid')" styleClass="w-full" />
+                        }
+                    </div>
+                    }
+
+                    <!-- Bid form (not for owner, only active) -->
+                    @if (!isOwner() && auction.status === 'active') {
+                    <div class="border-surface-200 dark:border-surface-700 flex flex-col gap-3 border-t pt-4">
+                        @if (bidError) {
+                        <p-message severity="error" [text]="bidError" />
+                        }
+
+                        <div class="flex flex-col gap-1">
+                            <label class="text-surface-700 dark:text-surface-300 text-xs font-semibold">
+                                {{ t("marketplace.auction.yourBid") }} ({{ t("common.min") }}: {{ formatPrice(minBid, auction.currency) }})
+                            </label>
+                            <p-inputnumber
+                                [(ngModel)]="bidAmount"
+                                mode="currency"
+                                currency="EUR"
+                                locale="de-DE"
+                                [min]="minBid"
+                                [minFractionDigits]="2"
+                                styleClass="w-full"
+                            />
+                        </div>
+
+                        <!-- Auto-bid toggle -->
+                        <div class="flex items-center gap-2">
+                            <p-toggleswitch [(ngModel)]="useAutoBid" />
+                            <label class="text-surface-700 dark:text-surface-300 text-sm">{{ t("marketplace.auction.maxBid") }}</label>
+                        </div>
+
+                        @if (useAutoBid) {
+                        <div class="flex flex-col gap-1">
+                            <span class="text-surface-500 text-xs">{{ t("marketplace.auction.maxBidHint") }}</span>
+                            <p-inputnumber
+                                [(ngModel)]="maxAutoBid"
+                                mode="currency"
+                                currency="EUR"
+                                locale="de-DE"
+                                [minFractionDigits]="2"
+                                styleClass="w-full"
+                            />
+                        </div>
+                        }
+
+                        <p-button
+                            (onClick)="placeBid()"
+                            [label]="t('marketplace.auction.placeBid')"
+                            [disabled]="!bidAmount || bidAmount < minBid"
+                            icon="pi pi-sort-amount-up"
+                            styleClass="w-full"
+                        />
+                    </div>
+
+                    <!-- Buy Now -->
+                    @if (auction.buyNowPrice) {
+                    <div class="border-surface-200 dark:border-surface-700 flex flex-col gap-2 border-t pt-4">
+                        <span class="text-surface-500 text-center text-xs font-semibold uppercase">{{ t("marketplace.auction.buyNowPrice") }}</span>
+                        <span class="text-center text-xl font-bold">{{ formatPrice(auction.buyNowPrice, auction.currency) }}</span>
+                        <p-button
+                            (onClick)="showBuyNowDialog = true"
+                            [label]="t('marketplace.auction.buyNow')"
+                            icon="pi pi-bolt"
+                            severity="success"
+                            styleClass="w-full"
+                        />
+                    </div>
+                    }
+                    }
+
+                    @if (auction.status === 'ended') {
+                    <p-message severity="info" [text]="t('marketplace.auction.auctionEnded')" styleClass="w-full" />
+                    }
+                </div>
+            </div>
+
+            <!-- Seller info -->
+            <div class="card">
+                <h3 class="text-surface-500 mb-3 text-xs font-semibold uppercase">{{ t("marketplace.auction.seller") }}</h3>
+                <div class="flex items-center gap-3">
+                    <div class="bg-surface-200 dark:bg-surface-700 flex h-10 w-10 items-center justify-center rounded-full">
+                        <i class="pi pi-user text-surface-500"></i>
+                    </div>
+                    <div>
+                        <span class="text-surface-900 dark:text-surface-0 block text-sm font-semibold">{{ auction.listing.authorName }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="card">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <i class="pi pi-sort-amount-up text-primary mb-1 text-xl"></i>
+                        <span class="text-surface-900 dark:text-surface-0 block text-lg font-bold">{{ auction.bidCount }}</span>
+                        <span class="text-surface-500 text-xs">{{ t("marketplace.auction.bids") }}</span>
+                    </div>
+                    <div>
+                        <i class="pi pi-eye text-primary mb-1 text-xl"></i>
+                        <span class="text-surface-900 dark:text-surface-0 block text-lg font-bold">{{ auction.listing.viewCount }}</span>
+                        <span class="text-surface-500 text-xs">Views</span>
+                    </div>
+                    <div>
+                        <i class="pi pi-heart text-primary mb-1 text-xl"></i>
+                        <span class="text-surface-900 dark:text-surface-0 block text-lg font-bold">{{ auction.watcherCount }}</span>
+                        <span class="text-surface-500 text-xs">{{ t("marketplace.auction.watchers") }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy Now Dialog -->
+    <p-dialog
+        [(visible)]="showBuyNowDialog"
+        [header]="t('marketplace.auction.buyNowHeader')"
+        [modal]="true"
+        [style]="{ width: '400px' }"
+    >
+        <p class="text-surface-700 dark:text-surface-300">
+            {{ t("marketplace.auction.confirmBuyNow", { price: formatPrice(auction.buyNowPrice!, auction.currency) }) }}
+        </p>
+        <ng-template pTemplate="footer">
+            <p-button (onClick)="showBuyNowDialog = false" [label]="t('common.button.cancel')" severity="secondary" [text]="true" />
+            <p-button (onClick)="buyNow()" [label]="t('marketplace.auction.buyNow')" icon="pi pi-bolt" severity="success" />
+        </ng-template>
+    </p-dialog>
+
+    <!-- Cancel Dialog -->
+    <p-dialog
+        [(visible)]="showCancelDialog"
+        [header]="t('marketplace.auction.cancelHeader')"
+        [modal]="true"
+        [style]="{ width: '400px' }"
+    >
+        <p class="text-surface-700 dark:text-surface-300">{{ t("marketplace.auction.cancelConfirm") }}</p>
+        <ng-template pTemplate="footer">
+            <p-button (onClick)="showCancelDialog = false" [label]="t('common.button.cancel')" severity="secondary" [text]="true" />
+            <p-button (onClick)="cancelAuction()" [label]="t('marketplace.auction.cancelAuction')" icon="pi pi-times" severity="danger" />
+        </ng-template>
+    </p-dialog>
+    }
+</div>

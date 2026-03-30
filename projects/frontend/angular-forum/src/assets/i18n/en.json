@@ -38,6 +38,8 @@
     "saved": "Saved",
     "created": "Created",
     "deleted": "Deleted",
+    "min": "Min",
+    "reason": "Reason",
     "more": "More",
     "showAll": "Show all",
     "reset": "Reset",
@@ -1529,7 +1531,8 @@
       "sell": "Sell",
       "buy": "Buy",
       "trade": "Trade",
-      "gift": "Gift"
+      "gift": "Gift",
+      "auction": "Auction"
     },
     "status": {
       "active": "Active",
@@ -1556,6 +1559,93 @@
       "reports": "Reports",
       "approve": "Approve",
       "reject": "Reject"
+    },
+    "auction": {
+      "title": "Auctions",
+      "subtitle": "Bid on items from the community",
+      "createAuction": "Create Auction",
+      "browseAuctions": "Browse Auctions",
+      "myAuctions": "My Auctions",
+      "myBids": "My Bids",
+      "watchlist": "Watchlist",
+      "startPrice": "Start Price",
+      "currentPrice": "Current Price",
+      "buyNowPrice": "Buy It Now Price",
+      "bidIncrement": "Minimum Bid Increment",
+      "duration": "Duration",
+      "timeLeft": "Time Left",
+      "endingSoon": "Ending Soon",
+      "bids": "Bids",
+      "noBids": "No bids yet",
+      "placeBid": "Place Bid",
+      "yourBid": "Your Bid",
+      "maxBid": "Maximum Bid (Auto-Bid)",
+      "maxBidHint": "The system will bid on your behalf up to this amount",
+      "buyNow": "Buy It Now",
+      "confirmBuyNow": "Buy this item now for {{price}}?",
+      "buyNowHeader": "Buy It Now",
+      "watch": "Watch",
+      "unwatch": "Unwatch",
+      "bidHistory": "Bid History",
+      "bidPlaced": "Bid placed successfully",
+      "outbid": "You have been outbid!",
+      "youAreWinning": "You are the highest bidder",
+      "youAreOutbid": "You have been outbid",
+      "auctionWon": "Congratulations! You won this auction",
+      "auctionEnded": "This auction has ended",
+      "cancelAuction": "Cancel Auction",
+      "cancelConfirm": "Are you sure you want to cancel this auction?",
+      "cancelHeader": "Cancel Auction",
+      "cancelOnlyNoBids": "Can only cancel auctions with no bids",
+      "bidder": "Bidder",
+      "amount": "Amount",
+      "time": "Time",
+      "autoBid": "Auto-Bid",
+      "seller": "Seller",
+      "watchers": "Watchers",
+      "description": "Description",
+      "tags": "Tags",
+      "category": "Category",
+      "images": "Images",
+      "status": {
+        "scheduled": "Scheduled",
+        "active": "Active",
+        "ended": "Ended",
+        "cancelled": "Cancelled"
+      },
+      "sort": {
+        "endingSoon": "Ending Soon",
+        "newlyListed": "Newly Listed",
+        "priceAsc": "Price: Low to High",
+        "priceDesc": "Price: High to Low",
+        "mostBids": "Most Bids"
+      },
+      "durationOptions": {
+        "1day": "1 Day",
+        "3days": "3 Days",
+        "5days": "5 Days",
+        "7days": "7 Days",
+        "10days": "10 Days"
+      },
+      "sellerDashboard": {
+        "activeAuctions": "Active Auctions",
+        "endedAuctions": "Ended Auctions",
+        "cancelledAuctions": "Cancelled"
+      },
+      "buyerDashboard": {
+        "activeBids": "Active Bids",
+        "wonAuctions": "Won Auctions",
+        "watchedItems": "Watched Items"
+      },
+      "adminAuctions": {
+        "title": "Auction Management",
+        "pendingAuctions": "Pending Auctions",
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "snipeProtection": "Auction extended due to last-minute bid",
+      "noAuctions": "No auctions found",
+      "noAuctionsHint": "Be the first to create an auction!"
     }
   },
   "blog": {

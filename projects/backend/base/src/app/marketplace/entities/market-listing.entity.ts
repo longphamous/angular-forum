@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-export type ListingType = "sell" | "buy" | "trade" | "gift";
+export type ListingType = "sell" | "buy" | "trade" | "gift" | "auction";
 export type ListingStatus = "draft" | "pending" | "active" | "sold" | "closed" | "expired" | "archived";
 
 @Entity("market_listings")

@@ -38,6 +38,8 @@
     "saved": "Gespeichert",
     "created": "Erstellt",
     "deleted": "Gelöscht",
+    "min": "Min",
+    "reason": "Grund",
     "more": "Mehr",
     "showAll": "Alle anzeigen",
     "reset": "Zurücksetzen",
@@ -1529,7 +1531,8 @@
       "sell": "Verkaufen",
       "buy": "Kaufen",
       "trade": "Tauschen",
-      "gift": "Verschenken"
+      "gift": "Verschenken",
+      "auction": "Auktion"
     },
     "status": {
       "active": "Aktiv",
@@ -1556,6 +1559,93 @@
       "reports": "Meldungen",
       "approve": "Genehmigen",
       "reject": "Ablehnen"
+    },
+    "auction": {
+      "title": "Auktionen",
+      "subtitle": "Biete auf Artikel der Community",
+      "createAuction": "Auktion erstellen",
+      "browseAuctions": "Auktionen durchsuchen",
+      "myAuctions": "Meine Auktionen",
+      "myBids": "Meine Gebote",
+      "watchlist": "Beobachtungsliste",
+      "startPrice": "Startpreis",
+      "currentPrice": "Aktueller Preis",
+      "buyNowPrice": "Sofort-Kaufen-Preis",
+      "bidIncrement": "Mindesterhöhung",
+      "duration": "Laufzeit",
+      "timeLeft": "Verbleibend",
+      "endingSoon": "Endet bald",
+      "bids": "Gebote",
+      "noBids": "Noch keine Gebote",
+      "placeBid": "Gebot abgeben",
+      "yourBid": "Dein Gebot",
+      "maxBid": "Maximalgebot (Auto-Bieten)",
+      "maxBidHint": "Das System bietet automatisch in deinem Namen bis zu diesem Betrag",
+      "buyNow": "Sofort kaufen",
+      "confirmBuyNow": "Diesen Artikel jetzt für {{price}} kaufen?",
+      "buyNowHeader": "Sofort kaufen",
+      "watch": "Beobachten",
+      "unwatch": "Nicht mehr beobachten",
+      "bidHistory": "Gebotshistorie",
+      "bidPlaced": "Gebot erfolgreich abgegeben",
+      "outbid": "Du wurdest überboten!",
+      "youAreWinning": "Du bist Höchstbietender",
+      "youAreOutbid": "Du wurdest überboten",
+      "auctionWon": "Herzlichen Glückwunsch! Du hast diese Auktion gewonnen",
+      "auctionEnded": "Diese Auktion ist beendet",
+      "cancelAuction": "Auktion abbrechen",
+      "cancelConfirm": "Möchtest du diese Auktion wirklich abbrechen?",
+      "cancelHeader": "Auktion abbrechen",
+      "cancelOnlyNoBids": "Nur Auktionen ohne Gebote können abgebrochen werden",
+      "bidder": "Bieter",
+      "amount": "Betrag",
+      "time": "Zeit",
+      "autoBid": "Auto-Gebot",
+      "seller": "Verkäufer",
+      "watchers": "Beobachter",
+      "description": "Beschreibung",
+      "tags": "Tags",
+      "category": "Kategorie",
+      "images": "Bilder",
+      "status": {
+        "scheduled": "Geplant",
+        "active": "Aktiv",
+        "ended": "Beendet",
+        "cancelled": "Abgebrochen"
+      },
+      "sort": {
+        "endingSoon": "Endet bald",
+        "newlyListed": "Neueste zuerst",
+        "priceAsc": "Preis: Aufsteigend",
+        "priceDesc": "Preis: Absteigend",
+        "mostBids": "Meiste Gebote"
+      },
+      "durationOptions": {
+        "1day": "1 Tag",
+        "3days": "3 Tage",
+        "5days": "5 Tage",
+        "7days": "7 Tage",
+        "10days": "10 Tage"
+      },
+      "sellerDashboard": {
+        "activeAuctions": "Aktive Auktionen",
+        "endedAuctions": "Beendete Auktionen",
+        "cancelledAuctions": "Abgebrochen"
+      },
+      "buyerDashboard": {
+        "activeBids": "Aktive Gebote",
+        "wonAuctions": "Gewonnene Auktionen",
+        "watchedItems": "Beobachtete Artikel"
+      },
+      "adminAuctions": {
+        "title": "Auktionsverwaltung",
+        "pendingAuctions": "Ausstehende Auktionen",
+        "approve": "Genehmigen",
+        "reject": "Ablehnen"
+      },
+      "snipeProtection": "Auktion wegen Last-Minute-Gebot verlängert",
+      "noAuctions": "Keine Auktionen gefunden",
+      "noAuctionsHint": "Sei der Erste und erstelle eine Auktion!"
     }
   },
   "blog": {

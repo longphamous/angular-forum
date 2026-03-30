@@ -11,6 +11,9 @@ import { GalleryAlbum, GalleryAlbumDetail, GalleryComment, GalleryMedia } from "
 import { Achievement, UserAchievement } from "../../models/gamification/achievement";
 import { Group, PagePermission } from "../../models/group/group";
 import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
+import { Auction, AuctionBid, AuctionWatchlistItem } from "../../models/marketplace/auction";
+import type { BoardData, WorkflowStatus } from "../../models/ticket/board";
+import type { Ticket, TicketProject } from "../../models/ticket/ticket";
 import {
     MarketCategory,
     MarketComment,
@@ -2293,6 +2296,218 @@ export const mockMarketComments: Record<string, MarketComment> = {
 export const mockMarketRatings: Record<string, MarketRating> = {};
 export const mockMarketReports: Record<string, MarketReport> = {};
 
+// ─── Auction Mock Data ────────────────────────────────────────────────────────
+
+const auctionListing1: MarketListing = {
+    id: "l2000000-0000-0000-0000-000000000001",
+    title: "Seltene Dragon Ball Z Sammelkarten (1. Edition)",
+    description:
+        "<p>Versteigere meine <strong>Dragon Ball Z Sammelkarten</strong> der 1. Edition. Insgesamt 50 Karten, darunter 5 holografische Karten.</p><p>Zustand: Sehr gut bis neuwertig. Alle in Schutzhüllen.</p>",
+    price: 25.0,
+    currency: "EUR",
+    type: "auction",
+    status: "active",
+    categoryId: "c1000000-0000-0000-0000-000000000002",
+    categoryName: "Anime & Manga",
+    authorId: "00000000-0000-0000-0000-000000000002",
+    authorName: "ModerationQueen",
+    authorAvatarUrl: null,
+    images: [],
+    customFields: null,
+    tags: ["Dragon Ball Z", "Sammelkarten", "1. Edition"],
+    expiresAt: null,
+    viewCount: 42,
+    offerCount: 0,
+    commentCount: 1,
+    bestOfferId: null,
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+};
+
+const auctionListing2: MarketListing = {
+    id: "l2000000-0000-0000-0000-000000000002",
+    title: "Nintendo Switch OLED + 5 Spiele Bundle",
+    description:
+        "<p>Versteigere meine Nintendo Switch OLED (weiß) mit 5 Spielen:</p><ul><li>Zelda: Tears of the Kingdom</li><li>Mario Kart 8 Deluxe</li><li>Super Smash Bros Ultimate</li><li>Animal Crossing</li><li>Pokémon Arceus</li></ul><p>Alles funktioniert einwandfrei.</p>",
+    price: 150.0,
+    currency: "EUR",
+    type: "auction",
+    status: "active",
+    categoryId: "c1000000-0000-0000-0000-000000000003",
+    categoryName: "Spiele",
+    authorId: "00000000-0000-0000-0000-000000000003",
+    authorName: "NarutoFan99",
+    authorAvatarUrl: null,
+    images: [],
+    customFields: null,
+    tags: ["Nintendo Switch", "OLED", "Bundle"],
+    expiresAt: null,
+    viewCount: 87,
+    offerCount: 0,
+    commentCount: 3,
+    bestOfferId: null,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+};
+
+const auctionListing3: MarketListing = {
+    id: "l2000000-0000-0000-0000-000000000003",
+    title: "Cosplay Komplett-Set: Levi Ackerman (Attack on Titan)",
+    description:
+        "<p>Professionelles Cosplay-Set für Levi Ackerman. Enthält Uniform, Gürtel, Manöverausrüstungs-Attrappe und Perücke.</p><p>Größe M, nur einmal getragen auf einer Convention.</p>",
+    price: 80.0,
+    currency: "EUR",
+    type: "auction",
+    status: "active",
+    categoryId: "c1000000-0000-0000-0000-000000000004",
+    categoryName: "Kleidung",
+    authorId: "00000000-0000-0000-0000-000000000002",
+    authorName: "ModerationQueen",
+    authorAvatarUrl: null,
+    images: [],
+    customFields: null,
+    tags: ["Cosplay", "Levi", "Attack on Titan"],
+    expiresAt: null,
+    viewCount: 31,
+    offerCount: 0,
+    commentCount: 0,
+    bestOfferId: null,
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+};
+
+// Add auction listings to the main listing store
+mockMarketListings["l2000000-0000-0000-0000-000000000001"] = auctionListing1;
+mockMarketListings["l2000000-0000-0000-0000-000000000002"] = auctionListing2;
+mockMarketListings["l2000000-0000-0000-0000-000000000003"] = auctionListing3;
+
+export const mockAuctions: Record<string, Auction> = {
+    "a1000000-0000-0000-0000-000000000001": {
+        id: "a1000000-0000-0000-0000-000000000001",
+        listingId: "l2000000-0000-0000-0000-000000000001",
+        listing: auctionListing1,
+        startPrice: 25.0,
+        currentPrice: 38.5,
+        buyNowPrice: 120.0,
+        currency: "EUR",
+        bidIncrement: 1.5,
+        startTime: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        originalEndTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        status: "active",
+        bidCount: 5,
+        highestBidderId: "00000000-0000-0000-0000-000000000003",
+        highestBidderName: "NarutoFan99",
+        watcherCount: 4,
+        isWatched: false,
+        hasUserBid: false,
+        userMaxBid: null,
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+    },
+    "a1000000-0000-0000-0000-000000000002": {
+        id: "a1000000-0000-0000-0000-000000000002",
+        listingId: "l2000000-0000-0000-0000-000000000002",
+        listing: auctionListing2,
+        startPrice: 150.0,
+        currentPrice: 210.0,
+        buyNowPrice: 350.0,
+        currency: "EUR",
+        bidIncrement: 5.0,
+        startTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        endTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+        originalEndTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+        status: "active",
+        bidCount: 12,
+        highestBidderId: "00000000-0000-0000-0000-000000000002",
+        highestBidderName: "ModerationQueen",
+        watcherCount: 8,
+        isWatched: false,
+        hasUserBid: false,
+        userMaxBid: null,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    },
+    "a1000000-0000-0000-0000-000000000003": {
+        id: "a1000000-0000-0000-0000-000000000003",
+        listingId: "l2000000-0000-0000-0000-000000000003",
+        listing: auctionListing3,
+        startPrice: 80.0,
+        currentPrice: 80.0,
+        buyNowPrice: null,
+        currency: "EUR",
+        bidIncrement: 2.0,
+        startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        endTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+        originalEndTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
+        status: "active",
+        bidCount: 0,
+        highestBidderId: null,
+        highestBidderName: null,
+        watcherCount: 1,
+        isWatched: false,
+        hasUserBid: false,
+        userMaxBid: null,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export const mockAuctionBids: Record<string, AuctionBid> = {
+    "ab000000-0000-0000-0000-000000000001": {
+        id: "ab000000-0000-0000-0000-000000000001",
+        auctionId: "a1000000-0000-0000-0000-000000000001",
+        bidderId: "00000000-0000-0000-0000-000000000003",
+        bidderName: "NarutoFan99",
+        bidderAvatarUrl: null,
+        amount: 38.5,
+        isAutoBid: false,
+        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+    },
+    "ab000000-0000-0000-0000-000000000002": {
+        id: "ab000000-0000-0000-0000-000000000002",
+        auctionId: "a1000000-0000-0000-0000-000000000001",
+        bidderId: "00000000-0000-0000-0000-000000000002",
+        bidderName: "ModerationQueen",
+        bidderAvatarUrl: null,
+        amount: 35.0,
+        isAutoBid: false,
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
+    },
+    "ab000000-0000-0000-0000-000000000003": {
+        id: "ab000000-0000-0000-0000-000000000003",
+        auctionId: "a1000000-0000-0000-0000-000000000001",
+        bidderId: "00000000-0000-0000-0000-000000000003",
+        bidderName: "NarutoFan99",
+        bidderAvatarUrl: null,
+        amount: 30.0,
+        isAutoBid: false,
+        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
+    },
+    "ab000000-0000-0000-0000-000000000004": {
+        id: "ab000000-0000-0000-0000-000000000004",
+        auctionId: "a1000000-0000-0000-0000-000000000002",
+        bidderId: "00000000-0000-0000-0000-000000000002",
+        bidderName: "ModerationQueen",
+        bidderAvatarUrl: null,
+        amount: 210.0,
+        isAutoBid: false,
+        createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    },
+    "ab000000-0000-0000-0000-000000000005": {
+        id: "ab000000-0000-0000-0000-000000000005",
+        auctionId: "a1000000-0000-0000-0000-000000000002",
+        bidderId: "00000000-0000-0000-0000-000000000003",
+        bidderName: "NarutoFan99",
+        bidderAvatarUrl: null,
+        amount: 195.0,
+        isAutoBid: false,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export const mockAuctionWatches: Record<string, AuctionWatchlistItem> = {};
+
 // ── Feed ──────────────────────────────────────────────────────────────────────
 
 export const mockFeaturedThreads: FeaturedThread[] = [
@@ -2659,3 +2874,252 @@ export const mockMediaAssets: MediaAsset[] = [
         createdAt: "2026-03-18T08:00:00Z"
     }
 ];
+
+// ─── Ticket System Mock Data ──────────────────────────────────────────────────
+
+const WORKFLOW_ID = "wf000000-0000-0000-0000-000000000001";
+
+export const mockTicketProjects: Record<string, TicketProject> = {
+    "4b89cef0-92bd-4c8c-a65e-45482e70f586": {
+        id: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        name: "Aniverse Platform",
+        description: "Hauptprojekt für die Aniverse Community-Plattform",
+        status: "active",
+        ownerId: "00000000-0000-0000-0000-000000000001",
+        ownerName: "Admin",
+        ticketCount: 8,
+        openTicketCount: 5,
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-03-20T00:00:00Z"
+    },
+    "p2000000-0000-0000-0000-000000000001": {
+        id: "p2000000-0000-0000-0000-000000000001",
+        name: "Mobile App",
+        description: "Aniverse Mobile App Entwicklung",
+        status: "active",
+        ownerId: "00000000-0000-0000-0000-000000000001",
+        ownerName: "Admin",
+        ticketCount: 3,
+        openTicketCount: 2,
+        createdAt: "2026-02-01T00:00:00Z",
+        updatedAt: "2026-03-25T00:00:00Z"
+    }
+};
+
+export const mockWorkflowStatuses: WorkflowStatus[] = [
+    {
+        id: "ws000000-0000-0000-0000-000000000001",
+        workflowId: WORKFLOW_ID,
+        name: "Offen",
+        slug: "open",
+        color: "#6b7280",
+        category: "todo",
+        position: 0
+    },
+    {
+        id: "ws000000-0000-0000-0000-000000000002",
+        workflowId: WORKFLOW_ID,
+        name: "In Bearbeitung",
+        slug: "in_progress",
+        color: "#3b82f6",
+        category: "in_progress",
+        position: 1
+    },
+    {
+        id: "ws000000-0000-0000-0000-000000000003",
+        workflowId: WORKFLOW_ID,
+        name: "Review",
+        slug: "review",
+        color: "#f59e0b",
+        category: "in_progress",
+        position: 2
+    },
+    {
+        id: "ws000000-0000-0000-0000-000000000004",
+        workflowId: WORKFLOW_ID,
+        name: "Erledigt",
+        slug: "done",
+        color: "#22c55e",
+        category: "done",
+        position: 3
+    }
+];
+
+export const mockTickets: Record<string, Ticket> = {
+    "t1000000-0000-0000-0000-000000000001": {
+        id: "t1000000-0000-0000-0000-000000000001",
+        ticketNumber: 1,
+        title: "Forum-Suche optimieren",
+        description: "Die Suche im Forum sollte schneller und relevantere Ergebnisse liefern.",
+        status: "open",
+        priority: "high",
+        type: "feature",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Admin",
+        assigneeId: "00000000-0000-0000-0000-000000000003",
+        assigneeName: "NarutoFan99",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000001",
+        workflowStatusName: "Offen",
+        workflowStatusColor: "#6b7280",
+        storyPoints: 5,
+        childCount: 0,
+        timeSpentMinutes: 0,
+        watcherCount: 2,
+        attachmentCount: 0,
+        labels: [],
+        isPinned: false,
+        commentCount: 1,
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "t1000000-0000-0000-0000-000000000002": {
+        id: "t1000000-0000-0000-0000-000000000002",
+        ticketNumber: 2,
+        title: "Dark Mode Farbfehler im Chat",
+        description: "Im Dark Mode sind einige Chat-Texte nicht lesbar.",
+        status: "in_progress",
+        priority: "normal",
+        type: "bug",
+        authorId: "00000000-0000-0000-0000-000000000002",
+        authorName: "ModerationQueen",
+        assigneeId: "00000000-0000-0000-0000-000000000003",
+        assigneeName: "NarutoFan99",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000002",
+        workflowStatusName: "In Bearbeitung",
+        workflowStatusColor: "#3b82f6",
+        storyPoints: 2,
+        childCount: 0,
+        timeSpentMinutes: 60,
+        watcherCount: 1,
+        attachmentCount: 0,
+        labels: [{ id: "lb01", name: "UI", color: "#8b5cf6" }],
+        isPinned: false,
+        commentCount: 3,
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "t1000000-0000-0000-0000-000000000003": {
+        id: "t1000000-0000-0000-0000-000000000003",
+        ticketNumber: 3,
+        title: "Benachrichtigungs-E-Mails implementieren",
+        description: "Nutzer sollen per E-Mail über wichtige Events benachrichtigt werden.",
+        status: "in_progress",
+        priority: "high",
+        type: "story",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Admin",
+        assigneeId: "00000000-0000-0000-0000-000000000001",
+        assigneeName: "Admin",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000003",
+        workflowStatusName: "Review",
+        workflowStatusColor: "#f59e0b",
+        storyPoints: 8,
+        childCount: 2,
+        timeSpentMinutes: 240,
+        watcherCount: 3,
+        attachmentCount: 1,
+        labels: [{ id: "lb02", name: "Backend", color: "#ef4444" }],
+        isPinned: true,
+        commentCount: 5,
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+    },
+    "t1000000-0000-0000-0000-000000000004": {
+        id: "t1000000-0000-0000-0000-000000000004",
+        ticketNumber: 4,
+        title: "User-Avatar Upload verbessern",
+        description: "Crop-Funktion und Größenvalidierung für Avatar-Uploads.",
+        status: "resolved",
+        priority: "low",
+        type: "task",
+        authorId: "00000000-0000-0000-0000-000000000003",
+        authorName: "NarutoFan99",
+        assigneeId: "00000000-0000-0000-0000-000000000002",
+        assigneeName: "ModerationQueen",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000004",
+        workflowStatusName: "Erledigt",
+        workflowStatusColor: "#22c55e",
+        storyPoints: 3,
+        childCount: 0,
+        timeSpentMinutes: 120,
+        watcherCount: 0,
+        attachmentCount: 0,
+        labels: [],
+        isPinned: false,
+        commentCount: 2,
+        resolvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "t1000000-0000-0000-0000-000000000005": {
+        id: "t1000000-0000-0000-0000-000000000005",
+        ticketNumber: 5,
+        title: "Marktplatz Bewertungssystem erweitern",
+        description: "Seller-Bewertungen mit detaillierterem Feedback (Kommunikation, Versand, Artikelbeschreibung).",
+        status: "open",
+        priority: "normal",
+        type: "feature",
+        authorId: "00000000-0000-0000-0000-000000000002",
+        authorName: "ModerationQueen",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000001",
+        workflowStatusName: "Offen",
+        workflowStatusColor: "#6b7280",
+        storyPoints: 5,
+        childCount: 0,
+        timeSpentMinutes: 0,
+        watcherCount: 1,
+        attachmentCount: 0,
+        labels: [{ id: "lb03", name: "Marketplace", color: "#06b6d4" }],
+        isPinned: false,
+        commentCount: 0,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    "t1000000-0000-0000-0000-000000000006": {
+        id: "t1000000-0000-0000-0000-000000000006",
+        ticketNumber: 6,
+        title: "Anime-Kalender Performance",
+        description: "Kalender lädt bei vielen Events zu langsam.",
+        status: "open",
+        priority: "critical",
+        type: "bug",
+        authorId: "00000000-0000-0000-0000-000000000001",
+        authorName: "Admin",
+        assigneeId: "00000000-0000-0000-0000-000000000003",
+        assigneeName: "NarutoFan99",
+        projectId: "4b89cef0-92bd-4c8c-a65e-45482e70f586",
+        projectName: "Aniverse Platform",
+        workflowStatusId: "ws000000-0000-0000-0000-000000000001",
+        workflowStatusName: "Offen",
+        workflowStatusColor: "#6b7280",
+        storyPoints: 3,
+        childCount: 0,
+        timeSpentMinutes: 0,
+        watcherCount: 4,
+        attachmentCount: 0,
+        labels: [{ id: "lb04", name: "Performance", color: "#f97316" }],
+        isPinned: false,
+        commentCount: 2,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    }
+};
+
+export function getMockBoardData(projectId: string): BoardData {
+    const projectTickets = Object.values(mockTickets).filter((t) => t.projectId === projectId);
+    const columns = mockWorkflowStatuses.map((status) => ({
+        status,
+        tickets: projectTickets.filter((t) => t.workflowStatusId === status.id)
+    }));
+    return { projectId, workflowId: WORKFLOW_ID, columns };
+}

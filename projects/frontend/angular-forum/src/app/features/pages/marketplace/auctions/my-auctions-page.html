@@ -1,0 +1,119 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-4">
+                <a routerLink="/marketplace/auctions">
+                    <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" severity="secondary" />
+                </a>
+                <div>
+                    <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+                        <i class="pi pi-megaphone text-primary"></i>
+                        {{ t("marketplace.auction.myAuctions") }}
+                    </h1>
+                </div>
+            </div>
+            <p-button [label]="t('marketplace.auction.createAuction')" icon="pi pi-plus" routerLink="/marketplace/auctions/create" />
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0">{{ t("marketplace.auction.sellerDashboard.activeAuctions") }} ({{ activeAuctions.length }})</p-tab>
+            <p-tab value="1">{{ t("marketplace.auction.sellerDashboard.endedAuctions") }} ({{ endedAuctions.length }})</p-tab>
+            <p-tab value="2">{{ t("marketplace.auction.sellerDashboard.cancelledAuctions") }} ({{ cancelledAuctions.length }})</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <!-- Active -->
+            <p-tabpanel value="0">
+                @if (activeAuctions.length === 0) {
+                <div class="flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-megaphone text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
+                    <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noAuctions") }}</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    @for (auction of activeAuctions; track auction.id) {
+                    <div class="card flex items-center gap-4">
+                        <div class="flex-1">
+                            <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', auction.id]">
+                                {{ auction.listing.title }}
+                            </a>
+                            <div class="text-surface-500 mt-1 flex items-center gap-3 text-xs">
+                                <span><i class="pi pi-sort-amount-up mr-1"></i>{{ auction.bidCount }} {{ t("marketplace.auction.bids") }}</span>
+                                <span><i class="pi pi-clock mr-1"></i>{{ getTimeLeft(auction.endTime) }}</span>
+                                <span><i class="pi pi-eye mr-1"></i>{{ auction.watcherCount }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-primary block text-lg font-bold">{{ formatPrice(auction.currentPrice, auction.currency) }}</span>
+                            <p-tag [severity]="statusSeverity(auction.status)" [value]="t('marketplace.auction.status.' + auction.status)" styleClass="text-xs" />
+                        </div>
+                        <a [routerLink]="['/marketplace/auctions', auction.id]">
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary" />
+                        </a>
+                    </div>
+                    }
+                </div>
+                }
+            </p-tabpanel>
+
+            <!-- Ended -->
+            <p-tabpanel value="1">
+                @if (endedAuctions.length === 0) {
+                <div class="flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-check-circle text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
+                    <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noAuctions") }}</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    @for (auction of endedAuctions; track auction.id) {
+                    <div class="card flex items-center gap-4">
+                        <div class="flex-1">
+                            <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', auction.id]">
+                                {{ auction.listing.title }}
+                            </a>
+                            <div class="text-surface-500 mt-1 flex items-center gap-3 text-xs">
+                                <span><i class="pi pi-sort-amount-up mr-1"></i>{{ auction.bidCount }} {{ t("marketplace.auction.bids") }}</span>
+                                @if (auction.highestBidderName) {
+                                <span><i class="pi pi-trophy mr-1"></i>{{ auction.highestBidderName }}</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-primary block text-lg font-bold">{{ formatPrice(auction.currentPrice, auction.currency) }}</span>
+                            <p-tag severity="secondary" [value]="t('marketplace.auction.status.ended')" styleClass="text-xs" />
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </p-tabpanel>
+
+            <!-- Cancelled -->
+            <p-tabpanel value="2">
+                @if (cancelledAuctions.length === 0) {
+                <div class="flex flex-col items-center py-12 text-center">
+                    <i class="pi pi-ban text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
+                    <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noAuctions") }}</p>
+                </div>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    @for (auction of cancelledAuctions; track auction.id) {
+                    <div class="card flex items-center gap-4 opacity-60">
+                        <div class="flex-1">
+                            <span class="text-surface-900 dark:text-surface-0 font-semibold">{{ auction.listing.title }}</span>
+                            <div class="text-surface-500 mt-1 text-xs">
+                                {{ auction.createdAt | date: "dd.MM.yyyy" }}
+                            </div>
+                        </div>
+                        <p-tag severity="danger" [value]="t('marketplace.auction.status.cancelled')" styleClass="text-xs" />
+                    </div>
+                    }
+                </div>
+                }
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

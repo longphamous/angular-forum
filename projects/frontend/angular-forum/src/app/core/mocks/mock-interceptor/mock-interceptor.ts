@@ -55,6 +55,13 @@ import {
     mockLottoResults,
     mockLottoStats,
     mockLottoTickets,
+    getMockBoardData,
+    mockAuctionBids,
+    mockAuctions,
+    mockAuctionWatches,
+    mockTicketProjects,
+    mockTickets,
+    mockWorkflowStatuses,
     mockMarketCategories,
     mockMarketComments,
     mockMarketListings,
@@ -2720,6 +2727,305 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok({ ...listing });
         }
 
+        // ── Auctions ──────────────────────────────────────────────────────────
+
+        const auctionAdminApproveMatch = url.match(/\/api\/marketplace\/auctions\/admin\/([^/]+)\/approve$/);
+        const auctionAdminRejectMatch = url.match(/\/api\/marketplace\/auctions\/admin\/([^/]+)\/reject$/);
+        const auctionBidsMatch = url.match(/\/api\/marketplace\/auctions\/([^/]+)\/bids$/);
+        const auctionBuyNowMatch = url.match(/\/api\/marketplace\/auctions\/([^/]+)\/buy-now$/);
+        const auctionWatchMatch = url.match(/\/api\/marketplace\/auctions\/([^/]+)\/watch$/);
+        const auctionCancelMatch = url.match(/\/api\/marketplace\/auctions\/([^/]+)\/cancel$/);
+        const auctionDetailMatch = url.match(/\/api\/marketplace\/auctions\/([^/]+)$/);
+
+        // GET /api/marketplace/auctions/admin/pending
+        if (method === "GET" && /\/api\/marketplace\/auctions\/admin\/pending$/.test(url)) {
+            return this.ok(Object.values(mockAuctions).filter((a) => a.status === "scheduled"));
+        }
+
+        // POST /api/marketplace/auctions/admin/:id/approve
+        if (method === "POST" && auctionAdminApproveMatch) {
+            const id = auctionAdminApproveMatch[1]!;
+            const auction = mockAuctions[id];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            const now = new Date();
+            const durationMs = new Date(auction.originalEndTime).getTime() - new Date(auction.startTime).getTime();
+            auction.status = "active";
+            auction.startTime = now.toISOString();
+            auction.endTime = new Date(now.getTime() + durationMs).toISOString();
+            auction.originalEndTime = auction.endTime;
+            auction.listing.status = "active";
+            return this.ok({ ...auction });
+        }
+
+        // POST /api/marketplace/auctions/admin/:id/reject
+        if (method === "POST" && auctionAdminRejectMatch) {
+            const id = auctionAdminRejectMatch[1]!;
+            const auction = mockAuctions[id];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            auction.status = "cancelled";
+            auction.listing.status = "archived";
+            return this.ok({ ...auction });
+        }
+
+        // GET /api/marketplace/auctions/my
+        if (method === "GET" && /\/api\/marketplace\/auctions\/my$/.test(url)) {
+            return this.ok(Object.values(mockAuctions).filter((a) => a.listing.authorId === MOCK_MEMBER_ID));
+        }
+
+        // GET /api/marketplace/auctions/my-bids
+        if (method === "GET" && /\/api\/marketplace\/auctions\/my-bids$/.test(url)) {
+            return this.ok(Object.values(mockAuctionBids).filter((b) => b.bidderId === MOCK_MEMBER_ID));
+        }
+
+        // GET /api/marketplace/auctions/watchlist
+        if (method === "GET" && /\/api\/marketplace\/auctions\/watchlist$/.test(url)) {
+            return this.ok(Object.values(mockAuctionWatches).filter((w) => {
+                const auction = mockAuctions[w.auctionId];
+                return auction !== undefined;
+            }));
+        }
+
+        // POST /api/marketplace/auctions/:id/bids
+        if (method === "POST" && auctionBidsMatch) {
+            const auctionId = auctionBidsMatch[1]!;
+            const auction = mockAuctions[auctionId];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            if (auction.status !== "active") return this.error("Auktion ist nicht aktiv", 400);
+
+            const payload = body as { amount: number; maxAutoBid?: number | null } | null;
+            if (!payload) return this.error("Fehlender Request-Body", 400);
+
+            const minBid = auction.bidCount === 0
+                ? auction.startPrice
+                : auction.currentPrice + auction.bidIncrement;
+            if (payload.amount < minBid) {
+                return this.error(`Mindestgebot: ${minBid.toFixed(2)} ${auction.currency}`, 400);
+            }
+
+            const bidId = `ab-${Date.now()}`;
+            const newBid = {
+                id: bidId,
+                auctionId,
+                bidderId: MOCK_MEMBER_ID,
+                bidderName: "NarutoFan99",
+                bidderAvatarUrl: null,
+                amount: payload.amount,
+                isAutoBid: false,
+                createdAt: new Date().toISOString()
+            };
+            mockAuctionBids[bidId] = newBid;
+            auction.currentPrice = payload.amount;
+            auction.highestBidderId = MOCK_MEMBER_ID;
+            auction.highestBidderName = "NarutoFan99";
+            auction.bidCount++;
+            auction.hasUserBid = true;
+            if (payload.maxAutoBid) auction.userMaxBid = payload.maxAutoBid;
+
+            // Snipe protection
+            const now = Date.now();
+            const endTime = new Date(auction.endTime).getTime();
+            if (endTime - now < 5 * 60 * 1000) {
+                auction.endTime = new Date(now + 5 * 60 * 1000).toISOString();
+            }
+
+            return this.ok(newBid);
+        }
+
+        // GET /api/marketplace/auctions/:id/bids
+        if (method === "GET" && auctionBidsMatch) {
+            const auctionId = auctionBidsMatch[1]!;
+            const bids = Object.values(mockAuctionBids)
+                .filter((b) => b.auctionId === auctionId)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            return this.ok(bids);
+        }
+
+        // POST /api/marketplace/auctions/:id/buy-now
+        if (method === "POST" && auctionBuyNowMatch) {
+            const auctionId = auctionBuyNowMatch[1]!;
+            const auction = mockAuctions[auctionId];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            if (auction.status !== "active") return this.error("Auktion ist nicht aktiv", 400);
+            if (!auction.buyNowPrice) return this.error("Kein Sofort-Kaufen-Preis verfügbar", 400);
+
+            auction.status = "ended";
+            auction.currentPrice = auction.buyNowPrice;
+            auction.highestBidderId = MOCK_MEMBER_ID;
+            auction.highestBidderName = "NarutoFan99";
+            auction.listing.status = "sold";
+            return this.ok({ ...auction });
+        }
+
+        // POST /api/marketplace/auctions/:id/watch
+        if (method === "POST" && auctionWatchMatch) {
+            const auctionId = auctionWatchMatch[1]!;
+            const auction = mockAuctions[auctionId];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+
+            const existingKey = Object.keys(mockAuctionWatches).find(
+                (k) => mockAuctionWatches[k]!.auctionId === auctionId
+            );
+            if (existingKey) {
+                delete mockAuctionWatches[existingKey];
+                auction.watcherCount = Math.max(0, auction.watcherCount - 1);
+                auction.isWatched = false;
+                return this.ok({ watched: false });
+            }
+
+            const watchId = `aw-${Date.now()}`;
+            mockAuctionWatches[watchId] = {
+                auctionId,
+                auction,
+                addedAt: new Date().toISOString()
+            };
+            auction.watcherCount++;
+            auction.isWatched = true;
+            return this.ok({ watched: true });
+        }
+
+        // POST /api/marketplace/auctions/:id/cancel
+        if (method === "POST" && auctionCancelMatch) {
+            const auctionId = auctionCancelMatch[1]!;
+            const auction = mockAuctions[auctionId];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            if (auction.bidCount > 0) return this.error("Auktionen mit Geboten können nicht abgebrochen werden", 400);
+            auction.status = "cancelled";
+            auction.listing.status = "closed";
+            return this.ok({ ...auction });
+        }
+
+        // POST /api/marketplace/auctions (create)
+        if (method === "POST" && /\/api\/marketplace\/auctions$/.test(url)) {
+            const payload = body as {
+                title: string;
+                description: string;
+                categoryId: string;
+                startPrice: number;
+                buyNowPrice?: number | null;
+                currency?: string;
+                bidIncrement?: number;
+                durationHours: number;
+                images?: string[];
+                tags?: string[];
+            } | null;
+            if (!payload) return this.error("Fehlender Request-Body", 400);
+
+            const category = mockMarketCategories[payload.categoryId];
+            if (!category) return this.error("Kategorie nicht gefunden", 404);
+
+            const listingId = `l2-${Date.now()}`;
+            const auctionId = `a1-${Date.now()}`;
+            const now = new Date();
+            const endTime = new Date(now.getTime() + payload.durationHours * 60 * 60 * 1000);
+
+            const newListing = {
+                id: listingId,
+                title: payload.title,
+                description: payload.description,
+                price: payload.startPrice,
+                currency: payload.currency ?? "EUR",
+                type: "auction" as const,
+                status: "active" as const,
+                categoryId: payload.categoryId,
+                categoryName: category.name,
+                authorId: MOCK_MEMBER_ID,
+                authorName: "NarutoFan99",
+                authorAvatarUrl: null,
+                images: payload.images ?? [],
+                customFields: null,
+                tags: payload.tags ?? [],
+                expiresAt: null,
+                viewCount: 0,
+                offerCount: 0,
+                commentCount: 0,
+                bestOfferId: null,
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+            };
+            mockMarketListings[listingId] = newListing;
+
+            const newAuction = {
+                id: auctionId,
+                listingId,
+                listing: newListing,
+                startPrice: payload.startPrice,
+                currentPrice: payload.startPrice,
+                buyNowPrice: payload.buyNowPrice ?? null,
+                currency: payload.currency ?? "EUR",
+                bidIncrement: payload.bidIncrement ?? 1.0,
+                startTime: now.toISOString(),
+                endTime: endTime.toISOString(),
+                originalEndTime: endTime.toISOString(),
+                status: "active" as const,
+                bidCount: 0,
+                highestBidderId: null,
+                highestBidderName: null,
+                watcherCount: 0,
+                isWatched: false,
+                hasUserBid: false,
+                userMaxBid: null,
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+            };
+            mockAuctions[auctionId] = newAuction;
+            return this.ok(newAuction);
+        }
+
+        // GET /api/marketplace/auctions (paginated)
+        if (method === "GET" && /\/api\/marketplace\/auctions(\?|$)/.test(url)) {
+            let all = Object.values(mockAuctions).filter((a) => a.status === "active");
+
+            const params = new URL(url, "http://localhost").searchParams;
+            const categoryId = params.get("categoryId");
+            const search = params.get("search");
+            const sort = params.get("sort");
+            const page = parseInt(params.get("page") ?? "1", 10);
+            const limit = parseInt(params.get("limit") ?? "12", 10);
+
+            if (categoryId) all = all.filter((a) => a.listing.categoryId === categoryId);
+            if (search) {
+                const q = search.toLowerCase();
+                all = all.filter(
+                    (a) =>
+                        a.listing.title.toLowerCase().includes(q) ||
+                        a.listing.description.toLowerCase().includes(q) ||
+                        a.listing.tags.some((t) => t.toLowerCase().includes(q))
+                );
+            }
+
+            switch (sort) {
+                case "ending-soon":
+                    all.sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
+                    break;
+                case "price-asc":
+                    all.sort((a, b) => a.currentPrice - b.currentPrice);
+                    break;
+                case "price-desc":
+                    all.sort((a, b) => b.currentPrice - a.currentPrice);
+                    break;
+                case "most-bids":
+                    all.sort((a, b) => b.bidCount - a.bidCount);
+                    break;
+                default:
+                    all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            }
+
+            const total = all.length;
+            const start = (page - 1) * limit;
+            const data = all.slice(start, start + limit);
+
+            return this.ok({ data, total, page, limit });
+        }
+
+        // GET /api/marketplace/auctions/:id
+        if (method === "GET" && auctionDetailMatch) {
+            const id = auctionDetailMatch[1]!;
+            const auction = mockAuctions[id];
+            if (!auction) return this.error("Auktion nicht gefunden", 404);
+            auction.listing.viewCount++;
+            return this.ok({ ...auction });
+        }
+
         // GET /api/feed/featured  (public)
         if (method === "GET" && lowerUrl.match(/\/api\/feed\/featured$/)) {
             return this.ok(mockFeaturedThreads.filter((f) => f.isActive));
@@ -3189,6 +3495,104 @@ export class MockInterceptor implements HttpInterceptor {
                     };
                 })
             );
+        }
+
+        // ── Ticket System ─────────────────────────────────────────────────────
+
+        const ticketBoardMatch = url.match(/\/api\/tickets\/board\/([^/?]+)/);
+        const ticketBoardMoveMatch = url.match(/\/api\/tickets\/board\/move$/);
+        const ticketDetailMatch = url.match(/\/api\/tickets\/([0-9a-f-]{36})$/);
+        const ticketAdminProjectsMatch = url.match(/\/api\/tickets\/admin\/projects$/);
+        const ticketAdminWorkflowsMatch = url.match(/\/api\/tickets\/admin\/workflows$/);
+
+        // GET /api/tickets/board/:projectId
+        if (method === "GET" && ticketBoardMatch) {
+            const projectId = ticketBoardMatch[1]!;
+            if (!mockTicketProjects[projectId]) return this.error("Projekt nicht gefunden", 404);
+            return this.ok(getMockBoardData(projectId));
+        }
+
+        // PATCH /api/tickets/board/move
+        if (method === "PATCH" && ticketBoardMoveMatch) {
+            const payload = body as { ticketId: string; toStatusId: string; position?: number } | null;
+            if (!payload) return this.error("Fehlender Request-Body", 400);
+            const ticket = mockTickets[payload.ticketId];
+            if (!ticket) return this.error("Ticket nicht gefunden", 404);
+            const status = mockWorkflowStatuses.find((s) => s.id === payload.toStatusId);
+            if (!status) return this.error("Status nicht gefunden", 404);
+            ticket.workflowStatusId = status.id;
+            ticket.workflowStatusName = status.name;
+            ticket.workflowStatusColor = status.color;
+            ticket.status = status.slug === "done" ? "resolved" : status.slug === "open" ? "open" : "in_progress";
+            ticket.updatedAt = new Date().toISOString();
+            return this.ok({ success: true });
+        }
+
+        // GET /api/tickets/:id
+        if (method === "GET" && ticketDetailMatch) {
+            const id = ticketDetailMatch[1]!;
+            const ticket = mockTickets[id];
+            if (!ticket) return this.error("Ticket nicht gefunden", 404);
+            return this.ok({ ...ticket });
+        }
+
+        // GET /api/tickets/admin/projects
+        if (method === "GET" && ticketAdminProjectsMatch) {
+            return this.ok(Object.values(mockTicketProjects));
+        }
+
+        // GET /api/tickets/admin/workflows
+        if (method === "GET" && ticketAdminWorkflowsMatch) {
+            return this.ok([
+                {
+                    id: "wf000000-0000-0000-0000-000000000001",
+                    name: "Standard-Workflow",
+                    isDefault: true,
+                    statuses: mockWorkflowStatuses,
+                    transitions: [],
+                    createdAt: "2026-01-01T00:00:00Z",
+                    updatedAt: "2026-01-01T00:00:00Z"
+                }
+            ]);
+        }
+
+        // GET /api/tickets (list)
+        if (method === "GET" && /\/api\/tickets(\?|$)/.test(url)) {
+            const params = new URL(url, "http://localhost").searchParams;
+            const projectId = params.get("projectId");
+            const page = parseInt(params.get("page") ?? "1", 10);
+            const limit = parseInt(params.get("limit") ?? "20", 10);
+
+            let all = Object.values(mockTickets);
+            if (projectId) all = all.filter((t) => t.projectId === projectId);
+
+            const total = all.length;
+            const start = (page - 1) * limit;
+            const data = all.slice(start, start + limit);
+
+            return this.ok({ data, total, page, limit });
+        }
+
+        // GET /api/tickets/stats
+        if (method === "GET" && /\/api\/tickets\/stats/.test(url)) {
+            const all = Object.values(mockTickets);
+            return this.ok({
+                total: all.length,
+                open: all.filter((t) => t.status === "open").length,
+                inProgress: all.filter((t) => t.status === "in_progress").length,
+                waiting: all.filter((t) => t.status === "waiting").length,
+                resolved: all.filter((t) => t.status === "resolved").length,
+                closed: all.filter((t) => t.status === "closed").length,
+                avgResolutionTimeHours: 48
+            });
+        }
+
+        // GET /api/tickets/my
+        if (method === "GET" && /\/api\/tickets\/my/.test(url)) {
+            const myTickets = Object.values(mockTickets).filter(
+                (t) => t.authorId === MOCK_MEMBER_ID || t.assigneeId === MOCK_MEMBER_ID
+            );
+            return this.ok(myTickets);
         }
 
         // Fallback: durchreichen

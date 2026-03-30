@@ -438,11 +438,57 @@ export const routes: Routes = [
                     import("./features/pages/marketplace/create-listing-page").then((c) => c.CreateListingPage)
             },
             {
+                path: "marketplace/auctions",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/auctions/auctions-page").then((c) => c.AuctionsPage)
+            },
+            {
+                path: "marketplace/auctions/create",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/auctions/create-auction-page").then(
+                        (c) => c.CreateAuctionPage
+                    )
+            },
+            {
+                path: "marketplace/auctions/my",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/auctions/my-auctions-page").then((c) => c.MyAuctionsPage)
+            },
+            {
+                path: "marketplace/auctions/bids",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/auctions/my-bids-page").then((c) => c.MyBidsPage)
+            },
+            {
+                path: "marketplace/auctions/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/marketplace/auctions/auction-detail-page").then(
+                        (c) => c.AuctionDetailPage
+                    )
+            },
+            {
                 path: "marketplace/:id",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/pages/marketplace/listing-detail-page").then((c) => c.ListingDetailPage)
+            },
+            {
+                path: "admin/auctions",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-marketplace/admin-auctions").then((c) => c.AdminAuctions)
             },
             {
                 path: "admin/marketplace",

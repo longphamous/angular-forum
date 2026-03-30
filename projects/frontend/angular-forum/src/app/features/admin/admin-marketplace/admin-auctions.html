@@ -1,0 +1,84 @@
+<div class="flex flex-col gap-6" *transloco="let t">
+    <!-- Header -->
+    <div class="card">
+        <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
+            <i class="pi pi-megaphone text-primary"></i>
+            {{ t("marketplace.auction.adminAuctions.title") }}
+        </h1>
+    </div>
+
+    <!-- Pending Auctions -->
+    <div class="card">
+        <h2 class="text-surface-900 dark:text-surface-0 mb-4 text-lg font-bold">
+            {{ t("marketplace.auction.adminAuctions.pendingAuctions") }}
+            <span class="text-surface-400 text-sm font-normal">({{ facade.pendingAuctions().length }})</span>
+        </h2>
+
+        @if (facade.pendingAuctions().length === 0) {
+        <div class="flex flex-col items-center py-12 text-center">
+            <i class="pi pi-check-circle text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
+            <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noAuctions") }}</p>
+        </div>
+        } @else {
+        <div class="flex flex-col gap-3">
+            @for (auction of facade.pendingAuctions(); track auction.id) {
+            <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-4 rounded-lg p-4">
+                <div class="flex-1">
+                    <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', auction.id]">
+                        {{ auction.listing.title }}
+                    </a>
+                    <div class="text-surface-500 mt-1 flex items-center gap-3 text-xs">
+                        <span>{{ auction.listing.authorName }}</span>
+                        <span>{{ formatDate(auction.createdAt) }}</span>
+                        <span>{{ formatPrice(auction.startPrice, auction.currency) }}</span>
+                        <span>{{ auction.listing.categoryName }}</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <p-button
+                        (onClick)="approveAuction(auction.id)"
+                        [label]="t('marketplace.auction.adminAuctions.approve')"
+                        icon="pi pi-check"
+                        severity="success"
+                        size="small"
+                    />
+                    <p-button
+                        (onClick)="openRejectDialog(auction)"
+                        [label]="t('marketplace.auction.adminAuctions.reject')"
+                        icon="pi pi-times"
+                        severity="danger"
+                        size="small"
+                        [outlined]="true"
+                    />
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+
+    <!-- Reject Dialog -->
+    <p-dialog
+        [(visible)]="rejectDialogVisible"
+        [header]="t('marketplace.auction.adminAuctions.reject')"
+        [modal]="true"
+        [style]="{ width: '450px' }"
+    >
+        <div class="flex flex-col gap-3">
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
+                {{ t("common.reason") }}
+            </label>
+            <textarea [(ngModel)]="rejectReason" pTextarea [rows]="4" class="w-full"></textarea>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button (onClick)="rejectDialogVisible.set(false)" [label]="t('common.button.cancel')" severity="secondary" [text]="true" />
+            <p-button
+                (onClick)="confirmReject()"
+                [label]="t('marketplace.auction.adminAuctions.reject')"
+                icon="pi pi-times"
+                severity="danger"
+                [disabled]="!rejectReason.trim()"
+            />
+        </ng-template>
+    </p-dialog>
+</div>

@@ -100,7 +100,8 @@ export class MarketplacePage implements OnInit {
             sell: "success",
             buy: "info",
             trade: "warn",
-            gift: "secondary"
+            gift: "secondary",
+            auction: "danger"
         };
         return map[type];
     }
@@ -110,7 +111,8 @@ export class MarketplacePage implements OnInit {
             sell: "Verkaufen",
             buy: "Kaufen",
             trade: "Tauschen",
-            gift: "Verschenken"
+            gift: "Verschenken",
+            auction: "Auktion"
         };
         return map[type];
     }
@@ -120,7 +122,8 @@ export class MarketplacePage implements OnInit {
             sell: "pi-tag",
             buy: "pi-shopping-cart",
             trade: "pi-arrow-right-arrow-left",
-            gift: "pi-gift"
+            gift: "pi-gift",
+            auction: "pi-megaphone"
         };
         return map[type];
     }
