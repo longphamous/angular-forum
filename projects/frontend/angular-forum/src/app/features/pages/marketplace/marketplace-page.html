@@ -6,7 +6,11 @@
                 <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
                     <i class="pi pi-shopping-cart text-primary"></i>
                     {{ t("marketplace.title") }}
-                    <admin-quicklink route="/admin/marketplace" />
+                    @if (authFacade.isAdmin()) {
+                    <a class="no-underline" routerLink="/admin/marketplace">
+                        <p-button [pTooltip]="t('common.adminSettings')" [rounded]="true" [text]="true" icon="pi pi-cog" severity="secondary" size="small" tooltipPosition="bottom" />
+                    </a>
+                    }
                 </h1>
                 <p class="text-surface-500 mt-1 text-sm">{{ t("marketplace.subtitle") }}</p>
             </div>
@@ -73,7 +77,7 @@
                 <div class="flex flex-col gap-3">
                     <p-selectbutton
                         (onChange)="onTypeChange()"
-                        [(ngModel)]="typeOptions"
+                        [(ngModel)]="selectedType"
                         [options]="typeOptions"
                         optionLabel="label"
                         optionValue="value"

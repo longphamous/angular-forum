@@ -14,14 +14,13 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { ListingType, MarketListing } from "../../../core/models/marketplace/marketplace";
+import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
-import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin-quicklink";
 
 @Component({
     selector: "marketplace-page",
     standalone: true,
     imports: [
-        AdminQuicklink,
         RouterModule,
         FormsModule,
         TranslocoModule,
@@ -41,6 +40,7 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
 })
 export class MarketplacePage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
+    readonly authFacade = inject(AuthFacade);
     private readonly translocoService = inject(TranslocoService);
 
     selectedCategoryId = signal<string | null>(null);

@@ -1,39 +1,27 @@
 import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
 import { RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { TooltipModule } from "primeng/tooltip";
 
 import { AuthFacade } from "../../../facade/auth/auth-facade";
 
-/**
- * Admin quicklink button — renders a small settings icon-button
- * that navigates to the corresponding admin configuration page.
- *
- * Only visible to users with admin role.
- *
- * Usage:
- * ```html
- * <admin-quicklink route="/admin/lotto" />
- * ```
- */
 @Component({
     selector: "admin-quicklink",
     standalone: true,
-    imports: [ButtonModule, RouterModule, TooltipModule, TranslocoModule],
+    imports: [ButtonModule, RouterModule, TooltipModule],
     template: `
         @if (authFacade.isAdmin()) {
-            <a class="no-underline" *transloco="let t" [routerLink]="route()">
-                <p-button
-                    [pTooltip]="t('common.adminSettings')"
-                    [rounded]="true"
-                    [text]="true"
-                    icon="pi pi-cog"
-                    severity="secondary"
-                    size="small"
-                    tooltipPosition="bottom"
-                />
-            </a>
+        <a class="no-underline" [routerLink]="route()">
+            <p-button
+                pTooltip="Admin"
+                [rounded]="true"
+                [text]="true"
+                icon="pi pi-cog"
+                severity="secondary"
+                size="small"
+                tooltipPosition="bottom"
+            />
+        </a>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
