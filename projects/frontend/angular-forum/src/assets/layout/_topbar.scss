@@ -14,9 +14,9 @@
     align-items: center;
 
     .layout-topbar-logo-container {
-        width: 20rem;
         display: flex;
         align-items: center;
+        flex-shrink: 0;
     }
 
     .layout-topbar-logo {

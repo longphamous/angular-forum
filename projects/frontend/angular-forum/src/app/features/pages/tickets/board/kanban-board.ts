@@ -29,7 +29,46 @@ import { BoardCard } from "./board-card";
         BoardCard
     ],
     templateUrl: "./kanban-board.html",
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    styles: [
+        `
+            :host ::ng-deep {
+                .cdk-drag-preview {
+                    box-shadow:
+                        0 10px 15px -3px rgba(0, 0, 0, 0.15),
+                        0 4px 6px -2px rgba(0, 0, 0, 0.1);
+                    border-radius: 0.5rem;
+                    transform: rotate(2deg);
+                    opacity: 0.95;
+                }
+
+                .cdk-drag-animating {
+                    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+                }
+
+                .board-drag-placeholder {
+                    background: var(--primary-color);
+                    opacity: 0.12;
+                    border: 2px dashed var(--primary-color);
+                    border-radius: 0.5rem;
+                    min-height: 4rem;
+                    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+                }
+
+                .board-drop-zone.cdk-drop-list-dragging .board-drag-item:not(.cdk-drag-placeholder) {
+                    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+                }
+
+                .board-drag-item {
+                    cursor: grab;
+                }
+
+                .board-drag-item:active {
+                    cursor: grabbing;
+                }
+            }
+        `
+    ]
 })
 export class KanbanBoard implements OnInit {
     readonly boardFacade = inject(BoardFacade);

@@ -2329,6 +2329,8 @@
     "noProjects": "No projects found. Create a project in the admin area first.",
     "goToAdmin": "Go to Admin",
     "createTicket": "Create Ticket",
+    "editTicket": "Edit Ticket",
+    "ticketUpdated": "Ticket updated successfully",
     "backToList": "Back to tickets",
     "searchPlaceholder": "Search tickets...",
     "myTickets": "My Tickets",

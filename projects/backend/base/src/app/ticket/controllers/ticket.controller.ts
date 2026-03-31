@@ -25,15 +25,14 @@ import { TicketAttachmentService } from "../services/ticket-attachment.service";
 import { TicketWatcherService } from "../services/ticket-watcher.service";
 import { TicketWorkLogService } from "../services/ticket-work-log.service";
 
+/**
+ * Handles collection-level ticket routes (no :id parameter).
+ * Registered BEFORE TicketDetailController so these static paths
+ * are matched before the :id catch-all.
+ */
 @Controller("tickets")
 export class TicketController {
-    constructor(
-        private readonly ticketService: TicketService,
-        private readonly activityService: TicketActivityService,
-        private readonly watcherService: TicketWatcherService,
-        private readonly attachmentService: TicketAttachmentService,
-        private readonly workLogService: TicketWorkLogService
-    ) {}
+    constructor(private readonly ticketService: TicketService) {}
 
     /** POST /tickets — create a new ticket */
     @Post()
@@ -59,9 +58,24 @@ export class TicketController {
         @Query() query: TicketQueryDto,
         @CurrentUser() user: AuthenticatedUser
     ): Promise<PaginatedResult<TicketDto>> {
-        // Fetch tickets where user is author or assignee
         return this.ticketService.findAll({ ...query, assigneeId: undefined, search: undefined });
     }
+}
+
+/**
+ * Handles all ticket detail routes (with :id parameter).
+ * Registered LAST in ticket.module.ts controllers array so that
+ * sub-controllers (board, sprints, admin, reports, roadmap) are matched first.
+ */
+@Controller("tickets")
+export class TicketDetailController {
+    constructor(
+        private readonly ticketService: TicketService,
+        private readonly activityService: TicketActivityService,
+        private readonly watcherService: TicketWatcherService,
+        private readonly attachmentService: TicketAttachmentService,
+        private readonly workLogService: TicketWorkLogService
+    ) {}
 
     /** GET /tickets/:id — get ticket detail */
     @Get(":id")
@@ -88,7 +102,6 @@ export class TicketController {
 
     // ── Children ─────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/children — list child tickets */
     @Get(":id/children")
     getChildren(@Param("id", ParseUUIDPipe) id: string): Promise<TicketDto[]> {
         return this.ticketService.getChildren(id);
@@ -96,13 +109,11 @@ export class TicketController {
 
     // ── Links ────────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/links — list ticket links */
     @Get(":id/links")
     getLinks(@Param("id", ParseUUIDPipe) id: string): Promise<TicketLinkDto[]> {
         return this.ticketService.getLinks(id);
     }
 
-    /** POST /tickets/:id/links — create a ticket link */
     @Post(":id/links")
     createLink(
         @Param("id", ParseUUIDPipe) id: string,
@@ -112,7 +123,6 @@ export class TicketController {
         return this.ticketService.createLink(id, user.userId, dto);
     }
 
-    /** DELETE /tickets/:id/links/:linkId — remove a ticket link */
     @Delete(":id/links/:linkId")
     async deleteLink(
         @Param("linkId", ParseUUIDPipe) linkId: string,
@@ -124,7 +134,6 @@ export class TicketController {
 
     // ── Activity ─────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/activity — get activity log */
     @Get(":id/activity")
     getActivity(
         @Param("id", ParseUUIDPipe) id: string,
@@ -136,7 +145,6 @@ export class TicketController {
 
     // ── Comments ───────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/comments — list comments */
     @Get(":id/comments")
     getComments(
         @Param("id", ParseUUIDPipe) id: string,
@@ -146,7 +154,6 @@ export class TicketController {
         return this.ticketService.getComments(id, user.userId, isStaff);
     }
 
-    /** POST /tickets/:id/comments — add a comment */
     @Post(":id/comments")
     addComment(
         @Param("id", ParseUUIDPipe) id: string,
@@ -158,13 +165,11 @@ export class TicketController {
 
     // ── Watchers ─────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/watchers */
     @Get(":id/watchers")
     getWatchers(@Param("id", ParseUUIDPipe) id: string): Promise<WatcherDto[]> {
         return this.watcherService.getWatchers(id);
     }
 
-    /** POST /tickets/:id/watch */
     @Post(":id/watch")
     async watch(
         @Param("id", ParseUUIDPipe) id: string,
@@ -174,7 +179,6 @@ export class TicketController {
         return { success: true };
     }
 
-    /** DELETE /tickets/:id/watch */
     @Delete(":id/watch")
     async unwatch(
         @Param("id", ParseUUIDPipe) id: string,
@@ -186,13 +190,11 @@ export class TicketController {
 
     // ── Attachments ──────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/attachments */
     @Get(":id/attachments")
     getAttachments(@Param("id", ParseUUIDPipe) id: string): Promise<AttachmentDto[]> {
         return this.attachmentService.getAttachments(id);
     }
 
-    /** POST /tickets/:id/attachments — simplified (file info in body, not multipart) */
     @Post(":id/attachments")
     addAttachment(
         @Param("id", ParseUUIDPipe) id: string,
@@ -202,7 +204,6 @@ export class TicketController {
         return this.attachmentService.addAttachment(id, user.userId, body);
     }
 
-    /** DELETE /tickets/:id/attachments/:attachId */
     @Delete(":id/attachments/:attachId")
     async deleteAttachment(@Param("attachId", ParseUUIDPipe) attachId: string): Promise<{ success: boolean }> {
         await this.attachmentService.deleteAttachment(attachId);
@@ -211,13 +212,11 @@ export class TicketController {
 
     // ── Work Logs ────────────────────────────────────────────────────────────
 
-    /** GET /tickets/:id/worklogs */
     @Get(":id/worklogs")
     getWorkLogs(@Param("id", ParseUUIDPipe) id: string): Promise<WorkLogDto[]> {
         return this.workLogService.getWorkLogs(id);
     }
 
-    /** POST /tickets/:id/worklogs */
     @Post(":id/worklogs")
     addWorkLog(
         @Param("id", ParseUUIDPipe) id: string,
@@ -227,7 +226,6 @@ export class TicketController {
         return this.workLogService.addWorkLog(id, user.userId, dto);
     }
 
-    /** DELETE /tickets/:id/worklogs/:logId */
     @Delete(":id/worklogs/:logId")
     async deleteWorkLog(@Param("logId", ParseUUIDPipe) logId: string): Promise<{ success: boolean }> {
         await this.workLogService.deleteWorkLog(logId);

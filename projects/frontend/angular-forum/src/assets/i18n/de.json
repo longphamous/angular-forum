@@ -2329,6 +2329,8 @@
     "noProjects": "Keine Projekte gefunden. Erstelle zuerst ein Projekt im Adminbereich.",
     "goToAdmin": "Zum Adminbereich",
     "createTicket": "Ticket erstellen",
+    "editTicket": "Ticket bearbeiten",
+    "ticketUpdated": "Ticket erfolgreich aktualisiert",
     "backToList": "Zurück zu Tickets",
     "searchPlaceholder": "Tickets durchsuchen...",
     "myTickets": "Meine Tickets",

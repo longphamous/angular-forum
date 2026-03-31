@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { UserEntity } from "../user/entities/user.entity";
-import { TicketController } from "./controllers/ticket.controller";
+import { TicketController, TicketDetailController } from "./controllers/ticket.controller";
 import { TicketAdminController } from "./controllers/ticket-admin.controller";
 import { TicketBoardController } from "./controllers/ticket-board.controller";
 import { TicketReportingController } from "./controllers/ticket-reporting.controller";
@@ -71,7 +71,8 @@ import { TicketWorkflowService } from "./services/ticket-workflow.service";
         TicketBoardController,
         TicketSprintController,
         TicketReportingController,
-        TicketRoadmapController
+        TicketRoadmapController,
+        TicketDetailController
     ],
     providers: [
         TicketService,

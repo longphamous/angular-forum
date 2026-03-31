@@ -94,7 +94,7 @@
 
             <!-- Drop Zone -->
             <div
-                class="flex min-h-[120px] flex-col gap-2 px-3 pb-3"
+                class="board-drop-zone flex min-h-[120px] flex-1 flex-col gap-2 px-3 pb-3"
                 (cdkDropListDropped)="onDrop($event, column.status.id)"
                 [cdkDropListConnectedTo]="getColumnIds()"
                 [cdkDropListData]="column.tickets"
@@ -102,8 +102,10 @@
                 cdkDropList
             >
                 @for (ticket of column.tickets; track ticket.id) {
-                <div [cdkDragData]="ticket" cdkDrag>
+                <div class="board-drag-item" [cdkDragData]="ticket" cdkDrag>
                     <board-card [ticket]="ticket" />
+                    <!-- Drag placeholder -->
+                    <div class="board-drag-placeholder" *cdkDragPlaceholder></div>
                 </div>
                 } @if (column.tickets.length === 0 && quickCreateColumnId() !== column.status.id) {
                 <div

@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository, SelectQueryBuilder } from "typeorm";
+import { DataSource, In, IsNull, Repository, SelectQueryBuilder } from "typeorm";
 
 import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity } from "../../user/entities/user.entity";
@@ -10,6 +10,7 @@ import { CreateTicketDto } from "../dto/create-ticket.dto";
 import { TicketQueryDto } from "../dto/ticket-query.dto";
 import { UpdateTicketDto } from "../dto/update-ticket.dto";
 import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
+import { TicketWorkflowStatusEntity } from "../entities/ticket-workflow-status.entity";
 import { TicketCommentEntity } from "../entities/ticket-comment.entity";
 import { TicketLabelEntity } from "../entities/ticket-label.entity";
 import { TicketLinkEntity, type TicketLinkType } from "../entities/ticket-link.entity";
@@ -30,6 +31,9 @@ export class TicketService {
         @InjectRepository(TicketLabelEntity) private readonly labelRepo: Repository<TicketLabelEntity>,
         @InjectRepository(TicketLinkEntity) private readonly linkRepo: Repository<TicketLinkEntity>,
         @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
+        @InjectRepository(TicketWorkflowStatusEntity)
+        private readonly workflowStatusRepo: Repository<TicketWorkflowStatusEntity>,
+        private readonly dataSource: DataSource,
         private readonly notificationsService: NotificationsService,
         private readonly activityService: TicketActivityService
     ) {}
@@ -38,6 +42,32 @@ export class TicketService {
 
     async create(authorId: string, dto: CreateTicketDto): Promise<TicketDto> {
         const nextNumber = await this.nextTicketNumber(dto.projectId);
+
+        // Determine initial workflow status (first "todo" status of the project's workflow)
+        let workflowStatusId: string | undefined;
+        if (dto.projectId) {
+            const project = await this.dataSource.getRepository("TicketProjectEntity").findOne({
+                where: { id: dto.projectId }
+            });
+            const workflowId = (project as { workflowId?: string } | null)?.workflowId;
+            if (workflowId) {
+                const firstStatus = await this.workflowStatusRepo.findOne({
+                    where: { workflowId, category: "todo" },
+                    order: { position: "ASC" }
+                });
+                if (firstStatus) workflowStatusId = firstStatus.id;
+            }
+        }
+
+        // Calculate backlog position (append to end of backlog)
+        const maxPos = await this.ticketRepo
+            .createQueryBuilder("t")
+            .select("COALESCE(MAX(t.backlog_position), 0)", "max")
+            .where("t.project_id = :projectId", { projectId: dto.projectId })
+            .andWhere("t.sprint_id IS NULL")
+            .getRawOne<{ max: number }>();
+        const backlogPosition = (maxPos?.max ?? 0) + 1;
+
         const ticket = this.ticketRepo.create({
             ticketNumber: nextNumber,
             title: dto.title,
@@ -51,7 +81,9 @@ export class TicketService {
             parentId: dto.parentId,
             storyPoints: dto.storyPoints,
             dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-            customFields: dto.customFields
+            customFields: dto.customFields,
+            workflowStatusId,
+            backlogPosition
         });
 
         const saved = await this.ticketRepo.save(ticket);

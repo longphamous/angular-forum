@@ -17,7 +17,9 @@ import { LayoutService } from "./service/layout.service";
     imports: [CommonModule, AchievementToast, SessionExpiredDialog, AppTopbar, AppSidebar, RouterModule, AppFooter],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
-        <app-sidebar></app-sidebar>
+        @if (hasSidebar) {
+            <app-sidebar></app-sidebar>
+        }
         <div class="layout-main-container">
             <div class="layout-main">
                 <router-outlet></router-outlet>
@@ -35,6 +37,7 @@ export class AppLayout implements OnDestroy {
 
     overlayMenuOpenSubscription: Subscription;
     menuOutsideClickListener: (() => void) | null = null;
+    hasSidebar = false;
 
     layoutService = inject(LayoutService);
     renderer = inject(Renderer2);
@@ -43,6 +46,8 @@ export class AppLayout implements OnDestroy {
 
     constructor() {
         this.sessionService.start();
+        this.hasSidebar = this.detectSidebar(this.router.url);
+
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
                 this.menuOutsideClickListener = this.renderer.listen("document", "click", (event) => {
@@ -57,17 +62,28 @@ export class AppLayout implements OnDestroy {
             }
         });
 
-        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
             this.hideMenu();
+            this.hasSidebar = this.detectSidebar(e.urlAfterRedirects ?? e.url);
         });
     }
 
+    private detectSidebar(url: string): boolean {
+        if (url.startsWith("/admin")) return true;
+        if (url.startsWith("/marketplace")) return true;
+        if (url.startsWith("/tickets") || url.startsWith("/board") || url.startsWith("/backlog") || url.startsWith("/roadmap") || url.startsWith("/reports")) return true;
+        if (url.startsWith("/anime") || url.startsWith("/steam")) return true;
+        if (url.startsWith("/wanted") || url.startsWith("/achievements") || url.startsWith("/shop") || url.startsWith("/lotto") || url.startsWith("/tcg") || url.startsWith("/market")) return true;
+        return false;
+    }
+
     get containerClass() {
+        const hasStaticSidebar = this.hasSidebar && this.layoutService.layoutConfig().menuMode === "static";
         return {
             "layout-overlay": this.layoutService.layoutConfig().menuMode === "overlay",
-            "layout-static": this.layoutService.layoutConfig().menuMode === "static",
+            "layout-static": hasStaticSidebar,
             "layout-static-inactive":
-                this.layoutService.layoutState().staticMenuDesktopInactive &&
+                (!this.hasSidebar || this.layoutService.layoutState().staticMenuDesktopInactive) &&
                 this.layoutService.layoutConfig().menuMode === "static",
             "layout-overlay-active": this.layoutService.layoutState().overlayMenuActive,
             "layout-mobile-active": this.layoutService.layoutState().staticMenuMobileActive
