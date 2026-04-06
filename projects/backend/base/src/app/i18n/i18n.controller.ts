@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { BulkUpsertTranslationDto } from "./dto/bulk-upsert-translation.dto";
@@ -8,6 +9,8 @@ import { I18nSettingsEntity } from "./entities/i18n-settings.entity";
 import { TranslationOverrideEntity } from "./entities/translation-override.entity";
 import { I18nService, TranslationMap } from "./i18n.service";
 
+@ApiTags("i18n")
+@ApiBearerAuth("JWT")
 @Controller("i18n")
 export class I18nController {
     constructor(private readonly i18nService: I18nService) {}

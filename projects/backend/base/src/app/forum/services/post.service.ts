@@ -5,6 +5,8 @@ import { In, Repository } from "typeorm";
 import { ActivityService } from "../../activity/activity.service";
 import { CreditService } from "../../credit/credit.service";
 import { GamificationService } from "../../gamification/gamification.service";
+import { HashtagService } from "../../hashtag/hashtag.service";
+import { QuestService } from "../../rpg/quest.service";
 import { UserXpData } from "../../gamification/level.config";
 import { NotificationsService } from "../../notifications/notifications.service";
 import { PushService } from "../../push/push.service";
@@ -108,7 +110,9 @@ export class PostService {
         private readonly creditService: CreditService,
         private readonly pushService: PushService,
         private readonly notificationsService: NotificationsService,
-        private readonly activityService: ActivityService
+        private readonly activityService: ActivityService,
+        private readonly hashtagService: HashtagService,
+        private readonly questService: QuestService
     ) {}
 
     async findByThread(threadId: string, query: ForumQueryDto, viewerId?: string): Promise<PaginatedResult<PostDto>> {
@@ -212,6 +216,12 @@ export class PostService {
         };
         this.pushService.sendToThread(threadId, "thread:newPost", pushPayload);
 
+        // Sync hashtags from post content
+        void this.hashtagService.syncHashtags("post", post.id, authorId, dto.content).catch(() => undefined);
+
+        // Track quest progress
+        void this.questService.trackProgress(authorId, "create_post").catch(() => undefined);
+
         // Notify thread author about new reply (unless self-reply)
         const authorName = author?.displayName ?? author?.username ?? "Someone";
         if (thread.authorId !== authorId) {
@@ -256,6 +266,10 @@ export class PostService {
         entity.editCount += 1;
 
         await this.postRepo.save(entity);
+
+        // Re-sync hashtags after edit
+        void this.hashtagService.syncHashtags("post", entity.id, entity.authorId, dto.content).catch(() => undefined);
+
         return toDto(entity);
     }
 
@@ -267,6 +281,9 @@ export class PostService {
 
         const thread = await this.threadRepo.findOneBy({ id: entity.threadId });
         await this.postRepo.softDelete(id);
+
+        // Remove hashtag usages for deleted post
+        void this.hashtagService.removeUsages("post", id).catch(() => undefined);
 
         if (thread) {
             const currentThread = await this.threadRepo.findOneBy({ id: entity.threadId });

@@ -13,6 +13,7 @@ import {
     Request,
     UseGuards
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -30,6 +31,8 @@ import {
 import { LexiconArticleStatus } from "./entities/lexicon-article.entity";
 import { LexiconService } from "./lexicon.service";
 
+@ApiTags("Lexicon")
+@ApiBearerAuth("JWT")
 @Controller("lexicon")
 @UseGuards(JwtAuthGuard)
 export class LexiconController {

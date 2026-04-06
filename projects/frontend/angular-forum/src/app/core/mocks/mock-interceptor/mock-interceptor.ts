@@ -27,9 +27,13 @@ import { MediaAsset } from "../../models/media/media";
 import { Conversation, ConversationDetail, Draft, Message } from "../../models/messages/messages";
 import { UserProfile } from "../../models/user/user";
 import {
+    getMockBoardData,
     mockAchievements,
     mockAnimeDetails,
     mockAnimeListStore,
+    mockAuctionBids,
+    mockAuctions,
+    mockAuctionWatches,
     mockBlogCategories,
     mockBlogCommentsByPost,
     mockBlogPostDetails,
@@ -55,13 +59,6 @@ import {
     mockLottoResults,
     mockLottoStats,
     mockLottoTickets,
-    getMockBoardData,
-    mockAuctionBids,
-    mockAuctions,
-    mockAuctionWatches,
-    mockTicketProjects,
-    mockTickets,
-    mockWorkflowStatuses,
     mockMarketCategories,
     mockMarketComments,
     mockMarketListings,
@@ -76,6 +73,8 @@ import {
     mockShopItems,
     mockSlides,
     mockThreads,
+    mockTicketProjects,
+    mockTickets,
     mockUserAchievements,
     mockUserGroupMap,
     mockUserInventory,
@@ -83,6 +82,12 @@ import {
     mockUsers,
     mockWallets,
     mockWalletTransactions,
+    mockWorkflowStatuses,
+    mockXpLeaderboard,
+    mockHashtags,
+    mockHashtagSearchResults,
+    mockCharacter,
+    mockQuestBoard,
     User
 } from "../mock-data/mock-data";
 
@@ -980,6 +985,124 @@ export class MockInterceptor implements HttpInterceptor {
             return this.ok({ updatedUsers: Object.keys(mockUserProfiles).length });
         }
 
+        // GET /api/gamification/leaderboard
+        if (method === "GET" && lowerUrl.match(/\/api\/gamification\/leaderboard/)) {
+            return this.ok({ data: mockXpLeaderboard, total: mockXpLeaderboard.length });
+        }
+
+        // GET /api/rpg/character
+        if (method === "GET" && lowerUrl.match(/\/api\/rpg\/character$/)) {
+            return this.ok(mockCharacter);
+        }
+
+        // GET /api/rpg/character/:userId
+        if (method === "GET" && lowerUrl.match(/\/api\/rpg\/character\/[0-9a-f-]+$/i)) {
+            return this.ok(mockCharacter);
+        }
+
+        // POST /api/rpg/character (create/update)
+        if (method === "POST" && lowerUrl.match(/\/api\/rpg\/character$/)) {
+            const payload = body as { name?: string; characterClass?: string };
+            return this.ok({
+                ...mockCharacter,
+                name: payload?.name ?? mockCharacter.name,
+                characterClass: payload?.characterClass ?? mockCharacter.characterClass
+            });
+        }
+
+        // PATCH /api/rpg/character/stats
+        if (method === "PATCH" && lowerUrl.match(/\/api\/rpg\/character\/stats$/)) {
+            const alloc = body as Record<string, number>;
+            const spent = Object.values(alloc).reduce((s: number, v: number) => s + v, 0);
+            const updated = { ...mockCharacter };
+            for (const [stat, val] of Object.entries(alloc)) {
+                if (stat in updated.baseStats) {
+                    (updated.baseStats as unknown as Record<string, number>)[stat] += val;
+                    (updated.totalStats as unknown as Record<string, number>)[stat] += val;
+                }
+            }
+            updated.unspentPoints = Math.max(0, updated.unspentPoints - spent);
+            return this.ok(updated);
+        }
+
+        // POST /api/rpg/character/equip/:inventoryId
+        if (method === "POST" && lowerUrl.match(/\/api\/rpg\/character\/equip\//)) {
+            return this.ok(mockCharacter);
+        }
+
+        // DELETE /api/rpg/character/unequip/:slot
+        if (method === "DELETE" && lowerUrl.match(/\/api\/rpg\/character\/unequip\//)) {
+            return this.ok(mockCharacter);
+        }
+
+        // GET /api/rpg/equipment
+        if (method === "GET" && lowerUrl.match(/\/api\/rpg\/equipment$/)) {
+            const equipItems = mockShopItems
+                .filter((i) => i.isEquipment)
+                .map((item, idx) => ({
+                    inventoryId: `inv-eq-${String(idx + 1).padStart(3, "0")}`,
+                    quantity: 1,
+                    item: {
+                        id: item.id,
+                        name: item.name,
+                        description: item.description,
+                        imageUrl: item.imageUrl,
+                        icon: item.icon,
+                        category: item.category,
+                        equipmentSlot: item.equipmentSlot ?? null,
+                        statBonuses: item.statBonuses ?? null,
+                        requiredLevel: item.requiredLevel ?? null,
+                        rarity: item.rarity ?? null
+                    }
+                }));
+            return this.ok(equipItems);
+        }
+
+        // GET /api/rpg/quests/board
+        if (method === "GET" && lowerUrl.match(/\/api\/rpg\/quests\/board$/)) {
+            return this.ok(mockQuestBoard);
+        }
+
+        // POST /api/rpg/quests/claim/:userQuestId
+        const questClaimMatch = lowerUrl.match(/\/api\/rpg\/quests\/claim\/([^/]+)$/);
+        if (method === "POST" && questClaimMatch) {
+            const uqId = questClaimMatch[1];
+            const allQuests = [
+                ...mockQuestBoard.daily,
+                ...mockQuestBoard.weekly,
+                ...mockQuestBoard.monthly,
+                ...mockQuestBoard.story,
+                ...mockQuestBoard.events
+            ];
+            const uq = allQuests.find((q) => q.id === uqId);
+            if (uq) {
+                return this.ok({ ...uq, status: "claimed", claimedAt: new Date().toISOString() });
+            }
+            return this.error("Quest not found", 404);
+        }
+
+        // GET /api/hashtags/autocomplete?q=...
+        if (method === "GET" && lowerUrl.match(/\/api\/hashtags\/autocomplete/)) {
+            const q = new URL(url, "http://localhost").searchParams.get("q")?.toLowerCase() ?? "";
+            const results = mockHashtags.filter((h) => h.name.startsWith(q));
+            return this.ok(results.slice(0, 10));
+        }
+
+        // GET /api/hashtags/trending
+        if (method === "GET" && lowerUrl.match(/\/api\/hashtags\/trending$/)) {
+            return this.ok(mockHashtags);
+        }
+
+        // GET /api/hashtags/:tag
+        const hashtagSearchMatch = lowerUrl.match(/\/api\/hashtags\/([^/?]+)$/);
+        if (method === "GET" && hashtagSearchMatch) {
+            const tag = decodeURIComponent(hashtagSearchMatch[1]);
+            const result = mockHashtagSearchResults[tag as keyof typeof mockHashtagSearchResults];
+            if (result) return this.ok(result);
+            const ht = mockHashtags.find((h) => h.name === tag);
+            return this.ok(ht ? { hashtag: ht, results: [], total: 0 } : null);
+        }
+
         // GET /api/gamification/achievements/admin
         if (method === "GET" && lowerUrl.match(/\/api\/gamification\/achievements\/admin$/)) {
             return this.ok(Object.values(mockAchievements));
@@ -1847,6 +1970,12 @@ export class MockInterceptor implements HttpInterceptor {
         if (method === "PATCH" && notifReadMatch) {
             const notif = mockNotifications.find((n) => n.id === notifReadMatch[1]);
             if (notif) notif.isRead = true;
+            return this.ok({ success: true });
+        }
+
+        // DELETE /api/notifications  (delete all)
+        if (method === "DELETE" && /\/api\/notifications$/.test(url)) {
+            mockNotifications.length = 0;
             return this.ok({ success: true });
         }
 
@@ -2779,10 +2908,12 @@ export class MockInterceptor implements HttpInterceptor {
 
         // GET /api/marketplace/auctions/watchlist
         if (method === "GET" && /\/api\/marketplace\/auctions\/watchlist$/.test(url)) {
-            return this.ok(Object.values(mockAuctionWatches).filter((w) => {
-                const auction = mockAuctions[w.auctionId];
-                return auction !== undefined;
-            }));
+            return this.ok(
+                Object.values(mockAuctionWatches).filter((w) => {
+                    const auction = mockAuctions[w.auctionId];
+                    return auction !== undefined;
+                })
+            );
         }
 
         // POST /api/marketplace/auctions/:id/bids
@@ -2795,9 +2926,7 @@ export class MockInterceptor implements HttpInterceptor {
             const payload = body as { amount: number; maxAutoBid?: number | null } | null;
             if (!payload) return this.error("Fehlender Request-Body", 400);
 
-            const minBid = auction.bidCount === 0
-                ? auction.startPrice
-                : auction.currentPrice + auction.bidIncrement;
+            const minBid = auction.bidCount === 0 ? auction.startPrice : auction.currentPrice + auction.bidIncrement;
             if (payload.amount < minBid) {
                 return this.error(`Mindestgebot: ${minBid.toFixed(2)} ${auction.currency}`, 400);
             }

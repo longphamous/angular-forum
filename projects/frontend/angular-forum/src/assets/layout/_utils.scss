@@ -6,10 +6,14 @@
 }
 
 .card {
-    background: var(--surface-card);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
     padding: 2rem;
     margin-bottom: 2rem;
-    border-radius: var(--content-border-radius);
+    border-radius: var(--glass-radius);
 
     &:last-child {
         margin-bottom: 0;
@@ -21,6 +25,97 @@
 .grid > .card,
 [class*='gap-'] > .card {
     margin-bottom: 0;
+}
+
+/* ── Reusable glass utility classes ────────────────────────────────────────── */
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-subtle {
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+}
+
+/* ── PrimeNG component glass overrides ─────────────────────────────────────── */
+
+/* Dialog */
+.p-dialog {
+    background: var(--glass-bg-strong) !important;
+    backdrop-filter: blur(var(--glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Popover */
+.p-popover {
+    background: var(--glass-bg-strong) !important;
+    backdrop-filter: blur(var(--glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+/* DataTable */
+.p-datatable {
+    .p-datatable-header {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border-color: var(--glass-border);
+    }
+
+    .p-datatable-thead > tr > th {
+        background: var(--glass-bg-subtle);
+        border-color: var(--glass-border);
+    }
+
+    .p-datatable-tbody > tr {
+        background: transparent;
+
+        &:hover {
+            background: var(--glass-hover) !important;
+        }
+
+        > td {
+            border-color: var(--glass-border);
+        }
+    }
+
+    .p-datatable-footer {
+        background: var(--glass-bg-subtle);
+        border-color: var(--glass-border);
+    }
+}
+
+/* TabView / Tabs */
+.p-tablist {
+    background: transparent;
+}
+
+/* Card (PrimeNG component) */
+.p-card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 .p-toast {

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import {
@@ -11,6 +12,8 @@ import {
     UpdateMarketResourceDto
 } from "./dynamic-market.service";
 
+@ApiTags("Dynamic Market")
+@ApiBearerAuth("JWT")
 @Controller("gamification/market")
 export class DynamicMarketController {
     constructor(private readonly marketService: DynamicMarketService) {}

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import type { NotificationType } from "../../notifications/entities/notification.entity";
 import { NotificationsService } from "../../notifications/notifications.service";
 import { UserEntity } from "../../user/entities/user.entity";
 import { TicketEntity } from "../entities/ticket.entity";
@@ -51,11 +52,18 @@ export class TicketWatcherService {
         return this.watcherRepo.count({ where: { ticketId } });
     }
 
-    async notifyWatchers(ticketId: string, excludeUserId: string, title: string, message: string): Promise<void> {
+    async notifyWatchers(
+        ticketId: string,
+        excludeUserId: string,
+        type: NotificationType,
+        message: string,
+        link?: string
+    ): Promise<void> {
         const watchers = await this.watcherRepo.find({ where: { ticketId } });
+        const ticketLink = link ?? `/tickets/${ticketId}`;
         for (const watcher of watchers) {
             if (watcher.userId !== excludeUserId) {
-                void this.notificationsService.create(watcher.userId, "system", title, message, `/tickets/${ticketId}`);
+                void this.notificationsService.create(watcher.userId, type, "Ticket Update", message, ticketLink);
             }
         }
     }

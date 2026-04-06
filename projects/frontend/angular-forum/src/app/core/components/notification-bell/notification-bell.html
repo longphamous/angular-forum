@@ -29,15 +29,25 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-1 pb-2">
                 <span class="text-lg font-bold">{{ 'notifications.title' | transloco }}</span>
-                @if (notifService.unreadCount() > 0) {
-                <button
-                    class="text-primary cursor-pointer border-none bg-transparent p-0 text-xs font-medium hover:underline"
-                    (click)="markAllRead()"
-                    type="button"
-                >
-                    {{ 'notifications.markAllRead' | transloco }}
-                </button>
-                }
+                <div class="flex gap-3">
+                    @if (notifService.unreadCount() > 0) {
+                    <button
+                        class="text-primary cursor-pointer border-none bg-transparent p-0 text-xs font-medium hover:underline"
+                        (click)="markAllRead()"
+                        type="button"
+                    >
+                        {{ 'notifications.markAllRead' | transloco }}
+                    </button>
+                    } @if (notifService.notifications().length > 0) {
+                    <button
+                        class="cursor-pointer border-none bg-transparent p-0 text-xs font-medium text-red-500 hover:underline"
+                        (click)="deleteAll()"
+                        type="button"
+                    >
+                        {{ 'notifications.deleteAll' | transloco }}
+                    </button>
+                    }
+                </div>
             </div>
 
             <!-- Tabs -->

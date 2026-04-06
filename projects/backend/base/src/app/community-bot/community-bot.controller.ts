@@ -1,8 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CommunityBotService } from "./community-bot.service";
 import { CreateBotDto, UpdateBotDto } from "./dto/create-bot.dto";
 
+@ApiTags("Admin")
+@ApiBearerAuth("JWT")
 @Controller("community-bot")
 export class CommunityBotController {
     constructor(private readonly service: CommunityBotService) {}

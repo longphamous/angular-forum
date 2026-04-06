@@ -1,0 +1,476 @@
+<div class="p-4 sm:p-6 lg:p-8" *transloco="let t">
+    <div class="mx-auto max-w-5xl">
+        <!-- ── Header ──────────────────────────────────────────── -->
+        <div class="glass-panel-strong mb-6 rounded-2xl px-6 py-5">
+            <div class="flex items-center gap-3">
+                <i
+                    class="pi pi-shield text-3xl"
+                    style="
+                        background: var(--accent-gradient);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                    "
+                ></i>
+                <div>
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-extrabold tracking-tight">
+                        {{ t('rpg.title') }}
+                    </h1>
+                    <p class="text-surface-500 dark:text-surface-400 m-0 mt-0.5 text-sm">{{ t('rpg.subtitle') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Loading ─────────────────────────────────────────── -->
+        @if (facade.loading()) {
+        <div class="grid gap-4 md:grid-cols-3">
+            <div class="glass-panel rounded-2xl p-6 md:col-span-2">
+                <p-skeleton height="2rem" width="50%" />
+                <p-skeleton class="mt-4" height="1rem" width="100%" />
+                <p-skeleton class="mt-2" height="1rem" width="100%" />
+                <p-skeleton class="mt-2" height="1rem" width="100%" />
+            </div>
+            <div class="glass-panel rounded-2xl p-6">
+                <p-skeleton height="1.5rem" width="60%" />
+                @for (_ of [1,2,3,4]; track $index) {
+                <p-skeleton class="mt-3" height="3rem" width="100%" />
+                }
+            </div>
+        </div>
+        } @else if (facade.character(); as char) {
+
+        <!-- ── Character Info Bar ──────────────────────────── -->
+        <div class="glass-panel-strong mb-4 flex flex-wrap items-center gap-4 rounded-2xl px-6 py-4">
+            <!-- Name & Class -->
+            <div class="flex items-center gap-3">
+                <div
+                    class="flex h-12 w-12 items-center justify-center rounded-xl"
+                    style="background: var(--accent-gradient)"
+                >
+                    <i class="{{ classConfig[char.characterClass].icon }} text-xl text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-surface-900 dark:text-surface-0 m-0 text-lg font-bold">{{ char.name }}</h2>
+                    <div class="class-badge">
+                        <i
+                            class="{{ classConfig[char.characterClass].icon }} {{ classConfig[char.characterClass].color }}"
+                        ></i>
+                        {{ t(classConfig[char.characterClass].labelKey) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level -->
+            <div class="ml-auto flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-surface-500 dark:text-surface-400 text-xs">Level</div>
+                    <div class="text-surface-900 dark:text-surface-0 text-2xl font-black">{{ char.level }}</div>
+                </div>
+                @if (char.unspentPoints > 0) {
+                <p-tag
+                    [value]="char.unspentPoints + ' ' + t('rpg.pointsAvailable')"
+                    icon="pi pi-arrow-up"
+                    severity="warn"
+                />
+                }
+                <p-button
+                    [label]="t('nav.quests')"
+                    [outlined]="true"
+                    icon="pi pi-map"
+                    routerLink="/rpg/quests"
+                    severity="secondary"
+                    size="small"
+                />
+                <p-button
+                    (onClick)="showCreate.set(true)"
+                    [pTooltip]="t('rpg.editCharacter')"
+                    [rounded]="true"
+                    [text]="true"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                />
+            </div>
+        </div>
+
+        <!-- ── Main grid: Stats + Equipment ────────────────── -->
+        <div class="grid gap-4 md:grid-cols-3">
+            <!-- ── Stats Panel (2/3 width) ──────────────────── -->
+            <div class="glass-panel rounded-2xl p-5 md:col-span-2">
+                <h3
+                    class="text-surface-500 dark:text-surface-400 m-0 mb-4 flex items-center gap-2 text-sm font-semibold tracking-wider uppercase"
+                >
+                    <i class="pi pi-chart-bar"></i>
+                    {{ t('rpg.attributes') }}
+                </h3>
+
+                <div class="flex flex-col gap-3">
+                    @for (stat of statNames; track stat) {
+                    <div class="flex items-center gap-3">
+                        <!-- Icon -->
+                        <div
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                            style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border)"
+                        >
+                            <i
+                                class="{{ statConfig[stat].icon }} {{ statConfig[stat].color }}"
+                                style="font-size: 0.875rem"
+                            ></i>
+                        </div>
+
+                        <!-- Label & values -->
+                        <div class="w-20 shrink-0">
+                            <div class="text-surface-700 dark:text-surface-200 text-xs font-semibold">
+                                {{ t(statConfig[stat].labelKey) }}
+                            </div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-surface-900 dark:text-surface-0 text-sm font-bold">
+                                    {{ char.totalStats[stat] }}
+                                </span>
+                                @if (char.equipmentBonuses[stat] > 0) {
+                                <span class="text-xs font-semibold text-green-500"
+                                    >+{{ char.equipmentBonuses[stat] }}</span
+                                >
+                                } @if (pendingPoints()[stat] > 0) {
+                                <span class="text-xs font-bold text-amber-500">+{{ pendingPoints()[stat] }}</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Bar -->
+                        <div class="stat-bar-track flex-1">
+                            <div
+                                class="stat-bar-fill"
+                                [style.background]="statBarColor(stat)"
+                                [style.width.%]="statPercent(char.totalStats[stat] + pendingPoints()[stat])"
+                            ></div>
+                        </div>
+
+                        <!-- Point allocation buttons (if points available) -->
+                        @if (char.unspentPoints > 0) {
+                        <div class="flex items-center gap-1">
+                            <button
+                                class="point-btn"
+                                (click)="removePoint(stat)"
+                                [disabled]="pendingPoints()[stat] <= 0"
+                            >
+                                −
+                            </button>
+                            <button class="point-btn" (click)="addPoint(stat)" [disabled]="remainingPoints() <= 0">
+                                +
+                            </button>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+
+                <!-- Commit button -->
+                @if (totalPending() > 0) {
+                <div
+                    class="mt-4 flex items-center justify-between rounded-xl p-3"
+                    style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border)"
+                >
+                    <span class="text-surface-600 dark:text-surface-300 text-sm">
+                        {{ totalPending() }} {{ t('rpg.pointsAllocated') }} · {{ remainingPoints() }} {{
+                        t('rpg.remaining') }}
+                    </span>
+                    <p-button
+                        (onClick)="commitPoints()"
+                        [label]="t('rpg.confirmPoints')"
+                        icon="pi pi-check"
+                        size="small"
+                    />
+                </div>
+                }
+            </div>
+
+            <!-- ── Equipment Panel (1/3 width) ──────────────── -->
+            <div class="glass-panel rounded-2xl p-5">
+                <h3
+                    class="text-surface-500 dark:text-surface-400 m-0 mb-4 flex items-center gap-2 text-sm font-semibold tracking-wider uppercase"
+                >
+                    <i class="pi pi-box"></i>
+                    {{ t('rpg.equipment') }}
+                </h3>
+
+                <div class="flex flex-col gap-2">
+                    @for (slot of equipmentSlots; track slot) { @let equipped = getEquipped(slot);
+                    <div
+                        class="equip-slot {{ slotDropClass(slot) }}"
+                        (click)="!equipped && openInventoryForSlot(slot)"
+                        (dragleave)="onSlotDragLeave()"
+                        (dragover)="onSlotDragOver($event, slot)"
+                        (drop)="onSlotDrop($event, slot)"
+                        [style.cursor]="equipped ? 'default' : 'pointer'"
+                    >
+                        @if (equipped) {
+                        <div
+                            class="equip-slot-icon {{ rarityClass(equipped.item.rarity) }}"
+                            style="background: var(--glass-bg); border: 1px solid var(--glass-border)"
+                        >
+                            @if (equipped.item.icon) {
+                            <i class="{{ equipped.item.icon }}"></i>
+                            } @else {
+                            <i class="{{ slotConfig[slot].icon }}"></i>
+                            }
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="truncate text-sm font-semibold {{ rarityClass(equipped.item.rarity) }}">
+                                {{ equipped.item.name }}
+                            </div>
+                            @if (equipped.item.statBonuses) {
+                            <div class="text-surface-500 flex flex-wrap gap-1 text-xs">
+                                @for (entry of equipped.item.statBonuses | keyvalue; track entry.key) {
+                                <span class="text-green-500">+{{ entry.value }} {{ entry.key }}</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <button
+                            class="point-btn"
+                            (click)="unequip(slot); $event.stopPropagation()"
+                            [pTooltip]="t('rpg.unequip')"
+                        >
+                            ×
+                        </button>
+                        } @else {
+                        <div class="equip-slot-icon equip-slot-empty">
+                            <i class="{{ slotConfig[slot].icon }}"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-surface-400 dark:text-surface-500 text-xs">
+                                {{ t(slotConfig[slot].labelKey) }}
+                            </div>
+                            <div class="text-surface-300 dark:text-surface-600 text-xs italic">
+                                {{ t('rpg.clickToEquip') }}
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-4 flex flex-col gap-2">
+                    <p-button
+                        (onClick)="openFullInventory()"
+                        [label]="t('rpg.inventory')"
+                        [outlined]="true"
+                        icon="pi pi-box"
+                        severity="secondary"
+                        size="small"
+                        styleClass="w-full"
+                    />
+                    <p-button
+                        [label]="t('rpg.visitShop')"
+                        [outlined]="true"
+                        icon="pi pi-shopping-bag"
+                        routerLink="/shop"
+                        severity="secondary"
+                        size="small"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+        </div>
+
+        } @else {
+        <!-- ── No character – Create prompt ────────────────── -->
+        <div class="glass-panel rounded-2xl p-12 text-center">
+            <i class="pi pi-shield text-surface-300 dark:text-surface-600 mb-4 text-6xl"></i>
+            <h2 class="text-surface-800 dark:text-surface-100 m-0 mb-2 text-xl font-bold">
+                {{ t('rpg.noCharacter') }}
+            </h2>
+            <p class="text-surface-500 dark:text-surface-400 m-0 mb-4">{{ t('rpg.noCharacterDesc') }}</p>
+            <p-button (onClick)="showCreate.set(true)" [label]="t('rpg.createCharacter')" icon="pi pi-plus" />
+        </div>
+        }
+
+        <!-- ── Inventory Panel ──────────────────────────────────── -->
+        @if (showInventory()) {
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center"
+            (click)="showInventory.set(false)"
+            style="background: rgba(0, 0, 0, 0.4)"
+        >
+            <div class="glass-panel-strong mx-4 w-full max-w-lg rounded-2xl p-6" (click)="$event.stopPropagation()">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="text-surface-900 dark:text-surface-0 m-0 flex items-center gap-2 text-lg font-bold">
+                        <i class="pi pi-box"></i>
+                        {{ t('rpg.inventory') }} @if (selectedSlot()) {
+                        <span
+                            class="bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-400 rounded-md px-2 py-0.5 text-xs font-normal"
+                        >
+                            {{ t('rpg.slots.' + selectedSlot()) }}
+                        </span>
+                        }
+                    </h2>
+                    <button class="point-btn" (click)="showInventory.set(false)">×</button>
+                </div>
+
+                <!-- Slot filter tabs -->
+                <div class="mb-4 flex flex-wrap gap-1.5">
+                    <button
+                        class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+                        (click)="selectedSlot.set(null)"
+                        [style.background]="selectedSlot() === null ? 'var(--primary-color)' : 'var(--glass-bg-subtle)'"
+                        [style.border]="'1px solid ' + (selectedSlot() === null ? 'var(--primary-color)' : 'var(--glass-border)')"
+                        [style.color]="selectedSlot() === null ? 'white' : 'var(--text-color)'"
+                    >
+                        {{ t('shop.allCategories') }}
+                    </button>
+                    @for (slot of equipmentSlots; track slot) {
+                    <button
+                        class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+                        (click)="selectedSlot.set(slot)"
+                        [style.background]="selectedSlot() === slot ? 'var(--primary-color)' : 'var(--glass-bg-subtle)'"
+                        [style.border]="'1px solid ' + (selectedSlot() === slot ? 'var(--primary-color)' : 'var(--glass-border)')"
+                        [style.color]="selectedSlot() === slot ? 'white' : 'var(--text-color)'"
+                    >
+                        {{ t('rpg.slots.' + slot) }}
+                    </button>
+                    }
+                </div>
+
+                <!-- Drag hint -->
+                <div
+                    class="text-surface-400 dark:text-surface-500 mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
+                    style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border)"
+                >
+                    <i class="pi pi-arrows-alt" style="font-size: 0.7rem"></i>
+                    {{ t('rpg.dragHint') }}
+                </div>
+
+                <!-- Item list -->
+                <div class="flex max-h-80 flex-col gap-2 overflow-y-auto">
+                    @if (inventoryForSlot().length === 0) {
+                    <div class="py-8 text-center">
+                        <i class="pi pi-inbox text-surface-300 dark:text-surface-600 mb-2 text-3xl"></i>
+                        <p class="text-surface-500 dark:text-surface-400 m-0 text-sm">{{ t('rpg.inventoryEmpty') }}</p>
+                        <p-button
+                            class="mt-3"
+                            (onClick)="showInventory.set(false)"
+                            [label]="t('rpg.visitShop')"
+                            [outlined]="true"
+                            icon="pi pi-shopping-bag"
+                            routerLink="/shop"
+                            severity="secondary"
+                            size="small"
+                        />
+                    </div>
+                    } @for (invItem of inventoryForSlot(); track invItem.inventoryId) { @let equipped =
+                    isEquippedItem(invItem);
+                    <div
+                        class="flex items-center gap-3 rounded-xl p-3 transition-all"
+                        (dragend)="onDragEnd()"
+                        (dragstart)="onDragStart($event, invItem)"
+                        [class.inv-draggable]="!equipped"
+                        [class.inv-dragging]="draggingItem()?.inventoryId === invItem.inventoryId"
+                        [draggable]="!equipped"
+                        [style.background]="equipped ? 'var(--glass-accent-soft)' : 'var(--glass-bg-subtle)'"
+                        [style.border]="'1px solid ' + (equipped ? 'var(--primary-color)' : 'var(--glass-border)')"
+                    >
+                        <!-- Item icon -->
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {{ rarityClass(invItem.item.rarity) }}"
+                            style="background: var(--glass-bg); border: 1px solid var(--glass-border)"
+                        >
+                            <i class="{{ invItem.item.icon ?? 'pi pi-star' }}"></i>
+                        </div>
+
+                        <!-- Item info -->
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="truncate text-sm font-semibold {{ rarityClass(invItem.item.rarity) }}">
+                                    {{ invItem.item.name }}
+                                </span>
+                                @if (invItem.item.rarity) {
+                                <span class="text-xs {{ rarityClass(invItem.item.rarity) }}"
+                                    >{{ t('shop.rarity.' + invItem.item.rarity) }}</span
+                                >
+                                }
+                            </div>
+                            @if (invItem.item.statBonuses) {
+                            <div class="flex flex-wrap gap-1 text-xs">
+                                @for (entry of invItem.item.statBonuses | keyvalue; track entry.key) {
+                                <span class="text-green-500">+{{ entry.value }} {{ t('rpg.stats.' + entry.key) }}</span>
+                                }
+                            </div>
+                            } @if (invItem.item.requiredLevel && invItem.item.requiredLevel > 1) {
+                            <div class="text-surface-400 mt-0.5 text-xs">
+                                {{ t('shop.requiredLevel', { level: invItem.item.requiredLevel }) }}
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Equip / Equipped button -->
+                        @if (equipped) {
+                        <p-tag [value]="t('rpg.equipped')" icon="pi pi-check" severity="success" styleClass="text-xs" />
+                        } @else {
+                        <p-button
+                            (onClick)="equipFromInventory(invItem)"
+                            [label]="t('rpg.equip')"
+                            icon="pi pi-arrow-right"
+                            size="small"
+                        />
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- ── Create / Edit Character Dialog (inline panel) ──── -->
+        @if (showCreate()) {
+        <div
+            class="glass-panel-strong fixed inset-0 z-50 flex items-center justify-center"
+            style="background: rgba(0, 0, 0, 0.4)"
+        >
+            <div class="glass-panel-strong mx-4 w-full max-w-md rounded-2xl p-6">
+                <h2 class="text-surface-900 dark:text-surface-0 m-0 mb-4 text-lg font-bold">
+                    {{ t('rpg.createCharacter') }}
+                </h2>
+
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium">{{ t('rpg.characterName') }}</label>
+                        <input class="w-full" [(ngModel)]="charName" maxlength="50" pInputText />
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-sm font-medium">{{ t('rpg.characterClass') }}</label>
+                        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            @for (cls of classOptions; track cls) {
+                            <button
+                                class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                                (click)="charClass = cls"
+                                [style.background]="charClass === cls ? 'var(--glass-bg)' : 'transparent'"
+                                [style.border]="charClass === cls ? '2px solid var(--primary-color)' : '2px solid var(--glass-border)'"
+                                type="button"
+                            >
+                                <i class="{{ classConfig[cls].icon }} {{ classConfig[cls].color }}"></i>
+                                {{ t(classConfig[cls].labelKey) }}
+                            </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <p-button
+                        (onClick)="showCreate.set(false)"
+                        [label]="t('common.cancel')"
+                        [text]="true"
+                        severity="secondary"
+                    />
+                    <p-button
+                        (onClick)="createCharacter()"
+                        [disabled]="!charName.trim()"
+                        [label]="t('common.save')"
+                        icon="pi pi-check"
+                    />
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>

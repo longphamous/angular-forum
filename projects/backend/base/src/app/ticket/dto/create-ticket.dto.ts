@@ -20,8 +20,8 @@ export class CreateTicketDto {
     title!: string;
 
     @IsString()
-    @IsNotEmpty()
-    description!: string;
+    @IsOptional()
+    description?: string;
 
     @IsEnum(["low", "normal", "high", "critical"])
     @IsOptional()

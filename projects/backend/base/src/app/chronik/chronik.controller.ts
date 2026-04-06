@@ -11,6 +11,7 @@ import {
     Query,
     UseGuards
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -19,6 +20,8 @@ import { ChronikService } from "./chronik.service";
 import { CreateCommentDto, CreateEntryDto } from "./dto/chronik.dto";
 import { ChronikCommentDto, ChronikEntryDto, ChronikProfileStats } from "./models/chronik.model";
 
+@ApiTags("Chronik")
+@ApiBearerAuth("JWT")
 @Controller("api/chronik")
 @UseGuards(JwtAuthGuard)
 export class ChronikController {

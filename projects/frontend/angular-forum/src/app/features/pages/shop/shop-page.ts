@@ -121,14 +121,23 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
                         <div
                             class="bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700 flex flex-col overflow-hidden rounded-xl border transition-shadow hover:shadow-lg"
                         >
-                            <!-- Image -->
+                            <!-- Image / Icon area -->
                             @if (item.imageUrl) {
                                 <div class="h-36 overflow-hidden">
                                     <img class="h-full w-full object-cover" [alt]="item.name" [src]="item.imageUrl" />
                                 </div>
                             } @else {
-                                <div class="bg-primary/10 flex h-36 items-center justify-center">
-                                    <i [class]="'text-primary text-4xl ' + (item.icon || 'pi pi-star')"></i>
+                                <div
+                                    class="flex h-36 items-center justify-center"
+                                    [class]="item.isEquipment ? rarityBgClass(item.rarity) : 'bg-primary/10'"
+                                >
+                                    <i
+                                        [class]="
+                                            (item.isEquipment ? rarityIconClass(item.rarity) : 'text-primary') +
+                                            ' text-4xl ' +
+                                            (item.icon || 'pi pi-star')
+                                        "
+                                    ></i>
                                 </div>
                             }
 
@@ -137,31 +146,77 @@ import { AdminQuicklink } from "../../../shared/components/admin-quicklink/admin
                                 <div class="flex items-start justify-between gap-2">
                                     <div>
                                         <h3
-                                            class="text-surface-900 dark:text-surface-0 text-sm leading-snug font-semibold"
+                                            class="text-sm leading-snug font-semibold"
+                                            [class]="
+                                                item.isEquipment
+                                                    ? rarityTextClass(item.rarity)
+                                                    : 'text-surface-900 dark:text-surface-0'
+                                            "
                                         >
                                             {{ item.name }}
                                         </h3>
-                                        @if (item.category) {
-                                            <span class="text-surface-400 text-xs">{{ item.category }}</span>
+                                        <div class="flex items-center gap-1.5">
+                                            @if (item.category) {
+                                                <span class="text-surface-400 text-xs">{{ item.category }}</span>
+                                            }
+                                            @if (item.isEquipment && item.rarity) {
+                                                <span
+                                                    class="text-xs font-semibold"
+                                                    [class]="rarityTextClass(item.rarity)"
+                                                    >· {{ t("shop.rarity." + item.rarity) }}</span
+                                                >
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col items-end gap-1">
+                                        @if (item.stock !== null) {
+                                            <p-tag
+                                                [severity]="
+                                                    item.stock > 5 ? 'success' : item.stock > 0 ? 'warn' : 'danger'
+                                                "
+                                                [value]="
+                                                    item.stock === 0
+                                                        ? t('shop.outOfStock')
+                                                        : t('shop.inStock', { count: item.stock })
+                                                "
+                                                styleClass="text-xs whitespace-nowrap"
+                                            />
+                                        }
+                                        @if (item.isEquipment && item.equipmentSlot) {
+                                            <span
+                                                class="bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-400 rounded-md px-1.5 py-0.5 text-xs"
+                                            >
+                                                {{ t("rpg.slots." + item.equipmentSlot) }}
+                                            </span>
                                         }
                                     </div>
-                                    @if (item.stock !== null) {
-                                        <p-tag
-                                            [severity]="item.stock > 5 ? 'success' : item.stock > 0 ? 'warn' : 'danger'"
-                                            [value]="
-                                                item.stock === 0
-                                                    ? t('shop.outOfStock')
-                                                    : t('shop.inStock', { count: item.stock })
-                                            "
-                                            styleClass="text-xs whitespace-nowrap"
-                                        />
-                                    }
                                 </div>
 
                                 @if (item.description) {
                                     <p class="text-surface-500 dark:text-surface-400 flex-1 text-xs leading-relaxed">
                                         {{ item.description }}
                                     </p>
+                                }
+
+                                <!-- Stat bonuses for equipment -->
+                                @if (item.isEquipment && item.statBonuses) {
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @for (stat of objectEntries(item.statBonuses); track stat[0]) {
+                                            <span
+                                                class="rounded-md bg-green-500/10 px-2 py-0.5 text-xs font-semibold text-green-600 dark:text-green-400"
+                                            >
+                                                +{{ stat[1] }} {{ t("rpg.stats." + stat[0]) }}
+                                            </span>
+                                        }
+                                    </div>
+                                }
+
+                                <!-- Required level -->
+                                @if (item.isEquipment && item.requiredLevel && item.requiredLevel > 1) {
+                                    <div class="text-surface-400 dark:text-surface-500 flex items-center gap-1 text-xs">
+                                        <i class="pi pi-lock" style="font-size: 0.6rem"></i>
+                                        {{ t("shop.requiredLevel", { level: item.requiredLevel }) }}
+                                    </div>
                                 }
 
                                 <div
@@ -294,6 +349,55 @@ export class ShopPage implements OnInit {
                 this.purchaseError.set(err?.error?.message ?? this.translocoService.translate("shop.purchaseFailed"));
             }
         });
+    }
+
+    protected objectEntries(obj: Record<string, number>): [string, number][] {
+        return Object.entries(obj);
+    }
+
+    protected rarityTextClass(rarity?: string | null): string {
+        switch (rarity) {
+            case "uncommon":
+                return "text-green-500";
+            case "rare":
+                return "text-blue-500";
+            case "epic":
+                return "text-purple-500";
+            case "legendary":
+                return "text-amber-500";
+            default:
+                return "text-surface-900 dark:text-surface-0";
+        }
+    }
+
+    protected rarityBgClass(rarity?: string | null): string {
+        switch (rarity) {
+            case "uncommon":
+                return "bg-green-500/10";
+            case "rare":
+                return "bg-blue-500/10";
+            case "epic":
+                return "bg-purple-500/10";
+            case "legendary":
+                return "bg-amber-500/10";
+            default:
+                return "bg-surface-100 dark:bg-surface-800";
+        }
+    }
+
+    protected rarityIconClass(rarity?: string | null): string {
+        switch (rarity) {
+            case "uncommon":
+                return "text-green-500";
+            case "rare":
+                return "text-blue-500";
+            case "epic":
+                return "text-purple-500";
+            case "legendary":
+                return "text-amber-500";
+            default:
+                return "text-surface-400";
+        }
     }
 
     private load(): void {

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { BacklogReorderDto } from "../dto/backlog-reorder.dto";
 import { CreateSprintDto } from "../dto/create-sprint.dto";
@@ -6,6 +7,8 @@ import { UpdateSprintDto } from "../dto/update-sprint.dto";
 import type { PaginatedResult, SprintDto, TicketDto } from "../models/ticket.model";
 import { TicketSprintService } from "../services/ticket-sprint.service";
 
+@ApiTags("Tickets")
+@ApiBearerAuth("JWT")
 @Controller("tickets/sprints")
 export class TicketSprintController {
     constructor(private readonly sprintService: TicketSprintService) {}

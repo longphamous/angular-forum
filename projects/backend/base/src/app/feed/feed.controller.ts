@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -12,6 +13,8 @@ import {
     UpdateFeaturedDto
 } from "./models/feed.model";
 
+@ApiTags("Feed")
+@ApiBearerAuth("JWT")
 @Controller("feed")
 export class FeedController {
     constructor(private readonly feedService: FeedService) {}

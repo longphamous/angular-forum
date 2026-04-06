@@ -215,6 +215,17 @@ export class AdminTickets implements OnInit {
     readonly wfEditName = signal("");
     readonly wfEditStatuses = signal<WorkflowStatusInput[]>([]);
 
+    openCreateWorkflowDialog(): void {
+        this.wfEditId.set("");
+        this.wfEditName.set("");
+        this.wfEditStatuses.set([
+            { name: "To Do", slug: "todo", color: "#6B7280", category: "todo", position: 0 },
+            { name: "In Progress", slug: "in_progress", color: "#3B82F6", category: "in_progress", position: 1 },
+            { name: "Done", slug: "done", color: "#10B981", category: "done", position: 2 }
+        ]);
+        this.wfDialogVisible.set(true);
+    }
+
     openEditWorkflowDialog(wf: Workflow): void {
         this.wfEditId.set(wf.id);
         this.wfEditName.set(wf.name);
@@ -263,7 +274,18 @@ export class AdminTickets implements OnInit {
 
     saveWorkflow(): void {
         const statuses = this.wfEditStatuses().map((s, i) => ({ ...s, position: i }));
-        this.facade.updateWorkflow(this.wfEditId(), { name: this.wfEditName(), statuses }).subscribe({
+        const id = this.wfEditId();
+
+        const op = id
+            ? this.facade.updateWorkflow(id, { name: this.wfEditName(), statuses })
+            : this.facade.createWorkflow({
+                  name: this.wfEditName(),
+                  isDefault: false,
+                  statuses,
+                  transitions: []
+              });
+
+        op.subscribe({
             next: () => {
                 this.wfDialogVisible.set(false);
                 this.facade.loadWorkflows();

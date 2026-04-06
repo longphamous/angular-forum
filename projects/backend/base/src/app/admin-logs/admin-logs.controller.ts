@@ -1,10 +1,13 @@
 import { Controller, Delete, Get, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../auth/auth.decorators";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { AdminLogsService, LogFilter } from "./admin-logs.service";
 import type { LogCategory, LogLevel } from "./entities/admin-log.entity";
 
+@ApiTags("Admin")
+@ApiBearerAuth("JWT")
 @Controller("admin/logs")
 @UseGuards(RolesGuard)
 @Roles("admin")

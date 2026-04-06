@@ -247,11 +247,18 @@
                 <!-- Workflows -->
                 <p-tabpanel value="3">
                     <div class="p-4">
-                        <div class="mb-4 flex justify-end">
+                        <div class="mb-4 flex justify-end gap-2">
+                            <p-button
+                                (onClick)="openCreateWorkflowDialog()"
+                                [label]="t('tickets.workflow.createNew')"
+                                icon="pi pi-plus"
+                                size="small"
+                            />
                             <p-button
                                 (onClick)="seedDefaultWorkflow()"
                                 [label]="t('tickets.workflow.createDefault')"
-                                icon="pi pi-plus"
+                                icon="pi pi-bolt"
+                                severity="secondary"
                                 size="small"
                             />
                         </div>
@@ -493,11 +500,11 @@
         </ng-template>
     </p-dialog>
 
-    <!-- Edit Workflow Dialog -->
+    <!-- Workflow Dialog (Create / Edit) -->
     <p-dialog
         [(visible)]="wfDialogVisible"
         [contentStyle]="{ overflow: 'visible' }"
-        [header]="t('tickets.workflow.title') + ': ' + wfEditName()"
+        [header]="wfEditId() ? t('tickets.workflow.title') + ': ' + wfEditName() : t('tickets.workflow.createNew')"
         [modal]="true"
         [style]="{ width: '600px' }"
     >

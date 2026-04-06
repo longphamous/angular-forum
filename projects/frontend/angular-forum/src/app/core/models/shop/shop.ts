@@ -10,6 +10,11 @@ export interface ShopItem {
     stock: number | null;
     maxPerUser: number | null;
     sortOrder: number;
+    isEquipment?: boolean;
+    equipmentSlot?: string | null;
+    statBonuses?: Record<string, number> | null;
+    requiredLevel?: number | null;
+    rarity?: string | null;
     createdAt: string;
     updatedAt: string;
 }

@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CreateFeaturedItemDto } from "./dto/create-featured-item.dto";
 import { FeaturedSection } from "./entities/featured-item.entity";
 import { FeaturedItemDto, FeaturedService } from "./featured.service";
 
+@ApiTags("Admin")
+@ApiBearerAuth("JWT")
 @Controller("featured")
 export class FeaturedController {
     constructor(private readonly featuredService: FeaturedService) {}

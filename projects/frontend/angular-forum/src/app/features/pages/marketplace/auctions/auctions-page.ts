@@ -72,7 +72,9 @@ export class AuctionsPage implements OnInit {
             page: this.currentPage,
             limit: this.pageSize,
             categoryId: this.selectedCategoryId() ?? undefined,
-            sort: (this.selectedSort() as "ending-soon" | "newly-listed" | "price-asc" | "price-desc" | "most-bids") ?? undefined,
+            sort:
+                (this.selectedSort() as "ending-soon" | "newly-listed" | "price-asc" | "price-desc" | "most-bids") ??
+                undefined,
             search: this.searchQuery || undefined
         });
     }

@@ -49,32 +49,50 @@
 
                     <!-- Rest of leaderboard -->
                     @if (facade.leaderboard().length > 3) {
-                    <div class="mx-auto max-w-3xl overflow-hidden rounded-xl border border-amber-200/20 dark:border-amber-800/20">
+                    <div
+                        class="mx-auto max-w-3xl overflow-hidden rounded-xl border border-amber-200/20 dark:border-amber-800/20"
+                    >
                         @for (poster of facade.leaderboard().slice(3); track poster.userId; let i = $index) {
-                        <div class="flex items-center gap-4 border-b border-amber-100/30 p-4 transition-colors last:border-b-0 hover:bg-amber-50/50 dark:border-amber-900/20 dark:hover:bg-amber-950/20">
-                            <span class="w-8 text-center font-mono text-lg font-bold text-amber-600/60 dark:text-amber-500/50">{{ i + 4 }}</span>
+                        <div
+                            class="flex items-center gap-4 border-b border-amber-100/30 p-4 transition-colors last:border-b-0 hover:bg-amber-50/50 dark:border-amber-900/20 dark:hover:bg-amber-950/20"
+                        >
+                            <span
+                                class="w-8 text-center font-mono text-lg font-bold text-amber-600/60 dark:text-amber-500/50"
+                                >{{ i + 4 }}</span
+                            >
                             @if (poster.avatarUrl) {
-                            <img class="h-10 w-10 rounded-full border-2 border-amber-300/30 object-cover dark:border-amber-700/30" [alt]="poster.displayName" [src]="poster.avatarUrl" />
+                            <img
+                                class="h-10 w-10 rounded-full border-2 border-amber-300/30 object-cover dark:border-amber-700/30"
+                                [alt]="poster.displayName"
+                                [src]="poster.avatarUrl"
+                            />
                             } @else {
-                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-200/30 font-bold text-amber-800 dark:bg-amber-800/30 dark:text-amber-300">
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-200/30 font-bold text-amber-800 dark:bg-amber-800/30 dark:text-amber-300"
+                            >
                                 {{ poster.displayName.charAt(0) }}
                             </div>
                             }
                             <div class="flex-1">
-                                <a class="font-semibold text-amber-900 hover:underline dark:text-amber-100" [routerLink]="['/users', poster.userId]">{{ poster.displayName }}</a>
-                                <div class="text-xs italic text-amber-600/50 dark:text-amber-500/50">"{{ poster.epithet }}"</div>
+                                <a
+                                    class="font-semibold text-amber-900 hover:underline dark:text-amber-100"
+                                    [routerLink]="['/users', poster.userId]"
+                                    >{{ poster.displayName }}</a
+                                >
+                                <div class="text-xs text-amber-600/50 italic dark:text-amber-500/50">
+                                    "{{ poster.epithet }}"
+                                </div>
                             </div>
                             <div class="text-right">
                                 <div class="font-mono text-lg font-bold text-amber-900 dark:text-amber-200">
-                                    <span class="text-sm text-amber-500/50 line-through">B</span> {{ poster.bounty | number }}
+                                    <span class="text-sm text-amber-500/50 line-through">B</span> {{ poster.bounty |
+                                    number }}
                                 </div>
                             </div>
                         </div>
                         }
                     </div>
-                    }
-
-                    } @else {
+                    } } @else {
                     <div class="rounded-xl border border-amber-200/20 p-12 text-center dark:border-amber-800/20">
                         <i class="pi pi-flag mb-3 text-4xl text-amber-400/30"></i>
                         <p class="text-amber-600/50 dark:text-amber-500/40">{{ t('bounty.noBounties') }}</p>
@@ -91,11 +109,17 @@
                         <wanted-poster [poster]="my" />
 
                         <!-- Breakdown -->
-                        <div class="grid max-w-xl grid-cols-4 gap-3 rounded-xl border border-amber-200/30 bg-amber-950/5 p-5 dark:border-amber-700/20 dark:bg-amber-950/20">
+                        <div
+                            class="grid max-w-xl grid-cols-4 gap-3 rounded-xl border border-amber-200/30 bg-amber-950/5 p-5 dark:border-amber-700/20 dark:bg-amber-950/20"
+                        >
                             @for (factor of breakdownFactors(my); track factor.key) {
                             <div class="text-center">
-                                <div class="text-xs text-amber-700/60 dark:text-amber-400/60">{{ t(factor.labelKey) }}</div>
-                                <div class="text-sm font-bold text-amber-900 dark:text-amber-200">{{ formatBounty(factor.value) }}</div>
+                                <div class="text-xs text-amber-700/60 dark:text-amber-400/60">
+                                    {{ t(factor.labelKey) }}
+                                </div>
+                                <div class="text-sm font-bold text-amber-900 dark:text-amber-200">
+                                    {{ formatBounty(factor.value) }}
+                                </div>
                             </div>
                             }
                         </div>

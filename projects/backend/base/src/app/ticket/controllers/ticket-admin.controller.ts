@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../../auth/auth.decorators";
 import { CurrentUser } from "../../auth/current-user.decorator";
@@ -27,6 +28,8 @@ import { TicketCustomFieldService } from "../services/ticket-custom-field.servic
 import { TicketProjectMemberService } from "../services/ticket-project-member.service";
 import { TicketWorkflowService } from "../services/ticket-workflow.service";
 
+@ApiTags("Tickets")
+@ApiBearerAuth("JWT")
 @Roles("admin")
 @Controller("tickets/admin")
 export class TicketAdminController {

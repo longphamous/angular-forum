@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -12,6 +13,8 @@ import {
     UpdateClipDto
 } from "./clips.service";
 
+@ApiTags("Clips")
+@ApiBearerAuth("JWT")
 @Controller("clips")
 export class ClipsController {
     constructor(private readonly clipsService: ClipsService) {}

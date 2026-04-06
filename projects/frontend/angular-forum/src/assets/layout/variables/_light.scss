@@ -2,4 +2,18 @@
     --surface-ground: var(--p-surface-100);
     --code-background: var(--p-surface-900);
     --code-color: var(--p-surface-200);
+
+    // ── Glassmorphism – light ─────────────────────────────────────────────
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-bg-strong: rgba(255, 255, 255, 0.85);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    --glass-hover: rgba(255, 255, 255, 0.55);
+    --glass-accent-soft: rgba(99, 102, 241, 0.06);
+    --glass-page-bg:
+        radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, color-mix(in srgb, var(--primary-color) 5%, transparent) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--primary-color) 3%, transparent) 0%, transparent 70%),
+        var(--surface-ground);
 }

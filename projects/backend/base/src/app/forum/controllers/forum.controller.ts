@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import { CreateForumDto } from "../dto/create-forum.dto";
@@ -7,6 +8,8 @@ import { UpdateForumDto } from "../dto/update-forum.dto";
 import { ForumDetailDto, ForumDto, PaginatedResult } from "../models/forum.model";
 import { ForumService } from "../services/forum.service";
 
+@ApiTags("Forum")
+@ApiBearerAuth("JWT")
 @Controller("forum")
 export class ForumController {
     constructor(private readonly forumService: ForumService) {}

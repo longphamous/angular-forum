@@ -34,11 +34,11 @@ import type { WantedPoster } from "../../models/gamification/bounty";
                     <!-- Photo area -->
                     <div class="poster-photo">
                         @if (poster().avatarUrl) {
-                        <img class="poster-avatar" [alt]="poster().displayName" [src]="poster().avatarUrl" />
+                            <img class="poster-avatar" [alt]="poster().displayName" [src]="poster().avatarUrl" />
                         } @else {
-                        <div class="poster-avatar-placeholder">
-                            <span>{{ initials(poster().displayName) }}</span>
-                        </div>
+                            <div class="poster-avatar-placeholder">
+                                <span>{{ initials(poster().displayName) }}</span>
+                            </div>
                         }
                         <div class="photo-overlay"></div>
                     </div>
@@ -73,14 +73,14 @@ import type { WantedPoster } from "../../models/gamification/bounty";
 
                     <!-- Rank badge -->
                     @if (showRank() && poster().rank > 0) {
-                    <div
-                        class="poster-rank"
-                        [class.rank-gold]="poster().rank === 1"
-                        [class.rank-silver]="poster().rank === 2"
-                        [class.rank-bronze]="poster().rank === 3"
-                    >
-                        <span class="rank-hash">#</span>{{ poster().rank }}
-                    </div>
+                        <div
+                            class="poster-rank"
+                            [class.rank-bronze]="poster().rank === 3"
+                            [class.rank-gold]="poster().rank === 1"
+                            [class.rank-silver]="poster().rank === 2"
+                        >
+                            <span class="rank-hash">#</span>{{ poster().rank }}
+                        </div>
                     }
 
                     <!-- Footer -->

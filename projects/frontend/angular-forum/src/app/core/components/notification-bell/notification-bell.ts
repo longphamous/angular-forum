@@ -81,6 +81,10 @@ export class NotificationBell implements OnInit, OnDestroy {
         this.notifService.markAllAsRead();
     }
 
+    protected deleteAll(): void {
+        this.notifService.deleteAllNotifications();
+    }
+
     protected onNotificationClick(notif: AppNotification): void {
         if (this.isFriendRequest(notif)) return;
         if (!notif.isRead) {

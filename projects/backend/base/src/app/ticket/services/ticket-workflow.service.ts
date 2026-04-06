@@ -56,13 +56,16 @@ export class TicketWorkflowService {
     }
 
     async createWorkflow(dto: CreateWorkflowDto): Promise<WorkflowDto> {
-        return this.dataSource.transaction(async (manager) => {
+        let workflowId: string;
+
+        await this.dataSource.transaction(async (manager) => {
             const workflow = manager.create(TicketWorkflowEntity, {
                 name: dto.name,
                 projectId: dto.projectId,
                 isDefault: dto.isDefault ?? false
             });
             const savedWorkflow = await manager.save(workflow);
+            workflowId = savedWorkflow.id;
 
             // Create statuses
             const statusMap = new Map<string, TicketWorkflowStatusEntity>();
@@ -95,9 +98,10 @@ export class TicketWorkflowService {
                     await manager.save(transition);
                 }
             }
-
-            return this.getWorkflow(savedWorkflow.id);
         });
+
+        // Read after transaction is committed so the data is visible
+        return this.getWorkflow(workflowId!);
     }
 
     async updateWorkflow(id: string, dto: UpdateWorkflowDto): Promise<WorkflowDto> {
@@ -194,6 +198,12 @@ export class TicketWorkflowService {
         if (!project) throw new NotFoundException(`Project "${projectId}" not found`);
 
         let workflowId = (project as { workflowId?: string }).workflowId;
+
+        // Auto-create default workflow if missing or if referenced workflow no longer exists
+        if (workflowId) {
+            const workflowExists = await this.workflowRepo.findOne({ where: { id: workflowId } });
+            if (!workflowExists) workflowId = undefined;
+        }
         if (!workflowId) {
             const defaultWorkflow = await this.seedDefaultWorkflow(projectId);
             workflowId = defaultWorkflow.id;

@@ -40,7 +40,10 @@ interface NavGroup {
     template: ` <ng-container *transloco="let t">
         <div class="layout-topbar">
             <div class="layout-topbar-logo-container">
-                <button class="layout-menu-button layout-topbar-action lg:!hidden" (click)="mobileMenuOpen.set(!mobileMenuOpen())">
+                <button
+                    class="layout-menu-button layout-topbar-action lg:!hidden"
+                    (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+                >
                     <i class="pi pi-bars"></i>
                 </button>
                 <a class="layout-topbar-logo" routerLink="/">
@@ -54,16 +57,26 @@ interface NavGroup {
                 <!-- Home (direct link) -->
                 <a
                     class="topbar-nav-item"
-                    [class.topbar-nav-active]="isRouteActive(['/feed', '/dashboard', '/chronik'])"
+                    [class.topbar-nav-active]="isRouteActive(['/feed', '/chronik'])"
                     routerLink="/feed"
                 >
                     <i class="pi pi-home"></i>
                     <span>{{ t("nav.home") }}</span>
                 </a>
 
+                <!-- Dashboard (direct link) -->
+                <a
+                    class="topbar-nav-item"
+                    [class.topbar-nav-active]="isRouteActive(['/dashboard'])"
+                    routerLink="/dashboard"
+                >
+                    <i class="pi pi-th-large"></i>
+                    <span>{{ t("nav.dashboard") }}</span>
+                </a>
+
                 <!-- Grouped dropdowns -->
                 @for (group of navGroups; track group.label) {
-                    @if (group.label !== 'Admin' || authFacade.isAdmin()) {
+                    @if (group.label !== "Admin" || authFacade.isAdmin()) {
                         <div
                             class="topbar-nav-dropdown"
                             (mouseenter)="openGroup.set(group.label)"
@@ -182,21 +195,25 @@ interface NavGroup {
                 </div>
                 <div class="topbar-mobile-content">
                     <!-- Home -->
-                    <a class="topbar-dropdown-item" routerLink="/feed" (click)="mobileMenuOpen.set(false)">
+                    <a class="topbar-dropdown-item" (click)="mobileMenuOpen.set(false)" routerLink="/feed">
                         <i class="pi pi-home"></i>
                         <span>{{ t("nav.feed") }}</span>
                     </a>
-                    <a class="topbar-dropdown-item" routerLink="/dashboard" (click)="mobileMenuOpen.set(false)">
+                    <a class="topbar-dropdown-item" (click)="mobileMenuOpen.set(false)" routerLink="/dashboard">
                         <i class="pi pi-th-large"></i>
                         <span>{{ t("nav.dashboard") }}</span>
                     </a>
 
                     @for (group of navGroups; track group.label) {
-                        @if (group.label !== 'Admin' || authFacade.isAdmin()) {
+                        @if (group.label !== "Admin" || authFacade.isAdmin()) {
                             <div class="topbar-mobile-group">
                                 <span class="topbar-mobile-group-label">{{ group.label }}</span>
                                 @for (item of group.items; track item.route) {
-                                    <a class="topbar-dropdown-item" [routerLink]="item.route" (click)="mobileMenuOpen.set(false)">
+                                    <a
+                                        class="topbar-dropdown-item"
+                                        [routerLink]="item.route"
+                                        (click)="mobileMenuOpen.set(false)"
+                                    >
                                         <i [class]="'pi ' + item.icon"></i>
                                         <span>{{ item.label }}</span>
                                     </a>
@@ -333,12 +350,12 @@ interface NavGroup {
                 left: 0;
                 min-width: 13rem;
                 padding: 0.5rem;
-                background-color: var(--surface-overlay);
-                border: 1px solid var(--surface-border);
+                background: var(--glass-bg-strong);
+                backdrop-filter: blur(var(--glass-blur-strong));
+                -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+                border: 1px solid var(--glass-border);
                 border-radius: var(--content-border-radius);
-                box-shadow:
-                    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                box-shadow: var(--glass-shadow);
                 z-index: 1000;
                 display: flex;
                 flex-direction: column;
@@ -371,7 +388,7 @@ interface NavGroup {
             }
 
             .topbar-dropdown-item:hover {
-                background-color: var(--surface-hover);
+                background-color: var(--glass-hover);
             }
 
             .topbar-dropdown-item i {
@@ -403,7 +420,10 @@ interface NavGroup {
                 left: 0;
                 bottom: 0;
                 width: 18rem;
-                background-color: var(--surface-card);
+                background: var(--glass-bg-strong);
+                backdrop-filter: blur(var(--glass-blur-strong));
+                -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+                border-right: 1px solid var(--glass-border);
                 z-index: 999;
                 display: flex;
                 flex-direction: column;
@@ -425,7 +445,7 @@ interface NavGroup {
                 align-items: center;
                 justify-content: space-between;
                 padding: 1rem 1.25rem;
-                border-bottom: 1px solid var(--surface-border);
+                border-bottom: 1px solid var(--glass-border);
             }
 
             .topbar-mobile-content {
@@ -490,7 +510,19 @@ export class AppTopbar {
             {
                 label: this.t("nav.community"),
                 icon: "pi-comments",
-                routePrefix: ["/forum", "/blog", "/gallery", "/calendar", "/lexicon", "/links", "/recipes", "/messages", "/friends", "/clips", "/clans"],
+                routePrefix: [
+                    "/forum",
+                    "/blog",
+                    "/gallery",
+                    "/calendar",
+                    "/lexicon",
+                    "/links",
+                    "/recipes",
+                    "/messages",
+                    "/friends",
+                    "/clips",
+                    "/clans"
+                ],
                 items: [
                     { label: this.t("nav.forumOverview"), icon: "pi-comments", route: "/forum" },
                     { label: this.t("nav.blog"), icon: "pi-file-edit", route: "/blog" },
@@ -531,8 +563,23 @@ export class AppTopbar {
             {
                 label: this.t("nav.gamificationSection"),
                 icon: "pi-trophy",
-                routePrefix: ["/wanted", "/achievements", "/shop", "/lotto", "/tcg", "/market", "/marketplace"],
+                routePrefix: [
+                    "/rpg",
+                    "/leaderboard",
+                    "/hashtags",
+                    "/wanted",
+                    "/achievements",
+                    "/shop",
+                    "/lotto",
+                    "/tcg",
+                    "/market",
+                    "/marketplace"
+                ],
                 items: [
+                    { label: this.t("nav.rpg"), icon: "pi-shield", route: "/rpg" },
+                    { label: this.t("nav.quests"), icon: "pi-map", route: "/rpg/quests" },
+                    { label: this.t("nav.leaderboard"), icon: "pi-chart-bar", route: "/leaderboard" },
+                    { label: this.t("nav.hashtags"), icon: "pi-hashtag", route: "/hashtags" },
                     { label: this.t("nav.wanted"), icon: "pi-flag", route: "/wanted" },
                     { label: this.t("nav.achievements"), icon: "pi-trophy", route: "/achievements" },
                     { label: this.t("nav.shop"), icon: "pi-shopping-bag", route: "/shop" },
@@ -554,7 +601,11 @@ export class AppTopbar {
                     { label: this.t("nav.forumStructure"), icon: "pi-sitemap", route: "/admin/forum" },
                     { label: this.t("nav.blogManagement"), icon: "pi-file-edit", route: "/admin/blog" },
                     { label: this.t("nav.ticketManagement"), icon: "pi-ticket", route: "/admin/tickets" },
-                    { label: this.t("nav.marketplaceManagement"), icon: "pi-shopping-cart", route: "/admin/marketplace" },
+                    {
+                        label: this.t("nav.marketplaceManagement"),
+                        icon: "pi-shopping-cart",
+                        route: "/admin/marketplace"
+                    },
                     { label: this.t("nav.gamification"), icon: "pi-star", route: "/admin/gamification" },
                     { label: this.t("nav.shopManagement"), icon: "pi-shopping-bag", route: "/admin/shop" }
                 ]

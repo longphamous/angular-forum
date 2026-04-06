@@ -17,4 +17,11 @@
     --focus-ring-color: var(--p-focus-ring-color);
     --focus-ring-offset: var(--p-focus-ring-offset);
     --focus-ring-shadow: var(--p-focus-ring-shadow);
+
+    // ── Glassmorphism tokens ──────────────────────────────────────────────
+    --glass-blur: 16px;
+    --glass-blur-strong: 24px;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    --glass-radius: 1rem;
+    --accent-gradient: linear-gradient(135deg, var(--primary-color), color-mix(in srgb, var(--primary-color) 70%, #a78bfa));
 }

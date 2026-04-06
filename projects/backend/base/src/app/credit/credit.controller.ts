@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Put, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -15,6 +16,8 @@ import {
     WalletLeaderboardEntry
 } from "./credit.service";
 
+@ApiTags("Credit")
+@ApiBearerAuth("JWT")
 @Controller("credit")
 export class CreditController {
     constructor(private readonly creditService: CreditService) {}

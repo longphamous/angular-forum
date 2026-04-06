@@ -12,11 +12,14 @@ import {
     Request,
     UseGuards
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { BlogService, CreateCategoryDto, CreatePostDto, UpdatePostDto } from "./blog.service";
 import { BlogStatus, BlogType } from "./entities/blog-post.entity";
 
+@ApiTags("Blog")
+@ApiBearerAuth("JWT")
 @Controller("blog")
 @UseGuards(JwtAuthGuard)
 export class BlogController {

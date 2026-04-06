@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../../auth/current-user.decorator";
 import type { AuthenticatedUser } from "../../auth/models/jwt.model";
@@ -7,6 +8,8 @@ import { ManageMemberDto } from "../dto/manage-member.dto";
 import type { ClanApplicationDto, ClanMemberDto } from "../models/clan.model";
 import { ClanMemberService } from "../services/clan-member.service";
 
+@ApiTags("Clans")
+@ApiBearerAuth("JWT")
 @Controller("clans")
 export class ClanMemberController {
     constructor(private readonly clanMemberService: ClanMemberService) {}

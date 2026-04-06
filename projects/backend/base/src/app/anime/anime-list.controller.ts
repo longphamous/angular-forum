@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -10,6 +11,8 @@ import { SaveAnimeListEntryDto } from "./dto/save-anime-list-entry.dto";
  * Routes are grouped under /anime/list to avoid the /:id catch-all on AnimeController.
  * Public user list lives at /anime/list/user/:userId.
  */
+@ApiTags("Anime")
+@ApiBearerAuth("JWT")
 @Controller("anime/list")
 export class AnimeListController {
     constructor(private readonly animeListService: AnimeListService) {}

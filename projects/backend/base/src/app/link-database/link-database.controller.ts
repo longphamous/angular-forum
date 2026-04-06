@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import {
@@ -14,6 +15,8 @@ interface AuthReq {
     user: { id: string; role: string };
 }
 
+@ApiTags("Links")
+@ApiBearerAuth("JWT")
 @Controller("links")
 export class LinkDatabaseController {
     constructor(private readonly service: LinkDatabaseService) {}

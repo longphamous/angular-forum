@@ -1,20 +1,33 @@
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { GamificationService, XpConfigDto, XpHistoryEvent } from "./gamification.service";
 import { UserXpData } from "./level.config";
+import type { LeaderboardResponse } from "./models/leaderboard.model";
 
 interface UpdateXpConfigDto {
     xpAmount: number;
 }
 
+@ApiTags("Gamification")
+@ApiBearerAuth("JWT")
 @Controller("gamification")
 export class GamificationController {
     constructor(private readonly gamificationService: GamificationService) {}
 
     // ── Public ────────────────────────────────────────────────────────────────
+
+    @Public()
+    @Get("leaderboard")
+    getLeaderboard(
+        @Query("limit") limit?: string,
+        @Query("offset") offset?: string
+    ): Promise<LeaderboardResponse> {
+        return this.gamificationService.getLeaderboard(Number(limit) || 50, Number(offset) || 0);
+    }
 
     @Public()
     @Get("users/:userId/progress")

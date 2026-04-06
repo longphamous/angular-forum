@@ -64,7 +64,8 @@
     "all": "Alle",
     "button": {
       "cancel": "Abbrechen",
-      "save": "Speichern"
+      "save": "Speichern",
+      "retry": "Erneut versuchen"
     }
   },
   "nav": {
@@ -152,6 +153,10 @@
     "clans": "Clans",
     "clanManagement": "Clan-Verwaltung",
     "wanted": "Steckbrief",
+    "rpg": "Charakter",
+    "quests": "Quests",
+    "leaderboard": "Rangliste",
+    "hashtags": "Hashtags",
     "bountyManagement": "Kopfgeld-System"
   },
   "login": {
@@ -1111,7 +1116,15 @@
     "inventory": "Mein Inventar",
     "inventoryEmpty": "Dein Inventar ist leer.",
     "itemPurchased": "{{name}} gekauft!",
-    "purchaseFailed": "Kauf fehlgeschlagen"
+    "purchaseFailed": "Kauf fehlgeschlagen",
+    "requiredLevel": "Erfordert Level {{level}}",
+    "rarity": {
+      "common": "Gewöhnlich",
+      "uncommon": "Ungewöhnlich",
+      "rare": "Selten",
+      "epic": "Episch",
+      "legendary": "Legendär"
+    }
   },
   "adminShop": {
     "title": "Shop Verwaltung",
@@ -1346,6 +1359,7 @@
     "emptyFriends": "Keine Freundes-Benachrichtigungen",
     "emptySystem": "Keine System-Benachrichtigungen",
     "delete": "Benachrichtigung löschen",
+    "deleteAll": "Alle löschen",
     "tabs": {
       "all": "Alle",
       "friends": "Freunde",
@@ -2328,6 +2342,16 @@
     "selectProjectHint": "Wähle ein Projekt, um fortzufahren.",
     "noProjects": "Keine Projekte gefunden. Erstelle zuerst ein Projekt im Adminbereich.",
     "goToAdmin": "Zum Adminbereich",
+    "project": {
+      "create": "Projekt erstellen",
+      "createFirst": "Erstelle dein erstes Projekt",
+      "created": "Projekt erfolgreich erstellt",
+      "name": "Projektname",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "noProjectsTitle": "Noch keine Projekte",
+      "noProjectsDescription": "Erstelle ein Projekt, um deine Arbeit mit Boards, Backlogs und Sprints zu organisieren."
+    },
     "createTicket": "Ticket erstellen",
     "editTicket": "Ticket bearbeiten",
     "ticketUpdated": "Ticket erfolgreich aktualisiert",
@@ -2403,6 +2427,7 @@
     "statusUpdated": "Status aktualisiert",
     "confirmDelete": "Möchtest du dieses Element wirklich löschen?",
     "storyPoints": "Story Points",
+    "labels": "Labels",
     "children": "Unteraufgaben",
     "noChildren": "Noch keine Unteraufgaben.",
     "parent": "Übergeordnete Aufgabe",
@@ -2439,13 +2464,30 @@
       "noProject": "Wähle ein Projekt, um das Board anzuzeigen.",
       "moveCard": "Verschieben",
       "addCard": "Ticket hinzufügen",
-      "quickCreatePlaceholder": "Was muss erledigt werden?"
+      "create": "Erstellen",
+      "createIssue": "Vorgang erstellen",
+      "summary": "Zusammenfassung",
+      "searchBoard": "Board durchsuchen",
+      "quickCreatePlaceholder": "Was muss erledigt werden?",
+      "selectProject": "Projekt auswählen",
+      "openFullPage": "Vollansicht öffnen",
+      "details": "Details",
+      "addDescription": "Beschreibung hinzufügen...",
+      "addComment": "Kommentar hinzufügen...",
+      "created": "Erstellt",
+      "updated": "Aktualisiert",
+      "issueCreated": "Vorgang erfolgreich erstellt",
+      "errorNotFoundTitle": "Projekt nicht gefunden",
+      "errorNotFoundDescription": "Dieses Projekt existiert nicht oder wurde gelöscht. Bitte wähle ein anderes Projekt aus.",
+      "errorLoadTitle": "Board konnte nicht geladen werden",
+      "errorLoadDescription": "Beim Laden des Boards ist ein unerwarteter Fehler aufgetreten. Bitte versuche es erneut."
     },
     "workflow": {
       "title": "Workflows",
       "name": "Workflow-Name",
       "default": "Standard",
-      "createDefault": "Standard-Workflow erstellen",
+      "createNew": "Workflow erstellen",
+      "createDefault": "Standard-Workflow",
       "noWorkflows": "Noch keine Workflows erstellt.",
       "transitions": "Übergänge",
       "statusName": "Statusname",
@@ -2922,6 +2964,86 @@
     "addCategory": "Kategorie hinzufügen",
     "editCategory": "Kategorie bearbeiten",
     "noCategories": "Noch keine Kategorien."
+  },
+  "leaderboard": {
+    "title": "Rangliste",
+    "subtitle": "Top-Mitglieder nach Erfahrungspunkten",
+    "empty": "Noch keine Einträge. Sammle XP, um in der Rangliste zu erscheinen!",
+    "levelOverview": "Level-Übersicht"
+  },
+  "hashtag": {
+    "title": "Hashtags",
+    "subtitle": "Entdecke Trending-Themen in der Community",
+    "trending": "Im Trend",
+    "results": "Ergebnisse",
+    "noResults": "Noch keine Inhalte mit diesem Hashtag gefunden.",
+    "empty": "Noch keine Hashtags. Verwende #Hashtags in deinen Beiträgen, um Inhalte zu taggen!"
+  },
+  "rpg": {
+    "title": "RPG-Charakter",
+    "subtitle": "Steige auf, verteile Attributspunkte und rüste mächtige Items aus",
+    "attributes": "Attribute",
+    "equipment": "Ausrüstung",
+    "pointsAvailable": "Punkte verfügbar",
+    "pointsAllocated": "Punkte zugewiesen",
+    "remaining": "übrig",
+    "confirmPoints": "Bestätigen",
+    "createCharacter": "Charakter erstellen",
+    "editCharacter": "Charakter bearbeiten",
+    "characterName": "Charaktername",
+    "characterClass": "Klasse",
+    "noCharacter": "Noch kein Charakter",
+    "noCharacterDesc": "Erstelle deinen RPG-Charakter und starte dein Abenteuer!",
+    "emptySlot": "Leer",
+    "clickToEquip": "Klicken zum Ausrüsten",
+    "inventory": "Inventar",
+    "inventoryEmpty": "Noch keine Ausrüstung im Inventar.",
+    "equip": "Anlegen",
+    "equipped": "Angelegt",
+    "unequip": "Ablegen",
+    "dragHint": "Items per Drag & Drop auf Ausrüstungsslots ziehen",
+    "visitShop": "Zum Shop",
+    "stats": {
+      "strength": "Stärke",
+      "dexterity": "Geschicklichkeit",
+      "intelligence": "Intelligenz",
+      "charisma": "Charisma",
+      "endurance": "Ausdauer",
+      "luck": "Glück"
+    },
+    "classes": {
+      "warrior": "Krieger",
+      "mage": "Magier",
+      "rogue": "Schurke",
+      "ranger": "Waldläufer",
+      "paladin": "Paladin"
+    },
+    "slots": {
+      "head": "Kopf",
+      "chest": "Brust",
+      "legs": "Beine",
+      "feet": "Füße",
+      "weapon": "Waffe",
+      "shield": "Schild",
+      "accessory": "Accessoire"
+    }
+  },
+  "quest": {
+    "title": "Quests",
+    "subtitle": "Schließe Quests ab und verdiene XP, Coins, Items und Ruhm",
+    "glory": "Ruhm",
+    "claim": "Einlösen",
+    "claimed": "Eingelöst",
+    "remaining": "verbleibend",
+    "backToCharacter": "Charakter",
+    "empty": "Derzeit keine Quests verfügbar.",
+    "types": {
+      "daily": "Tägliche Quests",
+      "weekly": "Wöchentliche Quests",
+      "monthly": "Monatliche Quests",
+      "story": "Story-Quests",
+      "event": "Spezielle Events"
+    }
   },
   "bounty": {
     "title": "WANTED",

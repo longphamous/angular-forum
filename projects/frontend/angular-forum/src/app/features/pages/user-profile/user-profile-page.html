@@ -13,7 +13,7 @@
     </div>
     } @if (loading()) {
     <!-- Skeleton -->
-    <div class="border-surface overflow-hidden rounded-xl border">
+    <div class="glass-content-card">
         <p-skeleton height="240px" styleClass="!rounded-b-none" width="100%" />
         <div class="p-6">
             <div class="flex gap-5">
@@ -35,7 +35,7 @@
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- PROFILE HEADER CARD                                               -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <div class="border-surface overflow-hidden rounded-xl border">
+    <div class="profile-header-card">
         <!-- Cover Photo -->
         <div class="profile-cover">
             @if (p.coverUrl) {
@@ -159,7 +159,7 @@
             }
 
             <!-- Stats row -->
-            <div class="border-surface mt-4 flex flex-wrap items-center gap-4 border-t pt-4">
+            <div class="mt-4 flex flex-wrap items-center gap-4 border-t border-white/10 pt-4">
                 <div class="profile-stat-row">
                     <!-- XP -->
                     <div class="profile-stat">
@@ -220,7 +220,7 @@
     <!-- BEST ACHIEVEMENTS                                                 -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     @if (achievements().length > 0) {
-    <div class="border-surface mt-4 rounded-xl border p-5">
+    <div class="glass-content-card mt-4 p-5">
         <h3 class="m-0 mb-3 flex items-center gap-2 text-sm font-semibold">
             <i class="pi pi-trophy text-yellow-500"></i>
             {{ t('userProfile.achievements') }}
@@ -229,12 +229,9 @@
                 {{ t('common.showAll') }}
             </a>
         </h3>
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap gap-2">
             @for (a of achievements().slice(0, 8); track a.id) {
-            <div
-                class="border-surface flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-                [pTooltip]="a.description ?? a.name"
-            >
+            <div class="achievement-chip" [pTooltip]="a.description ?? a.name">
                 <i class="pi text-base" [class]="a.icon + ' text-yellow-500'"></i>
                 <span class="font-medium">{{ a.name }}</span>
             </div>
@@ -269,7 +266,7 @@
                     <p-tabpanel value="chronik">
                         <div class="flex flex-col gap-4 pt-4">
                             @if (isOwnProfile()) {
-                            <div class="border-surface rounded-xl border p-4">
+                            <div class="glass-content-card p-4">
                                 <h3 class="text-color-secondary mb-3 text-sm font-semibold">
                                     {{ t('chronik.whatMovesYou') }}
                                 </h3>
@@ -377,7 +374,7 @@
                             </div>
                             } @if (chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) { @for
                             (i of [1,2,3]; track i) {
-                            <div class="border-surface flex flex-col gap-3 rounded-xl border p-4">
+                            <div class="glass-content-card-inner flex flex-col gap-3 p-4">
                                 <div class="flex items-center gap-3">
                                     <p-skeleton shape="circle" size="2.5rem" />
                                     <div class="flex flex-col gap-1">
@@ -396,14 +393,12 @@
                                 </div>
                             </div>
                             } } @if (!chronikFacade.profileLoading() && chronikFacade.profileEntries().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-history text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('chronik.noEntries') }}</p>
                             </div>
                             } @for (entry of chronikFacade.profileEntries(); track entry.id) {
-                            <div class="border-surface overflow-hidden rounded-xl border">
+                            <div class="glass-content-card">
                                 <div class="flex items-start justify-between p-4 pb-3">
                                     <div class="flex items-center gap-3">
                                         <div class="relative">
@@ -449,7 +444,7 @@
                                     <img class="mt-3 max-h-80 w-full rounded-lg object-cover" [src]="entry.imageUrl" />
                                     } @if (entry.linkUrl) {
                                     <a
-                                        class="border-surface hover:bg-emphasis mt-3 flex gap-3 rounded-lg border p-3 no-underline transition-colors"
+                                        class="glass-content-card-inner mt-3 flex gap-3 p-3 no-underline transition-colors hover:bg-[var(--glass-hover)]"
                                         [href]="entry.linkUrl"
                                         rel="noopener noreferrer"
                                         target="_blank"
@@ -473,7 +468,7 @@
                                     </a>
                                     }
                                 </div>
-                                <div class="border-surface flex items-center gap-4 border-t px-4 py-2">
+                                <div class="flex items-center gap-4 border-t border-white/10 px-4 py-2">
                                     <button
                                         class="flex cursor-pointer items-center gap-1.5 border-none bg-transparent text-sm transition-colors"
                                         (click)="toggleLike(entry)"
@@ -491,7 +486,7 @@
                                     </button>
                                 </div>
                                 @if (isCommentsExpanded(entry.id)) {
-                                <div class="border-surface border-t px-4 py-3">
+                                <div class="border-t border-white/10 px-4 py-3">
                                     @for (comment of getComments(entry.id); track comment.id) {
                                     <div class="mb-2 flex gap-2">
                                         <p-avatar
@@ -604,9 +599,7 @@
                     <p-tabpanel value="clips">
                         <div class="flex flex-col gap-3 pt-4">
                             @if (userClips().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-video text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
                             </div>
@@ -643,15 +636,13 @@
                     <p-tabpanel value="blog">
                         <div class="flex flex-col gap-3 pt-4">
                             @if (userBlogPosts().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-pencil text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
                             </div>
                             } @for (post of userBlogPosts(); track post.id) {
                             <a
-                                class="border-surface hover:bg-emphasis flex gap-4 rounded-xl border p-4 no-underline transition-colors"
+                                class="glass-content-card-inner flex gap-4 p-4 no-underline transition-colors hover:bg-[var(--glass-hover)]"
                                 [routerLink]="['/blog', post.slug]"
                             >
                                 @if (post.coverImageUrl) {
@@ -679,15 +670,13 @@
                     <p-tabpanel value="lexicon">
                         <div class="flex flex-col gap-3 pt-4">
                             @if (userLexiconArticles().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-book text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
                             </div>
                             } @for (article of userLexiconArticles(); track article.id) {
                             <a
-                                class="border-surface hover:bg-emphasis flex items-center gap-4 rounded-xl border p-4 no-underline transition-colors"
+                                class="glass-content-card-inner flex items-center gap-4 p-4 no-underline transition-colors hover:bg-[var(--glass-hover)]"
                                 [routerLink]="['/lexicon', article.slug]"
                             >
                                 <div
@@ -720,9 +709,7 @@
                     <p-tabpanel value="gallery">
                         <div class="flex flex-col gap-3 pt-4">
                             @if (userGalleryAlbums().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-images text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
                             </div>
@@ -761,15 +748,13 @@
                     <p-tabpanel value="recipes">
                         <div class="flex flex-col gap-3 pt-4">
                             @if (userRecipes().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-clipboard text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.noContent') }}</p>
                             </div>
                             } @for (recipe of userRecipes(); track recipe.id) {
                             <a
-                                class="border-surface hover:bg-emphasis flex gap-4 rounded-xl border p-4 no-underline transition-colors"
+                                class="glass-content-card-inner flex gap-4 p-4 no-underline transition-colors hover:bg-[var(--glass-hover)]"
                                 [routerLink]="['/recipes', recipe.slug]"
                             >
                                 @if (recipe.imageUrl) {
@@ -797,9 +782,7 @@
                     <p-tabpanel value="xp-history">
                         <div class="flex flex-col gap-1 pt-4">
                             @if (userXpHistory().length === 0) {
-                            <div
-                                class="border-surface flex flex-col items-center gap-3 rounded-xl border py-12 text-center"
-                            >
+                            <div class="glass-content-card-inner flex flex-col items-center gap-3 py-12 text-center">
                                 <i class="pi pi-chart-line text-color-secondary text-5xl"></i>
                                 <p class="text-color-secondary text-sm">{{ t('userProfile.xpHistory.noEvents') }}</p>
                             </div>
@@ -807,7 +790,7 @@
 
                             <!-- Summary -->
                             @if (userXpHistory().length > 0) {
-                            <div class="bg-surface-50 dark:bg-surface-800 mb-3 rounded-xl p-4">
+                            <div class="glass-content-card-inner mb-3 p-4">
                                 <div class="flex items-center justify-between">
                                     <span class="text-color-secondary text-sm"
                                         >{{ t('userProfile.xpHistory.totalEvents') }}</span
@@ -820,11 +803,12 @@
                             <!-- Event list -->
                             @for (event of userXpHistory(); track event.id) {
                             <div
-                                class="hover:bg-surface-50 dark:hover:bg-surface-800 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-[var(--glass-hover)]"
                             >
                                 <!-- Icon -->
                                 <div
-                                    class="bg-surface-100 dark:bg-surface-700 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                                    style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border)"
                                 >
                                     <i
                                         [class.text-sm]="true"
@@ -1011,9 +995,7 @@
 
     } @else {
     <!-- Profile not found / error -->
-    <div
-        class="border-surface text-color-secondary flex flex-col items-center justify-center gap-3 rounded-xl border py-20"
-    >
+    <div class="glass-content-card text-color-secondary flex flex-col items-center justify-center gap-3 py-20">
         <i class="pi pi-exclamation-circle text-5xl"></i>
         <p class="m-0 text-lg font-medium">{{ t('userProfile.notFound') }}</p>
     </div>

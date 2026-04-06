@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import { CreateCategoryDto } from "../dto/create-category.dto";
@@ -6,6 +7,8 @@ import { UpdateCategoryDto } from "../dto/update-category.dto";
 import { CategoryDetailDto, CategoryDto } from "../models/forum.model";
 import { CategoryService } from "../services/category.service";
 
+@ApiTags("Forum")
+@ApiBearerAuth("JWT")
 @Controller("forum/categories")
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}

@@ -69,6 +69,20 @@
     margin: 0;
 }
 
+// ── Hashtag links ────────────────────────────────────────────────────────────
+
+.hashtag-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+
+    &:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+}
+
 // Nested quotes
 .post-content blockquote blockquote {
     margin: 0.5rem 0;

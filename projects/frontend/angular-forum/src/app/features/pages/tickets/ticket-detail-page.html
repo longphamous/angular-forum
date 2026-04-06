@@ -87,8 +87,8 @@
                         (onClick)="openEditDialog()"
                         [label]="t('common.edit')"
                         icon="pi pi-pencil"
-                        severity="secondary"
                         outlined
+                        severity="secondary"
                         size="small"
                     />
                     <p-button
@@ -695,28 +695,34 @@
     <!-- ── Edit Dialog ──────────────────────────────────────────────────── -->
     <p-dialog
         [(visible)]="editDialogVisible"
+        [contentStyle]="{ overflow: 'visible' }"
         [header]="t('tickets.editTicket')"
         [modal]="true"
         [style]="{ width: '700px' }"
-        [contentStyle]="{ overflow: 'visible' }"
     >
         <div class="flex flex-col gap-4">
             <!-- Title -->
             <div class="flex flex-col gap-1">
-                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('common.title') }}</label>
-                <input [(ngModel)]="editForm.title" pInputText type="text" class="w-full" />
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('common.title') }}</label
+                >
+                <input class="w-full" [(ngModel)]="editForm.title" pInputText type="text" />
             </div>
 
             <!-- Description -->
             <div class="flex flex-col gap-1">
-                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('common.description') }}</label>
-                <textarea [(ngModel)]="editForm.description" pTextarea [rows]="5" class="w-full"></textarea>
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('common.description') }}</label
+                >
+                <textarea class="w-full" [(ngModel)]="editForm.description" [rows]="5" pTextarea></textarea>
             </div>
 
             <!-- Type + Priority + Status -->
             <div class="grid grid-cols-3 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('common.type') }}</label>
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('common.type') }}</label
+                    >
                     <p-select
                         [(ngModel)]="editForm.type"
                         [options]="typeOptions"
@@ -726,7 +732,9 @@
                     />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.priority.label') }}</label>
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.priority.label') }}</label
+                    >
                     <p-select
                         [(ngModel)]="editForm.priority"
                         [options]="priorityOptions"
@@ -736,7 +744,9 @@
                     />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('common.status') }}</label>
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('common.status') }}</label
+                    >
                     <p-select
                         [(ngModel)]="editForm.status"
                         [options]="statusOptions"
@@ -750,7 +760,9 @@
             <!-- Assignee + Story Points -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.fieldAssignee') }}</label>
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.fieldAssignee') }}</label
+                    >
                     <p-select
                         [(ngModel)]="editForm.assigneeId"
                         [filter]="true"
@@ -764,27 +776,57 @@
                     />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.storyPoints') }}</label>
-                    <p-inputnumber [(ngModel)]="editForm.storyPoints" [showButtons]="true" [min]="0" [max]="100" styleClass="w-full" />
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.storyPoints') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="editForm.storyPoints"
+                        [max]="100"
+                        [min]="0"
+                        [showButtons]="true"
+                        styleClass="w-full"
+                    />
                 </div>
             </div>
 
             <!-- Due Date + Follow Up Date -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.fieldDueDate') }}</label>
-                    <p-datepicker [(ngModel)]="editForm.dueDate" [showClear]="true" dateFormat="dd.mm.yy" styleClass="w-full" />
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.fieldDueDate') }}</label
+                    >
+                    <p-datepicker
+                        [(ngModel)]="editForm.dueDate"
+                        [showClear]="true"
+                        dateFormat="dd.mm.yy"
+                        styleClass="w-full"
+                    />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.fieldFollowUp') }}</label>
-                    <p-datepicker [(ngModel)]="editForm.followUpDate" [showClear]="true" dateFormat="dd.mm.yy" styleClass="w-full" />
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.fieldFollowUp') }}</label
+                    >
+                    <p-datepicker
+                        [(ngModel)]="editForm.followUpDate"
+                        [showClear]="true"
+                        dateFormat="dd.mm.yy"
+                        styleClass="w-full"
+                    />
                 </div>
             </div>
 
             <!-- Original Estimate -->
             <div class="flex flex-col gap-1">
-                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold">{{ t('tickets.timeTracking.originalEstimate') }} ({{ t('tickets.timeTracking.minutes') }})</label>
-                <p-inputnumber [(ngModel)]="editForm.originalEstimateMinutes" [showButtons]="true" [min]="0" [step]="15" styleClass="w-full" />
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('tickets.timeTracking.originalEstimate') }} ({{ t('tickets.timeTracking.minutes') }})</label
+                >
+                <p-inputnumber
+                    [(ngModel)]="editForm.originalEstimateMinutes"
+                    [min]="0"
+                    [showButtons]="true"
+                    [step]="15"
+                    styleClass="w-full"
+                />
             </div>
         </div>
         <ng-template #footer>
@@ -797,8 +839,8 @@
                 />
                 <p-button
                     (onClick)="saveEditDialog()"
-                    [label]="t('common.button.save')"
                     [disabled]="!editForm.title.trim()"
+                    [label]="t('common.button.save')"
                     icon="pi pi-check"
                 />
             </div>

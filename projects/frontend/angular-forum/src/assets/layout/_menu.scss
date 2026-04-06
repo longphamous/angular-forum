@@ -12,8 +12,12 @@
     transition:
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
-    background-color: var(--surface-overlay);
-    border-radius: var(--content-border-radius);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--glass-radius);
     padding: 0.5rem 1.5rem;
 }
 
@@ -88,7 +92,7 @@
             }
 
             &:hover {
-                background-color: var(--surface-hover);
+                background-color: var(--glass-hover);
             }
 
             &:focus {

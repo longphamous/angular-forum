@@ -1,4 +1,5 @@
 export const GAMIFICATION_ROUTES = {
+    leaderboard: () => "/gamification/leaderboard",
     userProgress: (userId: string) => `/gamification/users/${userId}/progress`,
     userHistory: (userId: string) => `/gamification/users/${userId}/history`,
     config: {

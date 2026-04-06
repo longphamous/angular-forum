@@ -38,6 +38,23 @@ export class ShopItemEntity {
     @Column({ name: "sort_order", type: "int", default: 0 })
     sortOrder!: number;
 
+    // ── RPG Equipment fields ──────────────────────────────────────────────────
+
+    @Column({ name: "is_equipment", type: "boolean", default: false })
+    isEquipment!: boolean;
+
+    @Column({ name: "equipment_slot", type: "varchar", length: 30, nullable: true })
+    equipmentSlot!: string | null;
+
+    @Column({ name: "stat_bonuses", type: "jsonb", nullable: true })
+    statBonuses!: Record<string, number> | null;
+
+    @Column({ name: "required_level", type: "int", nullable: true })
+    requiredLevel!: number | null;
+
+    @Column({ name: "rarity", type: "varchar", length: 20, nullable: true })
+    rarity!: string | null;
+
     @CreateDateColumn({ name: "created_at", type: "timestamptz" })
     createdAt!: Date;
 

@@ -11,17 +11,17 @@ import { AuthFacade } from "../../../facade/auth/auth-facade";
     imports: [ButtonModule, RouterModule, TooltipModule],
     template: `
         @if (authFacade.isAdmin()) {
-        <a class="no-underline" [routerLink]="route()">
-            <p-button
-                pTooltip="Admin"
-                [rounded]="true"
-                [text]="true"
-                icon="pi pi-cog"
-                severity="secondary"
-                size="small"
-                tooltipPosition="bottom"
-            />
-        </a>
+            <a class="no-underline" [routerLink]="route()">
+                <p-button
+                    [rounded]="true"
+                    [text]="true"
+                    icon="pi pi-cog"
+                    pTooltip="Admin"
+                    severity="secondary"
+                    size="small"
+                    tooltipPosition="bottom"
+                />
+            </a>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush

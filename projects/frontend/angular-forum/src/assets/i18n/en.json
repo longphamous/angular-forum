@@ -64,7 +64,8 @@
     "all": "All",
     "button": {
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "retry": "Retry"
     }
   },
   "nav": {
@@ -152,6 +153,10 @@
     "clans": "Clans",
     "clanManagement": "Clan Management",
     "wanted": "Wanted",
+    "rpg": "Character",
+    "quests": "Quests",
+    "leaderboard": "Leaderboard",
+    "hashtags": "Hashtags",
     "bountyManagement": "Bounty System"
   },
   "login": {
@@ -1111,7 +1116,15 @@
     "inventory": "My Inventory",
     "inventoryEmpty": "Your inventory is empty.",
     "itemPurchased": "{{name}} purchased!",
-    "purchaseFailed": "Purchase failed"
+    "purchaseFailed": "Purchase failed",
+    "requiredLevel": "Requires Level {{level}}",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    }
   },
   "adminShop": {
     "title": "Shop Management",
@@ -1346,6 +1359,7 @@
     "emptyFriends": "No friend notifications",
     "emptySystem": "No system notifications",
     "delete": "Delete notification",
+    "deleteAll": "Delete all",
     "tabs": {
       "all": "All",
       "friends": "Friends",
@@ -2328,6 +2342,16 @@
     "selectProjectHint": "Select a project to continue.",
     "noProjects": "No projects found. Create a project in the admin area first.",
     "goToAdmin": "Go to Admin",
+    "project": {
+      "create": "Create Project",
+      "createFirst": "Create your first project",
+      "created": "Project created successfully",
+      "name": "Project Name",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "noProjectsTitle": "No projects yet",
+      "noProjectsDescription": "Create a project to start organizing your work with boards, backlogs, and sprints."
+    },
     "createTicket": "Create Ticket",
     "editTicket": "Edit Ticket",
     "ticketUpdated": "Ticket updated successfully",
@@ -2403,6 +2427,7 @@
     "statusUpdated": "Status updated",
     "confirmDelete": "Are you sure you want to delete this item?",
     "storyPoints": "Story Points",
+    "labels": "Labels",
     "children": "Sub-Issues",
     "noChildren": "No sub-issues yet.",
     "parent": "Parent Issue",
@@ -2439,13 +2464,30 @@
       "noProject": "Select a project to view its board.",
       "moveCard": "Move",
       "addCard": "Add ticket",
-      "quickCreatePlaceholder": "What needs to be done?"
+      "create": "Create",
+      "createIssue": "Create Issue",
+      "summary": "Summary",
+      "searchBoard": "Search board",
+      "quickCreatePlaceholder": "What needs to be done?",
+      "selectProject": "Select Project",
+      "openFullPage": "Open full page",
+      "details": "Details",
+      "addDescription": "Add a description...",
+      "addComment": "Add a comment...",
+      "created": "Created",
+      "updated": "Updated",
+      "issueCreated": "Issue created successfully",
+      "errorNotFoundTitle": "Project not found",
+      "errorNotFoundDescription": "This project does not exist or has been deleted. Please select another project.",
+      "errorLoadTitle": "Could not load board",
+      "errorLoadDescription": "An unexpected error occurred while loading the board. Please try again."
     },
     "workflow": {
       "title": "Workflows",
       "name": "Workflow Name",
       "default": "Default",
-      "createDefault": "Create Default Workflow",
+      "createNew": "Create Workflow",
+      "createDefault": "Default Workflow",
       "noWorkflows": "No workflows created yet.",
       "transitions": "Transitions",
       "statusName": "Status Name",
@@ -2922,6 +2964,86 @@
     "addCategory": "Add Category",
     "editCategory": "Edit Category",
     "noCategories": "No categories yet."
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Top members ranked by experience points",
+    "empty": "No entries yet. Start earning XP to appear on the leaderboard!",
+    "levelOverview": "Level Overview"
+  },
+  "hashtag": {
+    "title": "Hashtags",
+    "subtitle": "Discover trending topics across the community",
+    "trending": "Trending",
+    "results": "results",
+    "noResults": "No content found for this hashtag yet.",
+    "empty": "No hashtags yet. Use #hashtags in your posts to start tagging content!"
+  },
+  "rpg": {
+    "title": "RPG Character",
+    "subtitle": "Level up your character and equip powerful items",
+    "attributes": "Attributes",
+    "equipment": "Equipment",
+    "pointsAvailable": "points available",
+    "pointsAllocated": "points allocated",
+    "remaining": "remaining",
+    "confirmPoints": "Confirm",
+    "createCharacter": "Create Character",
+    "editCharacter": "Edit Character",
+    "characterName": "Character Name",
+    "characterClass": "Class",
+    "noCharacter": "No Character Yet",
+    "noCharacterDesc": "Create your RPG character and start your adventure!",
+    "emptySlot": "Empty",
+    "clickToEquip": "Click to equip",
+    "inventory": "Inventory",
+    "inventoryEmpty": "No equipment in your inventory yet.",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "unequip": "Unequip",
+    "dragHint": "Drag items onto equipment slots to equip them",
+    "visitShop": "Visit Shop",
+    "stats": {
+      "strength": "Strength",
+      "dexterity": "Dexterity",
+      "intelligence": "Intelligence",
+      "charisma": "Charisma",
+      "endurance": "Endurance",
+      "luck": "Luck"
+    },
+    "classes": {
+      "warrior": "Warrior",
+      "mage": "Mage",
+      "rogue": "Rogue",
+      "ranger": "Ranger",
+      "paladin": "Paladin"
+    },
+    "slots": {
+      "head": "Head",
+      "chest": "Chest",
+      "legs": "Legs",
+      "feet": "Feet",
+      "weapon": "Weapon",
+      "shield": "Shield",
+      "accessory": "Accessory"
+    }
+  },
+  "quest": {
+    "title": "Quests",
+    "subtitle": "Complete quests to earn XP, coins, items and glory",
+    "glory": "Glory",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "remaining": "remaining",
+    "backToCharacter": "Character",
+    "empty": "No quests available at the moment.",
+    "types": {
+      "daily": "Daily Quests",
+      "weekly": "Weekly Quests",
+      "monthly": "Monthly Quests",
+      "story": "Story Quests",
+      "event": "Special Events"
+    }
   },
   "bounty": {
     "title": "WANTED",

@@ -7,14 +7,23 @@ import { SkeletonModule } from "primeng/skeleton";
 import { TabsModule } from "primeng/tabs";
 import { TooltipModule } from "primeng/tooltip";
 
-import type { WantedPoster } from "../../../core/models/gamification/bounty";
 import { WantedPosterComponent } from "../../../core/components/wanted-poster/wanted-poster";
+import type { WantedPoster } from "../../../core/models/gamification/bounty";
 import { BountyFacade } from "../../../facade/gamification/bounty-facade";
 
 @Component({
     selector: "bounty-page",
     standalone: true,
-    imports: [DecimalPipe, RouterLink, TranslocoModule, ButtonModule, SkeletonModule, TabsModule, TooltipModule, WantedPosterComponent],
+    imports: [
+        DecimalPipe,
+        RouterLink,
+        TranslocoModule,
+        ButtonModule,
+        SkeletonModule,
+        TabsModule,
+        TooltipModule,
+        WantedPosterComponent
+    ],
     templateUrl: "./bounty-page.html",
     changeDetection: ChangeDetectionStrategy.OnPush
 })

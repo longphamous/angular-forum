@@ -11,6 +11,7 @@ import {
     Query,
     Request
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import {
@@ -62,6 +63,8 @@ function validateDto(dto: Partial<CreateAchievementDto>, requireAll: boolean): v
     }
 }
 
+@ApiTags("Gamification")
+@ApiBearerAuth("JWT")
 @Controller("gamification/achievements")
 export class AchievementController {
     constructor(private readonly achievementService: AchievementService) {}

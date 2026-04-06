@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../../auth/current-user.decorator";
 import { AuthenticatedUser } from "../../auth/models/jwt.model";
@@ -30,6 +31,8 @@ import { TicketWorkLogService } from "../services/ticket-work-log.service";
  * Registered BEFORE TicketDetailController so these static paths
  * are matched before the :id catch-all.
  */
+@ApiTags("Tickets")
+@ApiBearerAuth("JWT")
 @Controller("tickets")
 export class TicketController {
     constructor(private readonly ticketService: TicketService) {}

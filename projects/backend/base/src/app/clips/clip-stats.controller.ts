@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -12,6 +13,8 @@ import {
     TrendingClipResponse
 } from "./clip-stats.service";
 
+@ApiTags("Clips")
+@ApiBearerAuth("JWT")
 @Controller("clips/stats")
 export class ClipStatsController {
     constructor(private readonly statsService: ClipStatsService) {}

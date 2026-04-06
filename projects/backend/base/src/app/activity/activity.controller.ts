@@ -1,9 +1,12 @@
 import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { ActivityService } from "./activity.service";
 
+@ApiTags("Activity")
+@ApiBearerAuth("JWT")
 @Controller("activities")
 @UseGuards(JwtAuthGuard)
 export class ActivityController {

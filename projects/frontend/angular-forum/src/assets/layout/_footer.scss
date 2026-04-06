@@ -1,4 +1,6 @@
 .layout-footer {
-    border-top: 1px solid var(--surface-border);
-    background: var(--surface-ground);
+    border-top: 1px solid var(--glass-border);
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
 }

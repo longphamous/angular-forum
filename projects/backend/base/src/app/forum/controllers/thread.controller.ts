@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../../auth/auth.decorators";
 import { CurrentUser } from "../../auth/current-user.decorator";
@@ -9,6 +10,8 @@ import { UpdateThreadDto } from "../dto/update-thread.dto";
 import { PaginatedResult, PollDto, ThreadDetailDto, ThreadDto } from "../models/forum.model";
 import { ThreadService } from "../services/thread.service";
 
+@ApiTags("Forum")
+@ApiBearerAuth("JWT")
 @Controller("forum")
 export class ThreadController {
     constructor(private readonly threadService: ThreadService) {}

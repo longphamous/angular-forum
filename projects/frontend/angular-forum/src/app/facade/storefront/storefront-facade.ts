@@ -3,7 +3,11 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 
 import { FEATURED_ROUTES } from "../../core/api/featured.routes";
 import { API_CONFIG, ApiConfig } from "../../core/config/api.config";
-import { CreateFeaturedItemPayload, FeaturedItem, FeaturedSourceType } from "../../core/models/storefront/featured-item";
+import {
+    CreateFeaturedItemPayload,
+    FeaturedItem,
+    FeaturedSourceType
+} from "../../core/models/storefront/featured-item";
 
 export interface SourceItem {
     id: string;
@@ -82,7 +86,7 @@ export class StorefrontFacade {
                 // Handle both array responses (shop, boosters) and paginated responses (marketplace)
                 const items: Record<string, unknown>[] = Array.isArray(response)
                     ? response
-                    : (response["data"] as Record<string, unknown>[]) ?? [];
+                    : ((response["data"] as Record<string, unknown>[]) ?? []);
 
                 this._sourceItems.set(
                     items.map((item) => ({

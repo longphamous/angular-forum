@@ -77,4 +77,8 @@ export class NotificationsService {
     async delete(userId: string, id: string): Promise<void> {
         await this.notifRepo.delete({ id, userId });
     }
+
+    async deleteAll(userId: string): Promise<void> {
+        await this.notifRepo.delete({ userId });
+    }
 }

@@ -1,7 +1,9 @@
 import { Controller, Get } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 
 import { PushService } from "./push.service";
 
+@ApiTags("System")
 @Controller("push")
 export class PushHealthController {
     constructor(private readonly pushService: PushService) {}

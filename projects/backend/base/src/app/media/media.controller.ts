@@ -13,6 +13,7 @@ import {
     UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { memoryStorage } from "multer";
 
 import { Public, Roles } from "../auth/auth.decorators";
@@ -25,6 +26,8 @@ import { MediaStorageService } from "./media-storage.service";
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB (supports video uploads)
 
+@ApiTags("Media")
+@ApiBearerAuth("JWT")
 @Controller("media")
 export class MediaController {
     constructor(

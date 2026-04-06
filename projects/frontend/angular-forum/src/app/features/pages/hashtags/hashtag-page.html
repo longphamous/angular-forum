@@ -1,0 +1,111 @@
+<div class="p-4 sm:p-6 lg:p-8" *transloco="let t">
+    <div class="mx-auto max-w-4xl">
+        <!-- ── Header ──────────────────────────────────────────────── -->
+        <div class="glass-panel-strong mb-6 rounded-2xl px-6 py-5">
+            <div class="flex items-center gap-3">
+                <i
+                    class="pi pi-hashtag text-2xl"
+                    style="
+                        background: var(--accent-gradient);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                    "
+                ></i>
+                <div>
+                    @if (hasTag()) {
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-extrabold tracking-tight">
+                        #{{ currentTag() }}
+                    </h1>
+                    @if (facade.searchResult(); as sr) {
+                    <p class="text-surface-500 dark:text-surface-400 m-0 mt-0.5 text-sm">
+                        {{ sr.total }} {{ t('hashtag.results') }}
+                    </p>
+                    } } @else {
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-extrabold tracking-tight">
+                        {{ t('hashtag.title') }}
+                    </h1>
+                    <p class="text-surface-500 dark:text-surface-400 m-0 mt-0.5 text-sm">{{ t('hashtag.subtitle') }}</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Trending Hashtags ───────────────────────────────────── -->
+        @if (facade.trending().length > 0) {
+        <div class="glass-panel mb-6 rounded-2xl p-5">
+            <h3
+                class="text-surface-500 dark:text-surface-400 m-0 mb-3 flex items-center gap-2 text-sm font-semibold tracking-wider uppercase"
+            >
+                <i class="pi pi-bolt text-amber-500"></i>
+                {{ t('hashtag.trending') }}
+            </h3>
+            <div class="flex flex-wrap gap-2">
+                @for (tag of facade.trending(); track tag.id) {
+                <a class="trending-chip" (click)="navigateToTag(tag.name)">
+                    <span class="text-primary font-semibold">#</span>{{ tag.name }}
+                    <span class="chip-count">{{ tag.usageCount }}</span>
+                </a>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- ── Search Results ──────────────────────────────────────── -->
+        @if (hasTag()) { @if (facade.loading()) {
+        <div class="glass-panel rounded-2xl p-4">
+            @for (_ of [1,2,3,4,5]; track $index) {
+            <div class="flex items-center gap-4 p-3">
+                <p-skeleton height="2rem" width="3rem" />
+                <div class="flex-1">
+                    <p-skeleton height="1rem" width="60%" />
+                    <p-skeleton class="mt-1" height="0.75rem" width="30%" />
+                </div>
+            </div>
+            }
+        </div>
+        } @else if (facade.searchResult(); as sr) { @if (sr.results.length > 0) {
+        <div class="glass-panel overflow-hidden rounded-2xl">
+            @for (result of sr.results; track result.contentId; let last = $last) {
+            <a
+                class="result-row flex items-center gap-4 px-5 py-3.5 no-underline"
+                [class.border-b]="!last"
+                [class.border-white/10]="!last"
+                [routerLink]="contentTypeRoute(result.contentType, result.contentId)"
+            >
+                <!-- Type icon -->
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                    [class]="contentTypeColor(result.contentType)"
+                >
+                    <i [class]="contentTypeIcon(result.contentType)"></i>
+                </div>
+
+                <!-- Content info -->
+                <div class="min-w-0 flex-1">
+                    <span class="content-type-badge" [class]="contentTypeColor(result.contentType)">
+                        {{ result.contentType }}
+                    </span>
+                    <div class="text-surface-400 dark:text-surface-500 mt-0.5 text-xs">
+                        {{ formatDate(result.createdAt) }}
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <i class="pi pi-angle-right text-surface-300 dark:text-surface-600"></i>
+            </a>
+            }
+        </div>
+        } @else {
+        <div class="glass-panel rounded-2xl p-12 text-center">
+            <i class="pi pi-search text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+            <p class="text-surface-500 dark:text-surface-400">{{ t('hashtag.noResults') }}</p>
+        </div>
+        } } } @else if (facade.trending().length === 0) {
+        <!-- Empty state when no tag selected and no trending -->
+        <div class="glass-panel rounded-2xl p-12 text-center">
+            <i class="pi pi-hashtag text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+            <p class="text-surface-500 dark:text-surface-400">{{ t('hashtag.empty') }}</p>
+        </div>
+        }
+    </div>
+</div>

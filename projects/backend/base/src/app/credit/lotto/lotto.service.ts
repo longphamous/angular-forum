@@ -436,16 +436,9 @@ export class LottoService implements OnModuleInit {
                 );
                 await this.notificationsService.create(
                     winner.userId,
-                    "coins_received",
-                    "Lottogewinn!",
-                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
-                    "/lotto"
-                );
-                void this.notificationsService.create(
-                    winner.userId,
                     "lotto_win",
                     "Lottogewinn!",
-                    `Du hast ${winner.prizeAmount} Coins gewonnen!`,
+                    `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
                     "/lotto"
                 );
             } catch (err) {
@@ -923,16 +916,9 @@ export class LottoService implements OnModuleInit {
                 );
                 await this.notificationsService.create(
                     winner.userId,
-                    "coins_received",
+                    "lotto_win",
                     "Sonderziehung Gewinn!",
                     `${winner.prizeClass}: ${winner.prizeAmount} Coins gewonnen!`,
-                    "/lotto"
-                );
-                void this.notificationsService.create(
-                    winner.userId,
-                    "lotto_win",
-                    "Lottogewinn!",
-                    `Du hast ${winner.prizeAmount} Coins gewonnen!`,
                     "/lotto"
                 );
             } catch (err) {

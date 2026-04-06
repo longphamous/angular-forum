@@ -1,20 +1,29 @@
 <div class="flex flex-col gap-4 p-6" *transloco="let t">
+    <p-toast />
+
     <!-- Header -->
     <div class="flex items-center justify-between">
-        <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('tickets.board.title') }}</h1>
+        <div class="flex items-center gap-3">
+            <i class="pi pi-folder text-primary text-xl"></i>
+            <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-bold">{{ t('tickets.board.title') }}</h1>
+        </div>
+        <p-button (onClick)="openCreateDialog()" [label]="t('tickets.board.create')" icon="pi pi-plus" />
     </div>
 
     <!-- Filter Bar -->
     <div class="surface-card flex flex-wrap items-center gap-3 rounded-xl p-3 shadow">
-        <input
-            class="w-48"
-            (keyup.enter)="applyFilters()"
-            (ngModelChange)="filterSearch.set($event)"
-            [ngModel]="filterSearch()"
-            [placeholder]="t('tickets.searchPlaceholder')"
-            pInputText
-            type="text"
-        />
+        <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+                class="w-52"
+                (keyup.enter)="applyFilters()"
+                (ngModelChange)="filterSearch.set($event)"
+                [ngModel]="filterSearch()"
+                [placeholder]="t('tickets.board.searchBoard')"
+                pInputText
+                type="text"
+            />
+        </span>
         <p-select
             (ngModelChange)="filterAssignee.set($event); applyFilters()"
             [filter]="true"
@@ -28,40 +37,19 @@
             styleClass="w-40"
         />
         <p-select
-            (ngModelChange)="filterPriority.set($event); applyFilters()"
-            [ngModel]="filterPriority()"
-            [options]="[
-                { label: t('tickets.filterAll'), value: '' },
-                { label: t('tickets.priority.low'), value: 'low' },
-                { label: t('tickets.priority.normal'), value: 'normal' },
-                { label: t('tickets.priority.high'), value: 'high' },
-                { label: t('tickets.priority.critical'), value: 'critical' }
-            ]"
-            [placeholder]="t('tickets.priority.label')"
-            optionLabel="label"
-            optionValue="value"
-            styleClass="w-36"
-        />
-        <p-select
             (ngModelChange)="filterType.set($event); applyFilters()"
             [ngModel]="filterType()"
-            [options]="[
-                { label: t('tickets.filterAll'), value: '' },
-                { label: t('tickets.type.epic'), value: 'epic' },
-                { label: t('tickets.type.story'), value: 'story' },
-                { label: t('tickets.type.bug'), value: 'bug' },
-                { label: t('tickets.type.task'), value: 'task' }
-            ]"
+            [options]="typeFilterOptions"
             [placeholder]="t('tickets.type.label')"
             optionLabel="label"
             optionValue="value"
             styleClass="w-36"
         />
-        @if (filterSearch() || filterAssignee() || filterPriority() || filterType()) {
+        @if (filterSearch() || filterAssignee() || filterType()) {
         <p-button
             (onClick)="clearFilters()"
             [pTooltip]="t('common.reset')"
-            icon="pi pi-times"
+            icon="pi pi-filter-slash"
             rounded
             severity="secondary"
             size="small"
@@ -71,12 +59,14 @@
     </div>
 
     @if (boardFacade.loading()) {
+    <!-- Skeleton loading -->
     <div class="flex gap-4 overflow-x-auto">
         @for (_ of [1,2,3,4]; track $index) {
         <div class="w-72 shrink-0">
-            <p-skeleton height="2rem" styleClass="mb-3" />
-            <p-skeleton height="6rem" styleClass="mb-2" />
-            <p-skeleton height="6rem" styleClass="mb-2" />
+            <p-skeleton height="2.5rem" styleClass="mb-3 rounded-t-xl" />
+            <p-skeleton height="5rem" styleClass="mb-2" />
+            <p-skeleton height="5rem" styleClass="mb-2" />
+            <p-skeleton height="3rem" />
         </div>
         }
     </div>
@@ -84,17 +74,24 @@
     <!-- Board Columns -->
     <div class="flex gap-4 overflow-x-auto pb-4" cdkDropListGroup>
         @for (column of board.columns; track column.status.id) {
-        <div class="bg-surface-100 dark:bg-surface-800 flex w-72 shrink-0 flex-col rounded-xl">
+        <div class="flex w-72 shrink-0 flex-col rounded-xl" [style.background-color]="columnBg(column.status.category)">
             <!-- Column Header -->
             <div class="flex items-center gap-2 px-4 py-3">
-                <span class="inline-block h-3 w-3 rounded-full" [style.background-color]="column.status.color"></span>
-                <span class="text-surface-900 dark:text-surface-0 text-sm font-semibold">{{ column.status.name }}</span>
-                <span class="text-surface-400 ml-auto text-xs">{{ column.tickets.length }}</span>
+                @if (column.status.category === 'done') {
+                <i class="pi pi-check-circle text-xs text-blue-500"></i>
+                }
+                <span class="text-surface-600 dark:text-surface-300 text-xs font-bold tracking-wider uppercase"
+                    >{{ column.status.name }}</span
+                >
+                <span
+                    class="bg-surface-300/50 dark:bg-surface-600 text-surface-500 dark:text-surface-400 ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                    >{{ column.tickets.length }}</span
+                >
             </div>
 
             <!-- Drop Zone -->
             <div
-                class="board-drop-zone flex min-h-[120px] flex-1 flex-col gap-2 px-3 pb-3"
+                class="board-drop-zone flex min-h-[200px] flex-1 flex-col gap-2 px-3 pb-3"
                 (cdkDropListDropped)="onDrop($event, column.status.id)"
                 [cdkDropListConnectedTo]="getColumnIds()"
                 [cdkDropListData]="column.tickets"
@@ -103,13 +100,12 @@
             >
                 @for (ticket of column.tickets; track ticket.id) {
                 <div class="board-drag-item" [cdkDragData]="ticket" cdkDrag>
-                    <board-card [ticket]="ticket" />
-                    <!-- Drag placeholder -->
+                    <board-card (cardClick)="openTicketDetail($event)" [ticket]="ticket" />
                     <div class="board-drag-placeholder" *cdkDragPlaceholder></div>
                 </div>
                 } @if (column.tickets.length === 0 && quickCreateColumnId() !== column.status.id) {
                 <div
-                    class="text-surface-400 border-surface-200 dark:border-surface-700 flex h-16 items-center justify-center rounded-lg border-2 border-dashed text-sm"
+                    class="text-surface-400 border-surface-200 dark:border-surface-700 flex h-16 items-center justify-center rounded-lg border-2 border-dashed text-xs"
                 >
                     {{ t('tickets.board.noCards') }}
                 </div>
@@ -120,7 +116,7 @@
             @if (quickCreateColumnId() === column.status.id) {
             <div class="px-3 pb-3">
                 <div
-                    class="surface-card border-surface-200 dark:border-surface-700 flex flex-col gap-2 rounded-lg border p-2"
+                    class="surface-card border-surface-200 dark:border-surface-700 flex flex-col gap-2 rounded-lg border p-2 shadow-sm"
                 >
                     <input
                         class="w-full text-sm"
@@ -152,20 +148,501 @@
             } @else {
             <div class="px-3 pb-3">
                 <button
-                    class="text-surface-400 hover:text-surface-600 hover:bg-surface-200 dark:hover:bg-surface-700 flex w-full items-center gap-1 rounded-lg p-2 text-sm transition-colors"
+                    class="text-surface-400 hover:text-surface-600 hover:bg-surface-200/60 dark:hover:bg-surface-700 flex w-full items-center gap-1 rounded-lg p-2 text-sm transition-colors"
                     (click)="startQuickCreate(column.status.id)"
                 >
-                    <i class="pi pi-plus text-xs"></i> {{ t('tickets.board.addCard') }}
+                    <i class="pi pi-plus text-xs"></i> {{ t('tickets.board.create') }}
                 </button>
             </div>
             }
         </div>
         }
     </div>
-    } @else if (boardFacade.error(); as err) {
-    <div class="surface-card rounded-xl p-8 text-center shadow">
-        <i class="pi pi-exclamation-triangle text-surface-400 mb-3 text-4xl"></i>
-        <p class="text-surface-500">{{ err }}</p>
+    } @else if (boardFacade.error()) {
+    <!-- Error States -->
+    <div class="surface-card flex flex-col items-center rounded-xl p-12 text-center shadow">
+        @if (boardFacade.errorCode() === 'not_found') {
+        <i class="pi pi-folder-open text-surface-300 mb-4 text-5xl"></i>
+        <h2 class="text-surface-700 dark:text-surface-200 mb-2 text-lg font-semibold">
+            {{ t('tickets.board.errorNotFoundTitle') }}
+        </h2>
+        <p class="text-surface-400 mb-6 max-w-md text-sm">{{ t('tickets.board.errorNotFoundDescription') }}</p>
+        <div class="flex gap-3">
+            <p-button
+                (onClick)="goToProjectSelect()"
+                [label]="t('tickets.board.selectProject')"
+                icon="pi pi-arrow-left"
+                severity="secondary"
+            />
+            <p-button
+                (onClick)="boardFacade.loadBoard(projectId())"
+                [label]="t('common.button.retry')"
+                icon="pi pi-refresh"
+                outlined
+            />
+        </div>
+        } @else {
+        <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-5xl"></i>
+        <h2 class="text-surface-700 dark:text-surface-200 mb-2 text-lg font-semibold">
+            {{ t('tickets.board.errorLoadTitle') }}
+        </h2>
+        <p class="text-surface-400 mb-6 max-w-md text-sm">{{ t('tickets.board.errorLoadDescription') }}</p>
+        <p-button
+            (onClick)="boardFacade.loadBoard(projectId())"
+            [label]="t('common.button.retry')"
+            icon="pi pi-refresh"
+        />
+        }
     </div>
     }
+
+    <!-- ── Ticket Detail Dialog ──────────────────────────────────────────── -->
+    <p-dialog
+        [(visible)]="detailVisible"
+        [contentStyle]="{ overflow: 'auto', padding: '0' }"
+        [dismissableMask]="true"
+        [modal]="true"
+        [showHeader]="false"
+        [style]="{ width: '900px', maxHeight: '90vh' }"
+    >
+        @if (detailTicket(); as ticket) {
+        <div class="flex flex-col">
+            <!-- Dialog Header bar -->
+            <div class="border-surface-200 dark:border-surface-700 flex items-center gap-2 border-b px-5 py-2.5">
+                @if (ticket.parentTitle) {
+                <span class="text-surface-400 text-[11px]">{{ ticket.parentTitle }} /</span>
+                }
+                <i [class]="typeIcon(ticket.type) + ' text-xs'" [style.color]="typeColor(ticket.type)"></i>
+                <span class="text-surface-500 font-mono text-xs font-medium">{{ ticketKey(ticket) }}</span>
+                <span class="flex-1"></span>
+                <p-button
+                    (onClick)="openTicketFullPage(ticket.id)"
+                    [pTooltip]="t('tickets.board.openFullPage')"
+                    icon="pi pi-external-link"
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    text
+                />
+                <p-button
+                    (onClick)="detailVisible.set(false)"
+                    icon="pi pi-times"
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    text
+                />
+            </div>
+
+            <!-- Two-column layout -->
+            <div class="flex flex-col md:flex-row">
+                <!-- Left: Main content -->
+                <div class="flex-1 px-5 py-4">
+                    <!-- Title -->
+                    <div class="text-surface-900 dark:text-surface-0 mb-3 text-base leading-snug font-semibold">
+                        {{ ticket.title }}
+                    </div>
+
+                    <!-- Status pill -->
+                    <div class="mb-4">
+                        <p-select
+                            (ngModelChange)="updateDetailField('status', $event)"
+                            [ngModel]="ticket.status"
+                            [options]="statusOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            styleClass="w-40 text-sm"
+                        />
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-5">
+                        <div class="text-surface-500 mb-1 text-[11px] font-semibold uppercase">
+                            {{ t('common.description') }}
+                        </div>
+                        @if (ticket.description) {
+                        <div class="text-surface-700 dark:text-surface-200 text-sm leading-relaxed whitespace-pre-wrap">
+                            {{ ticket.description }}
+                        </div>
+                        } @else {
+                        <p class="text-surface-400 text-xs italic">{{ t('tickets.board.addDescription') }}</p>
+                        }
+                    </div>
+
+                    <!-- Children / Subtasks -->
+                    @if (ticketFacade.children().length > 0 || ticket.type === 'epic' || ticket.type === 'story') {
+                    <div class="mb-5">
+                        <div class="text-surface-500 mb-1.5 text-[11px] font-semibold uppercase">
+                            {{ t('tickets.children') }}
+                        </div>
+                        @if (ticketFacade.children().length > 0) {
+                        <div class="flex flex-col gap-1">
+                            @for (child of ticketFacade.children(); track child.id) {
+                            <div
+                                class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-2 rounded px-2.5 py-1.5 text-xs transition-colors"
+                                (click)="openTicketDetail(child)"
+                                (keyup.enter)="openTicketDetail(child)"
+                                role="button"
+                                tabindex="0"
+                            >
+                                <i
+                                    [class]="typeIcon(child.type) + ' text-[10px]'"
+                                    [style.color]="typeColor(child.type)"
+                                ></i>
+                                <span class="text-surface-400 font-mono text-[10px]">{{ ticketKey(child) }}</span>
+                                <span class="text-surface-900 dark:text-surface-0 flex-1 font-medium"
+                                    >{{ child.title }}</span
+                                >
+                                <span
+                                    class="rounded px-1.5 py-0.5 text-[9px] font-medium text-white"
+                                    [style.background-color]="child.workflowStatusColor ?? '#6B7280'"
+                                    >{{ child.workflowStatusName ?? child.status }}</span
+                                >
+                            </div>
+                            }
+                        </div>
+                        } @else {
+                        <p class="text-surface-400 text-xs">{{ t('tickets.noChildren') }}</p>
+                        }
+                    </div>
+                    }
+
+                    <!-- Linked Work Items -->
+                    @if (ticketFacade.links().length > 0) {
+                    <div class="mb-5">
+                        <div class="text-surface-500 mb-1.5 text-[11px] font-semibold uppercase">
+                            {{ t('tickets.links.title') }}
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            @for (link of ticketFacade.links(); track link.id) {
+                            <div
+                                class="bg-surface-50 dark:bg-surface-800 flex items-center gap-2 rounded px-2.5 py-1.5 text-xs"
+                            >
+                                <span class="text-surface-400 text-[10px] font-medium uppercase"
+                                    >{{ t('tickets.links.' + link.linkType) }}</span
+                                >
+                                @if (link.sourceTicketId === ticket.id) {
+                                <span class="text-primary font-medium"
+                                    >#{{ link.targetTicketNumber }} {{ link.targetTicketTitle }}</span
+                                >
+                                } @else {
+                                <span class="text-primary font-medium"
+                                    >#{{ link.sourceTicketNumber }} {{ link.sourceTicketTitle }}</span
+                                >
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+
+                    <!-- Activity / Comments -->
+                    <div>
+                        <div class="text-surface-500 mb-2 text-[11px] font-semibold uppercase">
+                            {{ t('tickets.activity.title') }}
+                        </div>
+
+                        <!-- Comment input -->
+                        <div class="mb-3 flex gap-2.5">
+                            <span
+                                class="bg-primary/20 text-primary flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                            >
+                                {{ currentUserInitials() }}
+                            </span>
+                            <div class="flex-1">
+                                <textarea
+                                    class="w-full text-xs"
+                                    (ngModelChange)="detailComment.set($event)"
+                                    [ngModel]="detailComment()"
+                                    [placeholder]="t('tickets.board.addComment')"
+                                    [rows]="2"
+                                    pTextarea
+                                ></textarea>
+                                @if (detailComment().trim()) {
+                                <div class="mt-1 flex justify-end">
+                                    <p-button
+                                        (onClick)="submitDetailComment()"
+                                        [label]="t('common.button.save')"
+                                        icon="pi pi-send"
+                                        size="small"
+                                    />
+                                </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Comment list -->
+                        <div class="flex flex-col gap-2.5">
+                            @for (comment of ticketFacade.comments(); track comment.id) {
+                            <div class="flex gap-2.5">
+                                <span
+                                    class="bg-surface-200 dark:bg-surface-600 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                                >
+                                    {{ initials(comment.authorName ?? '?') }}
+                                </span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-surface-900 dark:text-surface-0 text-xs font-semibold"
+                                            >{{ comment.authorName ?? comment.authorId }}</span
+                                        >
+                                        <span class="text-surface-400 text-[10px]"
+                                            >{{ comment.createdAt | date:'MMM d, y h:mm a' }}</span
+                                        >
+                                        @if (comment.isInternal) {
+                                        <span
+                                            class="rounded bg-yellow-100 px-1 py-0.5 text-[9px] font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                            >{{ t('tickets.internalNote') }}</span
+                                        >
+                                        }
+                                    </div>
+                                    <div
+                                        class="text-surface-700 dark:text-surface-200 mt-0.5 text-xs whitespace-pre-wrap"
+                                    >
+                                        {{ comment.content }}
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Details sidebar -->
+                <div
+                    class="border-surface-200 dark:border-surface-700 w-full border-t px-5 py-4 md:w-64 md:border-t-0 md:border-l"
+                >
+                    <div class="text-surface-500 mb-3 text-[11px] font-semibold uppercase">
+                        {{ t('tickets.board.details') }}
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <!-- Assignee -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.fieldAssignee') }}</div>
+                            <p-select
+                                (ngModelChange)="updateDetailField('assigneeId', $event)"
+                                [filter]="true"
+                                [ngModel]="ticket.assigneeId ?? null"
+                                [options]="ticketFacade.assignableUsers()"
+                                [placeholder]="t('tickets.unassigned')"
+                                [showClear]="true"
+                                filterBy="displayName"
+                                optionLabel="displayName"
+                                optionValue="id"
+                                styleClass="w-full text-sm"
+                            />
+                        </div>
+
+                        <!-- Priority -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.priority.label') }}</div>
+                            <p-select
+                                (ngModelChange)="updateDetailField('priority', $event)"
+                                [ngModel]="ticket.priority"
+                                [options]="priorityOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                styleClass="w-full text-sm"
+                            />
+                        </div>
+
+                        <!-- Type -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('common.type') }}</div>
+                            <p-select
+                                (ngModelChange)="updateDetailField('type', $event)"
+                                [ngModel]="ticket.type"
+                                [options]="typeOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                styleClass="w-full text-sm"
+                            />
+                        </div>
+
+                        <!-- Due Date -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.fieldDueDate') }}</div>
+                            <p-datepicker
+                                (ngModelChange)="updateDetailField('dueDate', $event ? $event.toISOString() : null)"
+                                [ngModel]="ticket.dueDate ? toDate(ticket.dueDate) : null"
+                                [showClear]="true"
+                                dateFormat="M d, yy"
+                                styleClass="w-full text-sm"
+                            />
+                        </div>
+
+                        <!-- Story Points -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.storyPoints') }}</div>
+                            <p-inputnumber
+                                (ngModelChange)="updateDetailField('storyPoints', $event)"
+                                [max]="100"
+                                [min]="0"
+                                [ngModel]="ticket.storyPoints ?? null"
+                                [showButtons]="true"
+                                styleClass="w-full text-sm"
+                            />
+                        </div>
+
+                        <!-- Labels -->
+                        @if (ticket.labels.length > 0) {
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.labels') }}</div>
+                            <div class="flex flex-wrap gap-1">
+                                @for (label of ticket.labels; track label.id) {
+                                <span
+                                    class="rounded px-1.5 py-0.5 text-[10px] font-medium text-white"
+                                    [style.background-color]="label.color"
+                                    >{{ label.name }}</span
+                                >
+                                }
+                            </div>
+                        </div>
+                        }
+
+                        <!-- Reporter -->
+                        <div>
+                            <div class="text-surface-400 mb-0.5 text-[11px]">{{ t('tickets.fieldReporter') }}</div>
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    class="bg-surface-200 dark:bg-surface-600 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
+                                    >{{ initials(ticket.authorName ?? '?') }}</span
+                                >
+                                <span class="text-surface-900 dark:text-surface-0 text-xs"
+                                    >{{ ticket.authorName ?? ticket.authorId }}</span
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="border-surface-200 dark:border-surface-700 border-t pt-2.5">
+                            <div class="text-surface-400 text-[10px]">
+                                {{ t('tickets.board.created') }} {{ ticket.createdAt | date:'MMM d, y' }}
+                            </div>
+                            <div class="text-surface-400 text-[10px]">
+                                {{ t('tickets.board.updated') }} {{ ticket.updatedAt | date:'MMM d, y' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </p-dialog>
+
+    <!-- ── Create Ticket Dialog ──────────────────────────────────────────── -->
+    <p-dialog
+        [(visible)]="createVisible"
+        [contentStyle]="{ overflow: 'visible' }"
+        [header]="t('tickets.board.createIssue')"
+        [modal]="true"
+        [style]="{ width: '650px' }"
+    >
+        <div class="flex flex-col gap-4">
+            <!-- Type -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('common.type') }} *</label
+                >
+                <p-select
+                    [(ngModel)]="createForm.type"
+                    [options]="typeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full"
+                />
+            </div>
+
+            <!-- Summary / Title -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('tickets.board.summary') }} *</label
+                >
+                <input class="w-full" [(ngModel)]="createForm.title" pInputText type="text" />
+            </div>
+
+            <!-- Description -->
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                    >{{ t('common.description') }}</label
+                >
+                <textarea class="w-full" [(ngModel)]="createForm.description" [rows]="4" pTextarea></textarea>
+            </div>
+
+            <!-- Priority + Assignee -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.priority.label') }}</label
+                    >
+                    <p-select
+                        [(ngModel)]="createForm.priority"
+                        [options]="priorityOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.fieldAssignee') }}</label
+                    >
+                    <p-select
+                        [(ngModel)]="createForm.assigneeId"
+                        [filter]="true"
+                        [options]="ticketFacade.assignableUsers()"
+                        [placeholder]="t('tickets.unassigned')"
+                        [showClear]="true"
+                        filterBy="displayName"
+                        optionLabel="displayName"
+                        optionValue="id"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+
+            <!-- Due Date + Story Points -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.fieldDueDate') }}</label
+                    >
+                    <p-datepicker
+                        [(ngModel)]="createForm.dueDate"
+                        [showClear]="true"
+                        dateFormat="M d, yy"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-surface-600 dark:text-surface-400 text-sm font-semibold"
+                        >{{ t('tickets.storyPoints') }}</label
+                    >
+                    <p-inputnumber
+                        [(ngModel)]="createForm.storyPoints"
+                        [max]="100"
+                        [min]="0"
+                        [showButtons]="true"
+                        styleClass="w-full"
+                    />
+                </div>
+            </div>
+        </div>
+        <ng-template #footer>
+            <div class="flex justify-end gap-2">
+                <p-button
+                    (onClick)="createVisible.set(false)"
+                    [label]="t('common.button.cancel')"
+                    severity="secondary"
+                    text
+                />
+                <p-button
+                    (onClick)="submitCreate()"
+                    [disabled]="!createForm.title.trim()"
+                    [label]="t('tickets.board.create')"
+                    icon="pi pi-plus"
+                />
+            </div>
+        </ng-template>
+    </p-dialog>
 </div>

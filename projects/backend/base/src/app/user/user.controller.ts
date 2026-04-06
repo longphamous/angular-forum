@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 
 import { Public, Roles } from "../auth/auth.decorators";
@@ -13,6 +14,8 @@ import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { AuthSession, UserProfile } from "./models/user.model";
 import { OnlineUserDto, UserService } from "./user.service";
 
+@ApiTags("Users")
+@ApiBearerAuth("JWT")
 @Controller("user")
 export class UserController {
     /** In-memory cache to throttle profile-visit notifications: key = "visitorId:profileId", value = timestamp */

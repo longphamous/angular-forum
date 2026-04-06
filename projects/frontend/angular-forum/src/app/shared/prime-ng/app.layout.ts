@@ -71,9 +71,27 @@ export class AppLayout implements OnDestroy {
     private detectSidebar(url: string): boolean {
         if (url.startsWith("/admin")) return true;
         if (url.startsWith("/marketplace")) return true;
-        if (url.startsWith("/tickets") || url.startsWith("/board") || url.startsWith("/backlog") || url.startsWith("/roadmap") || url.startsWith("/reports")) return true;
+        if (
+            url.startsWith("/tickets") ||
+            url.startsWith("/board") ||
+            url.startsWith("/backlog") ||
+            url.startsWith("/roadmap") ||
+            url.startsWith("/reports")
+        )
+            return true;
         if (url.startsWith("/anime") || url.startsWith("/steam")) return true;
-        if (url.startsWith("/wanted") || url.startsWith("/achievements") || url.startsWith("/shop") || url.startsWith("/lotto") || url.startsWith("/tcg") || url.startsWith("/market")) return true;
+        if (
+            url.startsWith("/rpg") ||
+            url.startsWith("/leaderboard") ||
+            url.startsWith("/hashtags") ||
+            url.startsWith("/wanted") ||
+            url.startsWith("/achievements") ||
+            url.startsWith("/shop") ||
+            url.startsWith("/lotto") ||
+            url.startsWith("/tcg") ||
+            url.startsWith("/market")
+        )
+            return true;
         return false;
     }
 

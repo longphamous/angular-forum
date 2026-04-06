@@ -12,6 +12,7 @@ import {
     UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { diskStorage } from "multer";
 import { extname, join } from "path";
 
@@ -20,6 +21,8 @@ import { CreateSlideDto, SlideshowService, TeaserSlideDto } from "./slideshow.se
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
+@ApiTags("Admin")
+@ApiBearerAuth("JWT")
 @Controller("slideshow")
 export class SlideshowController {
     constructor(private readonly slideshowService: SlideshowService) {}

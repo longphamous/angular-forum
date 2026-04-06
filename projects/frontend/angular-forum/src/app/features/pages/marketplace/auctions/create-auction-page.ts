@@ -7,8 +7,8 @@ import { ChipModule } from "primeng/chip";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { MessageModule } from "primeng/message";
-import { SelectButtonModule } from "primeng/selectbutton";
 import { SelectModule } from "primeng/select";
+import { SelectButtonModule } from "primeng/selectbutton";
 import { TextareaModule } from "primeng/textarea";
 
 import { MarketCategory } from "../../../../core/models/marketplace/marketplace";

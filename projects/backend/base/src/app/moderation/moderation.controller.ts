@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -6,6 +7,8 @@ import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { ProfileApprovalType } from "./entities/profile-approval.entity";
 import { ModerationService } from "./moderation.service";
 
+@ApiTags("Moderation")
+@ApiBearerAuth("JWT")
 @Controller("moderation")
 export class ModerationController {
     constructor(private readonly moderationService: ModerationService) {}

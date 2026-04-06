@@ -17,6 +17,11 @@ import { RichEmbed } from "../rich-embed/rich-embed";
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/gi;
 
+// Matches #hashtag patterns in text nodes (not inside HTML tags/attributes).
+// Captures: optional leading whitespace/>, then # + tag name (2-50 word chars).
+const HASHTAG_LINK_REGEX =
+    /(^|[\s>])#([a-zA-Z\u00C0-\u024F\u1E00-\u1EFF][\w\u00C0-\u024F\u1E00-\u1EFF]{1,49})(?=[\s<.,;:!?)}\]"']|$)/g;
+
 @Component({
     selector: "rich-content",
     standalone: true,
@@ -51,7 +56,8 @@ export class RichContent implements AfterViewInit, OnChanges, OnDestroy {
     safeHtml: SafeHtml = "";
 
     ngOnChanges(): void {
-        this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(this.html());
+        const processed = this.linkHashtags(this.html());
+        this.safeHtml = this.sanitizer.bypassSecurityTrustHtml(processed);
         this.scheduleDetect();
     }
 
@@ -62,6 +68,25 @@ export class RichContent implements AfterViewInit, OnChanges, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.detectTimer) clearTimeout(this.detectTimer);
+    }
+
+    /**
+     * Convert #hashtag text into clickable links.
+     * Only replaces hashtags in text content, not inside HTML tag attributes.
+     */
+    private linkHashtags(html: string): string {
+        // Split by HTML tags to only process text nodes
+        const parts = html.split(/(<[^>]*>)/);
+        for (let i = 0; i < parts.length; i++) {
+            // Skip HTML tags (odd indices after split)
+            if (parts[i].startsWith("<")) continue;
+            parts[i] = parts[i].replace(
+                HASHTAG_LINK_REGEX,
+                (_, prefix: string, tag: string) =>
+                    `${prefix}<a href="/hashtags/${encodeURIComponent(tag.toLowerCase())}" class="hashtag-link">#${tag}</a>`
+            );
+        }
+        return parts.join("");
     }
 
     private scheduleDetect(): void {

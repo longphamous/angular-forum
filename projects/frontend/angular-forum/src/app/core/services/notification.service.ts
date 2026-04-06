@@ -113,6 +113,16 @@ export class NotificationService {
         });
     }
 
+    deleteAllNotifications(): void {
+        const base = this.apiConfig.baseUrl;
+        this.http.delete(`${base}${NOTIFICATIONS_ROUTES.deleteAll()}`).subscribe({
+            next: () => {
+                this.notifications.set([]);
+                this.unreadCount.set(0);
+            }
+        });
+    }
+
     private fetchUnreadCount(): void {
         const base = this.apiConfig.baseUrl;
         this.http.get<{ count: number }>(`${base}${NOTIFICATIONS_ROUTES.unreadCount()}`).subscribe({

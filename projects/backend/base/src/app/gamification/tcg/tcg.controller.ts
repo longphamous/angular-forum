@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../../auth/auth.decorators";
 import { RolesGuard } from "../../auth/guards/roles.guard";
@@ -21,6 +22,8 @@ import {
     UserCardDto
 } from "./tcg.service";
 
+@ApiTags("TCG")
+@ApiBearerAuth("JWT")
 @Controller("gamification/tcg")
 export class TcgController {
     constructor(private readonly tcgService: TcgService) {}

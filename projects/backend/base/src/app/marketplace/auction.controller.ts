@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -9,6 +10,8 @@ import { CreateAuctionDto } from "./dto/create-auction.dto";
 import { PlaceBidDto } from "./dto/place-bid.dto";
 import { AuctionBidDto, AuctionDto, AuctionWatchlistDto, PaginatedAuctionResult } from "./models/auction.model";
 
+@ApiTags("Marketplace")
+@ApiBearerAuth("JWT")
 @Controller("marketplace/auctions")
 @UseGuards(JwtAuthGuard)
 export class AuctionController {

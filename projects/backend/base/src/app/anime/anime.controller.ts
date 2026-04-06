@@ -11,6 +11,7 @@ import {
     Post,
     Query
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { AnimeService } from "./anime.service";
@@ -19,6 +20,8 @@ import { CreateAnimeDto } from "./dto/create-anime.dto";
 import { UpdateAnimeDto } from "./dto/update-anime.dto";
 import { AnimeDto, PaginatedAnimeDto } from "./models/anime.model";
 
+@ApiTags("Anime")
+@ApiBearerAuth("JWT")
 @Controller("anime")
 export class AnimeController {
     constructor(private readonly animeService: AnimeService) {}

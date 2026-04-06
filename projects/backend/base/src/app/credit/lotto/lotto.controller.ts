@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 
 import { Public, Roles } from "../../auth/auth.decorators";
@@ -17,6 +18,8 @@ import {
     SpecialDrawResult
 } from "./models/lotto.model";
 
+@ApiTags("Lotto")
+@ApiBearerAuth("JWT")
 @Controller("credit/lotto")
 export class LottoController {
     constructor(

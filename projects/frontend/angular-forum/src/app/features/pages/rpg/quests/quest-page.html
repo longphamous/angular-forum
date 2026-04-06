@@ -1,0 +1,219 @@
+<div class="p-4 sm:p-6 lg:p-8" *transloco="let t">
+    <div class="mx-auto max-w-4xl">
+        <!-- ── Header ──────────────────────────────────────────── -->
+        <div class="glass-panel-strong mb-6 flex flex-wrap items-center gap-4 rounded-2xl px-6 py-5">
+            <div class="flex items-center gap-3">
+                <i
+                    class="pi pi-map text-3xl"
+                    style="
+                        background: var(--accent-gradient);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                    "
+                ></i>
+                <div>
+                    <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl font-extrabold tracking-tight">
+                        {{ t('quest.title') }}
+                    </h1>
+                    <p class="text-surface-500 dark:text-surface-400 m-0 mt-0.5 text-sm">{{ t('quest.subtitle') }}</p>
+                </div>
+            </div>
+            <div class="ml-auto flex items-center gap-3">
+                @if (facade.board(); as board) {
+                <div class="glory-badge">
+                    <i class="pi pi-crown"></i>
+                    {{ board.glory }} {{ t('quest.glory') }}
+                </div>
+                }
+                <p-button
+                    [label]="t('quest.backToCharacter')"
+                    [outlined]="true"
+                    icon="pi pi-arrow-left"
+                    routerLink="/rpg"
+                    severity="secondary"
+                    size="small"
+                />
+            </div>
+        </div>
+
+        <!-- ── Loading ─────────────────────────────────────────── -->
+        @if (facade.loading()) {
+        <div class="flex flex-col gap-4">
+            @for (_ of [1,2,3]; track $index) {
+            <div class="glass-panel rounded-2xl p-5">
+                <p-skeleton height="1.25rem" width="30%" />
+                @for (_ of [1,2]; track $index) {
+                <p-skeleton class="mt-3" height="3.5rem" width="100%" />
+                }
+            </div>
+            }
+        </div>
+        } @else if (facade.board(); as board) {
+
+        <!-- ── Active Events Banner ────────────────────────── -->
+        @if (board.events.length > 0) {
+        <div class="mb-6">
+            @for (uq of board.events; track uq.id) {
+            <div class="event-banner mb-3">
+                @if (uq.quest.eventBannerUrl) {
+                <img class="absolute inset-0 h-full w-full object-cover" [src]="uq.quest.eventBannerUrl" />
+                }
+                <div class="event-banner-overlay">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-bolt text-lg text-amber-400"></i>
+                            <span class="text-lg font-bold text-white">{{ uq.quest.name }}</span>
+                        </div>
+                        @if (uq.quest.description) {
+                        <p class="m-0 mt-1 text-sm text-white/70">{{ uq.quest.description }}</p>
+                        }
+                        <div class="mt-2 flex items-center gap-3">
+                            <div class="flex gap-1.5">
+                                @for (reward of uq.quest.rewards; track reward.type) {
+                                <span
+                                    class="reward-chip"
+                                    style="
+                                        background: rgba(255, 255, 255, 0.15);
+                                        border-color: rgba(255, 255, 255, 0.2);
+                                        color: white;
+                                    "
+                                >
+                                    <i class="{{ rewardTypeConfig[reward.type].icon }}" style="font-size: 0.6rem"></i>
+                                    {{ rewardLabel(reward) }}
+                                </span>
+                                } @if (uq.quest.gloryReward > 0) {
+                                <span
+                                    class="reward-chip"
+                                    style="
+                                        background: rgba(255, 255, 255, 0.15);
+                                        border-color: rgba(255, 255, 255, 0.2);
+                                        color: white;
+                                    "
+                                >
+                                    <i class="pi pi-crown" style="font-size: 0.6rem"></i>
+                                    +{{ uq.quest.gloryReward }} {{ t('quest.glory') }}
+                                </span>
+                                }
+                            </div>
+                            @if (uq.quest.eventEndsAt) {
+                            <span class="text-xs text-white/50">
+                                <i class="pi pi-clock" style="font-size: 0.6rem"></i>
+                                {{ formatTimeLeft(uq.quest.eventEndsAt) }} {{ t('quest.remaining') }}
+                            </span>
+                            }
+                        </div>
+                        <!-- Progress -->
+                        <div class="mt-2 max-w-xs">
+                            <div class="quest-progress-track" [class.quest-progress-complete]="uq.status !== 'active'">
+                                <div class="quest-progress-fill" [style.width.%]="progressPercent(uq)"></div>
+                            </div>
+                            <div class="mt-1 text-xs text-white/50">{{ uq.progress }}/{{ uq.quest.requiredCount }}</div>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        @if (uq.status === 'completed') {
+                        <p-button
+                            (onClick)="claimReward(uq)"
+                            [label]="t('quest.claim')"
+                            icon="pi pi-gift"
+                            size="small"
+                        />
+                        } @else if (uq.status === 'claimed') {
+                        <p-tag [value]="t('quest.claimed')" icon="pi pi-check" severity="success" />
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- ── Quest sections ──────────────────────────────── -->
+        @for (section of questSections(board); track section.type) { @if (section.quests.length > 0) {
+        <div class="glass-panel mb-4 rounded-2xl p-5">
+            <h3
+                class="text-surface-500 dark:text-surface-400 m-0 mb-3 flex items-center gap-2 text-sm font-semibold tracking-wider uppercase"
+            >
+                <i class="{{ questTypeConfig[section.type].icon }} {{ questTypeConfig[section.type].color }}"></i>
+                {{ t(questTypeConfig[section.type].labelKey) }}
+                <span class="bg-surface-100 dark:bg-surface-800 rounded-full px-2 py-0.5 text-xs font-normal">
+                    {{ section.quests.length }}
+                </span>
+            </h3>
+
+            <div class="flex flex-col gap-2">
+                @for (uq of section.quests; track uq.id) {
+                <div
+                    class="quest-card"
+                    [class.quest-card-claimed]="uq.status === 'claimed'"
+                    [class.quest-card-completed]="uq.status === 'completed'"
+                >
+                    <!-- Icon -->
+                    <div
+                        class="quest-icon"
+                        [class]="questTypeConfig[uq.quest.questType].color"
+                        style="background: var(--glass-bg); border: 1px solid var(--glass-border)"
+                    >
+                        <i class="{{ uq.quest.icon ?? questTypeConfig[uq.quest.questType].icon }}"></i>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="min-w-0 flex-1">
+                        <div class="text-surface-800 dark:text-surface-100 text-sm font-semibold">
+                            {{ uq.quest.name }}
+                        </div>
+                        @if (uq.quest.description) {
+                        <div class="text-surface-400 dark:text-surface-500 mt-0.5 text-xs">
+                            {{ uq.quest.description }}
+                        </div>
+                        }
+                        <!-- Rewards -->
+                        <div class="mt-1.5 flex flex-wrap gap-1">
+                            @for (reward of uq.quest.rewards; track reward.type) {
+                            <span class="reward-chip">
+                                <i
+                                    class="{{ rewardTypeConfig[reward.type].icon }} {{ rewardTypeConfig[reward.type].color }}"
+                                    style="font-size: 0.6rem"
+                                ></i>
+                                {{ rewardLabel(reward) }}
+                            </span>
+                            } @if (uq.quest.gloryReward > 0) {
+                            <span class="reward-chip">
+                                <i class="pi pi-crown text-purple-500" style="font-size: 0.6rem"></i>
+                                +{{ uq.quest.gloryReward }}
+                            </span>
+                            }
+                        </div>
+                        <!-- Progress bar -->
+                        <div class="mt-2 max-w-48">
+                            <div class="quest-progress-track" [class.quest-progress-complete]="uq.status !== 'active'">
+                                <div class="quest-progress-fill" [style.width.%]="progressPercent(uq)"></div>
+                            </div>
+                        </div>
+                        <div class="text-surface-400 dark:text-surface-500 mt-0.5 text-xs">
+                            {{ uq.progress }}/{{ uq.quest.requiredCount }}
+                        </div>
+                    </div>
+
+                    <!-- Action -->
+                    @if (uq.status === 'completed') {
+                    <p-button (onClick)="claimReward(uq)" [label]="t('quest.claim')" icon="pi pi-gift" size="small" />
+                    } @else if (uq.status === 'claimed') {
+                    <p-tag [value]="t('quest.claimed')" icon="pi pi-check" severity="success" styleClass="text-xs" />
+                    }
+                </div>
+                }
+            </div>
+        </div>
+        } }
+
+        <!-- ── Empty state ─────────────────────────────────── -->
+        @if (board.daily.length === 0 && board.weekly.length === 0 && board.monthly.length === 0 && board.story.length
+        === 0 && board.events.length === 0) {
+        <div class="glass-panel rounded-2xl p-12 text-center">
+            <i class="pi pi-map text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+            <p class="text-surface-500 dark:text-surface-400">{{ t('quest.empty') }}</p>
+        </div>
+        } }
+    </div>
+</div>

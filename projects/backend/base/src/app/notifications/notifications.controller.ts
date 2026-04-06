@@ -1,9 +1,12 @@
 import { Controller, Delete, Get, Param, Patch, Query, Req } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 
 import { NotificationEntity } from "./entities/notification.entity";
 import { NotificationsService } from "./notifications.service";
 
+@ApiTags("Notifications")
+@ApiBearerAuth("JWT")
 @Controller("notifications")
 export class NotificationsController {
     constructor(private readonly notifService: NotificationsService) {}
@@ -31,6 +34,12 @@ export class NotificationsController {
     markAsRead(@Req() req: Request, @Param("id") id: string): Promise<void> {
         const user = req.user as { userId: string };
         return this.notifService.markAsRead(user.userId, id);
+    }
+
+    @Delete()
+    deleteAll(@Req() req: Request): Promise<void> {
+        const user = req.user as { userId: string };
+        return this.notifService.deleteAll(user.userId);
     }
 
     @Delete(":id")

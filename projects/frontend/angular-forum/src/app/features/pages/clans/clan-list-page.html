@@ -7,11 +7,11 @@
         </div>
         <div class="flex gap-2">
             <p-button
-                [label]="t('clans.myClan')"
-                [icon]="showMyClans() ? 'pi pi-heart-fill' : 'pi pi-heart'"
-                [severity]="showMyClans() ? 'primary' : 'secondary'"
-                [outlined]="!showMyClans()"
                 (onClick)="toggleMyClans()"
+                [icon]="showMyClans() ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                [label]="t('clans.myClan')"
+                [outlined]="!showMyClans()"
+                [severity]="showMyClans() ? 'primary' : 'secondary'"
             />
             <p-button [label]="t('clans.createClan')" icon="pi pi-plus" routerLink="/clans/create" />
         </div>

@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../../auth/auth.decorators";
 import { CreateCategoryDto } from "../dto/create-category.dto";
 import type { ClanCategoryDto } from "../models/clan.model";
 import { ClanAdminService } from "../services/clan-admin.service";
 
+@ApiTags("Clans")
+@ApiBearerAuth("JWT")
 @Roles("admin")
 @Controller("clans/admin")
 export class ClanAdminController {

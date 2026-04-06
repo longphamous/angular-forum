@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../../auth/current-user.decorator";
 import { AuthenticatedUser } from "../../auth/models/jwt.model";
@@ -7,6 +8,8 @@ import { BoardQueryDto } from "../dto/board-query.dto";
 import type { BoardDataDto } from "../models/ticket.model";
 import { TicketWorkflowService } from "../services/ticket-workflow.service";
 
+@ApiTags("Tickets")
+@ApiBearerAuth("JWT")
 @Controller("tickets/board")
 export class TicketBoardController {
     constructor(private readonly workflowService: TicketWorkflowService) {}

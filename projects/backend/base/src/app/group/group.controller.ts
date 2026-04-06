@@ -1,9 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../auth/auth.decorators";
 import { UserProfile } from "../user/models/user.model";
 import { CreateGroupDto, GroupDto, GroupService, UpdateGroupDto } from "./group.service";
 
+@ApiTags("Groups")
+@ApiBearerAuth("JWT")
 @Controller("group")
 export class GroupController {
     constructor(private readonly groupService: GroupService) {}

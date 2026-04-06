@@ -46,7 +46,15 @@ export type NotificationType =
     | "clan_application_accepted"
     | "clan_application_declined"
     | "clan_invitation"
-    | "clan_member_kicked";
+    | "clan_member_kicked"
+    // Tickets
+    | "ticket_assigned"
+    | "ticket_status_changed"
+    | "ticket_commented"
+    | "ticket_linked"
+    | "ticket_updated"
+    // RPG / Quests
+    | "quest_complete";
 
 @Entity("notifications")
 export class NotificationEntity {

@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ModuleRef } from "@nestjs/core";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
@@ -13,6 +14,8 @@ import { UserXpEntity } from "./entities/user-xp.entity";
 import { XpConfigEntity } from "./entities/xp-config.entity";
 import { XpEventEntity, XpEventType } from "./entities/xp-event.entity";
 import { getLevelForXp, getXpProgressPercent, getXpToNextLevel, UserXpData } from "./level.config";
+import type { LeaderboardEntry, LeaderboardResponse } from "./models/leaderboard.model";
+import { POINTS_PER_LEVEL } from "../rpg/entities/user-character.entity";
 
 export interface XpConfigDto {
     eventType: string;
@@ -56,7 +59,8 @@ export class GamificationService implements OnModuleInit {
         private readonly achievementService: AchievementService,
         private readonly pushService: PushService,
         private readonly notificationsService: NotificationsService,
-        private readonly activityService: ActivityService
+        private readonly activityService: ActivityService,
+        private readonly moduleRef: ModuleRef
     ) {}
 
     onModuleInit(): void {
@@ -136,6 +140,16 @@ export class GamificationService implements OnModuleInit {
                 "/profile"
             );
             this.logger.log(`User ${userId} leveled up: ${previousLevel} → ${record.level} (${newLevelData.name})`);
+
+            // Award RPG attribute points for each level gained
+            const levelsGained = record.level - previousLevel;
+            try {
+                const { RpgService } = await import("../rpg/rpg.service");
+                const rpgService = this.moduleRef.get(RpgService, { strict: false });
+                void rpgService.awardPoints(userId, levelsGained * POINTS_PER_LEVEL).catch(() => undefined);
+            } catch {
+                // RpgModule not loaded yet — silently skip
+            }
         }
 
         // Fire-and-forget achievement check
@@ -157,6 +171,53 @@ export class GamificationService implements OnModuleInit {
             if (!map.has(id)) map.set(id, this.toXpData(0));
         }
         return map;
+    }
+
+    // ── Leaderboard ─────────────────────────────────────────────────────────────
+
+    async getLeaderboard(limit = 50, offset = 0): Promise<LeaderboardResponse> {
+        const safeLimit = Math.min(Math.max(limit, 1), 100);
+        const safeOffset = Math.max(offset, 0);
+
+        const [total] = await this.dataSource.query<{ count: string }[]>(
+            `SELECT COUNT(*) AS count FROM user_xp WHERE xp > 0`
+        );
+
+        const rows = await this.dataSource.query<
+            {
+                user_id: string;
+                username: string;
+                display_name: string;
+                avatar_url: string | null;
+                xp: number;
+                level: number;
+            }[]
+        >(
+            `SELECT ux.user_id, u.username, u.display_name, u.avatar_url, ux.xp, ux.level
+             FROM user_xp ux
+             JOIN users u ON u.id = ux.user_id
+             WHERE ux.xp > 0
+             ORDER BY ux.xp DESC, ux.level DESC
+             LIMIT $1 OFFSET $2`,
+            [safeLimit, safeOffset]
+        );
+
+        const data: LeaderboardEntry[] = rows.map((row, i) => {
+            const levelInfo = getLevelForXp(row.xp);
+            return {
+                rank: safeOffset + i + 1,
+                userId: row.user_id,
+                username: row.username,
+                displayName: row.display_name ?? row.username,
+                avatarUrl: row.avatar_url ?? undefined,
+                xp: row.xp,
+                level: levelInfo.level,
+                levelName: levelInfo.name,
+                xpProgressPercent: getXpProgressPercent(row.xp)
+            };
+        });
+
+        return { data, total: Number(total.count) };
     }
 
     // ── XP History ─────────────────────────────────────────────────────────────

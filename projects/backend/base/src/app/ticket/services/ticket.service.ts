@@ -22,6 +22,7 @@ import type {
     TicketStatsDto
 } from "../models/ticket.model";
 import { TicketActivityService } from "./ticket-activity.service";
+import { TicketWatcherService } from "./ticket-watcher.service";
 
 @Injectable()
 export class TicketService {
@@ -35,7 +36,8 @@ export class TicketService {
         private readonly workflowStatusRepo: Repository<TicketWorkflowStatusEntity>,
         private readonly dataSource: DataSource,
         private readonly notificationsService: NotificationsService,
-        private readonly activityService: TicketActivityService
+        private readonly activityService: TicketActivityService,
+        private readonly watcherService: TicketWatcherService
     ) {}
 
     // ── Tickets ────────────────────────────────────────────────────────────────
@@ -71,7 +73,7 @@ export class TicketService {
         const ticket = this.ticketRepo.create({
             ticketNumber: nextNumber,
             title: dto.title,
-            description: dto.description,
+            description: dto.description ?? "",
             priority: dto.priority ?? "normal",
             type: dto.type ?? "task",
             authorId,
@@ -97,11 +99,17 @@ export class TicketService {
         if (dto.assigneeId && dto.assigneeId !== authorId) {
             void this.notificationsService.create(
                 dto.assigneeId,
-                "system",
+                "ticket_assigned",
                 "Ticket assigned",
                 `You have been assigned ticket #${nextNumber}: ${dto.title}`,
                 `/tickets/${saved.id}`
             );
+        }
+
+        // Auto-watch: creator automatically watches the ticket
+        void this.watcherService.watch(saved.id, authorId);
+        if (dto.assigneeId && dto.assigneeId !== authorId) {
+            void this.watcherService.watch(saved.id, dto.assigneeId);
         }
 
         void this.activityService.log(saved.id, authorId, "created");
@@ -201,6 +209,22 @@ export class TicketService {
             "link",
             undefined,
             `${dto.linkType} #${target.ticketNumber}`
+        );
+
+        // Notify watchers of both tickets
+        void this.watcherService.notifyWatchers(
+            sourceTicketId,
+            userId,
+            "ticket_linked",
+            `Ticket #${source.ticketNumber} linked to #${target.ticketNumber} (${dto.linkType})`,
+            `/tickets/${sourceTicketId}`
+        );
+        void this.watcherService.notifyWatchers(
+            dto.targetTicketId,
+            userId,
+            "ticket_linked",
+            `Ticket #${target.ticketNumber} linked to #${source.ticketNumber} (${dto.linkType})`,
+            `/tickets/${dto.targetTicketId}`
         );
 
         const fullLink = await this.linkRepo.findOne({
@@ -303,18 +327,32 @@ export class TicketService {
         if (dto.assigneeId && dto.assigneeId !== oldAssignee && dto.assigneeId !== userId) {
             void this.notificationsService.create(
                 dto.assigneeId,
-                "system",
+                "ticket_assigned",
                 "Ticket assigned",
                 `You have been assigned ticket #${ticket.ticketNumber}: ${ticket.title}`,
                 `/tickets/${ticket.id}`
             );
+            // New assignee auto-watches the ticket
+            void this.watcherService.watch(ticket.id, dto.assigneeId);
         }
-        if (dto.status && dto.status !== oldStatus && ticket.authorId !== userId) {
-            void this.notificationsService.create(
-                ticket.authorId,
-                "system",
-                "Ticket status updated",
+
+        if (dto.status && dto.status !== oldStatus) {
+            // Notify watchers about status change
+            void this.watcherService.notifyWatchers(
+                ticket.id,
+                userId,
+                "ticket_status_changed",
                 `Ticket #${ticket.ticketNumber} status changed to ${dto.status}`,
+                `/tickets/${ticket.id}`
+            );
+        } else if (Object.keys(newValues).length > 0) {
+            // Notify watchers about other field changes
+            const changedFields = Object.keys(newValues).join(", ");
+            void this.watcherService.notifyWatchers(
+                ticket.id,
+                userId,
+                "ticket_updated",
+                `Ticket #${ticket.ticketNumber} updated (${changedFields})`,
                 `/tickets/${ticket.id}`
             );
         }
@@ -423,25 +461,29 @@ export class TicketService {
 
         await this.ticketRepo.save(ticket);
 
-        // Notify ticket author about new comment (if someone else commented)
-        if (authorId !== ticket.authorId && !dto.isInternal) {
-            void this.notificationsService.create(
-                ticket.authorId,
-                "system",
-                "New comment on your ticket",
-                `New reply on ticket #${ticket.ticketNumber}: ${ticket.title}`,
+        // Notify all watchers about new comment (except the author of the comment)
+        if (!dto.isInternal) {
+            void this.watcherService.notifyWatchers(
+                ticketId,
+                authorId,
+                "ticket_commented",
+                `New comment on ticket #${ticket.ticketNumber}: ${ticket.title}`,
                 `/tickets/${ticketId}`
             );
         }
-        // Notify assignee about new comment
+
+        // Notify assignee only if they are not already a watcher (watchers are notified above)
         if (ticket.assigneeId && authorId !== ticket.assigneeId && !dto.isInternal) {
-            void this.notificationsService.create(
-                ticket.assigneeId,
-                "system",
-                "New comment on assigned ticket",
-                `New reply on ticket #${ticket.ticketNumber}: ${ticket.title}`,
-                `/tickets/${ticketId}`
-            );
+            const isWatching = await this.watcherService.isWatching(ticketId, ticket.assigneeId);
+            if (!isWatching) {
+                void this.notificationsService.create(
+                    ticket.assigneeId,
+                    "ticket_commented",
+                    "New comment on assigned ticket",
+                    `New reply on ticket #${ticket.ticketNumber}: ${ticket.title}`,
+                    `/tickets/${ticketId}`
+                );
+            }
         }
 
         void this.activityService.log(ticketId, authorId, "commented");

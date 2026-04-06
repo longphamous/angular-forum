@@ -1,10 +1,13 @@
 import { Controller, Get, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../auth/auth.decorators";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { BountyService, type WantedPosterDto } from "./bounty.service";
 
+@ApiTags("Gamification")
+@ApiBearerAuth("JWT")
 @Controller("bounty")
 export class BountyController {
     constructor(private readonly bountyService: BountyService) {}

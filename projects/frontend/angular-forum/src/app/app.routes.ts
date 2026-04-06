@@ -108,6 +108,37 @@ export const routes: Routes = [
                 loadComponent: () => import("./features/pages/profile/profile-page").then((c) => c.ProfilePage)
             },
             {
+                path: "rpg",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/rpg/rpg-page").then((c) => c.RpgPage)
+            },
+            {
+                path: "rpg/quests",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/rpg/quests/quest-page").then((c) => c.QuestPage)
+            },
+            {
+                path: "leaderboard",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/leaderboard/leaderboard-page").then((c) => c.LeaderboardPage)
+            },
+            {
+                path: "hashtags",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/hashtags/hashtag-page").then((c) => c.HashtagPage)
+            },
+            {
+                path: "hashtags/:tag",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () => import("./features/pages/hashtags/hashtag-page").then((c) => c.HashtagPage)
+            },
+            {
                 path: "wanted",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
@@ -449,9 +480,7 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
                 loadComponent: () =>
-                    import("./features/pages/marketplace/auctions/create-auction-page").then(
-                        (c) => c.CreateAuctionPage
-                    )
+                    import("./features/pages/marketplace/auctions/create-auction-page").then((c) => c.CreateAuctionPage)
             },
             {
                 path: "marketplace/auctions/my",
@@ -472,9 +501,7 @@ export const routes: Routes = [
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
                 loadComponent: () =>
-                    import("./features/pages/marketplace/auctions/auction-detail-page").then(
-                        (c) => c.AuctionDetailPage
-                    )
+                    import("./features/pages/marketplace/auctions/auction-detail-page").then((c) => c.AuctionDetailPage)
             },
             {
                 path: "marketplace/:id",

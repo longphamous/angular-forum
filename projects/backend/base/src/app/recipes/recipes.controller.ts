@@ -12,12 +12,15 @@ import {
     Request,
     UseGuards
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RecipeDifficulty, RecipeStatus } from "./entities/recipe.entity";
 import { CreateCategoryDto, CreateRecipeDto, RecipeQueryDto, RecipesService, UpdateRecipeDto } from "./recipes.service";
 
+@ApiTags("Recipes")
+@ApiBearerAuth("JWT")
 @Controller("recipes")
 @UseGuards(JwtAuthGuard)
 export class RecipesController {

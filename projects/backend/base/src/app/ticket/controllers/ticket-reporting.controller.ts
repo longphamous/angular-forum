@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Roles } from "../../auth/auth.decorators";
 import { CreateSlaConfigDto } from "../dto/create-sla-config.dto";
@@ -12,6 +13,8 @@ import type {
 import { TicketReportingService } from "../services/ticket-reporting.service";
 import { TicketSlaService } from "../services/ticket-sla.service";
 
+@ApiTags("Tickets")
+@ApiBearerAuth("JWT")
 @Controller("tickets/reports")
 export class TicketReportingController {
     constructor(

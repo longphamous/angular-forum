@@ -3,6 +3,8 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { CreditModule } from "../credit/credit.module";
 import { GamificationModule } from "../gamification/gamification.module";
+import { HashtagModule } from "../hashtag/hashtag.module";
+import { RpgModule } from "../rpg/rpg.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { CategoryController } from "./controllers/category.controller";
 import { ForumController } from "./controllers/forum.controller";
@@ -23,6 +25,8 @@ import { ThreadService } from "./services/thread.service";
     imports: [
         CreditModule,
         GamificationModule,
+        HashtagModule,
+        RpgModule,
         TypeOrmModule.forFeature([
             ForumCategoryEntity,
             ForumEntity,

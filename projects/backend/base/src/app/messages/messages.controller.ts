@@ -1,8 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 
 import { ConversationDetailDto, ConversationDto, DraftDto, MessageDto, MessagesService } from "./messages.service";
 
+@ApiTags("Messages")
+@ApiBearerAuth("JWT")
 @Controller("messages")
 export class MessagesController {
     constructor(private readonly messagesService: MessagesService) {}

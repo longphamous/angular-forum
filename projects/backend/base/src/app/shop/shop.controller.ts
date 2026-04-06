@@ -1,9 +1,12 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Request, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { CreateShopItemDto, ShopService, UpdateShopItemDto } from "./shop.service";
 
+@ApiTags("Shop")
+@ApiBearerAuth("JWT")
 @Controller("shop")
 export class ShopController {
     constructor(private readonly shopService: ShopService) {}

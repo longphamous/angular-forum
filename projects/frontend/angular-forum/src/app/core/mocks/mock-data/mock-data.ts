@@ -9,11 +9,13 @@ import { Post } from "../../models/forum/post";
 import { Thread } from "../../models/forum/thread";
 import { GalleryAlbum, GalleryAlbumDetail, GalleryComment, GalleryMedia } from "../../models/gallery/gallery";
 import { Achievement, UserAchievement } from "../../models/gamification/achievement";
+import type { LeaderboardEntry } from "../../models/gamification/leaderboard";
 import { Group, PagePermission } from "../../models/group/group";
+import type { Hashtag } from "../../models/hashtag/hashtag";
+import type { Character } from "../../models/rpg/character";
+import type { QuestBoard } from "../../models/rpg/quest";
 import { DrawScheduleConfig, LottoDraw, LottoResult, LottoStats, LottoTicket } from "../../models/lotto/lotto";
 import { Auction, AuctionBid, AuctionWatchlistItem } from "../../models/marketplace/auction";
-import type { BoardData, WorkflowStatus } from "../../models/ticket/board";
-import type { Ticket, TicketProject } from "../../models/ticket/ticket";
 import {
     MarketCategory,
     MarketComment,
@@ -27,6 +29,8 @@ import { Conversation, ConversationDetail, Draft } from "../../models/messages/m
 import { AppNotification } from "../../models/notifications/notification";
 import { ShopItem, UserInventoryItem } from "../../models/shop/shop";
 import { TeaserSlide } from "../../models/slideshow/teaser-slide";
+import type { BoardData, WorkflowStatus } from "../../models/ticket/board";
+import type { Ticket, TicketProject } from "../../models/ticket/ticket";
 import { OnlineUser } from "../../models/user/online-user";
 import { UserProfile } from "../../models/user/user";
 import { CoinEarnConfig, Wallet, WalletTransaction } from "../../models/wallet/wallet";
@@ -921,6 +925,454 @@ export const mockUserAchievements: Record<string, UserAchievement[]> = {
     ]
 };
 
+// ── XP Leaderboard ────────────────────────────────────────────────────────────
+
+export const mockXpLeaderboard: LeaderboardEntry[] = [
+    {
+        rank: 1,
+        userId: "00000000-0000-0000-0000-000000000002",
+        username: "SakuraMod",
+        displayName: "Sakura",
+        xp: 2350,
+        level: 7,
+        levelName: "Experte",
+        xpProgressPercent: 19
+    },
+    {
+        rank: 2,
+        userId: "00000000-0000-0000-0000-000000000001",
+        username: "AdminUser",
+        displayName: "Admin",
+        xp: 1280,
+        level: 5,
+        levelName: "Erfahrener Nutzer",
+        xpProgressPercent: 56
+    },
+    {
+        rank: 3,
+        userId: "00000000-0000-0000-0000-000000000003",
+        username: "NarutoFan99",
+        displayName: "NarutoFan99",
+        xp: 420,
+        level: 3,
+        levelName: "Mitglied",
+        xpProgressPercent: 40
+    },
+    {
+        rank: 4,
+        userId: "00000000-0000-0000-0000-000000000010",
+        username: "LuffyKing",
+        displayName: "Luffy D. Monkey",
+        xp: 380,
+        level: 3,
+        levelName: "Mitglied",
+        xpProgressPercent: 27
+    },
+    {
+        rank: 5,
+        userId: "00000000-0000-0000-0000-000000000011",
+        username: "MikasaFan",
+        displayName: "Mikasa",
+        xp: 310,
+        level: 3,
+        levelName: "Mitglied",
+        xpProgressPercent: 3
+    },
+    {
+        rank: 6,
+        userId: "00000000-0000-0000-0000-000000000012",
+        username: "GojoSensei",
+        displayName: "Gojo Satoru",
+        xp: 250,
+        level: 2,
+        levelName: "Einsteiger",
+        xpProgressPercent: 75
+    },
+    {
+        rank: 7,
+        userId: "00000000-0000-0000-0000-000000000013",
+        username: "ZeroTwo02",
+        displayName: "Zero Two",
+        xp: 180,
+        level: 2,
+        levelName: "Einsteiger",
+        xpProgressPercent: 40
+    },
+    {
+        rank: 8,
+        userId: "00000000-0000-0000-0000-000000000014",
+        username: "TanjiroSlayer",
+        displayName: "Tanjiro",
+        xp: 120,
+        level: 2,
+        levelName: "Einsteiger",
+        xpProgressPercent: 10
+    },
+    {
+        rank: 9,
+        userId: "00000000-0000-0000-0000-000000000015",
+        username: "HinataHyuga",
+        displayName: "Hinata",
+        xp: 80,
+        level: 1,
+        levelName: "Neuling",
+        xpProgressPercent: 80
+    },
+    {
+        rank: 10,
+        userId: "00000000-0000-0000-0000-000000000016",
+        username: "ErenYeager",
+        displayName: "Eren Yeager",
+        xp: 45,
+        level: 1,
+        levelName: "Neuling",
+        xpProgressPercent: 45
+    }
+];
+
+// ── RPG Characters ────────────────────────────────────────────────────────────
+
+export const mockCharacter: Character = {
+    userId: "00000000-0000-0000-0000-000000000001",
+    name: "Kazuma",
+    characterClass: "warrior",
+    level: 5,
+    baseStats: { strength: 8, dexterity: 5, intelligence: 3, charisma: 4, endurance: 7, luck: 3 },
+    equipmentBonuses: { strength: 3, dexterity: 0, intelligence: 0, charisma: 0, endurance: 2, luck: 1 },
+    totalStats: { strength: 11, dexterity: 5, intelligence: 3, charisma: 4, endurance: 9, luck: 4 },
+    unspentPoints: 6,
+    equipment: [
+        {
+            slot: "weapon",
+            inventoryId: "inv-eq-001",
+            item: {
+                id: "item-eq-001",
+                name: "Schwert des Drachen",
+                description: "Ein altes Schwert mit Drachenmotiv",
+                imageUrl: null,
+                icon: "pi pi-bolt",
+                rarity: "rare",
+                statBonuses: { strength: 3 }
+            }
+        },
+        {
+            slot: "chest",
+            inventoryId: "inv-eq-002",
+            item: {
+                id: "item-eq-002",
+                name: "Eisenrüstung",
+                description: "Solide Rüstung aus gehärtetem Eisen",
+                imageUrl: null,
+                icon: "pi pi-shield",
+                rarity: "uncommon",
+                statBonuses: { endurance: 2, luck: 1 }
+            }
+        }
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 30).toISOString()
+};
+
+// ── Quest Board ───────────────────────────────────────────────────────────────
+
+export const mockQuestBoard: QuestBoard = {
+    daily: [
+        {
+            id: "uq-d1",
+            quest: {
+                id: "q-d1",
+                name: "Schreibe 3 Beiträge",
+                description: "Verfasse heute 3 Beiträge im Forum",
+                icon: "pi pi-pencil",
+                questType: "daily",
+                triggerType: "create_post",
+                requiredCount: 3,
+                rewards: [
+                    { type: "xp", amount: 15 },
+                    { type: "coins", amount: 10 }
+                ],
+                gloryReward: 1,
+                requiredLevel: null,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 1,
+            status: "active",
+            periodKey: new Date().toISOString().slice(0, 10),
+            completedAt: null,
+            claimedAt: null
+        },
+        {
+            id: "uq-d2",
+            quest: {
+                id: "q-d2",
+                name: "Reagiere auf 5 Beiträge",
+                description: "Gib heute 5 Reaktionen",
+                icon: "pi pi-heart",
+                questType: "daily",
+                triggerType: "give_reaction",
+                requiredCount: 5,
+                rewards: [
+                    { type: "xp", amount: 10 },
+                    { type: "coins", amount: 5 }
+                ],
+                gloryReward: 1,
+                requiredLevel: null,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 5,
+            status: "completed",
+            periodKey: new Date().toISOString().slice(0, 10),
+            completedAt: new Date().toISOString(),
+            claimedAt: null
+        },
+        {
+            id: "uq-d3",
+            quest: {
+                id: "q-d3",
+                name: "Täglicher Login",
+                description: "Melde dich heute an",
+                icon: "pi pi-sign-in",
+                questType: "daily",
+                triggerType: "login",
+                requiredCount: 1,
+                rewards: [{ type: "coins", amount: 3 }],
+                gloryReward: 0,
+                requiredLevel: null,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 1,
+            status: "claimed",
+            periodKey: new Date().toISOString().slice(0, 10),
+            completedAt: new Date().toISOString(),
+            claimedAt: new Date().toISOString()
+        }
+    ],
+    weekly: [
+        {
+            id: "uq-w1",
+            quest: {
+                id: "q-w1",
+                name: "Erstelle 2 Themen",
+                description: "Eröffne diese Woche 2 neue Diskussionen",
+                icon: "pi pi-comments",
+                questType: "weekly",
+                triggerType: "create_thread",
+                requiredCount: 2,
+                rewards: [
+                    { type: "xp", amount: 50 },
+                    { type: "coins", amount: 30 }
+                ],
+                gloryReward: 5,
+                requiredLevel: 2,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 1,
+            status: "active",
+            periodKey: "2026-W14",
+            completedAt: null,
+            claimedAt: null
+        },
+        {
+            id: "uq-w2",
+            quest: {
+                id: "q-w2",
+                name: "Erhalte 10 Reaktionen",
+                description: "Sammle diese Woche 10 Reaktionen auf deine Beiträge",
+                icon: "pi pi-thumbs-up",
+                questType: "weekly",
+                triggerType: "receive_reaction",
+                requiredCount: 10,
+                rewards: [
+                    { type: "xp", amount: 40 },
+                    { type: "glory", amount: 10 }
+                ],
+                gloryReward: 10,
+                requiredLevel: 3,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 4,
+            status: "active",
+            periodKey: "2026-W14",
+            completedAt: null,
+            claimedAt: null
+        }
+    ],
+    monthly: [
+        {
+            id: "uq-m1",
+            quest: {
+                id: "q-m1",
+                name: "Community Champion",
+                description: "Schreibe diesen Monat 50 Beiträge",
+                icon: "pi pi-trophy",
+                questType: "monthly",
+                triggerType: "create_post",
+                requiredCount: 50,
+                rewards: [
+                    { type: "xp", amount: 200 },
+                    { type: "coins", amount: 100 }
+                ],
+                gloryReward: 25,
+                requiredLevel: 3,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 12,
+            status: "active",
+            periodKey: "2026-04",
+            completedAt: null,
+            claimedAt: null
+        }
+    ],
+    story: [
+        {
+            id: "uq-s1",
+            quest: {
+                id: "q-s1",
+                name: "Der erste Schritt",
+                description: "Erstelle deinen ersten Beitrag im Forum",
+                icon: "pi pi-flag",
+                questType: "story",
+                triggerType: "create_post",
+                requiredCount: 1,
+                rewards: [
+                    { type: "xp", amount: 25 },
+                    { type: "coins", amount: 20 }
+                ],
+                gloryReward: 5,
+                requiredLevel: null,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 1,
+            status: "claimed",
+            periodKey: "once",
+            completedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+            claimedAt: new Date(Date.now() - 86400000 * 5).toISOString()
+        },
+        {
+            id: "uq-s2",
+            quest: {
+                id: "q-s2",
+                name: "Freundschaft schließen",
+                description: "Füge deinen ersten Freund hinzu",
+                icon: "pi pi-users",
+                questType: "story",
+                triggerType: "add_friend",
+                requiredCount: 1,
+                rewards: [
+                    { type: "xp", amount: 30 },
+                    { type: "coins", amount: 15 }
+                ],
+                gloryReward: 5,
+                requiredLevel: null,
+                eventStartsAt: null,
+                eventEndsAt: null,
+                eventBannerUrl: null
+            },
+            progress: 0,
+            status: "active",
+            periodKey: "once",
+            completedAt: null,
+            claimedAt: null
+        }
+    ],
+    events: [
+        {
+            id: "uq-e1",
+            quest: {
+                id: "q-e1",
+                name: "Frühlings-Festival",
+                description: "Schreibe 20 Beiträge während des Frühlings-Events und gewinne exklusive Belohnungen!",
+                icon: "pi pi-sun",
+                questType: "event",
+                triggerType: "create_post",
+                requiredCount: 20,
+                rewards: [
+                    { type: "xp", amount: 500 },
+                    { type: "coins", amount: 200 },
+                    { type: "glory", amount: 50 }
+                ],
+                gloryReward: 50,
+                requiredLevel: null,
+                eventStartsAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+                eventEndsAt: new Date(Date.now() + 86400000 * 11).toISOString(),
+                eventBannerUrl: null
+            },
+            progress: 7,
+            status: "active",
+            periodKey: "once",
+            completedAt: null,
+            claimedAt: null
+        }
+    ],
+    glory: 42
+};
+
+// ── Hashtags ──────────────────────────────────────────────────────────────────
+
+export const mockHashtags: Hashtag[] = [
+    { id: "ht-001", name: "anime", usageCount: 42 },
+    { id: "ht-002", name: "manga", usageCount: 35 },
+    { id: "ht-003", name: "cosplay", usageCount: 28 },
+    { id: "ht-004", name: "onepiece", usageCount: 24 },
+    { id: "ht-005", name: "naruto", usageCount: 21 },
+    { id: "ht-006", name: "attackontitan", usageCount: 18 },
+    { id: "ht-007", name: "jujutsukaisen", usageCount: 16 },
+    { id: "ht-008", name: "demonslayer", usageCount: 14 },
+    { id: "ht-009", name: "myheroacademia", usageCount: 12 },
+    { id: "ht-010", name: "dragonball", usageCount: 10 },
+    { id: "ht-011", name: "community", usageCount: 9 },
+    { id: "ht-012", name: "fanart", usageCount: 8 },
+    { id: "ht-013", name: "review", usageCount: 7 },
+    { id: "ht-014", name: "spoiler", usageCount: 6 },
+    { id: "ht-015", name: "discussion", usageCount: 5 }
+];
+
+export const mockHashtagSearchResults = {
+    anime: {
+        hashtag: mockHashtags[0],
+        results: [
+            {
+                contentType: "post" as const,
+                contentId: "40000000-0000-0000-0000-000000000004",
+                authorId: "00000000-0000-0000-0000-000000000003",
+                createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+                contentType: "thread" as const,
+                contentId: "30000000-0000-0000-0000-000000000004",
+                authorId: "00000000-0000-0000-0000-000000000003",
+                createdAt: new Date(Date.now() - 7200000).toISOString()
+            },
+            {
+                contentType: "blog" as const,
+                contentId: "blog-001",
+                authorId: "00000000-0000-0000-0000-000000000002",
+                createdAt: new Date(Date.now() - 86400000).toISOString()
+            },
+            {
+                contentType: "chronik" as const,
+                contentId: "chr-001",
+                authorId: "00000000-0000-0000-0000-000000000001",
+                createdAt: new Date(Date.now() - 172800000).toISOString()
+            }
+        ],
+        total: 4
+    }
+};
+
 // ── Wallets ───────────────────────────────────────────────────────────────────
 
 export const mockWallets: Record<string, Wallet> = {
@@ -1143,6 +1595,7 @@ export const mockOnlineUsers: OnlineUser[] = [
 // ── Virtual Shop ──────────────────────────────────────────────────────────────
 
 export const mockShopItems: ShopItem[] = [
+    // ── Cosmetic / Title items ────────────────────────────────────────────────
     {
         id: "a0000000-0000-0000-0000-000000000001",
         name: "VIP Badge",
@@ -1155,6 +1608,11 @@ export const mockShopItems: ShopItem[] = [
         stock: null,
         maxPerUser: 1,
         sortOrder: 0,
+        isEquipment: false,
+        equipmentSlot: null,
+        statBonuses: null,
+        requiredLevel: null,
+        rarity: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     },
@@ -1170,6 +1628,11 @@ export const mockShopItems: ShopItem[] = [
         stock: 50,
         maxPerUser: 1,
         sortOrder: 1,
+        isEquipment: false,
+        equipmentSlot: null,
+        statBonuses: null,
+        requiredLevel: null,
+        rarity: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     },
@@ -1185,6 +1648,11 @@ export const mockShopItems: ShopItem[] = [
         stock: null,
         maxPerUser: null,
         sortOrder: 2,
+        isEquipment: false,
+        equipmentSlot: null,
+        statBonuses: null,
+        requiredLevel: null,
+        rarity: null,
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     },
@@ -1200,6 +1668,398 @@ export const mockShopItems: ShopItem[] = [
         stock: 10,
         maxPerUser: 3,
         sortOrder: 3,
+        isEquipment: false,
+        equipmentSlot: null,
+        statBonuses: null,
+        requiredLevel: null,
+        rarity: null,
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Weapons ────────────────────────────────────────────────
+    {
+        id: "eq-weapon-001",
+        name: "Rostige Klinge",
+        description: "Ein einfaches Schwert, das schon bessere Tage gesehen hat. Taugt für den Anfang.",
+        price: 50,
+        imageUrl: null,
+        icon: "pi pi-bolt",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 10,
+        isEquipment: true,
+        equipmentSlot: "weapon",
+        statBonuses: { strength: 2 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-weapon-002",
+        name: "Schwert des Drachen",
+        description: "Geschmiedet aus Drachenschuppen. Die Klinge glüht bei Mondlicht.",
+        price: 400,
+        imageUrl: null,
+        icon: "pi pi-bolt",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 20,
+        maxPerUser: 1,
+        sortOrder: 11,
+        isEquipment: true,
+        equipmentSlot: "weapon",
+        statBonuses: { strength: 5, dexterity: 2 },
+        requiredLevel: 3,
+        rarity: "rare",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-weapon-003",
+        name: "Exkalibur",
+        description: "Die legendäre Klinge der Könige. Nur die Würdigsten können sie führen.",
+        price: 2500,
+        imageUrl: null,
+        icon: "pi pi-bolt",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 5,
+        maxPerUser: 1,
+        sortOrder: 12,
+        isEquipment: true,
+        equipmentSlot: "weapon",
+        statBonuses: { strength: 10, charisma: 5, luck: 3 },
+        requiredLevel: 7,
+        rarity: "legendary",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-weapon-004",
+        name: "Magierstab der Weisheit",
+        description: "Ein uralter Stab, der mit arkaner Energie pulsiert.",
+        price: 600,
+        imageUrl: null,
+        icon: "pi pi-sparkles",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 15,
+        maxPerUser: 1,
+        sortOrder: 13,
+        isEquipment: true,
+        equipmentSlot: "weapon",
+        statBonuses: { intelligence: 7, luck: 2 },
+        requiredLevel: 4,
+        rarity: "epic",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Head ───────────────────────────────────────────────────
+    {
+        id: "eq-head-001",
+        name: "Lederkappe",
+        description: "Eine einfache Kappe aus gegerbtem Leder.",
+        price: 30,
+        imageUrl: null,
+        icon: "pi pi-crown",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 20,
+        isEquipment: true,
+        equipmentSlot: "head",
+        statBonuses: { endurance: 1 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-head-002",
+        name: "Helm des Berserkers",
+        description: "Ein gehörnter Helm, der Furcht in die Herzen der Feinde treibt.",
+        price: 350,
+        imageUrl: null,
+        icon: "pi pi-crown",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 10,
+        maxPerUser: 1,
+        sortOrder: 21,
+        isEquipment: true,
+        equipmentSlot: "head",
+        statBonuses: { strength: 3, endurance: 2 },
+        requiredLevel: 4,
+        rarity: "rare",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-head-003",
+        name: "Krone der Sterne",
+        description: "Eine funkelnde Krone, die unter dem Nachthimmel leuchtet.",
+        price: 1800,
+        imageUrl: null,
+        icon: "pi pi-crown",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 3,
+        maxPerUser: 1,
+        sortOrder: 22,
+        isEquipment: true,
+        equipmentSlot: "head",
+        statBonuses: { intelligence: 5, charisma: 8, luck: 3 },
+        requiredLevel: 8,
+        rarity: "legendary",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Chest ──────────────────────────────────────────────────
+    {
+        id: "eq-chest-001",
+        name: "Stoffrobe",
+        description: "Eine leichte Robe aus Baumwolle. Bietet minimalen Schutz.",
+        price: 40,
+        imageUrl: null,
+        icon: "pi pi-shield",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 30,
+        isEquipment: true,
+        equipmentSlot: "chest",
+        statBonuses: { endurance: 1, intelligence: 1 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-chest-002",
+        name: "Eisenrüstung",
+        description: "Solide Rüstung aus gehärtetem Eisen. Bewährt im Kampf.",
+        price: 300,
+        imageUrl: null,
+        icon: "pi pi-shield",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 25,
+        maxPerUser: 1,
+        sortOrder: 31,
+        isEquipment: true,
+        equipmentSlot: "chest",
+        statBonuses: { endurance: 4, strength: 2 },
+        requiredLevel: 3,
+        rarity: "uncommon",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-chest-003",
+        name: "Drachenlederharnisch",
+        description: "Aus dem Leder eines alten Drachen gefertigt. Leicht und nahezu unzerstörbar.",
+        price: 1200,
+        imageUrl: null,
+        icon: "pi pi-shield",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 8,
+        maxPerUser: 1,
+        sortOrder: 32,
+        isEquipment: true,
+        equipmentSlot: "chest",
+        statBonuses: { endurance: 8, dexterity: 4, strength: 3 },
+        requiredLevel: 6,
+        rarity: "epic",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Legs ───────────────────────────────────────────────────
+    {
+        id: "eq-legs-001",
+        name: "Lederhose",
+        description: "Robuste Hose aus Tierleder. Bequem für lange Reisen.",
+        price: 35,
+        imageUrl: null,
+        icon: "pi pi-arrows-v",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 40,
+        isEquipment: true,
+        equipmentSlot: "legs",
+        statBonuses: { dexterity: 1, endurance: 1 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-legs-002",
+        name: "Schattenhose des Diebes",
+        description: "Lautlose Hose, die den Träger unsichtbar werden lässt.",
+        price: 500,
+        imageUrl: null,
+        icon: "pi pi-arrows-v",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 12,
+        maxPerUser: 1,
+        sortOrder: 41,
+        isEquipment: true,
+        equipmentSlot: "legs",
+        statBonuses: { dexterity: 6, luck: 3 },
+        requiredLevel: 5,
+        rarity: "rare",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Feet ───────────────────────────────────────────────────
+    {
+        id: "eq-feet-001",
+        name: "Wanderstiefel",
+        description: "Strapazierfähige Stiefel für jedes Terrain.",
+        price: 25,
+        imageUrl: null,
+        icon: "pi pi-map-marker",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 50,
+        isEquipment: true,
+        equipmentSlot: "feet",
+        statBonuses: { dexterity: 1 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-feet-002",
+        name: "Stiefel der Geschwindigkeit",
+        description: "Verzauberte Stiefel, die den Träger so schnell wie den Wind machen.",
+        price: 800,
+        imageUrl: null,
+        icon: "pi pi-map-marker",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 10,
+        maxPerUser: 1,
+        sortOrder: 51,
+        isEquipment: true,
+        equipmentSlot: "feet",
+        statBonuses: { dexterity: 8, luck: 2 },
+        requiredLevel: 5,
+        rarity: "epic",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Shield ─────────────────────────────────────────────────
+    {
+        id: "eq-shield-001",
+        name: "Holzschild",
+        description: "Ein einfacher Schild aus massiver Eiche.",
+        price: 45,
+        imageUrl: null,
+        icon: "pi pi-stop-circle",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 60,
+        isEquipment: true,
+        equipmentSlot: "shield",
+        statBonuses: { endurance: 2 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-shield-002",
+        name: "Aegis-Schild",
+        description: "Ein mythischer Schild, der die Macht der Götter kanalisiert.",
+        price: 2000,
+        imageUrl: null,
+        icon: "pi pi-stop-circle",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 3,
+        maxPerUser: 1,
+        sortOrder: 61,
+        isEquipment: true,
+        equipmentSlot: "shield",
+        statBonuses: { endurance: 10, strength: 3, charisma: 4 },
+        requiredLevel: 8,
+        rarity: "legendary",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    // ── RPG Equipment: Accessory ──────────────────────────────────────────────
+    {
+        id: "eq-acc-001",
+        name: "Kupferring",
+        description: "Ein schlichter Ring mit leichter magischer Aura.",
+        price: 60,
+        imageUrl: null,
+        icon: "pi pi-circle",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: null,
+        maxPerUser: 1,
+        sortOrder: 70,
+        isEquipment: true,
+        equipmentSlot: "accessory",
+        statBonuses: { luck: 2 },
+        requiredLevel: 1,
+        rarity: "common",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-acc-002",
+        name: "Amulett der Weisen",
+        description: "Ein uraltes Amulett, das die geistige Klarheit des Trägers verstärkt.",
+        price: 450,
+        imageUrl: null,
+        icon: "pi pi-star",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 15,
+        maxPerUser: 1,
+        sortOrder: 71,
+        isEquipment: true,
+        equipmentSlot: "accessory",
+        statBonuses: { intelligence: 4, charisma: 3 },
+        requiredLevel: 3,
+        rarity: "rare",
+        createdAt: twoDaysAgo,
+        updatedAt: twoDaysAgo
+    },
+    {
+        id: "eq-acc-003",
+        name: "Ring des Schicksals",
+        description: "Wer diesen Ring trägt, wird vom Glück begünstigt. Oder verflucht.",
+        price: 1500,
+        imageUrl: null,
+        icon: "pi pi-circle",
+        category: "Ausrüstung",
+        isActive: true,
+        stock: 5,
+        maxPerUser: 1,
+        sortOrder: 72,
+        isEquipment: true,
+        equipmentSlot: "accessory",
+        statBonuses: { luck: 10, charisma: 5 },
+        requiredLevel: 7,
+        rarity: "epic",
         createdAt: twoDaysAgo,
         updatedAt: twoDaysAgo
     }

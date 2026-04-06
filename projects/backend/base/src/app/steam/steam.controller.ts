@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { SteamService, UpdateSteamSettingsDto } from "./steam.service";
 
+@ApiTags("Steam")
+@ApiBearerAuth("JWT")
 @Controller("steam")
 @UseGuards(JwtAuthGuard)
 export class SteamController {

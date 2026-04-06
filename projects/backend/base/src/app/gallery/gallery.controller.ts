@@ -1,9 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { CurrentUser } from "../auth/current-user.decorator";
 import { AuthenticatedUser } from "../auth/models/jwt.model";
 import { AddMediaDto, CreateAlbumDto, GalleryService } from "./gallery.service";
 
+@ApiTags("Gallery")
+@ApiBearerAuth("JWT")
 @Controller("gallery")
 export class GalleryController {
     constructor(private readonly galleryService: GalleryService) {}

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import {
@@ -8,6 +9,8 @@ import {
     UpdatePagePermissionDto
 } from "./page-permission.service";
 
+@ApiTags("Groups")
+@ApiBearerAuth("JWT")
 @Controller("page-permission")
 export class PagePermissionController {
     constructor(private readonly pagePermService: PagePermissionService) {}

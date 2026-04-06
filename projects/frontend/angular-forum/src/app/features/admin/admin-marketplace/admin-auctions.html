@@ -24,7 +24,10 @@
             @for (auction of facade.pendingAuctions(); track auction.id) {
             <div class="bg-surface-50 dark:bg-surface-800 flex items-center gap-4 rounded-lg p-4">
                 <div class="flex-1">
-                    <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', auction.id]">
+                    <a
+                        class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline"
+                        [routerLink]="['/marketplace/auctions', auction.id]"
+                    >
                         {{ auction.listing.title }}
                     </a>
                     <div class="text-surface-500 mt-1 flex items-center gap-3 text-xs">
@@ -45,10 +48,10 @@
                     <p-button
                         (onClick)="openRejectDialog(auction)"
                         [label]="t('marketplace.auction.adminAuctions.reject')"
+                        [outlined]="true"
                         icon="pi pi-times"
                         severity="danger"
                         size="small"
-                        [outlined]="true"
                     />
                 </div>
             </div>
@@ -68,16 +71,21 @@
             <label class="text-surface-700 dark:text-surface-300 text-sm font-semibold">
                 {{ t("common.reason") }}
             </label>
-            <textarea [(ngModel)]="rejectReason" pTextarea [rows]="4" class="w-full"></textarea>
+            <textarea class="w-full" [(ngModel)]="rejectReason" [rows]="4" pTextarea></textarea>
         </div>
         <ng-template pTemplate="footer">
-            <p-button (onClick)="rejectDialogVisible.set(false)" [label]="t('common.button.cancel')" severity="secondary" [text]="true" />
+            <p-button
+                (onClick)="rejectDialogVisible.set(false)"
+                [label]="t('common.button.cancel')"
+                [text]="true"
+                severity="secondary"
+            />
             <p-button
                 (onClick)="confirmReject()"
+                [disabled]="!rejectReason.trim()"
                 [label]="t('marketplace.auction.adminAuctions.reject')"
                 icon="pi pi-times"
                 severity="danger"
-                [disabled]="!rejectReason.trim()"
             />
         </ng-template>
     </p-dialog>

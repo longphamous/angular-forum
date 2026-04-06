@@ -12,11 +12,14 @@ import {
     Request,
     UseGuards
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public, Roles } from "../auth/auth.decorators";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { CalendarService, CreateCalendarEventDto, RespondDto, UpdateCalendarEventDto } from "./calendar.service";
 
+@ApiTags("Calendar")
+@ApiBearerAuth("JWT")
 @Controller("calendar")
 export class CalendarController {
     constructor(private readonly calendarService: CalendarService) {}

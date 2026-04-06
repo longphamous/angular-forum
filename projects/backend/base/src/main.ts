@@ -1,6 +1,7 @@
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { join } from "path";
 
 import { AppModule } from "./app/app.module";
@@ -43,11 +44,49 @@ async function bootstrap(): Promise<void> {
         const globalPrefix = "api";
         app.setGlobalPrefix(globalPrefix);
 
+        // ── Swagger / OpenAPI ─────────────────────────────────────────────────
+        const swaggerConfig = new DocumentBuilder()
+            .setTitle("Aniverse API")
+            .setDescription("Backend API for the Aniverse community platform")
+            .setVersion("1.0")
+            .addBearerAuth({ type: "http", scheme: "bearer", bearerFormat: "JWT" }, "JWT")
+            .addTag("Users", "User profiles, authentication & autocomplete")
+            .addTag("Forum", "Forum categories, threads, posts")
+            .addTag("Gamification", "XP, levels, achievements, bounty")
+            .addTag("RPG", "Character system, quests, equipment")
+            .addTag("Shop", "Virtual shop & inventory")
+            .addTag("Credit", "Wallet, coins, transactions")
+            .addTag("Hashtags", "Hashtag system")
+            .addTag("Notifications", "Push & in-app notifications")
+            .addTag("Feed", "Activity feed & dashboard")
+            .addTag("Blog", "Blog posts & comments")
+            .addTag("Gallery", "Photo albums & media")
+            .addTag("Lexicon", "Wiki articles")
+            .addTag("Marketplace", "Listings & auctions")
+            .addTag("Calendar", "Events & calendar")
+            .addTag("Messages", "Private messaging")
+            .addTag("Friends", "Friend system")
+            .addTag("Clans", "Clan management")
+            .addTag("Lotto", "Lottery system")
+            .addTag("TCG", "Trading card game")
+            .addTag("Tickets", "Issue tracking & project management")
+            .build();
+
+        const document = SwaggerModule.createDocument(app, swaggerConfig);
+        SwaggerModule.setup("docs", app, document, {
+            swaggerOptions: {
+                persistAuthorization: true,
+                tagsSorter: "alpha",
+                operationsSorter: "alpha"
+            }
+        });
+
         const port = process.env["PORT"] ?? 3000;
         await app.listen(port);
 
         logger.log("═══════════════════════════════════════════════");
         logger.log(`  Aniverse API running on http://localhost:${port}/${globalPrefix}`);
+        logger.log(`  Swagger UI: http://localhost:${port}/docs`);
 
         const pushMode =
             process.env["PUSH_MODE"] ?? (process.env["PUSH_ENABLED"] === "false" ? "disabled" : "embedded");

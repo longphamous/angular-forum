@@ -3,7 +3,7 @@
     <div class="card">
         <div class="flex items-center gap-4">
             <a routerLink="/marketplace/auctions">
-                <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" severity="secondary" />
+                <p-button [rounded]="true" [text]="true" icon="pi pi-arrow-left" severity="secondary" />
             </a>
             <div>
                 <h1 class="text-surface-900 dark:text-surface-0 flex items-center gap-2 text-2xl font-bold">
@@ -17,7 +17,9 @@
     <!-- Tabs -->
     <p-tabs value="0">
         <p-tablist>
-            <p-tab value="0">{{ t("marketplace.auction.buyerDashboard.activeBids") }} ({{ facade.myBids().length }})</p-tab>
+            <p-tab value="0"
+                >{{ t("marketplace.auction.buyerDashboard.activeBids") }} ({{ facade.myBids().length }})</p-tab
+            >
             <p-tab value="1">{{ t("marketplace.auction.watchlist") }} ({{ facade.watchlist().length }})</p-tab>
         </p-tablist>
         <p-tabpanels>
@@ -27,14 +29,22 @@
                 <div class="flex flex-col items-center py-12 text-center">
                     <i class="pi pi-sort-amount-up text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
                     <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noBids") }}</p>
-                    <p-button class="mt-4" [label]="t('marketplace.auction.browseAuctions')" icon="pi pi-search" routerLink="/marketplace/auctions" />
+                    <p-button
+                        class="mt-4"
+                        [label]="t('marketplace.auction.browseAuctions')"
+                        icon="pi pi-search"
+                        routerLink="/marketplace/auctions"
+                    />
                 </div>
                 } @else {
                 <div class="flex flex-col gap-3">
                     @for (bid of facade.myBids(); track bid.id) {
                     <div class="card flex items-center gap-4">
                         <div class="flex-1">
-                            <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', bid.auctionId]">
+                            <a
+                                class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline"
+                                [routerLink]="['/marketplace/auctions', bid.auctionId]"
+                            >
                                 {{ t("marketplace.auction.bidHistory") }} #{{ bid.auctionId.substring(0, 8) }}
                             </a>
                             <div class="text-surface-500 mt-1 text-xs">
@@ -44,11 +54,11 @@
                         <div class="text-right">
                             <span class="text-primary block text-lg font-bold">{{ formatPrice(bid.amount) }}</span>
                             @if (bid.isAutoBid) {
-                            <p-tag severity="info" [value]="t('marketplace.auction.autoBid')" styleClass="text-xs" />
+                            <p-tag [value]="t('marketplace.auction.autoBid')" severity="info" styleClass="text-xs" />
                             }
                         </div>
                         <a [routerLink]="['/marketplace/auctions', bid.auctionId]">
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary" />
+                            <p-button [rounded]="true" [text]="true" icon="pi pi-eye" severity="secondary" />
                         </a>
                     </div>
                     }
@@ -62,18 +72,29 @@
                 <div class="flex flex-col items-center py-12 text-center">
                     <i class="pi pi-heart text-surface-300 dark:text-surface-600 mb-4 text-4xl"></i>
                     <p class="text-surface-500 text-sm">{{ t("marketplace.auction.noAuctions") }}</p>
-                    <p-button class="mt-4" [label]="t('marketplace.auction.browseAuctions')" icon="pi pi-search" routerLink="/marketplace/auctions" />
+                    <p-button
+                        class="mt-4"
+                        [label]="t('marketplace.auction.browseAuctions')"
+                        icon="pi pi-search"
+                        routerLink="/marketplace/auctions"
+                    />
                 </div>
                 } @else {
                 <div class="flex flex-col gap-3">
                     @for (item of facade.watchlist(); track item.auctionId) {
                     <div class="card flex items-center gap-4">
                         <div class="flex-1">
-                            <a class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline" [routerLink]="['/marketplace/auctions', item.auctionId]">
+                            <a
+                                class="text-surface-900 dark:text-surface-0 font-semibold no-underline hover:underline"
+                                [routerLink]="['/marketplace/auctions', item.auctionId]"
+                            >
                                 {{ item.auction.listing.title }}
                             </a>
                             <div class="text-surface-500 mt-1 flex items-center gap-3 text-xs">
-                                <span><i class="pi pi-sort-amount-up mr-1"></i>{{ item.auction.bidCount }} {{ t("marketplace.auction.bids") }}</span>
+                                <span
+                                    ><i class="pi pi-sort-amount-up mr-1"></i>{{ item.auction.bidCount }} {{
+                                    t("marketplace.auction.bids") }}</span
+                                >
                                 <p-tag
                                     [severity]="item.auction.status === 'active' ? 'success' : 'secondary'"
                                     [value]="t('marketplace.auction.status.' + item.auction.status)"
@@ -82,10 +103,12 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-primary block text-lg font-bold">{{ formatPrice(item.auction.currentPrice, item.auction.currency) }}</span>
+                            <span class="text-primary block text-lg font-bold"
+                                >{{ formatPrice(item.auction.currentPrice, item.auction.currency) }}</span
+                            >
                         </div>
                         <a [routerLink]="['/marketplace/auctions', item.auctionId]">
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary" />
+                            <p-button [rounded]="true" [text]="true" icon="pi pi-eye" severity="secondary" />
                         </a>
                     </div>
                     }

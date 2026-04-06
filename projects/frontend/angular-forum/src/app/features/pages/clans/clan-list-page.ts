@@ -40,7 +40,7 @@ export class ClanListPage implements OnInit {
     readonly filterCategory = signal("");
     readonly filterJoinType = signal<ClanJoinType | "">("");
     readonly showMyClans = signal(false);
-    readonly displayedClans = computed(() => this.showMyClans() ? this.facade.myClans() : this.facade.clans());
+    readonly displayedClans = computed(() => (this.showMyClans() ? this.facade.myClans() : this.facade.clans()));
     readonly page = signal(1);
     readonly limit = signal(12);
 
