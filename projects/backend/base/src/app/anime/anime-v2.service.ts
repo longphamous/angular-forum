@@ -2,18 +2,23 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { AnimeV2QueryDto, AnimeV2SortField } from "./dto/anime-v2-query.dto";
+import { AnimeV2QueryDto, AnimeV2SortField, CharacterQueryDto, CharacterSortField, PersonQueryDto, PersonSortField } from "./dto/anime-v2-query.dto";
 import { AnimeV2Entity } from "./entities/anime-v2.entity";
 import {
     AnimeAiredDto,
     AnimeBroadcastDto,
+    AnimeCharacterAnimeDto,
+    AnimeCharacterDetailDto,
     AnimeCharacterDto,
+    AnimeCharacterListDto,
+    AnimeCharacterMangaDto,
     AnimeEpisodeDto,
     AnimeExternalLinkDto,
     AnimeImageSetDto,
     AnimeImagesDto,
     AnimeProducerDto,
     AnimeRecommendationDto,
+    CharacterVoiceActorDto,
     AnimeScoreEntryDto,
     AnimeStaffMemberDto,
     AnimeStatisticsDto,
@@ -21,11 +26,28 @@ import {
     AnimeTrailerDto,
     AnimeV2Dto,
     AnimeVoiceActorDto,
+    PaginatedAnimeCharacterListDto,
     PaginatedAnimeV2Dto,
+    PaginatedPersonListDto,
+    PersonDetailDto,
+    PersonListDto,
+    PersonStaffRoleDto,
+    PersonVoiceActingRoleDto,
     RelatedAnimeV2Dto
 } from "./models/anime-v2.model";
 
 export const ANIMEDB_V2_CONNECTION = "animedb-v2";
+
+const ALLOWED_PERSON_SORT_FIELDS: Record<PersonSortField, string> = {
+    name: "p.name",
+    favorites: "p.favorites",
+    birthday: "p.birthday"
+};
+
+const ALLOWED_CHARACTER_SORT_FIELDS: Record<CharacterSortField, string> = {
+    name: "c.name",
+    favorites: "c.favorites"
+};
 
 const ALLOWED_SORT_FIELDS: Record<AnimeV2SortField, string> = {
     id: "anime.mal_id",
@@ -364,9 +386,10 @@ export class AnimeV2Service {
     }
 
     private async loadCharacters(animeId: number): Promise<AnimeCharacterDto[]> {
-        const charRows: { character_mal_id: number; name: string; name_kanji: string; role: string; favorites: number }[] =
+        const charRows: { character_mal_id: number; name: string; name_kanji: string; role: string; favorites: number; picture: string }[] =
             await this.animeRepo.query(
-                `SELECT ac.character_mal_id, c.name, c.name_kanji, ac.role, c.favorites
+                `SELECT ac.character_mal_id, c.name, c.name_kanji, ac.role, c.favorites,
+                        c.raw_json->'images'->'jpg'->>'image_url' AS picture
                  FROM anime_characters ac
                  INNER JOIN characters c ON ac.character_mal_id = c.mal_id
                  WHERE ac.anime_mal_id = $1
@@ -395,6 +418,7 @@ export class AnimeV2Service {
             nameKanji: c.name_kanji ?? undefined,
             role: c.role ?? undefined,
             favorites: c.favorites ?? undefined,
+            picture: c.picture ?? undefined,
             voiceActors: vaMap.get(c.character_mal_id) ?? []
         }));
     }
@@ -469,6 +493,288 @@ export class AnimeV2Service {
             [animeId]
         );
         return rows.map((r) => ({ malId: r.recommended_mal_id, title: r.recommended_title ?? undefined, votes: r.votes ?? 0 }));
+    }
+
+    async findAllCharacters(page: number, limit: number, query: CharacterQueryDto): Promise<PaginatedAnimeCharacterListDto> {
+        let countSql = `SELECT COUNT(*) AS total FROM characters c WHERE c.name IS NOT NULL`;
+        let dataSql = `SELECT c.mal_id, c.name, c.name_kanji, c.favorites,
+                              c.raw_json->'images'->'jpg'->>'image_url' AS picture,
+                              (SELECT COUNT(*) FROM anime_characters ac WHERE ac.character_mal_id = c.mal_id) AS anime_appearances
+                       FROM characters c
+                       WHERE c.name IS NOT NULL`;
+        const params: unknown[] = [];
+        let paramIndex = 1;
+
+        if (query.search) {
+            const clause = ` AND (LOWER(c.name) LIKE $${paramIndex} OR LOWER(c.name_kanji) LIKE $${paramIndex})`;
+            countSql += clause;
+            dataSql += clause;
+            params.push(`%${query.search.toLowerCase()}%`);
+            paramIndex++;
+        }
+
+        const sortColumn = query.sortBy
+            ? (ALLOWED_CHARACTER_SORT_FIELDS[query.sortBy] ?? "c.favorites")
+            : "c.favorites";
+        const sortOrder = query.sortOrder === "ASC" ? "ASC" : "DESC";
+        dataSql += ` ORDER BY ${sortColumn} ${sortOrder} NULLS LAST`;
+        dataSql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, (page - 1) * limit);
+
+        const [countResult, rows] = await Promise.all([
+            this.animeRepo.query(countSql, params.slice(0, paramIndex - 1)),
+            this.animeRepo.query(dataSql, params)
+        ]);
+
+        const total = parseInt(countResult[0]?.total ?? "0", 10);
+        const data: AnimeCharacterListDto[] = rows.map(
+            (r: { mal_id: number; name: string; name_kanji: string; favorites: number; picture: string; anime_appearances: string }) => ({
+                malId: r.mal_id,
+                name: r.name ?? undefined,
+                nameKanji: r.name_kanji ?? undefined,
+                favorites: r.favorites ?? undefined,
+                picture: r.picture ?? undefined,
+                animeAppearances: parseInt(r.anime_appearances, 10)
+            })
+        );
+
+        return { data, total, page, limit };
+    }
+
+    async findCharacterById(id: number): Promise<AnimeCharacterDetailDto> {
+        const rows: {
+            mal_id: number;
+            url: string;
+            name: string;
+            name_kanji: string;
+            nicknames: string[];
+            favorites: number;
+            about: string;
+            picture: string;
+            created_at: Date;
+            updated_at: Date;
+        }[] = await this.animeRepo.query(
+            `SELECT mal_id, url, name, name_kanji, nicknames, favorites, about,
+                    raw_json->'images'->'jpg'->>'image_url' AS picture,
+                    created_at, updated_at
+             FROM characters WHERE mal_id = $1`,
+            [id]
+        );
+        if (!rows.length) {
+            throw new NotFoundException(`Character with id ${id} not found`);
+        }
+        const c = rows[0];
+
+        const [animeRows, mangaRows, vaRows]: [
+            { anime_mal_id: number; title: string; role: string; picture: string }[],
+            { manga_mal_id: number; title: string; role: string; picture: string }[],
+            { person_mal_id: number; name: string; language: string; anime_mal_id: number; anime_title: string }[]
+        ] = await Promise.all([
+            this.animeRepo.query(
+                `SELECT ac.anime_mal_id, a.title, ac.role,
+                        a.raw_json->'images'->'jpg'->>'image_url' AS picture
+                 FROM anime_characters ac
+                 INNER JOIN anime a ON ac.anime_mal_id = a.mal_id
+                 WHERE ac.character_mal_id = $1
+                 ORDER BY a.popularity ASC NULLS LAST`,
+                [id]
+            ),
+            this.animeRepo.query(
+                `SELECT mc.manga_mal_id, m.title, mc.role,
+                        m.raw_json->'images'->'jpg'->>'image_url' AS picture
+                 FROM manga_characters mc
+                 INNER JOIN manga m ON mc.manga_mal_id = m.mal_id
+                 WHERE mc.character_mal_id = $1
+                 ORDER BY m.popularity ASC NULLS LAST`,
+                [id]
+            ),
+            this.animeRepo.query(
+                `SELECT DISTINCT va.person_mal_id, p.name, va.language, va.anime_mal_id, a.title AS anime_title
+                 FROM anime_voice_actors va
+                 INNER JOIN people p ON va.person_mal_id = p.mal_id
+                 INNER JOIN anime a ON va.anime_mal_id = a.mal_id
+                 WHERE va.character_mal_id = $1
+                 ORDER BY va.language, p.name`,
+                [id]
+            )
+        ]);
+
+        const animeography: AnimeCharacterAnimeDto[] = animeRows.map((r) => ({
+            malId: r.anime_mal_id,
+            title: r.title ?? undefined,
+            picture: r.picture ?? undefined,
+            role: r.role ?? undefined
+        }));
+
+        const mangaography: AnimeCharacterMangaDto[] = mangaRows.map((r) => ({
+            malId: r.manga_mal_id,
+            title: r.title ?? undefined,
+            picture: r.picture ?? undefined,
+            role: r.role ?? undefined
+        }));
+
+        const voiceActors: CharacterVoiceActorDto[] = vaRows.map((r) => ({
+            malId: r.person_mal_id,
+            name: r.name ?? undefined,
+            language: r.language,
+            animeMalId: r.anime_mal_id,
+            animeTitle: r.anime_title ?? undefined
+        }));
+
+        return {
+            malId: c.mal_id,
+            url: c.url ?? undefined,
+            name: c.name ?? undefined,
+            nameKanji: c.name_kanji ?? undefined,
+            nicknames: Array.isArray(c.nicknames) && c.nicknames.length > 0 ? c.nicknames : undefined,
+            favorites: c.favorites ?? undefined,
+            about: c.about ?? undefined,
+            picture: c.picture ?? undefined,
+            animeography,
+            mangaography,
+            voiceActors,
+            createdAt: c.created_at ?? undefined,
+            updatedAt: c.updated_at ?? undefined
+        };
+    }
+
+    async findAllPeople(page: number, limit: number, query: PersonQueryDto): Promise<PaginatedPersonListDto> {
+        let countSql = `SELECT COUNT(*) AS total FROM people p WHERE p.name IS NOT NULL`;
+        let dataSql = `SELECT p.mal_id, p.name, p.given_name, p.family_name, p.favorites, p.birthday,
+                              p.raw_json->'images'->'jpg'->>'image_url' AS picture
+                       FROM people p
+                       WHERE p.name IS NOT NULL`;
+        const params: unknown[] = [];
+        let paramIndex = 1;
+
+        if (query.search) {
+            const clause = ` AND (LOWER(p.name) LIKE $${paramIndex} OR LOWER(p.given_name) LIKE $${paramIndex} OR LOWER(p.family_name) LIKE $${paramIndex})`;
+            countSql += clause;
+            dataSql += clause;
+            params.push(`%${query.search.toLowerCase()}%`);
+            paramIndex++;
+        }
+
+        const sortColumn = query.sortBy
+            ? (ALLOWED_PERSON_SORT_FIELDS[query.sortBy] ?? "p.favorites")
+            : "p.favorites";
+        const sortOrder = query.sortOrder === "ASC" ? "ASC" : "DESC";
+        dataSql += ` ORDER BY ${sortColumn} ${sortOrder} NULLS LAST`;
+        dataSql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, (page - 1) * limit);
+
+        const [countResult, rows] = await Promise.all([
+            this.animeRepo.query(countSql, params.slice(0, paramIndex - 1)),
+            this.animeRepo.query(dataSql, params)
+        ]);
+
+        const total = parseInt(countResult[0]?.total ?? "0", 10);
+        const data: PersonListDto[] = rows.map(
+            (r: { mal_id: number; name: string; given_name: string; family_name: string; favorites: number; birthday: string; picture: string }) => ({
+                malId: r.mal_id,
+                name: r.name ?? undefined,
+                givenName: r.given_name ?? undefined,
+                familyName: r.family_name ?? undefined,
+                favorites: r.favorites ?? undefined,
+                birthday: r.birthday ?? undefined,
+                picture: r.picture ?? undefined
+            })
+        );
+
+        return { data, total, page, limit };
+    }
+
+    async findPersonById(id: number): Promise<PersonDetailDto> {
+        const rows: {
+            mal_id: number;
+            url: string;
+            name: string;
+            given_name: string;
+            family_name: string;
+            favorites: number;
+            birthday: string;
+            about: string;
+            picture: string;
+            alternate_names: string[];
+            created_at: Date;
+            updated_at: Date;
+        }[] = await this.animeRepo.query(
+            `SELECT mal_id, url, name, given_name, family_name, favorites, birthday, about,
+                    raw_json->'images'->'jpg'->>'image_url' AS picture,
+                    COALESCE(raw_json->'alternate_names', '[]'::jsonb) AS alternate_names,
+                    created_at, updated_at
+             FROM people WHERE mal_id = $1`,
+            [id]
+        );
+        if (!rows.length) {
+            throw new NotFoundException(`Person with id ${id} not found`);
+        }
+        const p = rows[0];
+
+        const [staffRows, vaRows]: [
+            { anime_mal_id: number; title: string; picture: string; positions: string[] }[],
+            { anime_mal_id: number; anime_title: string; anime_picture: string; character_mal_id: number; character_name: string; character_picture: string; language: string }[]
+        ] = await Promise.all([
+            this.animeRepo.query(
+                `SELECT s.anime_mal_id, a.title,
+                        a.raw_json->'images'->'jpg'->>'image_url' AS picture,
+                        s.positions
+                 FROM anime_staff s
+                 INNER JOIN anime a ON s.anime_mal_id = a.mal_id
+                 WHERE s.person_mal_id = $1
+                 ORDER BY a.popularity ASC NULLS LAST`,
+                [id]
+            ),
+            this.animeRepo.query(
+                `SELECT va.anime_mal_id, a.title AS anime_title,
+                        a.raw_json->'images'->'jpg'->>'image_url' AS anime_picture,
+                        va.character_mal_id, c.name AS character_name,
+                        c.raw_json->'images'->'jpg'->>'image_url' AS character_picture,
+                        va.language
+                 FROM anime_voice_actors va
+                 INNER JOIN anime a ON va.anime_mal_id = a.mal_id
+                 INNER JOIN characters c ON va.character_mal_id = c.mal_id
+                 WHERE va.person_mal_id = $1
+                 ORDER BY a.popularity ASC NULLS LAST`,
+                [id]
+            )
+        ]);
+
+        const staffRoles: PersonStaffRoleDto[] = staffRows.map((r) => ({
+            animeMalId: r.anime_mal_id,
+            animeTitle: r.title ?? undefined,
+            animePicture: r.picture ?? undefined,
+            positions: r.positions ?? []
+        }));
+
+        const voiceActingRoles: PersonVoiceActingRoleDto[] = vaRows.map((r) => ({
+            animeMalId: r.anime_mal_id,
+            animeTitle: r.anime_title ?? undefined,
+            animePicture: r.anime_picture ?? undefined,
+            characterMalId: r.character_mal_id,
+            characterName: r.character_name ?? undefined,
+            characterPicture: r.character_picture ?? undefined,
+            language: r.language
+        }));
+
+        const altNames = Array.isArray(p.alternate_names) ? p.alternate_names.filter((n: string) => !!n) : [];
+
+        return {
+            malId: p.mal_id,
+            url: p.url ?? undefined,
+            name: p.name ?? undefined,
+            givenName: p.given_name ?? undefined,
+            familyName: p.family_name ?? undefined,
+            alternateNames: altNames.length > 0 ? altNames : undefined,
+            picture: p.picture ?? undefined,
+            favorites: p.favorites ?? undefined,
+            birthday: p.birthday ?? undefined,
+            about: p.about ?? undefined,
+            staffRoles,
+            voiceActingRoles,
+            createdAt: p.created_at ?? undefined,
+            updatedAt: p.updated_at ?? undefined
+        };
     }
 
     private async loadEpisodes(animeId: number): Promise<AnimeEpisodeDto[]> {

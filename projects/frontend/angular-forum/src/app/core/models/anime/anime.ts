@@ -11,11 +11,28 @@ export interface RelatedAnime {
     picture?: string;
 }
 
+export interface AnimeVoiceActor {
+    malId: number;
+    name?: string;
+    language: string;
+}
+
+export interface AnimeCharacter {
+    malId: number;
+    name?: string;
+    nameKanji?: string;
+    role?: string;
+    favorites?: number;
+    picture?: string;
+    voiceActors?: AnimeVoiceActor[];
+}
+
 export interface Anime {
     id: number;
     genres?: string[];
     studios?: AnimeStudio[];
     relatedAnime?: RelatedAnime[];
+    characters?: AnimeCharacter[];
     title?: string;
     titleEnglish?: string;
     titleJapanese?: string;

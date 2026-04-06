@@ -26,30 +26,30 @@ import { TagModule } from "primeng/tag";
 import { TextareaModule } from "primeng/textarea";
 import { TooltipModule } from "primeng/tooltip";
 
-import { AnimeCharacter, AnimeListEntry, AnimeListEntryPayload, AnimeListStatus } from "../../../../core/models/anime/anime";
+import { MangaListEntry, MangaListEntryPayload, MangaListStatus } from "../../../../core/models/manga/manga";
 import { NavigationHistoryService } from "../../../../core/services/navigation-history.service";
-import { AnimeFacade } from "../../../../facade/anime/anime-facade";
+import { MangaFacade } from "../../../../facade/manga/manga-facade";
 
 interface StatusOption {
     icon: string;
     label: string;
-    value: AnimeListStatus;
+    value: MangaListStatus;
 }
 
-const STATUS_OPTION_VALUES: { icon: string; value: AnimeListStatus; key: string }[] = [
-    { icon: "pi pi-play", value: "watching", key: "anime.detail.listStatuses.watching" },
-    { icon: "pi pi-check", value: "completed", key: "anime.detail.listStatuses.completed" },
-    { icon: "pi pi-clock", value: "plan_to_watch", key: "anime.detail.listStatuses.plan_to_watch" },
-    { icon: "pi pi-pause", value: "on_hold", key: "anime.detail.listStatuses.on_hold" },
-    { icon: "pi pi-times", value: "dropped", key: "anime.detail.listStatuses.dropped" }
+const STATUS_OPTION_VALUES: { icon: string; value: MangaListStatus; key: string }[] = [
+    { icon: "pi pi-book", value: "reading", key: "manga.detail.listStatuses.reading" },
+    { icon: "pi pi-check", value: "completed", key: "manga.detail.listStatuses.completed" },
+    { icon: "pi pi-clock", value: "plan_to_read", key: "manga.detail.listStatuses.plan_to_read" },
+    { icon: "pi pi-pause", value: "on_hold", key: "manga.detail.listStatuses.on_hold" },
+    { icon: "pi pi-times", value: "dropped", key: "manga.detail.listStatuses.dropped" }
 ];
 
-const STATUS_SEVERITY: Record<AnimeListStatus, "success" | "info" | "warn" | "danger" | "secondary"> = {
+const STATUS_SEVERITY: Record<MangaListStatus, "success" | "info" | "warn" | "danger" | "secondary"> = {
     completed: "success",
     dropped: "danger",
     on_hold: "warn",
-    plan_to_watch: "info",
-    watching: "secondary"
+    plan_to_read: "info",
+    reading: "secondary"
 };
 
 @Component({
@@ -71,44 +71,33 @@ const STATUS_SEVERITY: Record<AnimeListStatus, "success" | "info" | "warn" | "da
         TooltipModule,
         TranslocoModule
     ],
-    selector: "app-anime-detail",
-    templateUrl: "./anime-detail.html"
+    selector: "app-manga-detail",
+    templateUrl: "./manga-detail.html"
 })
-export class AnimeDetail implements OnInit {
-    // ① Injections (no dependencies)
-    protected readonly facade = inject(AnimeFacade);
-
-    // ② Derived from facade
-    protected readonly anime = this.facade.currentAnime;
+export class MangaDetail implements OnInit {
+    protected readonly facade = inject(MangaFacade);
+    protected readonly manga = this.facade.currentManga;
     protected readonly listEntry = computed(() => {
-        const a = this.anime();
-        if (!a) return null;
-        return this.facade.userList().find((e) => e.animeId === a.id) ?? null;
+        const m = this.manga();
+        if (!m) return null;
+        return this.facade.userList().find((e) => e.mangaId === m.id) ?? null;
     });
 
-    // ③ Form – inline inject avoids ordering conflict with private fb
     protected readonly listForm = inject(FormBuilder).group({
-        episodesWatched: [null as number | null],
+        chaptersRead: [null as number | null],
+        volumesRead: [null as number | null],
         review: ["", Validators.maxLength(2000)],
         score: [null as number | null],
-        status: [null as AnimeListStatus | null, Validators.required]
+        status: [null as MangaListStatus | null, Validators.required]
     });
 
-    // ④ Signals
     protected readonly removing = signal(false);
     protected readonly saveError = signal<string | null>(null);
     protected readonly saveSuccess = signal(false);
     protected readonly saving = signal(false);
-    protected readonly showAllCharacters = signal(false);
     protected readonly showFullSynopsis = signal(false);
     protected statusOptions: StatusOption[] = [];
 
-    protected readonly displayedCharacters = computed((): AnimeCharacter[] => {
-        const chars = this.anime()?.characters ?? [];
-        return this.showAllCharacters() ? chars : chars.slice(0, 6);
-    });
-
-    // ⑤ Private
     private readonly destroyRef = inject(DestroyRef);
     private readonly location = inject(Location);
     protected readonly navHistory = inject(NavigationHistoryService);
@@ -121,7 +110,8 @@ export class AnimeDetail implements OnInit {
             if (entry) {
                 this.listForm.patchValue(
                     {
-                        episodesWatched: entry.episodesWatched ?? null,
+                        chaptersRead: entry.chaptersRead ?? null,
+                        volumesRead: entry.volumesRead ?? null,
                         review: entry.review ?? "",
                         score: entry.score ?? null,
                         status: entry.status
@@ -130,7 +120,8 @@ export class AnimeDetail implements OnInit {
                 );
             } else {
                 this.listForm.reset({
-                    episodesWatched: null,
+                    chaptersRead: null,
+                    volumesRead: null,
                     review: "",
                     score: null,
                     status: null
@@ -153,12 +144,12 @@ export class AnimeDetail implements OnInit {
     }
 
     protected truncatedSynopsis(): string {
-        const s = this.anime()?.synopsis ?? "";
+        const s = this.manga()?.synopsis ?? "";
         return s.length > 400 ? s.substring(0, 400) + "…" : s;
     }
 
     protected scoreClass(): string {
-        const m = this.anime()?.mean;
+        const m = this.manga()?.score;
         if (!m) return "text-surface-400";
         if (m >= 8) return "text-green-500";
         if (m >= 7) return "text-yellow-500";
@@ -166,12 +157,12 @@ export class AnimeDetail implements OnInit {
     }
 
     protected statusTagSeverity(): "success" | "secondary" | "warn" | "info" {
-        switch (this.anime()?.status?.toLowerCase()) {
-            case "finished airing":
+        switch (this.manga()?.status?.toLowerCase()) {
+            case "finished":
                 return "secondary";
-            case "currently airing":
+            case "publishing":
                 return "success";
-            case "not yet aired":
+            case "on hiatus":
                 return "warn";
             default:
                 return "info";
@@ -181,7 +172,7 @@ export class AnimeDetail implements OnInit {
     protected listStatusLabel(): string {
         const entry = this.listEntry();
         if (!entry) return "";
-        return this.translocoService.translate("anime.detail.listStatuses." + entry.status);
+        return this.translocoService.translate("manga.detail.listStatuses." + entry.status);
     }
 
     private buildStatusOptions(): void {
@@ -198,29 +189,23 @@ export class AnimeDetail implements OnInit {
         return STATUS_SEVERITY[entry.status];
     }
 
-    protected formatDate(year?: number, month?: number, day?: number): string {
-        if (!year) return "—";
-        if (!month) return year.toString();
-        if (!day) return `${year}-${String(month).padStart(2, "0")}`;
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    }
-
     protected saveEntry(): void {
-        if (this.listForm.invalid || !this.anime()) return;
+        if (this.listForm.invalid || !this.manga()) return;
         this.saving.set(true);
         this.saveSuccess.set(false);
         this.saveError.set(null);
 
-        const payload: AnimeListEntryPayload = {
-            animeId: this.anime()!.id,
-            episodesWatched: this.listForm.value.episodesWatched ?? undefined,
+        const payload: MangaListEntryPayload = {
+            mangaId: this.manga()!.id,
+            chaptersRead: this.listForm.value.chaptersRead ?? undefined,
+            volumesRead: this.listForm.value.volumesRead ?? undefined,
             review: this.listForm.value.review ?? undefined,
             score: this.listForm.value.score ?? undefined,
             status: this.listForm.value.status!
         };
 
         this.facade.saveListEntry(payload).subscribe({
-            next: (entry: AnimeListEntry) => {
+            next: (entry: MangaListEntry) => {
                 this.facade.updateUserListLocally(entry);
                 this.saveSuccess.set(true);
                 this.saving.set(false);
@@ -234,11 +219,11 @@ export class AnimeDetail implements OnInit {
     }
 
     protected removeEntry(): void {
-        if (!this.anime()) return;
+        if (!this.manga()) return;
         this.removing.set(true);
-        this.facade.removeFromList(this.anime()!.id).subscribe({
+        this.facade.removeFromList(this.manga()!.id).subscribe({
             next: () => {
-                this.facade.removeFromUserListLocally(this.anime()!.id);
+                this.facade.removeFromUserListLocally(this.manga()!.id);
                 this.listForm.reset();
                 this.removing.set(false);
             },
@@ -249,6 +234,6 @@ export class AnimeDetail implements OnInit {
     }
 
     protected back(): void {
-        this.navHistory.back("/anime-database");
+        this.navHistory.back("/manga-database");
     }
 }

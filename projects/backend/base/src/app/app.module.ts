@@ -19,6 +19,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { EmbedModule } from "./embed/embed.module";
 import { FeedModule } from "./feed/feed.module";
+import { MangaModule } from "./manga/manga.module";
 import { ForumModule } from "./forum/forum.module";
 import { FriendsModule } from "./friends/friends.module";
 import { GalleryModule } from "./gallery/gallery.module";
@@ -90,7 +91,8 @@ import { WeatherModule } from "./weather/weather.module";
         TicketModule,
         WeatherModule,
         ClipsModule,
-        EmbedModule
+        EmbedModule,
+        MangaModule
     ],
     controllers: [AppController],
     providers: [AppService]

@@ -12,6 +12,127 @@ import {
     PaginatedAnime
 } from "../../core/models/anime/anime";
 
+export interface CharacterListItem {
+    malId: number;
+    name?: string;
+    nameKanji?: string;
+    favorites?: number;
+    picture?: string;
+    animeAppearances: number;
+}
+
+export interface PaginatedCharacters {
+    data: CharacterListItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export interface CharacterDetail {
+    malId: number;
+    url?: string;
+    name?: string;
+    nameKanji?: string;
+    nicknames?: string[];
+    favorites?: number;
+    about?: string;
+    picture?: string;
+    animeography: CharacterAnime[];
+    mangaography: CharacterManga[];
+    voiceActors: CharacterVoiceActor[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CharacterAnime {
+    malId: number;
+    title?: string;
+    picture?: string;
+    role?: string;
+}
+
+export interface CharacterManga {
+    malId: number;
+    title?: string;
+    picture?: string;
+    role?: string;
+}
+
+export interface CharacterVoiceActor {
+    malId: number;
+    name?: string;
+    language: string;
+    animeMalId: number;
+    animeTitle?: string;
+}
+
+export interface PersonListItem {
+    malId: number;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    picture?: string;
+    favorites?: number;
+    birthday?: string;
+}
+
+export interface PaginatedPeople {
+    data: PersonListItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export interface PersonDetail {
+    malId: number;
+    url?: string;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    alternateNames?: string[];
+    picture?: string;
+    favorites?: number;
+    birthday?: string;
+    about?: string;
+    staffRoles: PersonStaffRole[];
+    voiceActingRoles: PersonVoiceActingRole[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface PersonStaffRole {
+    animeMalId: number;
+    animeTitle?: string;
+    animePicture?: string;
+    positions: string[];
+}
+
+export interface PersonVoiceActingRole {
+    animeMalId: number;
+    animeTitle?: string;
+    animePicture?: string;
+    characterMalId: number;
+    characterName?: string;
+    characterPicture?: string;
+    language: string;
+}
+
+interface AnimeV2VoiceActorResponse {
+    malId: number;
+    name?: string;
+    language: string;
+}
+
+interface AnimeV2CharacterResponse {
+    malId: number;
+    name?: string;
+    nameKanji?: string;
+    role?: string;
+    favorites?: number;
+    picture?: string;
+    voiceActors?: AnimeV2VoiceActorResponse[];
+}
+
 interface AnimeV2Response {
     id: number;
     url?: string;
@@ -44,6 +165,7 @@ interface AnimeV2Response {
     studios?: Array<{ malId: number; name: string }>;
     producers?: Array<{ malId: number; name: string }>;
     relatedEntries?: Array<{ malId: number; relation: string; type: string; name?: string; picture?: string }>;
+    characters?: AnimeV2CharacterResponse[];
     [key: string]: unknown;
 }
 
@@ -103,7 +225,20 @@ function mapV2ToAnime(v2: AnimeV2Response): Anime {
                 title: r.name,
                 titleEnglish: r.name,
                 picture: r.picture
+            })),
+        characters: v2.characters?.map((c) => ({
+            malId: c.malId,
+            name: c.name,
+            nameKanji: c.nameKanji,
+            role: c.role,
+            favorites: c.favorites,
+            picture: c.picture,
+            voiceActors: c.voiceActors?.map((va) => ({
+                malId: va.malId,
+                name: va.name,
+                language: va.language
             }))
+        }))
     };
 }
 
@@ -114,22 +249,42 @@ function mapPaginatedV2(res: { data: AnimeV2Response[]; total: number; page: num
 @Injectable({ providedIn: "root" })
 export class AnimeFacade {
     readonly animeList: Signal<Anime[]>;
+    readonly characterDetail: Signal<CharacterDetail | null>;
+    readonly characterDetailLoading: Signal<boolean>;
+    readonly characterList: Signal<CharacterListItem[]>;
+    readonly characterLoading: Signal<boolean>;
+    readonly characterTotal: Signal<number>;
     readonly currentAnime: Signal<Anime | null>;
     readonly detailLoading: Signal<boolean>;
     readonly error: Signal<string | null>;
     readonly genres: Signal<string[]>;
     readonly listLoading: Signal<boolean>;
     readonly loading: Signal<boolean>;
+    readonly personDetail: Signal<PersonDetail | null>;
+    readonly personDetailLoading: Signal<boolean>;
+    readonly personList: Signal<PersonListItem[]>;
+    readonly personLoading: Signal<boolean>;
+    readonly personTotal: Signal<number>;
     readonly total: Signal<number>;
     readonly userList: Signal<AnimeListEntry[]>;
 
     private readonly _animeList = signal<Anime[]>([]);
+    private readonly _characterDetail = signal<CharacterDetail | null>(null);
+    private readonly _characterDetailLoading = signal(false);
+    private readonly _characterList = signal<CharacterListItem[]>([]);
+    private readonly _characterLoading = signal(false);
+    private readonly _characterTotal = signal(0);
     private readonly _currentAnime = signal<Anime | null>(null);
     private readonly _detailLoading = signal(false);
     private readonly _error = signal<string | null>(null);
     private readonly _genres = signal<string[]>([]);
     private readonly _listLoading = signal(false);
     private readonly _loading = signal(false);
+    private readonly _personDetail = signal<PersonDetail | null>(null);
+    private readonly _personDetailLoading = signal(false);
+    private readonly _personList = signal<PersonListItem[]>([]);
+    private readonly _personLoading = signal(false);
+    private readonly _personTotal = signal(0);
     private readonly _total = signal(0);
     private readonly _userList = signal<AnimeListEntry[]>([]);
     private readonly apiConfig = inject<ApiConfig>(API_CONFIG);
@@ -137,12 +292,22 @@ export class AnimeFacade {
 
     constructor() {
         this.animeList = this._animeList.asReadonly();
+        this.characterDetail = this._characterDetail.asReadonly();
+        this.characterDetailLoading = this._characterDetailLoading.asReadonly();
+        this.characterList = this._characterList.asReadonly();
+        this.characterLoading = this._characterLoading.asReadonly();
+        this.characterTotal = this._characterTotal.asReadonly();
         this.currentAnime = this._currentAnime.asReadonly();
         this.detailLoading = this._detailLoading.asReadonly();
         this.error = this._error.asReadonly();
         this.genres = this._genres.asReadonly();
         this.listLoading = this._listLoading.asReadonly();
         this.loading = this._loading.asReadonly();
+        this.personDetail = this._personDetail.asReadonly();
+        this.personDetailLoading = this._personDetailLoading.asReadonly();
+        this.personList = this._personList.asReadonly();
+        this.personLoading = this._personLoading.asReadonly();
+        this.personTotal = this._personTotal.asReadonly();
         this.total = this._total.asReadonly();
         this.userList = this._userList.asReadonly();
     }
@@ -285,6 +450,80 @@ export class AnimeFacade {
 
     removeFromUserListLocally(animeId: number): void {
         this._userList.update((list) => list.filter((e) => e.animeId !== animeId));
+    }
+
+    loadCharacters(page: number, limit: number, search?: string): void {
+        this._characterLoading.set(true);
+
+        let params = new HttpParams().set("page", page).set("limit", limit).set("sortBy", "favorites").set("sortOrder", "DESC");
+        if (search) params = params.set("search", search);
+
+        this.http
+            .get<PaginatedCharacters>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.characters()}`, { params })
+            .subscribe({
+                next: (res) => {
+                    this._characterList.set(res.data);
+                    this._characterTotal.set(res.total);
+                    this._characterLoading.set(false);
+                },
+                error: () => {
+                    this._characterLoading.set(false);
+                }
+            });
+    }
+
+    loadCharacterById(id: number): void {
+        this._characterDetailLoading.set(true);
+        this._characterDetail.set(null);
+
+        this.http
+            .get<CharacterDetail>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.characterDetail(id)}`)
+            .subscribe({
+                next: (detail) => {
+                    this._characterDetail.set(detail);
+                    this._characterDetailLoading.set(false);
+                },
+                error: () => {
+                    this._characterDetailLoading.set(false);
+                }
+            });
+    }
+
+    loadPeople(page: number, limit: number, search?: string): void {
+        this._personLoading.set(true);
+
+        let params = new HttpParams().set("page", page).set("limit", limit).set("sortBy", "favorites").set("sortOrder", "DESC");
+        if (search) params = params.set("search", search);
+
+        this.http
+            .get<PaginatedPeople>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.people()}`, { params })
+            .subscribe({
+                next: (res) => {
+                    this._personList.set(res.data);
+                    this._personTotal.set(res.total);
+                    this._personLoading.set(false);
+                },
+                error: () => {
+                    this._personLoading.set(false);
+                }
+            });
+    }
+
+    loadPersonById(id: number): void {
+        this._personDetailLoading.set(true);
+        this._personDetail.set(null);
+
+        this.http
+            .get<PersonDetail>(`${this.apiConfig.baseUrl}${ANIME_ROUTES.personDetail(id)}`)
+            .subscribe({
+                next: (detail) => {
+                    this._personDetail.set(detail);
+                    this._personDetailLoading.set(false);
+                },
+                error: () => {
+                    this._personDetailLoading.set(false);
+                }
+            });
     }
 
     loadGenres(): void {

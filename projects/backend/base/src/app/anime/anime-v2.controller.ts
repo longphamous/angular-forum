@@ -3,8 +3,16 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Public } from "../auth/auth.decorators";
 import { AnimeV2Service } from "./anime-v2.service";
-import { AnimeV2QueryDto } from "./dto/anime-v2-query.dto";
-import { AnimeProducerDto, AnimeV2Dto, PaginatedAnimeV2Dto } from "./models/anime-v2.model";
+import { AnimeV2QueryDto, CharacterQueryDto, PersonQueryDto } from "./dto/anime-v2-query.dto";
+import {
+    AnimeCharacterDetailDto,
+    AnimeProducerDto,
+    AnimeV2Dto,
+    PaginatedAnimeCharacterListDto,
+    PaginatedAnimeV2Dto,
+    PaginatedPersonListDto,
+    PersonDetailDto
+} from "./models/anime-v2.model";
 
 @ApiTags("Anime v2")
 @ApiBearerAuth("JWT")
@@ -46,6 +54,54 @@ export class AnimeV2Controller {
     @HttpCode(HttpStatus.OK)
     getAllStudios(): Promise<AnimeProducerDto[]> {
         return this.animeV2Service.getAllProducers();
+    }
+
+    /**
+     * GET /api/v2/anime/characters
+     * Returns a paginated + filtered list of anime characters.
+     */
+    @Public()
+    @Get("characters")
+    @HttpCode(HttpStatus.OK)
+    findAllCharacters(@Query() query: CharacterQueryDto): Promise<PaginatedAnimeCharacterListDto> {
+        const page = Math.max(1, Number(query.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+        return this.animeV2Service.findAllCharacters(page, limit, query);
+    }
+
+    /**
+     * GET /api/v2/anime/characters/:id
+     * Returns a single character by MAL ID with animeography.
+     */
+    @Public()
+    @Get("characters/:id")
+    @HttpCode(HttpStatus.OK)
+    findCharacterById(@Param("id", ParseIntPipe) id: number): Promise<AnimeCharacterDetailDto> {
+        return this.animeV2Service.findCharacterById(id);
+    }
+
+    /**
+     * GET /api/v2/anime/people
+     * Returns a paginated + filtered list of people (voice actors, staff, etc.).
+     */
+    @Public()
+    @Get("people")
+    @HttpCode(HttpStatus.OK)
+    findAllPeople(@Query() query: PersonQueryDto): Promise<PaginatedPersonListDto> {
+        const page = Math.max(1, Number(query.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+        return this.animeV2Service.findAllPeople(page, limit, query);
+    }
+
+    /**
+     * GET /api/v2/anime/people/:id
+     * Returns a single person by MAL ID with staff roles and voice acting roles.
+     */
+    @Public()
+    @Get("people/:id")
+    @HttpCode(HttpStatus.OK)
+    findPersonById(@Param("id", ParseIntPipe) id: number): Promise<PersonDetailDto> {
+        return this.animeV2Service.findPersonById(id);
     }
 
     /**

@@ -1,0 +1,193 @@
+<div class="card" *transloco="let t">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h2 class="m-0 text-2xl font-bold">{{ t('manga.database.title') }}</h2>
+            @if (facade.total() > 0) {
+            <p class="text-surface-500 mt-1 mb-0">
+                {{ t('manga.database.entries', { count: facade.total().toLocaleString() }) }}
+            </p>
+            }
+        </div>
+        <p-button
+            (onClick)="toggleNewest()"
+            [label]="showNewest ? t('manga.database.showAll') : t('manga.database.showNewest')"
+            [outlined]="!showNewest"
+            [severity]="showNewest ? 'success' : 'secondary'"
+            icon="pi pi-star"
+        />
+    </div>
+
+    @if (facade.error()) {
+    <p-message [text]="facade.error()!" severity="error" styleClass="mb-4 w-full" />
+    }
+
+    <p-table
+        (onLazyLoad)="onLazyLoad($event)"
+        [first]="tableFirst"
+        [lazy]="true"
+        [loading]="facade.loading()"
+        [paginator]="true"
+        [rowHover]="true"
+        [rows]="pageSize"
+        [scrollable]="true"
+        [showGridlines]="false"
+        [totalRecords]="facade.total()"
+        [value]="facade.mangaList()"
+        dataKey="id"
+        styleClass="p-datatable-sm"
+    >
+        <ng-template #header>
+            <tr>
+                <th class="text-surface-400 text-center" style="width: 3.5rem">#</th>
+                <th style="min-width: 22rem">{{ t('manga.topList.table.manga') }}</th>
+                <th style="width: 7.5rem">{{ t('manga.topList.table.type') }}</th>
+                <th class="text-center" style="width: 6rem">{{ t('manga.topList.table.chapters') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('manga.topList.table.volumes') }}</th>
+                <th class="text-center" style="width: 5.5rem">{{ t('manga.topList.table.score') }}</th>
+                <th style="min-width: 9rem">{{ t('manga.topList.table.status') }}</th>
+                <th style="width: 10rem">{{ t('manga.topList.table.published') }}</th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-manga>
+            <tr class="cursor-pointer" (click)="navigateToDetail(manga.id)">
+                <!-- Rank -->
+                <td class="text-surface-400 text-center text-sm">{{ manga.rank ?? '—' }}</td>
+
+                <!-- Picture + Title -->
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="group relative flex-shrink-0">
+                            @if (manga.picture) {
+                            <img
+                                class="manga-thumbnail rounded object-cover"
+                                [alt]="manga.title"
+                                [src]="manga.picture"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-40 group-hover:block"
+                            >
+                                <img
+                                    class="w-full rounded-lg object-cover shadow-xl"
+                                    [alt]="manga.title"
+                                    [src]="manga.picture"
+                                    style="aspect-ratio: 2/3"
+                                />
+                            </div>
+                            } @else {
+                            <div class="manga-thumbnail bg-surface-200 dark:bg-surface-700 rounded"></div>
+                            }
+                        </div>
+                        <div class="min-w-0">
+                            <div
+                                class="truncate text-sm font-semibold"
+                                [pTooltip]="manga.titleEnglish || manga.title"
+                                tooltipPosition="top"
+                            >
+                                {{ manga.titleEnglish || manga.title || '—' }}
+                            </div>
+                            @if (manga.titleEnglish && manga.title && manga.title !== manga.titleEnglish) {
+                            <div class="text-surface-400 mt-0.5 truncate text-xs">{{ manga.title }}</div>
+                            } @if (manga.genres?.length) {
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                @for (genre of manga.genres!.slice(0, 3); track genre) {
+                                <span
+                                    class="bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
+                                    >{{ genre }}</span
+                                >
+                                } @if (manga.genres!.length > 3) {
+                                <span class="text-surface-400 text-xs" [pTooltip]="manga.genres!.slice(3).join(', ')"
+                                    >+{{ manga.genres!.length - 3 }}</span
+                                >
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Type -->
+                <td>
+                    @if (manga.type) {
+                    <p-tag [severity]="getTypeSeverity(manga.type)" [value]="manga.type" styleClass="text-xs" />
+                    } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Chapters -->
+                <td class="text-center text-sm">
+                    @if (manga.chapters) { {{ manga.chapters }} } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Volumes -->
+                <td class="text-center text-sm">
+                    @if (manga.volumes) { {{ manga.volumes }} } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Score -->
+                <td class="text-center text-sm font-semibold">
+                    @if (manga.score) {
+                    <span [class]="getScoreClass(manga.score)">{{ manga.score.toFixed(2) }}</span>
+                    } @else {
+                    <span class="text-surface-400">N/A</span>
+                    }
+                </td>
+
+                <!-- Status -->
+                <td>
+                    @if (manga.status) {
+                    <p-tag
+                        [severity]="getStatusSeverity(manga.status)"
+                        [value]="manga.status"
+                        styleClass="text-xs whitespace-nowrap"
+                    />
+                    } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Published -->
+                <td class="text-surface-500 text-sm">
+                    {{ manga.publishedString || '—' }}
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+            <tr>
+                <td colspan="8">
+                    <div class="text-surface-400 flex flex-col items-center justify-center py-12">
+                        <i class="pi pi-inbox mb-3 text-5xl"></i>
+                        <span class="text-lg">{{ t('manga.database.noManga') }}</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #loadingbody>
+            <tr>
+                <td><p-skeleton height="1.25rem" /></td>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <p-skeleton height="3.5rem" styleClass="rounded flex-shrink-0" width="2.5rem" />
+                        <div class="flex-1">
+                            <p-skeleton height="0.875rem" styleClass="mb-2" />
+                            <p-skeleton height="0.75rem" width="60%" />
+                        </div>
+                    </div>
+                </td>
+                <td><p-skeleton height="1.5rem" width="3.5rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2.5rem" /></td>
+                <td><p-skeleton height="1.5rem" width="5rem" /></td>
+                <td><p-skeleton height="1.25rem" width="5rem" /></td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

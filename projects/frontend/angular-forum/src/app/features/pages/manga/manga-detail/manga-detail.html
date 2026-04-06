@@ -28,15 +28,15 @@
             </div>
         </div>
     </div>
-    } @else if (anime()) {
+    } @else if (manga()) {
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <!-- Left column: cover + list panel -->
         <div class="flex flex-col gap-4 md:col-span-1">
-            @if (anime()!.picture) {
+            @if (manga()!.picture) {
             <img
                 class="w-full rounded-lg object-cover shadow-md"
-                [alt]="anime()!.title"
-                [src]="anime()!.picture"
+                [alt]="manga()!.title"
+                [src]="manga()!.picture"
                 style="aspect-ratio: 2/3"
             />
             } @else {
@@ -50,20 +50,20 @@
 
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-2 text-center text-sm">
-                @if (anime()!.rank) {
+                @if (manga()!.rank) {
                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">{{ t('anime.detail.rank') }}</div>
-                    <div class="font-bold">#{{ anime()!.rank }}</div>
+                    <div class="text-surface-400 text-xs">{{ t('manga.detail.rank') }}</div>
+                    <div class="font-bold">#{{ manga()!.rank }}</div>
                 </div>
-                } @if (anime()!.popularity) {
+                } @if (manga()!.popularity) {
                 <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">{{ t('anime.detail.popularity') }}</div>
-                    <div class="font-bold">#{{ anime()!.popularity }}</div>
+                    <div class="text-surface-400 text-xs">{{ t('manga.detail.popularity') }}</div>
+                    <div class="font-bold">#{{ manga()!.popularity }}</div>
                 </div>
-                } @if (anime()!.member) {
+                } @if (manga()!.members) {
                 <div class="bg-surface-50 dark:bg-surface-800 col-span-2 rounded-lg p-2">
-                    <div class="text-surface-400 text-xs">{{ t('anime.detail.members') }}</div>
-                    <div class="font-bold">{{ anime()!.member!.toLocaleString() }}</div>
+                    <div class="text-surface-400 text-xs">{{ t('manga.detail.members') }}</div>
+                    <div class="font-bold">{{ manga()!.members!.toLocaleString() }}</div>
                 </div>
                 }
             </div>
@@ -71,17 +71,17 @@
             <!-- Add to list panel -->
             <p-panel
                 [collapsed]="!listEntry()"
-                [header]="listEntry() ? t('anime.detail.myListActive') : t('anime.detail.addToList')"
+                [header]="listEntry() ? t('manga.detail.myListActive') : t('manga.detail.addToList')"
                 [toggleable]="true"
             >
                 <form class="flex flex-col gap-3" (ngSubmit)="saveEntry()" [formGroup]="listForm">
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium" for="listStatus">
-                            {{ t('anime.detail.statusLabel') }}
+                            {{ t('manga.detail.statusLabel') }}
                         </label>
                         <p-select
                             [options]="statusOptions"
-                            [placeholder]="t('anime.detail.statusPlaceholder')"
+                            [placeholder]="t('manga.detail.statusPlaceholder')"
                             formControlName="status"
                             inputId="listStatus"
                             optionLabel="label"
@@ -91,7 +91,7 @@
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium" for="listScore">
-                            {{ t('anime.detail.scoreLabel') }}
+                            {{ t('manga.detail.scoreLabel') }}
                         </label>
                         <p-rating
                             [stars]="10"
@@ -103,31 +103,46 @@
                         <span class="text-surface-400 text-xs"> {{ listForm.value.score }}/10 </span>
                         }
                     </div>
-                    @if (anime()!.episode && anime()!.episode! > 1) {
+                    @if (manga()!.chapters && manga()!.chapters! > 1) {
                     <div class="flex flex-col gap-1">
-                        <label class="text-surface-500 text-xs font-medium" for="listEpisodes">
-                            {{ t('anime.detail.episodesLabel') }}
+                        <label class="text-surface-500 text-xs font-medium" for="listChapters">
+                            {{ t('manga.detail.chaptersLabel') }}
                         </label>
                         <p-inputnumber
-                            [max]="anime()!.episode ?? 9999"
+                            [max]="manga()!.chapters ?? 9999"
                             [min]="0"
                             [useGrouping]="false"
-                            formControlName="episodesWatched"
-                            inputId="listEpisodes"
+                            formControlName="chaptersRead"
+                            inputId="listChapters"
+                            styleClass="w-full"
+                        />
+                    </div>
+                    }
+                    @if (manga()!.volumes && manga()!.volumes! > 1) {
+                    <div class="flex flex-col gap-1">
+                        <label class="text-surface-500 text-xs font-medium" for="listVolumes">
+                            {{ t('manga.detail.volumesLabel') }}
+                        </label>
+                        <p-inputnumber
+                            [max]="manga()!.volumes ?? 9999"
+                            [min]="0"
+                            [useGrouping]="false"
+                            formControlName="volumesRead"
+                            inputId="listVolumes"
                             styleClass="w-full"
                         />
                     </div>
                     }
                     <div class="flex flex-col gap-1">
                         <label class="text-surface-500 text-xs font-medium" for="listReview">
-                            {{ t('anime.detail.reviewLabel') }}
-                            <span class="font-normal">{{ t('anime.detail.reviewOptional') }}</span>
+                            {{ t('manga.detail.reviewLabel') }}
+                            <span class="font-normal">{{ t('manga.detail.reviewOptional') }}</span>
                         </label>
                         <textarea
                             class="w-full text-sm"
                             id="listReview"
                             [autoResize]="true"
-                            [placeholder]="t('anime.detail.reviewPlaceholder')"
+                            [placeholder]="t('manga.detail.reviewPlaceholder')"
                             formControlName="review"
                             pTextarea
                             rows="3"
@@ -135,7 +150,7 @@
                     </div>
 
                     @if (saveSuccess()) {
-                    <p-message class="w-full" severity="success">{{ t('anime.detail.saved') }}</p-message>
+                    <p-message class="w-full" severity="success">{{ t('manga.detail.saved') }}</p-message>
                     } @if (saveError()) {
                     <p-message class="w-full" severity="error"> {{ saveError() }} </p-message>
                     }
@@ -145,7 +160,7 @@
                             class="flex-1"
                             [disabled]="listForm.invalid"
                             [icon]="listEntry() ? 'pi pi-check' : 'pi pi-plus'"
-                            [label]="listEntry() ? t('anime.detail.update') : t('anime.detail.add')"
+                            [label]="listEntry() ? t('manga.detail.update') : t('manga.detail.add')"
                             [loading]="saving()"
                             type="submit"
                         />
@@ -154,7 +169,7 @@
                             (onClick)="removeEntry()"
                             [loading]="removing()"
                             [outlined]="true"
-                            [pTooltip]="t('anime.detail.removeFromList')"
+                            [pTooltip]="t('manga.detail.removeFromList')"
                             icon="pi pi-trash"
                             severity="danger"
                         />
@@ -169,45 +184,45 @@
             <!-- Title + score -->
             <div>
                 <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl leading-tight font-bold">
-                    {{ anime()!.titleEnglish || anime()!.title }}
+                    {{ manga()!.titleEnglish || manga()!.title }}
                 </h1>
-                @if ( anime()!.titleEnglish && anime()!.title && anime()!.title !== anime()!.titleEnglish ) {
-                <p class="text-surface-500 mt-1 text-sm">{{ anime()!.title }}</p>
-                } @if (anime()!.titleJapanese) {
-                <p class="text-surface-400 text-sm">{{ anime()!.titleJapanese }}</p>
+                @if ( manga()!.titleEnglish && manga()!.title && manga()!.title !== manga()!.titleEnglish ) {
+                <p class="text-surface-500 mt-1 text-sm">{{ manga()!.title }}</p>
+                } @if (manga()!.titleJapanese) {
+                <p class="text-surface-400 text-sm">{{ manga()!.titleJapanese }}</p>
                 }
                 <div class="mt-3 flex flex-wrap items-center gap-2">
-                    @if (anime()!.mean) {
+                    @if (manga()!.score) {
                     <div class="flex items-center gap-1.5 rounded-full bg-yellow-50 px-3 py-1 dark:bg-yellow-400/10">
                         <i class="pi pi-star-fill text-sm text-yellow-400"></i>
-                        <span class="text-lg font-bold" [class]="scoreClass()"> {{ anime()!.mean!.toFixed(2) }} </span>
-                        @if (anime()!.voter) {
-                        <span class="text-surface-400 text-xs"> ({{ anime()!.voter!.toLocaleString() }}) </span>
+                        <span class="text-lg font-bold" [class]="scoreClass()"> {{ manga()!.score!.toFixed(2) }} </span>
+                        @if (manga()!.scoredBy) {
+                        <span class="text-surface-400 text-xs"> ({{ manga()!.scoredBy!.toLocaleString() }}) </span>
                         }
                     </div>
-                    } @if (anime()!.type) {
-                    <p-tag [value]="anime()!.type!" severity="info" styleClass="text-xs" />
-                    } @if (anime()!.status) {
-                    <p-tag [severity]="statusTagSeverity()" [value]="anime()!.status!" styleClass="text-xs" />
+                    } @if (manga()!.type) {
+                    <p-tag [value]="manga()!.type!" severity="info" styleClass="text-xs" />
+                    } @if (manga()!.status) {
+                    <p-tag [severity]="statusTagSeverity()" [value]="manga()!.status!" styleClass="text-xs" />
                     } @if (listEntry()) {
                     <p-tag [severity]="listStatusSeverity()" [value]="listStatusLabel()" styleClass="text-xs" />
                     }
                 </div>
-                @if (anime()!.genres?.length) {
+                @if (manga()!.genres?.length) {
                 <div class="mt-2 flex flex-wrap gap-1.5">
-                    @for (genre of anime()!.genres!; track genre) {
+                    @for (genre of manga()!.genres!; track genre) {
                     <span
                         class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
                         >{{ genre }}</span
                     >
                     }
                 </div>
-                } @if (anime()!.studios?.length) {
+                } @if (manga()!.authors?.length) {
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
-                    @for (studio of anime()!.studios!; track studio.id) {
+                    @for (author of manga()!.authors!; track author.name) {
                     <span
                         class="border-surface-300 dark:border-surface-600 text-surface-600 dark:text-surface-300 rounded-full border px-2.5 py-0.5 text-xs font-medium"
-                        >{{ studio.name }}</span
+                        >{{ author.name }}@if (author.role) { ({{ author.role }}) }</span
                     >
                     }
                 </div>
@@ -217,19 +232,19 @@
             <p-divider styleClass="my-0" />
 
             <!-- Synopsis -->
-            @if (anime()!.synopsis) {
+            @if (manga()!.synopsis) {
             <div>
                 <h3 class="text-surface-700 dark:text-surface-300 mb-2 text-sm font-semibold tracking-wide uppercase">
-                    {{ t('anime.detail.synopsis') }}
+                    {{ t('manga.detail.synopsis') }}
                 </h3>
                 <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed">
-                    {{ showFullSynopsis() ? anime()!.synopsis : truncatedSynopsis() }} @if (anime()!.synopsis!.length >
+                    {{ showFullSynopsis() ? manga()!.synopsis : truncatedSynopsis() }} @if (manga()!.synopsis!.length >
                     400) {
                     <button
                         class="text-primary ml-1 cursor-pointer border-none bg-transparent text-sm font-medium"
                         (click)="showFullSynopsis.set(!showFullSynopsis())"
                     >
-                        {{ showFullSynopsis() ? t('anime.detail.showLess') : t('anime.detail.showMore') }}
+                        {{ showFullSynopsis() ? t('manga.detail.showLess') : t('manga.detail.showMore') }}
                     </button>
                     }
                 </p>
@@ -238,85 +253,69 @@
 
             <!-- Info grid -->
             <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-                @if (anime()!.episode) {
+                @if (manga()!.chapters) {
                 <div>
                     <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.episodes') }}
+                        {{ t('manga.detail.info.chapters') }}
                     </div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.episode }}</div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ manga()!.chapters }}</div>
                 </div>
-                } @if (anime()!.episodeDuration) {
+                } @if (manga()!.volumes) {
                 <div>
                     <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.duration') }}
+                        {{ t('manga.detail.info.volumes') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ manga()!.volumes }}</div>
+                </div>
+                } @if (manga()!.authors?.length) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('manga.detail.info.authors') }}
                     </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
-                        {{ anime()!.episodeDuration }} Min.
+                        @for (author of manga()!.authors!; track author.name; let last = $last) {
+                            {{ author.name }}@if (!last) {, }
+                        }
                     </div>
                 </div>
-                } @if (anime()!.source) {
+                } @if (manga()!.status) {
                 <div>
                     <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.source') }}
+                        {{ t('manga.detail.info.status') }}
                     </div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.source }}</div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ manga()!.status }}</div>
                 </div>
-                } @if (anime()!.rating) {
+                } @if (manga()!.publishedString) {
                 <div>
                     <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.rating') }}
+                        {{ t('manga.detail.info.published') }}
                     </div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ anime()!.rating }}</div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">{{ manga()!.publishedString }}</div>
                 </div>
-                } @if (anime()!.season || anime()!.seasonYear) {
+                } @if (manga()!.serializations?.length) {
                 <div>
                     <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.season') }}
-                    </div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium capitalize">
-                        {{ anime()!.season }} {{ anime()!.seasonYear }}
-                    </div>
-                </div>
-                } @if (anime()!.startYear) {
-                <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.start') }}
+                        {{ t('manga.detail.info.serializations') }}
                     </div>
                     <div class="text-surface-800 dark:text-surface-200 font-medium">
-                        {{ formatDate( anime()!.startYear, anime()!.startMonth, anime()!.startDay ) }}
-                    </div>
-                </div>
-                } @if (anime()!.endYear) {
-                <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">{{ t('anime.detail.info.end') }}</div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium">
-                        {{ formatDate( anime()!.endYear, anime()!.endMonth, anime()!.endDay ) }}
-                    </div>
-                </div>
-                } @if (anime()!.broadcastDay) {
-                <div>
-                    <div class="text-surface-400 text-xs tracking-wide uppercase">
-                        {{ t('anime.detail.info.broadcast') }}
-                    </div>
-                    <div class="text-surface-800 dark:text-surface-200 font-medium">
-                        {{ anime()!.broadcastDay }} {{ anime()!.broadcastTime }}
+                        {{ manga()!.serializations!.join(', ') }}
                     </div>
                 </div>
                 }
             </div>
 
-            <!-- Related Anime -->
-            @if (anime()!.relatedAnime?.length) {
+            <!-- Related Manga -->
+            @if (manga()!.relatedManga?.length) {
             <p-divider styleClass="my-0" />
             <div>
                 <h3 class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-semibold tracking-wide uppercase">
-                    {{ t('anime.detail.relatedAnime') }}
+                    {{ t('manga.detail.relatedManga') }}
                 </h3>
                 <div class="flex flex-col gap-2">
-                    @for (related of anime()!.relatedAnime!; track related.animeId) {
+                    @for (related of manga()!.relatedManga!; track related.mangaId) {
                     <a
                         class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
-                        [routerLink]="['/anime', related.animeId]"
+                        [routerLink]="['/manga', related.mangaId]"
                     >
                         <div class="group relative h-12 w-8 flex-shrink-0">
                             @if (related.picture) {
@@ -357,97 +356,10 @@
             }
         </div>
     </div>
-
-    <!-- Characters -->
-    @if (anime()!.characters?.length) {
-    <p-divider styleClass="my-4" />
-    <div>
-        <h3 class="text-surface-700 dark:text-surface-300 mb-3 text-sm font-semibold tracking-wide uppercase">
-            {{ t('anime.detail.characters') }}
-        </h3>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            @for (char of displayedCharacters(); track char.malId) {
-            <a
-                class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex items-center gap-3 rounded-lg p-3 no-underline transition-colors"
-                [routerLink]="['/anime/characters', char.malId]"
-            >
-                <div class="group relative h-14 w-10 flex-shrink-0">
-                    @if (char.picture) {
-                    <img
-                        class="h-14 w-10 rounded object-cover"
-                        [alt]="char.name"
-                        [src]="char.picture"
-                    />
-                    <div
-                        class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
-                    >
-                        <img
-                            class="w-full rounded-lg object-cover shadow-xl"
-                            [alt]="char.name"
-                            [src]="char.picture"
-                            style="aspect-ratio: 2/3"
-                        />
-                    </div>
-                    } @else {
-                    <div
-                        class="bg-surface-200 dark:bg-surface-600 flex h-14 w-10 items-center justify-center rounded"
-                    >
-                        <i class="pi pi-user text-surface-400 text-xs"></i>
-                    </div>
-                    }
-                </div>
-                <div class="flex min-w-0 flex-1 flex-col">
-                    <span class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
-                        {{ char.name }}
-                    </span>
-                    @if (char.nameKanji) {
-                    <span class="text-surface-400 truncate text-xs">{{ char.nameKanji }}</span>
-                    }
-                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
-                        @if (char.role) {
-                        <span
-                            class="rounded-full px-2 py-0.5 text-xs font-medium"
-                            [class]="char.role === 'Main'
-                                ? 'bg-blue-100 dark:bg-blue-400/15 text-blue-600 dark:text-blue-400'
-                                : 'bg-surface-200 dark:bg-surface-700 text-surface-500 dark:text-surface-400'"
-                        >
-                            {{ char.role }}
-                        </span>
-                        }
-                        @if (char.favorites) {
-                        <span class="text-surface-400 text-xs">
-                            <i class="pi pi-heart-fill text-red-400 mr-0.5" style="font-size: 0.65rem"></i>
-                            {{ char.favorites!.toLocaleString() }}
-                        </span>
-                        }
-                    </div>
-                    @if (char.voiceActors?.length) {
-                    <div class="text-surface-400 mt-1 truncate text-xs">
-                        {{ char.voiceActors![0].name }} ({{ char.voiceActors![0].language }})
-                    </div>
-                    }
-                </div>
-                <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
-            </a>
-            }
-        </div>
-        @if (anime()!.characters!.length > 6) {
-        <div class="mt-3 text-center">
-            <p-button
-                (onClick)="showAllCharacters.set(!showAllCharacters())"
-                [label]="showAllCharacters() ? t('anime.detail.showLessCharacters') : t('anime.detail.showAllCharacters', { count: anime()!.characters!.length })"
-                [text]="true"
-                severity="secondary"
-                size="small"
-            />
-        </div>
-        }
-    </div>
-    }
     } @else {
     <div class="flex flex-col items-center justify-center py-20 text-center">
         <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
-        <p class="text-surface-500">{{ t('anime.detail.notFound') }}</p>
+        <p class="text-surface-500">{{ t('manga.detail.notFound') }}</p>
         <p-button
             (onClick)="back()"
             [label]="navHistory.backLabel()"

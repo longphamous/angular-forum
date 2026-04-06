@@ -1,0 +1,341 @@
+<div class="mx-auto max-w-5xl" *transloco="let t">
+    <div class="mb-4">
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+    </div>
+
+    @if (facade.personDetailLoading()) {
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="md:col-span-1">
+            <p-skeleton borderRadius="8px" height="22rem" width="100%" />
+        </div>
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <p-skeleton height="2.5rem" width="60%" />
+            <p-skeleton height="1.5rem" width="40%" />
+            <p-skeleton height="8rem" />
+        </div>
+    </div>
+    } @else if (person()) {
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column -->
+        <div class="flex flex-col gap-4 md:col-span-1">
+            @if (person()!.picture) {
+            <img
+                class="w-full rounded-lg object-cover shadow-md"
+                [alt]="person()!.name"
+                [src]="person()!.picture"
+            />
+            } @else {
+            <div
+                class="bg-surface-100 dark:bg-surface-700 flex w-full items-center justify-center rounded-lg"
+                style="aspect-ratio: 3/4"
+            >
+                <i class="pi pi-user text-surface-300 text-6xl"></i>
+            </div>
+            }
+
+            <div class="grid grid-cols-2 gap-2 text-center text-sm">
+                @if (person()!.favorites) {
+                <div class="bg-surface-50 dark:bg-surface-800 col-span-2 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.personDetail.favorites') }}</div>
+                    <div class="font-bold">
+                        <i class="pi pi-heart-fill text-red-400 mr-1" style="font-size: 0.75rem"></i>
+                        {{ person()!.favorites!.toLocaleString() }}
+                    </div>
+                </div>
+                }
+                @if (person()!.staffRoles?.length) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.personDetail.staffCount') }}</div>
+                    <div class="font-bold">{{ person()!.staffRoles.length }}</div>
+                </div>
+                }
+                @if (person()!.voiceActingRoles?.length) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.personDetail.vaCount') }}</div>
+                    <div class="font-bold">{{ person()!.voiceActingRoles.length }}</div>
+                </div>
+                }
+            </div>
+
+            @if (person()!.url) {
+            <a
+                class="text-primary inline-flex items-center gap-1 text-sm no-underline"
+                [href]="person()!.url"
+                rel="noopener noreferrer"
+                target="_blank"
+            >
+                <i class="pi pi-external-link text-xs"></i>
+                MyAnimeList
+            </a>
+            }
+        </div>
+
+        <!-- Right column -->
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl leading-tight font-bold">
+                    {{ person()!.name }}
+                </h1>
+                @if (person()!.givenName || person()!.familyName) {
+                <p class="text-surface-400 mt-1 text-sm">{{ person()!.familyName }} {{ person()!.givenName }}</p>
+                }
+            </div>
+
+            <!-- Info grid -->
+            <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+                @if (person()!.birthday) {
+                <div>
+                    <div class="text-surface-400 text-xs tracking-wide uppercase">
+                        {{ t('anime.personDetail.birthday') }}
+                    </div>
+                    <div class="text-surface-800 dark:text-surface-200 font-medium">
+                        {{ person()!.birthday | date:'mediumDate' }}
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Alternate names -->
+            @if (person()!.alternateNames?.length) {
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-1.5 text-xs font-semibold tracking-wide uppercase">
+                    {{ t('anime.personDetail.alternateNames') }}
+                </h3>
+                <div class="flex flex-wrap gap-1.5">
+                    @for (name of person()!.alternateNames!; track name) {
+                    <span
+                        class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >{{ name }}</span>
+                    }
+                </div>
+            </div>
+            }
+
+            <p-divider styleClass="my-0" />
+
+            <!-- About -->
+            @if (person()!.about) {
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-2 text-sm font-semibold tracking-wide uppercase">
+                    {{ t('anime.personDetail.about') }}
+                </h3>
+                <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed whitespace-pre-line">
+                    {{ showFullAbout() ? person()!.about : truncatedAbout() }}
+                    @if (person()!.about!.length > 400) {
+                    <button
+                        class="text-primary ml-1 cursor-pointer border-none bg-transparent text-sm font-medium"
+                        (click)="showFullAbout.set(!showFullAbout())"
+                    >
+                        {{ showFullAbout() ? t('anime.detail.showLess') : t('anime.detail.showMore') }}
+                    </button>
+                    }
+                </p>
+            </div>
+            }
+
+            <!-- Tabbed sections -->
+            @if (tabCount() > 0) {
+            <p-divider styleClass="my-0" />
+            <p-tabs [value]="activeTab()" (valueChange)="activeTab.set($event?.toString() ?? 'staff')">
+                <p-tablist>
+                    @if (person()!.staffRoles?.length) {
+                    <p-tab value="staff">
+                        {{ t('anime.personDetail.staffRoles') }}
+                        <span class="text-surface-400 ml-1 text-xs">({{ person()!.staffRoles.length }})</span>
+                    </p-tab>
+                    }
+                    @if (person()!.voiceActingRoles?.length) {
+                    <p-tab value="va">
+                        {{ t('anime.personDetail.voiceActingRoles') }}
+                        <span class="text-surface-400 ml-1 text-xs">({{ person()!.voiceActingRoles.length }})</span>
+                    </p-tab>
+                    }
+                </p-tablist>
+
+                <p-tabpanels>
+                    <!-- Staff tab -->
+                    @if (person()!.staffRoles?.length) {
+                    <p-tabpanel value="staff">
+                        <div class="flex flex-col gap-2 pt-3">
+                            @for (role of displayedStaff(); track role.animeMalId) {
+                            <a
+                                class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
+                                [routerLink]="['/anime', role.animeMalId]"
+                            >
+                                <div class="group relative h-12 w-8 flex-shrink-0">
+                                    @if (role.animePicture) {
+                                    <img
+                                        class="h-12 w-8 rounded object-cover"
+                                        [alt]="role.animeTitle"
+                                        [src]="role.animePicture"
+                                    />
+                                    <div
+                                        class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                                    >
+                                        <img
+                                            class="w-full rounded-lg object-cover shadow-xl"
+                                            [alt]="role.animeTitle"
+                                            [src]="role.animePicture"
+                                            style="aspect-ratio: 2/3"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                                    >
+                                        <i class="pi pi-image text-surface-400 text-xs"></i>
+                                    </div>
+                                    }
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
+                                        {{ role.animeTitle }}
+                                    </div>
+                                    <div class="mt-0.5 flex flex-wrap gap-1">
+                                        @for (pos of role.positions; track pos) {
+                                        <span
+                                            class="bg-surface-200 dark:bg-surface-700 text-surface-500 dark:text-surface-400 rounded px-1.5 py-0.5 text-xs"
+                                        >{{ pos }}</span>
+                                        }
+                                    </div>
+                                </div>
+                                <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                            </a>
+                            }
+                        </div>
+                        @if (person()!.staffRoles.length > 5) {
+                        <div class="mt-3 text-center">
+                            <p-button
+                                (onClick)="showAllStaff.set(!showAllStaff())"
+                                [label]="showAllStaff()
+                                    ? t('anime.personDetail.showLess')
+                                    : t('anime.personDetail.showAll', { count: person()!.staffRoles.length })"
+                                [text]="true"
+                                severity="secondary"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </p-tabpanel>
+                    }
+
+                    <!-- Voice Acting tab -->
+                    @if (person()!.voiceActingRoles?.length) {
+                    <p-tabpanel value="va">
+                        <div class="flex flex-col gap-2 pt-3">
+                            @for (role of displayedVa(); track role.animeMalId + '-' + role.characterMalId) {
+                            <div
+                                class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-2"
+                            >
+                                <!-- Anime thumbnail -->
+                                <a class="group relative h-12 w-8 flex-shrink-0" [routerLink]="['/anime', role.animeMalId]">
+                                    @if (role.animePicture) {
+                                    <img
+                                        class="h-12 w-8 rounded object-cover"
+                                        [alt]="role.animeTitle"
+                                        [src]="role.animePicture"
+                                    />
+                                    <div
+                                        class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                                    >
+                                        <img
+                                            class="w-full rounded-lg object-cover shadow-xl"
+                                            [alt]="role.animeTitle"
+                                            [src]="role.animePicture"
+                                            style="aspect-ratio: 2/3"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                                    >
+                                        <i class="pi pi-image text-surface-400 text-xs"></i>
+                                    </div>
+                                    }
+                                </a>
+
+                                <div class="min-w-0 flex-1">
+                                    <a
+                                        class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium no-underline hover:underline"
+                                        [routerLink]="['/anime', role.animeMalId]"
+                                    >{{ role.animeTitle }}</a>
+                                    <div class="text-surface-400 text-xs">
+                                        {{ t('anime.personDetail.asCharacter') }}
+                                        <a
+                                            class="text-primary no-underline hover:underline"
+                                            [routerLink]="['/anime/characters', role.characterMalId]"
+                                        >{{ role.characterName }}</a>
+                                    </div>
+                                </div>
+
+                                <!-- Character thumbnail -->
+                                <a class="group relative h-10 w-8 flex-shrink-0" [routerLink]="['/anime/characters', role.characterMalId]">
+                                    @if (role.characterPicture) {
+                                    <img
+                                        class="h-10 w-8 rounded object-cover"
+                                        [alt]="role.characterName"
+                                        [src]="role.characterPicture"
+                                    />
+                                    <div
+                                        class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-32 group-hover:block"
+                                    >
+                                        <img
+                                            class="w-full rounded-lg object-cover shadow-xl"
+                                            [alt]="role.characterName"
+                                            [src]="role.characterPicture"
+                                            style="aspect-ratio: 2/3"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-surface-200 dark:bg-surface-600 flex h-10 w-8 items-center justify-center rounded"
+                                    >
+                                        <i class="pi pi-user text-surface-400 text-xs"></i>
+                                    </div>
+                                    }
+                                </a>
+
+                                <p-tag [value]="role.language" severity="secondary" styleClass="text-xs" />
+                            </div>
+                            }
+                        </div>
+                        @if (person()!.voiceActingRoles.length > 5) {
+                        <div class="mt-3 text-center">
+                            <p-button
+                                (onClick)="showAllVa.set(!showAllVa())"
+                                [label]="showAllVa()
+                                    ? t('anime.personDetail.showLess')
+                                    : t('anime.personDetail.showAll', { count: person()!.voiceActingRoles.length })"
+                                [text]="true"
+                                severity="secondary"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </p-tabpanel>
+                    }
+                </p-tabpanels>
+            </p-tabs>
+            }
+        </div>
+    </div>
+    } @else {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
+        <p class="text-surface-500">{{ t('anime.personDetail.notFound') }}</p>
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            styleClass="mt-4"
+        />
+    </div>
+    }
+</div>

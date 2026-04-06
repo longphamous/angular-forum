@@ -80,6 +80,7 @@ export class AppLayout implements OnDestroy {
         )
             return true;
         if (url.startsWith("/anime") || url.startsWith("/steam")) return true;
+        if (url.startsWith("/manga")) return true;
         if (
             url.startsWith("/rpg") ||
             url.startsWith("/leaderboard") ||

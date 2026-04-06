@@ -1,3 +1,23 @@
+export type PersonSortField = "name" | "favorites" | "birthday";
+
+export class PersonQueryDto {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: PersonSortField;
+    sortOrder?: "ASC" | "DESC";
+}
+
+export type CharacterSortField = "name" | "favorites";
+
+export class CharacterQueryDto {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: CharacterSortField;
+    sortOrder?: "ASC" | "DESC";
+}
+
 export type AnimeV2SortField =
     | "id"
     | "title"

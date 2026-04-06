@@ -1,0 +1,133 @@
+<div class="card" *transloco="let t">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="m-0 text-2xl font-bold">{{ t('anime.characters.title') }}</h2>
+            @if (facade.characterTotal() > 0) {
+            <p class="text-surface-500 mt-1 mb-0">
+                {{ t('anime.characters.entries', { count: facade.characterTotal().toLocaleString() }) }}
+            </p>
+            }
+        </div>
+        <div class="flex items-center gap-2">
+            <input
+                class="w-64"
+                type="text"
+                pInputText
+                [ngModel]="search()"
+                [placeholder]="t('anime.characters.searchPlaceholder')"
+                (keyup.enter)="onSearch()"
+                (ngModelChange)="search.set($event)"
+            />
+            <p-button (onClick)="onSearch()" icon="pi pi-search" severity="secondary" />
+        </div>
+    </div>
+
+    <p-table
+        (onLazyLoad)="onLazyLoad($event)"
+        [first]="tableFirst"
+        [lazy]="true"
+        [loading]="facade.characterLoading()"
+        [paginator]="true"
+        [rowHover]="true"
+        [rows]="pageSize"
+        [scrollable]="true"
+        [showGridlines]="false"
+        [totalRecords]="facade.characterTotal()"
+        [value]="facade.characterList()"
+        dataKey="malId"
+        styleClass="p-datatable-sm"
+    >
+        <ng-template #header>
+            <tr>
+                <th style="min-width: 18rem">{{ t('anime.characters.table.name') }}</th>
+                <th class="text-center" style="width: 8rem">{{ t('anime.characters.table.favorites') }}</th>
+                <th class="text-center" style="width: 8rem">{{ t('anime.characters.table.appearances') }}</th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-char>
+            <tr class="cursor-pointer" (click)="navigateToDetail(char.malId)">
+                <!-- Picture + Name -->
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="group relative flex-shrink-0">
+                            @if (char.picture) {
+                            <img
+                                class="h-10 w-8 rounded object-cover"
+                                [alt]="char.name"
+                                [src]="char.picture"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-0 left-full z-50 ml-2 hidden w-40 group-hover:block"
+                            >
+                                <img
+                                    class="w-full rounded-lg object-cover shadow-xl"
+                                    [alt]="char.name"
+                                    [src]="char.picture"
+                                    style="aspect-ratio: 2/3"
+                                />
+                            </div>
+                            } @else {
+                            <div
+                                class="bg-surface-200 dark:bg-surface-700 flex h-10 w-8 items-center justify-center rounded"
+                            >
+                                <i class="pi pi-user text-surface-400 text-xs"></i>
+                            </div>
+                            }
+                        </div>
+                        <div class="min-w-0">
+                            <div class="truncate text-sm font-semibold">{{ char.name || '—' }}</div>
+                            @if (char.nameKanji) {
+                            <div class="text-surface-400 mt-0.5 truncate text-xs">{{ char.nameKanji }}</div>
+                            }
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Favorites -->
+                <td class="text-center text-sm">
+                    @if (char.favorites) {
+                    <span class="inline-flex items-center gap-1">
+                        <i class="pi pi-heart-fill text-red-400" style="font-size: 0.75rem"></i>
+                        {{ char.favorites.toLocaleString() }}
+                    </span>
+                    } @else {
+                    <span class="text-surface-400">—</span>
+                    }
+                </td>
+
+                <!-- Appearances -->
+                <td class="text-center text-sm">
+                    {{ char.animeAppearances }}
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+            <tr>
+                <td colspan="3">
+                    <div class="text-surface-400 flex flex-col items-center justify-center py-12">
+                        <i class="pi pi-inbox mb-3 text-5xl"></i>
+                        <span class="text-lg">{{ t('anime.characters.noCharacters') }}</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #loadingbody>
+            <tr>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <p-skeleton height="2.5rem" styleClass="rounded flex-shrink-0" width="2rem" />
+                        <div class="flex-1">
+                            <p-skeleton height="0.875rem" styleClass="mb-2" />
+                            <p-skeleton height="0.75rem" width="60%" />
+                        </div>
+                    </div>
+                </td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="3rem" /></td>
+                <td><p-skeleton height="1.25rem" styleClass="mx-auto" width="2rem" /></td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

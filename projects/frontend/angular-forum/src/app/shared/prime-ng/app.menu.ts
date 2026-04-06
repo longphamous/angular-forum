@@ -8,7 +8,7 @@ import { filter, startWith, switchMap } from "rxjs/operators";
 import { AuthFacade } from "../../facade/auth/auth-facade";
 import { AppMenuitem } from "./app.menuitem";
 
-export type SidebarContext = "admin" | "marketplace" | "tickets" | "anime" | "gamification" | null;
+export type SidebarContext = "admin" | "marketplace" | "tickets" | "anime" | "manga" | "gamification" | null;
 
 @Component({
     selector: "app-menu",
@@ -72,6 +72,7 @@ export class AppMenu implements OnInit, OnDestroy {
         )
             return "tickets";
         if (url.startsWith("/anime") || url.startsWith("/steam")) return "anime";
+        if (url.startsWith("/manga")) return "manga";
         if (
             url.startsWith("/rpg") ||
             url.startsWith("/leaderboard") ||
@@ -104,6 +105,9 @@ export class AppMenu implements OnInit, OnDestroy {
                 break;
             case "anime":
                 this.model = this.buildAnimeMenu();
+                break;
+            case "manga":
+                this.model = this.buildMangaMenu();
                 break;
             case "gamification":
                 this.model = this.buildGamificationMenu();
@@ -295,8 +299,35 @@ export class AppMenu implements OnInit, OnDestroy {
                         icon: "pi pi-fw pi-database",
                         routerLink: ["/anime-database"]
                     },
+                    {
+                        label: this.t("nav.characterDatabase"),
+                        icon: "pi pi-fw pi-users",
+                        routerLink: ["/anime/characters"]
+                    },
+                    {
+                        label: this.t("nav.peopleDatabase"),
+                        icon: "pi pi-fw pi-id-card",
+                        routerLink: ["/anime/people"]
+                    },
                     { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] },
                     { label: this.t("nav.steam"), icon: "pi pi-fw pi-desktop", routerLink: ["/steam"] }
+                ]
+            }
+        ];
+    }
+
+    private buildMangaMenu(): MenuItem[] {
+        return [
+            {
+                label: this.t("nav.manga"),
+                items: [
+                    { label: this.t("nav.topManga"), icon: "pi pi-fw pi-list", routerLink: ["/manga-top-list"] },
+                    {
+                        label: this.t("nav.mangaDatabase"),
+                        icon: "pi pi-fw pi-database",
+                        routerLink: ["/manga-database"]
+                    },
+                    { label: this.t("nav.myMangaList"), icon: "pi pi-fw pi-heart", routerLink: ["/manga/my-list"] }
                 ]
             }
         ];

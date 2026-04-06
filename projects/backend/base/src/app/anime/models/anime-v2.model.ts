@@ -48,6 +48,7 @@ export interface AnimeCharacterDto {
     nameKanji?: string;
     role?: string;
     favorites?: number;
+    picture?: string;
     voiceActors?: AnimeVoiceActorDto[];
 }
 
@@ -157,6 +158,111 @@ export interface AnimeV2Dto {
 
 export interface PaginatedAnimeV2Dto {
     data: AnimeV2Dto[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export interface AnimeCharacterListDto {
+    malId: number;
+    name?: string;
+    nameKanji?: string;
+    favorites?: number;
+    picture?: string;
+    animeAppearances: number;
+}
+
+export interface AnimeCharacterDetailDto {
+    malId: number;
+    url?: string;
+    name?: string;
+    nameKanji?: string;
+    nicknames?: string[];
+    favorites?: number;
+    about?: string;
+    picture?: string;
+    animeography: AnimeCharacterAnimeDto[];
+    mangaography: AnimeCharacterMangaDto[];
+    voiceActors: CharacterVoiceActorDto[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface AnimeCharacterAnimeDto {
+    malId: number;
+    title?: string;
+    picture?: string;
+    role?: string;
+}
+
+export interface AnimeCharacterMangaDto {
+    malId: number;
+    title?: string;
+    picture?: string;
+    role?: string;
+}
+
+export interface CharacterVoiceActorDto {
+    malId: number;
+    name?: string;
+    language: string;
+    animeMalId: number;
+    animeTitle?: string;
+}
+
+export interface PaginatedAnimeCharacterListDto {
+    data: AnimeCharacterListDto[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export interface PersonListDto {
+    malId: number;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    picture?: string;
+    favorites?: number;
+    birthday?: string;
+}
+
+export interface PersonDetailDto {
+    malId: number;
+    url?: string;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    alternateNames?: string[];
+    picture?: string;
+    favorites?: number;
+    birthday?: string;
+    about?: string;
+    staffRoles: PersonStaffRoleDto[];
+    voiceActingRoles: PersonVoiceActingRoleDto[];
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface PersonStaffRoleDto {
+    animeMalId: number;
+    animeTitle?: string;
+    animePicture?: string;
+    positions: string[];
+}
+
+export interface PersonVoiceActingRoleDto {
+    animeMalId: number;
+    animeTitle?: string;
+    animePicture?: string;
+    characterMalId: number;
+    characterName?: string;
+    characterPicture?: string;
+    language: string;
+}
+
+export interface PaginatedPersonListDto {
+    data: PersonListDto[];
     total: number;
     page: number;
     limit: number;

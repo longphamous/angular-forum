@@ -81,11 +81,69 @@ export const routes: Routes = [
                     import("./features/pages/anime/my-anime-list/my-anime-list").then((c) => c.MyAnimeList)
             },
             {
+                path: "anime/people",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/anime/people-database/people-database").then((c) => c.PeopleDatabase)
+            },
+            {
+                path: "anime/people/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/anime/person-detail/person-detail").then((c) => c.PersonDetail)
+            },
+            {
+                path: "anime/characters",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/anime/character-database/character-database").then(
+                        (c) => c.CharacterDatabase
+                    )
+            },
+            {
+                path: "anime/characters/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/anime/character-detail/character-detail").then((c) => c.CharacterDetail)
+            },
+            {
                 path: "anime/:id",
                 data: { requiredGroups: ["Registrierte Benutzer"] },
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/pages/anime/anime-detail/anime-detail").then((c) => c.AnimeDetail)
+            },
+            {
+                path: "manga-top-list",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/manga/manga-top-list/manga-top-list").then((c) => c.MangaTopList)
+            },
+            {
+                path: "manga-database",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/manga/manga-database/manga-database").then((c) => c.MangaDatabase)
+            },
+            {
+                path: "manga/my-list",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/manga/my-manga-list/my-manga-list").then((c) => c.MyMangaList)
+            },
+            {
+                path: "manga/:id",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/manga/manga-detail/manga-detail").then((c) => c.MangaDetail)
             },
             {
                 path: "users/:userId",
@@ -100,6 +158,13 @@ export const routes: Routes = [
                 canActivate: [accessGuard],
                 loadComponent: () =>
                     import("./features/pages/anime/my-anime-list/my-anime-list").then((c) => c.MyAnimeList)
+            },
+            {
+                path: "users/:userId/manga-list",
+                data: { requiredGroups: ["Registrierte Benutzer"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/pages/manga/my-manga-list/my-manga-list").then((c) => c.MyMangaList)
             },
             {
                 path: "profile",

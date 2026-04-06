@@ -1,0 +1,351 @@
+<div class="mx-auto max-w-5xl" *transloco="let t">
+    <!-- Back -->
+    <div class="mb-4">
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            [text]="true"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+        />
+    </div>
+
+    @if (facade.characterDetailLoading()) {
+    <!-- Skeleton -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="md:col-span-1">
+            <p-skeleton borderRadius="8px" height="22rem" width="100%" />
+        </div>
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <p-skeleton height="2.5rem" width="60%" />
+            <p-skeleton height="1.5rem" width="40%" />
+            <p-skeleton height="8rem" />
+            <div class="grid grid-cols-2 gap-3">
+                @for (i of [1, 2, 3, 4]; track i) {
+                <p-skeleton height="3rem" />
+                }
+            </div>
+        </div>
+    </div>
+    } @else if (character()) {
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column: picture + meta -->
+        <div class="flex flex-col gap-4 md:col-span-1">
+            @if (character()!.picture) {
+            <img
+                class="w-full rounded-lg object-cover shadow-md"
+                [alt]="character()!.name"
+                [src]="character()!.picture"
+            />
+            } @else {
+            <div
+                class="bg-surface-100 dark:bg-surface-700 flex w-full items-center justify-center rounded-lg"
+                style="aspect-ratio: 3/4"
+            >
+                <i class="pi pi-user text-surface-300 text-6xl"></i>
+            </div>
+            }
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-2 text-center text-sm">
+                @if (character()!.favorites) {
+                <div class="bg-surface-50 dark:bg-surface-800 col-span-2 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.characterDetail.favorites') }}</div>
+                    <div class="font-bold">
+                        <i class="pi pi-heart-fill text-red-400 mr-1" style="font-size: 0.75rem"></i>
+                        {{ character()!.favorites!.toLocaleString() }}
+                    </div>
+                </div>
+                }
+                @if (character()!.animeography?.length) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.characterDetail.animeCount') }}</div>
+                    <div class="font-bold">{{ character()!.animeography.length }}</div>
+                </div>
+                }
+                @if (character()!.mangaography?.length) {
+                <div class="bg-surface-50 dark:bg-surface-800 rounded-lg p-2">
+                    <div class="text-surface-400 text-xs">{{ t('anime.characterDetail.mangaCount') }}</div>
+                    <div class="font-bold">{{ character()!.mangaography.length }}</div>
+                </div>
+                }
+            </div>
+
+            <!-- MAL Link -->
+            @if (character()!.url) {
+            <a
+                class="text-primary inline-flex items-center gap-1 text-sm no-underline"
+                [href]="character()!.url"
+                rel="noopener noreferrer"
+                target="_blank"
+            >
+                <i class="pi pi-external-link text-xs"></i>
+                MyAnimeList
+            </a>
+            }
+        </div>
+
+        <!-- Right column: info -->
+        <div class="flex flex-col gap-4 md:col-span-2">
+            <!-- Name -->
+            <div>
+                <h1 class="text-surface-900 dark:text-surface-0 m-0 text-2xl leading-tight font-bold">
+                    {{ character()!.name }}
+                </h1>
+                @if (character()!.nameKanji) {
+                <p class="text-surface-400 mt-1 text-sm">{{ character()!.nameKanji }}</p>
+                }
+            </div>
+
+            <!-- Nicknames -->
+            @if (character()!.nicknames?.length) {
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-1.5 text-xs font-semibold tracking-wide uppercase">
+                    {{ t('anime.characterDetail.nicknames') }}
+                </h3>
+                <div class="flex flex-wrap gap-1.5">
+                    @for (nick of character()!.nicknames!; track nick) {
+                    <span
+                        class="bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >{{ nick }}</span>
+                    }
+                </div>
+            </div>
+            }
+
+            <p-divider styleClass="my-0" />
+
+            <!-- About -->
+            @if (character()!.about) {
+            <div>
+                <h3 class="text-surface-700 dark:text-surface-300 mb-2 text-sm font-semibold tracking-wide uppercase">
+                    {{ t('anime.characterDetail.about') }}
+                </h3>
+                <p class="text-surface-700 dark:text-surface-300 text-sm leading-relaxed whitespace-pre-line">
+                    {{ showFullAbout() ? character()!.about : truncatedAbout() }}
+                    @if (character()!.about!.length > 400) {
+                    <button
+                        class="text-primary ml-1 cursor-pointer border-none bg-transparent text-sm font-medium"
+                        (click)="showFullAbout.set(!showFullAbout())"
+                    >
+                        {{ showFullAbout() ? t('anime.detail.showLess') : t('anime.detail.showMore') }}
+                    </button>
+                    }
+                </p>
+            </div>
+            }
+
+            <!-- Tabbed sections -->
+            @if (tabCount() > 0) {
+            <p-divider styleClass="my-0" />
+            <p-tabs [value]="activeTab()" (valueChange)="activeTab.set($event?.toString() ?? 'anime')">
+                <p-tablist>
+                    @if (character()!.animeography?.length) {
+                    <p-tab value="anime">
+                        {{ t('anime.characterDetail.animeography') }}
+                        <span class="text-surface-400 ml-1 text-xs">({{ character()!.animeography.length }})</span>
+                    </p-tab>
+                    }
+                    @if (character()!.mangaography?.length) {
+                    <p-tab value="manga">
+                        {{ t('anime.characterDetail.mangaography') }}
+                        <span class="text-surface-400 ml-1 text-xs">({{ character()!.mangaography.length }})</span>
+                    </p-tab>
+                    }
+                    @if (character()!.voiceActors?.length) {
+                    <p-tab value="va">
+                        {{ t('anime.characterDetail.voiceActors') }}
+                        <span class="text-surface-400 ml-1 text-xs">({{ character()!.voiceActors.length }})</span>
+                    </p-tab>
+                    }
+                </p-tablist>
+
+                <p-tabpanels>
+                    <!-- Anime tab -->
+                    @if (character()!.animeography?.length) {
+                    <p-tabpanel value="anime">
+                        <div class="flex flex-col gap-2 pt-3">
+                            @for (anime of displayedAnime(); track anime.malId) {
+                            <a
+                                class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
+                                [routerLink]="['/anime', anime.malId]"
+                            >
+                                <div class="group relative h-12 w-8 flex-shrink-0">
+                                    @if (anime.picture) {
+                                    <img
+                                        class="h-12 w-8 rounded object-cover"
+                                        [alt]="anime.title"
+                                        [src]="anime.picture"
+                                    />
+                                    <div
+                                        class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                                    >
+                                        <img
+                                            class="w-full rounded-lg object-cover shadow-xl"
+                                            [alt]="anime.title"
+                                            [src]="anime.picture"
+                                            style="aspect-ratio: 2/3"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                                    >
+                                        <i class="pi pi-image text-surface-400 text-xs"></i>
+                                    </div>
+                                    }
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
+                                        {{ anime.title }}
+                                    </div>
+                                    @if (anime.role) {
+                                    <span
+                                        class="text-xs font-medium"
+                                        [class]="anime.role === 'Main'
+                                            ? 'text-blue-500 dark:text-blue-400'
+                                            : 'text-surface-400'"
+                                    >{{ anime.role }}</span>
+                                    }
+                                </div>
+                                <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                            </a>
+                            }
+                        </div>
+                        @if (character()!.animeography.length > 5) {
+                        <div class="mt-3 text-center">
+                            <p-button
+                                (onClick)="showAllAnime.set(!showAllAnime())"
+                                [label]="showAllAnime()
+                                    ? t('anime.characterDetail.showLess')
+                                    : t('anime.characterDetail.showAll', { count: character()!.animeography.length })"
+                                [text]="true"
+                                severity="secondary"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </p-tabpanel>
+                    }
+
+                    <!-- Manga tab -->
+                    @if (character()!.mangaography?.length) {
+                    <p-tabpanel value="manga">
+                        <div class="flex flex-col gap-2 pt-3">
+                            @for (manga of displayedManga(); track manga.malId) {
+                            <a
+                                class="bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 flex cursor-pointer items-center gap-3 rounded-lg p-2 no-underline transition-colors"
+                                [routerLink]="['/manga', manga.malId]"
+                            >
+                                <div class="group relative h-12 w-8 flex-shrink-0">
+                                    @if (manga.picture) {
+                                    <img
+                                        class="h-12 w-8 rounded object-cover"
+                                        [alt]="manga.title"
+                                        [src]="manga.picture"
+                                    />
+                                    <div
+                                        class="pointer-events-none absolute top-0 right-full z-50 mr-2 hidden w-32 group-hover:block"
+                                    >
+                                        <img
+                                            class="w-full rounded-lg object-cover shadow-xl"
+                                            [alt]="manga.title"
+                                            [src]="manga.picture"
+                                            style="aspect-ratio: 2/3"
+                                        />
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-surface-200 dark:bg-surface-600 flex h-12 w-8 items-center justify-center rounded"
+                                    >
+                                        <i class="pi pi-image text-surface-400 text-xs"></i>
+                                    </div>
+                                    }
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-surface-800 dark:text-surface-200 truncate text-sm font-medium">
+                                        {{ manga.title }}
+                                    </div>
+                                    @if (manga.role) {
+                                    <span
+                                        class="text-xs font-medium"
+                                        [class]="manga.role === 'Main'
+                                            ? 'text-blue-500 dark:text-blue-400'
+                                            : 'text-surface-400'"
+                                    >{{ manga.role }}</span>
+                                    }
+                                </div>
+                                <i class="pi pi-chevron-right text-surface-300 text-xs"></i>
+                            </a>
+                            }
+                        </div>
+                        @if (character()!.mangaography.length > 5) {
+                        <div class="mt-3 text-center">
+                            <p-button
+                                (onClick)="showAllManga.set(!showAllManga())"
+                                [label]="showAllManga()
+                                    ? t('anime.characterDetail.showLess')
+                                    : t('anime.characterDetail.showAll', { count: character()!.mangaography.length })"
+                                [text]="true"
+                                severity="secondary"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </p-tabpanel>
+                    }
+
+                    <!-- Voice Actors tab -->
+                    @if (character()!.voiceActors?.length) {
+                    <p-tabpanel value="va">
+                        <div class="flex flex-col gap-2 pt-3">
+                            @for (va of displayedVa(); track va.malId + '-' + va.animeMalId) {
+                            <div
+                                class="bg-surface-50 dark:bg-surface-800 flex items-center gap-3 rounded-lg p-2"
+                            >
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-surface-800 dark:text-surface-200 text-sm font-medium">
+                                        {{ va.name }}
+                                    </div>
+                                    @if (va.animeTitle) {
+                                    <div class="text-surface-400 truncate text-xs">{{ va.animeTitle }}</div>
+                                    }
+                                </div>
+                                <p-tag [value]="va.language" severity="secondary" styleClass="text-xs" />
+                            </div>
+                            }
+                        </div>
+                        @if (character()!.voiceActors.length > 5) {
+                        <div class="mt-3 text-center">
+                            <p-button
+                                (onClick)="showAllVa.set(!showAllVa())"
+                                [label]="showAllVa()
+                                    ? t('anime.characterDetail.showLess')
+                                    : t('anime.characterDetail.showAll', { count: character()!.voiceActors.length })"
+                                [text]="true"
+                                severity="secondary"
+                                size="small"
+                            />
+                        </div>
+                        }
+                    </p-tabpanel>
+                    }
+                </p-tabpanels>
+            </p-tabs>
+            }
+        </div>
+    </div>
+    } @else {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-exclamation-triangle text-surface-300 mb-4 text-6xl"></i>
+        <p class="text-surface-500">{{ t('anime.characterDetail.notFound') }}</p>
+        <p-button
+            (onClick)="back()"
+            [label]="navHistory.backLabel()"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            styleClass="mt-4"
+        />
+    </div>
+    }
+</div>

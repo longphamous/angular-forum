@@ -9,6 +9,7 @@ import { AnimeV2Service, ANIMEDB_V2_CONNECTION } from "./anime-v2.service";
 import { AnimeListController } from "./anime-list.controller";
 import { AnimeListService } from "./anime-list.service";
 import { AnimeEntity } from "./entities/anime.entity";
+import { MangaEntity } from "../manga/entities/manga.entity";
 import { AnimeV2Entity } from "./entities/anime-v2.entity";
 import { UserAnimeListEntity } from "./entities/user-anime-list.entity";
 
@@ -58,7 +59,7 @@ const ANIME_DB_CONNECTION = "anime-db";
                 password: config.get<string>("ANIMEDB_V2_PASSWORD", ""),
                 database: config.getOrThrow<string>("ANIMEDB_V2_NAME"),
                 schema: config.get<string>("ANIMEDB_V2_SCHEMA", "public"),
-                entities: [AnimeV2Entity],
+                entities: [AnimeV2Entity, MangaEntity],
                 synchronize: false,
                 logging: config.get<string>("NODE_ENV") === "development"
             })

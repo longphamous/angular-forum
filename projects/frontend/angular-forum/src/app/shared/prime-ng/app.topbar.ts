@@ -544,8 +544,20 @@ export class AppTopbar {
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi-list", route: "/anime-top-list" },
                     { label: this.t("nav.animeDatabase"), icon: "pi-database", route: "/anime-database" },
+                    { label: this.t("nav.characterDatabase"), icon: "pi-users", route: "/anime/characters" },
+                    { label: this.t("nav.peopleDatabase"), icon: "pi-id-card", route: "/anime/people" },
                     { label: this.t("nav.myList"), icon: "pi-heart", route: "/anime/my-list" },
                     { label: this.t("nav.steam"), icon: "pi-desktop", route: "/steam" }
+                ]
+            },
+            {
+                label: this.t("nav.manga"),
+                icon: "pi-book",
+                routePrefix: ["/manga"],
+                items: [
+                    { label: this.t("nav.topManga"), icon: "pi-list", route: "/manga-top-list" },
+                    { label: this.t("nav.mangaDatabase"), icon: "pi-database", route: "/manga-database" },
+                    { label: this.t("nav.myMangaList"), icon: "pi-heart", route: "/manga/my-list" }
                 ]
             },
             {
