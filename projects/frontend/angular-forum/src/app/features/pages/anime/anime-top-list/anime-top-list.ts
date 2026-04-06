@@ -84,19 +84,26 @@ export class AnimeTopList implements OnInit, OnDestroy {
         { label: "Manga", value: "Manga" },
         { label: "Light novel", value: "Light novel" },
         { label: "Original", value: "Original" },
-        { label: "Game", value: "game" },
-        { label: "Visual novel", value: "visual_novel" },
-        { label: "4-Koma Manga", value: "4_koma_manga" },
-        { label: "Novel", value: "Novel" }
+        { label: "Game", value: "Game" },
+        { label: "Visual novel", value: "Visual novel" },
+        { label: "4-Koma Manga", value: "4-koma manga" },
+        { label: "Novel", value: "Novel" },
+        { label: "Web manga", value: "Web manga" },
+        { label: "Web novel", value: "Web novel" },
+        { label: "Music", value: "Music" },
+        { label: "Book", value: "Book" },
+        { label: "Card game", value: "Card game" },
+        { label: "Mixed media", value: "Mixed media" },
+        { label: "Other", value: "Other" }
     ];
 
     readonly ratingOptions: SelectOption[] = [
-        { label: "G", value: "G" },
-        { label: "PG", value: "PG" },
-        { label: "PG-13", value: "PG-13" },
-        { label: "R", value: "R" },
-        { label: "R+", value: "R+" },
-        { label: "Rx", value: "Rx" }
+        { label: "G - All Ages", value: "G - All Ages" },
+        { label: "PG - Children", value: "PG - Children" },
+        { label: "PG-13 - Teens 13 or older", value: "PG-13 - Teens 13 or older" },
+        { label: "R - 17+ (violence & profanity)", value: "R - 17+ (violence & profanity)" },
+        { label: "R+ - Mild Nudity", value: "R+ - Mild Nudity" },
+        { label: "Rx - Hentai", value: "Rx - Hentai" }
     ];
 
     // Filter state (bound via ngModel)

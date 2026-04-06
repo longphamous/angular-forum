@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    Header,
     HttpCode,
     HttpStatus,
     Param,
@@ -20,41 +21,24 @@ import { CreateAnimeDto } from "./dto/create-anime.dto";
 import { UpdateAnimeDto } from "./dto/update-anime.dto";
 import { AnimeDto, PaginatedAnimeDto } from "./models/anime.model";
 
-@ApiTags("Anime")
+/**
+ * @deprecated Use /api/v2/anime endpoints instead.
+ * This controller will be removed in a future release.
+ */
+@ApiTags("Anime (deprecated)")
 @ApiBearerAuth("JWT")
 @Controller("anime")
 export class AnimeController {
     constructor(private readonly animeService: AnimeService) {}
 
     /**
-     * GET /api/anime
-     * Returns a paginated + filtered list of anime.
-     *
-     * Query params (pagination):
-     *   page        – 1-based page number (default: 1)
-     *   limit       – items per page (default: 20, max: 100)
-     *
-     * Query params (filters):
-     *   search      – partial match on title / titleEnglish / titleJapanese / titleSynonym
-     *   type        – e.g. TV, Movie, OVA, ONA, Special, Music
-     *   status      – e.g. "Finished Airing", "Currently Airing", "Not yet aired"
-     *   season      – spring | summer | fall | winter
-     *   seasonYear  – exact season year (e.g. 2023)
-     *   startYear   – anime that started in this year or later
-     *   endYear     – anime that ended in this year or earlier
-     *   source      – e.g. Manga, "Light novel", Original
-     *   rating      – e.g. PG-13, R, G
-     *   nsfw        – true | false
-     *   minEpisodes / maxEpisodes – episode count range
-     *   minScore    / maxScore    – mean score range (0–10)
-     *   minRank     / maxRank     – rank range
-     *
-     * Query params (sorting):
-     *   sortBy      – id | title | mean | rank | popularity | episode | seasonYear | startYear | member | voter
-     *   sortOrder   – ASC (default) | DESC
+     * @deprecated Use GET /api/v2/anime instead.
      */
     @Public()
     @Get()
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
+    @Header("Link", '</api/v2/anime>; rel="successor-version"')
     findAll(@Query() query: AnimeQueryDto): Promise<PaginatedAnimeDto> {
         const page = Math.max(1, Number(query.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
@@ -62,50 +46,57 @@ export class AnimeController {
     }
 
     /**
-     * GET /api/anime/genres
-     * Returns a sorted list of all genre names.
+     * @deprecated Use GET /api/v2/anime/genres instead.
      */
     @Public()
     @Get("genres")
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
+    @Header("Link", '</api/v2/anime/genres>; rel="successor-version"')
     getAllGenres(): Promise<string[]> {
         return this.animeService.getAllGenres();
     }
 
     /**
-     * GET /api/anime/:id
-     * Returns a single anime by its numeric ID.
+     * @deprecated Use GET /api/v2/anime/:id instead.
      */
     @Public()
     @Get(":id")
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
+    @Header("Link", '</api/v2/anime/:id>; rel="successor-version"')
     findById(@Param("id", ParseIntPipe) id: number): Promise<AnimeDto> {
         return this.animeService.findById(id);
     }
 
     /**
-     * POST /api/anime
-     * Creates a new anime entry. Requires authentication.
+     * @deprecated No v2 equivalent – animedb is read-only.
      */
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
     create(@Body() dto: CreateAnimeDto): Promise<AnimeDto> {
         return this.animeService.create(dto);
     }
 
     /**
-     * PATCH /api/anime/:id
-     * Partially updates an existing anime entry. Requires authentication.
+     * @deprecated No v2 equivalent – animedb is read-only.
      */
     @Patch(":id")
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
     update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateAnimeDto): Promise<AnimeDto> {
         return this.animeService.update(id, dto);
     }
 
     /**
-     * DELETE /api/anime/:id
-     * Soft-deletes an anime entry (sets deletedAt). Requires authentication.
+     * @deprecated No v2 equivalent – animedb is read-only.
      */
     @Delete(":id")
     @HttpCode(HttpStatus.NO_CONTENT)
+    @Header("Deprecation", "true")
+    @Header("Sunset", "2026-12-31")
     remove(@Param("id", ParseIntPipe) id: number): Promise<void> {
         return this.animeService.remove(id);
     }
