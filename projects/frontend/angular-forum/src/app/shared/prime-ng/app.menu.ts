@@ -6,6 +6,7 @@ import { Subscription } from "rxjs";
 import { filter, startWith, switchMap } from "rxjs/operators";
 
 import { AuthFacade } from "../../facade/auth/auth-facade";
+import { ModuleConfigFacade } from "../../facade/module-config/module-config-facade";
 import { AppMenuitem } from "./app.menuitem";
 
 export type SidebarContext = "admin" | "marketplace" | "tickets" | "anime" | "manga" | "gamification" | null;
@@ -31,6 +32,7 @@ export class AppMenu implements OnInit, OnDestroy {
 
     private readonly translocoService = inject(TranslocoService);
     private readonly authFacade = inject(AuthFacade);
+    private readonly moduleConfig = inject(ModuleConfigFacade);
     private readonly router = inject(Router);
     private langSub?: Subscription;
     private routeSub?: Subscription;
@@ -71,7 +73,7 @@ export class AppMenu implements OnInit, OnDestroy {
             url.startsWith("/reports")
         )
             return "tickets";
-        if (url.startsWith("/anime") || url.startsWith("/steam")) return "anime";
+        if (url.startsWith("/anime")) return "anime";
         if (url.startsWith("/manga")) return "manga";
         if (
             url.startsWith("/rpg") ||
@@ -219,7 +221,12 @@ export class AppMenu implements OnInit, OnDestroy {
                     { label: this.t("nav.slideshow"), icon: "pi pi-fw pi-images", routerLink: ["/admin/slideshow"] },
                     { label: this.t("nav.featuredItems"), icon: "pi pi-fw pi-star", routerLink: ["/admin/featured"] },
                     { label: this.t("nav.adminLogs"), icon: "pi pi-fw pi-list-check", routerLink: ["/admin/logs"] },
-                    { label: this.t("nav.adminI18n"), icon: "pi pi-fw pi-language", routerLink: ["/admin/i18n"] }
+                    { label: this.t("nav.adminI18n"), icon: "pi pi-fw pi-language", routerLink: ["/admin/i18n"] },
+                    {
+                        label: this.t("nav.moduleConfig"),
+                        icon: "pi pi-fw pi-sliders-h",
+                        routerLink: ["/admin/modules"]
+                    }
                 ]
             }
         ];
@@ -288,30 +295,23 @@ export class AppMenu implements OnInit, OnDestroy {
         ];
     }
 
+    private filterByModule(items: Array<{ item: MenuItem; moduleKey?: string }>): MenuItem[] {
+        return items
+            .filter((entry) => !entry.moduleKey || this.moduleConfig.isEnabled(entry.moduleKey))
+            .map((entry) => entry.item);
+    }
+
     private buildAnimeMenu(): MenuItem[] {
         return [
             {
                 label: this.t("nav.anime"),
-                items: [
-                    { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] },
-                    {
-                        label: this.t("nav.animeDatabase"),
-                        icon: "pi pi-fw pi-database",
-                        routerLink: ["/anime-database"]
-                    },
-                    {
-                        label: this.t("nav.characterDatabase"),
-                        icon: "pi pi-fw pi-users",
-                        routerLink: ["/anime/characters"]
-                    },
-                    {
-                        label: this.t("nav.peopleDatabase"),
-                        icon: "pi pi-fw pi-id-card",
-                        routerLink: ["/anime/people"]
-                    },
-                    { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] },
-                    { label: this.t("nav.steam"), icon: "pi pi-fw pi-desktop", routerLink: ["/steam"] }
-                ]
+                items: this.filterByModule([
+                    { item: { label: this.t("nav.topAnime"), icon: "pi pi-fw pi-list", routerLink: ["/anime-top-list"] }, moduleKey: "anime-top-list" },
+                    { item: { label: this.t("nav.animeDatabase"), icon: "pi pi-fw pi-database", routerLink: ["/anime-database"] }, moduleKey: "anime-database" },
+                    { item: { label: this.t("nav.characterDatabase"), icon: "pi pi-fw pi-users", routerLink: ["/anime/characters"] }, moduleKey: "anime-characters" },
+                    { item: { label: this.t("nav.peopleDatabase"), icon: "pi pi-fw pi-id-card", routerLink: ["/anime/people"] }, moduleKey: "anime-people" },
+                    { item: { label: this.t("nav.myList"), icon: "pi pi-fw pi-heart", routerLink: ["/anime/my-list"] }, moduleKey: "anime-my-list" }
+                ])
             }
         ];
     }
@@ -320,15 +320,11 @@ export class AppMenu implements OnInit, OnDestroy {
         return [
             {
                 label: this.t("nav.manga"),
-                items: [
-                    { label: this.t("nav.topManga"), icon: "pi pi-fw pi-list", routerLink: ["/manga-top-list"] },
-                    {
-                        label: this.t("nav.mangaDatabase"),
-                        icon: "pi pi-fw pi-database",
-                        routerLink: ["/manga-database"]
-                    },
-                    { label: this.t("nav.myMangaList"), icon: "pi pi-fw pi-heart", routerLink: ["/manga/my-list"] }
-                ]
+                items: this.filterByModule([
+                    { item: { label: this.t("nav.topManga"), icon: "pi pi-fw pi-list", routerLink: ["/manga-top-list"] }, moduleKey: "manga-top-list" },
+                    { item: { label: this.t("nav.mangaDatabase"), icon: "pi pi-fw pi-database", routerLink: ["/manga-database"] }, moduleKey: "manga-database" },
+                    { item: { label: this.t("nav.myMangaList"), icon: "pi pi-fw pi-heart", routerLink: ["/manga/my-list"] }, moduleKey: "manga-my-list" }
+                ])
             }
         ];
     }

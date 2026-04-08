@@ -6,6 +6,7 @@ import { ActivityService } from "../activity/activity.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { QuestService } from "../rpg/quest.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { ClipEntity } from "./entities/clip.entity";
 import { ClipCommentEntity } from "./entities/clip-comment.entity";
@@ -93,7 +94,8 @@ export class ClipsService {
         private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService,
         private readonly activityService: ActivityService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly questService: QuestService
     ) {}
 
     async getFeed(
@@ -182,6 +184,7 @@ export class ClipsService {
 
         const saved = await this.clipRepo.save(clip);
         void this.gamificationService.awardXp(authorId, "create_clip", saved.id);
+        void this.questService.trackProgress(authorId, "create_clip").catch(() => undefined);
         void this.activityService.create(
             authorId,
             "clip_uploaded",

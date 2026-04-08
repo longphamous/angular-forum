@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 
 import { ShopItemEntity } from "../shop/entities/shop-item.entity";
 import { UserInventoryEntity } from "../shop/entities/user-inventory.entity";
+import { QuestService } from "./quest.service";
 import {
     CharacterClass,
     EQUIPMENT_SLOTS,
@@ -76,7 +77,8 @@ export class RpgService {
         @InjectRepository(UserInventoryEntity)
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
         @InjectRepository(ShopItemEntity)
-        private readonly shopItemRepo: Repository<ShopItemEntity>
+        private readonly shopItemRepo: Repository<ShopItemEntity>,
+        private readonly questService: QuestService
     ) {}
 
     // ── Get or auto-create character ─────────────────────────────────────────
@@ -148,6 +150,7 @@ export class RpgService {
         entity.unspentPoints -= totalSpend;
 
         await this.characterRepo.save(entity);
+        void this.questService.trackProgress(userId, "allocate_points").catch(() => undefined);
         return this.toDto(entity, userLevel);
     }
 
@@ -180,6 +183,7 @@ export class RpgService {
         const slot = item.equipmentSlot as EquipmentSlot;
         this.setSlot(entity, slot, inventoryId);
         await this.characterRepo.save(entity);
+        void this.questService.trackProgress(userId, "equip_item").catch(() => undefined);
         return this.toDto(entity, userLevel);
     }
 

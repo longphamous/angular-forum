@@ -7,5 +7,6 @@ export const RPG_ROUTES = {
     unequip: (slot: string) => `/rpg/character/unequip/${slot}`,
     equipmentInventory: () => "/rpg/equipment",
     questBoard: () => "/rpg/quests/board",
+    questCompleted: () => "/rpg/quests/completed",
     claimQuest: (userQuestId: string) => `/rpg/quests/claim/${userQuestId}`
 } as const;

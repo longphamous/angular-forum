@@ -701,6 +701,13 @@ export const routes: Routes = [
                 loadComponent: () => import("./features/admin/admin-logs/admin-logs").then((c) => c.AdminLogs)
             },
             {
+                path: "admin/modules",
+                data: { requiredGroups: ["Admin"] },
+                canActivate: [accessGuard],
+                loadComponent: () =>
+                    import("./features/admin/admin-modules/admin-modules").then((c) => c.AdminModules)
+            },
+            {
                 path: "admin/media",
                 data: { requiredGroups: ["Admin"] },
                 canActivate: [accessGuard],

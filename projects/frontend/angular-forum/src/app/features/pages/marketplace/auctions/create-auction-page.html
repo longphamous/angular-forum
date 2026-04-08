@@ -18,6 +18,16 @@
     <!-- Form -->
     <div class="card">
         <div class="mx-auto flex max-w-2xl flex-col gap-5">
+            @if (!meetsLevelRequirement()) {
+            <p-message severity="warn">
+                <div class="flex flex-col gap-1">
+                    <span class="font-semibold">{{ t("marketplace.levelRequiredTitle") }}</span>
+                    <span>{{ t("marketplace.levelRequired", { level: 6 }) }}</span>
+                    <span class="text-sm opacity-75">{{ t("marketplace.currentLevel", { level: userLevel() }) }}</span>
+                </div>
+            </p-message>
+            }
+
             @if (error) {
             <p-message [text]="error" severity="error" />
             }
@@ -143,7 +153,7 @@
                 </a>
                 <p-button
                     (onClick)="submit()"
-                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId || !startPrice"
+                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId || !startPrice || !meetsLevelRequirement()"
                     [label]="t('marketplace.auction.createAuction')"
                     [loading]="submitting"
                     icon="pi pi-megaphone"

@@ -143,6 +143,7 @@
         "adminSystem": "System",
         "adminLogs": "Systemprotokoll",
         "adminI18n": "Sprachvariablen",
+        "moduleConfig": "Module",
         "clips": "Clips",
         "tickets": "Tickets",
         "ticketOverview": "Alle Tickets",
@@ -1724,7 +1725,13 @@
             "snipeProtection": "Auktion wegen Last-Minute-Gebot verlängert",
             "noAuctions": "Keine Auktionen gefunden",
             "noAuctionsHint": "Sei der Erste und erstelle eine Auktion!"
-        }
+        },
+        "levelRequired": "Du musst mindestens Level {{level}} erreichen, um diese Funktion nutzen zu können.",
+        "levelRequiredTitle": "Level-Anforderung nicht erfüllt",
+        "currentLevel": "Dein aktuelles Level: {{level}}",
+        "errorCreating": "Fehler beim Erstellen.",
+        "errorCreatingListing": "Fehler beim Erstellen des Inserats.",
+        "errorCreatingAuction": "Fehler beim Erstellen der Auktion."
     },
     "blog": {
         "title": "Blog",
@@ -2371,6 +2378,14 @@
         "confirmRemove": "Freundschaft wirklich beenden?",
         "mutualFriends": "Gemeinsame Freunde",
         "requestReceived": "Möchte mit dir befreundet sein"
+    },
+    "admin": {
+        "modules": {
+            "title": "Modul-Konfiguration",
+            "description": "Aktiviere oder deaktiviere einzelne Module und Submodule. Das Deaktivieren eines Hauptmoduls deaktiviert auch alle zugehörigen Submodule.",
+            "submodules": "Submodule",
+            "standalone": "Eigenständige Module"
+        }
     },
     "adminI18n": {
         "title": "Sprachvariablen",
@@ -3090,7 +3105,12 @@
             "weapon": "Waffe",
             "shield": "Schild",
             "accessory": "Accessoire"
-        }
+        },
+        "equipFailed": "Ausrüsten fehlgeschlagen",
+        "equipLevelRequired": "Dein Charakter muss mindestens Level {{level}} sein, um dieses Item auszurüsten.",
+        "unequipFailed": "Ablegen fehlgeschlagen",
+        "equipError": "Das Item konnte nicht ausgerüstet werden.",
+        "unequipError": "Das Item konnte nicht abgelegt werden."
     },
     "quest": {
         "title": "Quests",
@@ -3100,6 +3120,11 @@
         "claimed": "Eingelöst",
         "remaining": "verbleibend",
         "backToCharacter": "Charakter",
+        "completed": "Quest abgeschlossen!",
+        "completedQuests": "Abgeschlossene Quests",
+        "noCompleted": "Noch keine Quests abgeschlossen.",
+        "completedAt": "Abgeschlossen am",
+        "claimedAt": "Eingelöst am",
         "empty": "Derzeit keine Quests verfügbar.",
         "types": {
             "daily": "Tägliche Quests",

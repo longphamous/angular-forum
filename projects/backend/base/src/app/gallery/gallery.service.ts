@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
+import { QuestService } from "../rpg/quest.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { GalleryAlbumEntity } from "./entities/gallery-album.entity";
 import { GalleryCommentEntity } from "./entities/gallery-comment.entity";
@@ -55,7 +56,8 @@ export class GalleryService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
-        private readonly mediaService: MediaService
+        private readonly mediaService: MediaService,
+        private readonly questService: QuestService
     ) {}
 
     async getAlbums(userId: string, isAdmin: boolean): Promise<object[]> {
@@ -169,6 +171,7 @@ export class GalleryService {
 
         const saved = await this.mediaRepo.save(media);
         void this.gamificationService.awardXp(ownerId, "upload_gallery", saved.id);
+        void this.questService.trackProgress(ownerId, "upload_gallery").catch(() => undefined);
         return saved;
     }
 

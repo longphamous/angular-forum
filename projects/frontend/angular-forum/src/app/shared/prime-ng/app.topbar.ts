@@ -12,6 +12,7 @@ import { filter, startWith, switchMap } from "rxjs/operators";
 
 import { NotificationBell } from "../../core/components/notification-bell/notification-bell";
 import { AuthFacade } from "../../facade/auth/auth-facade";
+import { ModuleConfigFacade } from "../../facade/module-config/module-config-facade";
 import { AppConfigurator } from "./app.configurator";
 import { LayoutService } from "./service/layout.service";
 
@@ -479,6 +480,7 @@ export class AppTopbar {
 
     readonly layoutService = inject(LayoutService);
     readonly authFacade = inject(AuthFacade);
+    private readonly moduleConfig = inject(ModuleConfigFacade);
     private readonly translocoService = inject(TranslocoService);
     private readonly router = inject(Router);
 
@@ -506,23 +508,13 @@ export class AppTopbar {
     }
 
     private buildNavGroups(): void {
-        this.navGroups = [
+        const mc = this.moduleConfig;
+        const allGroups: (NavGroup & { moduleKey?: string; itemKeys?: string[] })[] = [
             {
                 label: this.t("nav.community"),
                 icon: "pi-comments",
-                routePrefix: [
-                    "/forum",
-                    "/blog",
-                    "/gallery",
-                    "/calendar",
-                    "/lexicon",
-                    "/links",
-                    "/recipes",
-                    "/messages",
-                    "/friends",
-                    "/clips",
-                    "/clans"
-                ],
+                routePrefix: ["/forum", "/blog", "/gallery", "/calendar", "/lexicon", "/links", "/recipes", "/messages", "/friends", "/clips", "/clans", "/steam"],
+                itemKeys: ["forum", "blog", "gallery", "calendar", "lexicon", "link-database", "recipes", "messages", "friends", "clips", "clans", "steam"],
                 items: [
                     { label: this.t("nav.forumOverview"), icon: "pi-comments", route: "/forum" },
                     { label: this.t("nav.blog"), icon: "pi-file-edit", route: "/blog" },
@@ -534,26 +526,30 @@ export class AppTopbar {
                     { label: this.t("nav.messages"), icon: "pi-envelope", route: "/messages" },
                     { label: this.t("nav.friends"), icon: "pi-users", route: "/friends" },
                     { label: this.t("nav.clips"), icon: "pi-video", route: "/clips" },
-                    { label: this.t("nav.clans"), icon: "pi-users", route: "/clans" }
+                    { label: this.t("nav.clans"), icon: "pi-users", route: "/clans" },
+                    { label: this.t("nav.steam"), icon: "pi-desktop", route: "/steam" }
                 ]
             },
             {
                 label: this.t("nav.anime"),
                 icon: "pi-star",
-                routePrefix: ["/anime", "/steam"],
+                moduleKey: "anime",
+                routePrefix: ["/anime"],
+                itemKeys: ["anime-top-list", "anime-database", "anime-characters", "anime-people", "anime-my-list"],
                 items: [
                     { label: this.t("nav.topAnime"), icon: "pi-list", route: "/anime-top-list" },
                     { label: this.t("nav.animeDatabase"), icon: "pi-database", route: "/anime-database" },
                     { label: this.t("nav.characterDatabase"), icon: "pi-users", route: "/anime/characters" },
                     { label: this.t("nav.peopleDatabase"), icon: "pi-id-card", route: "/anime/people" },
-                    { label: this.t("nav.myList"), icon: "pi-heart", route: "/anime/my-list" },
-                    { label: this.t("nav.steam"), icon: "pi-desktop", route: "/steam" }
+                    { label: this.t("nav.myList"), icon: "pi-heart", route: "/anime/my-list" }
                 ]
             },
             {
                 label: this.t("nav.manga"),
                 icon: "pi-book",
+                moduleKey: "manga",
                 routePrefix: ["/manga"],
+                itemKeys: ["manga-top-list", "manga-database", "manga-my-list"],
                 items: [
                     { label: this.t("nav.topManga"), icon: "pi-list", route: "/manga-top-list" },
                     { label: this.t("nav.mangaDatabase"), icon: "pi-database", route: "/manga-database" },
@@ -563,7 +559,9 @@ export class AppTopbar {
             {
                 label: this.t("nav.tickets"),
                 icon: "pi-ticket",
+                moduleKey: "tickets",
                 routePrefix: ["/tickets", "/board", "/backlog", "/roadmap", "/reports"],
+                itemKeys: [undefined as unknown as string, "tickets-board", "tickets-backlog", "tickets-roadmap", "tickets-reports"],
                 items: [
                     { label: this.t("nav.ticketOverview"), icon: "pi-list", route: "/tickets" },
                     { label: this.t("nav.ticketBoard"), icon: "pi-objects-column", route: "/board-select" },
@@ -575,17 +573,12 @@ export class AppTopbar {
             {
                 label: this.t("nav.gamificationSection"),
                 icon: "pi-trophy",
-                routePrefix: [
-                    "/rpg",
-                    "/leaderboard",
-                    "/hashtags",
-                    "/wanted",
-                    "/achievements",
-                    "/shop",
-                    "/lotto",
-                    "/tcg",
-                    "/market",
-                    "/marketplace"
+                moduleKey: "gamification",
+                routePrefix: ["/rpg", "/leaderboard", "/hashtags", "/wanted", "/achievements", "/shop", "/lotto", "/tcg", "/market", "/marketplace"],
+                itemKeys: [
+                    "gamification-rpg", "gamification-quests", "gamification-leaderboard", "gamification-hashtags",
+                    "gamification-wanted", "gamification-achievements", "gamification-shop", "gamification-lotto",
+                    "gamification-tcg", "gamification-market", "marketplace"
                 ],
                 items: [
                     { label: this.t("nav.rpg"), icon: "pi-shield", route: "/rpg" },
@@ -613,16 +606,26 @@ export class AppTopbar {
                     { label: this.t("nav.forumStructure"), icon: "pi-sitemap", route: "/admin/forum" },
                     { label: this.t("nav.blogManagement"), icon: "pi-file-edit", route: "/admin/blog" },
                     { label: this.t("nav.ticketManagement"), icon: "pi-ticket", route: "/admin/tickets" },
-                    {
-                        label: this.t("nav.marketplaceManagement"),
-                        icon: "pi-shopping-cart",
-                        route: "/admin/marketplace"
-                    },
+                    { label: this.t("nav.marketplaceManagement"), icon: "pi-shopping-cart", route: "/admin/marketplace" },
                     { label: this.t("nav.gamification"), icon: "pi-star", route: "/admin/gamification" },
-                    { label: this.t("nav.shopManagement"), icon: "pi-shopping-bag", route: "/admin/shop" }
+                    { label: this.t("nav.shopManagement"), icon: "pi-shopping-bag", route: "/admin/shop" },
+                    { label: this.t("nav.moduleConfig"), icon: "pi-sliders-h", route: "/admin/modules" }
                 ]
             }
         ];
+
+        // Filter by module config
+        this.navGroups = allGroups
+            .filter((g) => !g.moduleKey || mc.isEnabled(g.moduleKey))
+            .map((g) => {
+                if (!g.itemKeys) return g;
+                const filtered = g.items.filter((_, i) => {
+                    const key = g.itemKeys![i];
+                    return !key || mc.isEnabled(key);
+                });
+                return { ...g, items: filtered };
+            })
+            .filter((g) => g.items.length > 0);
     }
 
     isRouteActive(prefixes: string[]): boolean {

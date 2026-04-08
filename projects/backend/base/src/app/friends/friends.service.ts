@@ -6,6 +6,7 @@ import { ActivityService } from "../activity/activity.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushFriendAccepted, PushFriendRequest } from "../push/push-event.types";
+import { QuestService } from "../rpg/quest.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { FriendshipEntity } from "./entities/friendship.entity";
 
@@ -52,7 +53,8 @@ export class FriendsService {
         private readonly userRepo: Repository<UserEntity>,
         private readonly notificationsService: NotificationsService,
         private readonly pushService: PushService,
-        private readonly activityService: ActivityService
+        private readonly activityService: ActivityService,
+        private readonly questService: QuestService
     ) {}
 
     async sendRequest(requesterId: string, addresseeId: string): Promise<FriendRequestDto> {
@@ -95,6 +97,7 @@ export class FriendsService {
             status: "pending"
         });
         const saved = await this.friendshipRepo.save(friendship);
+        void this.questService.trackProgress(requesterId, "add_friend").catch(() => undefined);
 
         await this.notificationsService.create(
             addresseeId,

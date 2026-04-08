@@ -5,6 +5,8 @@ import { Repository } from "typeorm";
 import { CreditService } from "../credit/credit.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { PushService } from "../push/push.service";
+import { PushQuestCompleted } from "../push/push-event.types";
 import { UserInventoryEntity } from "../shop/entities/user-inventory.entity";
 import { QuestEntity, QuestReward, QuestTrigger, QuestType } from "./entities/quest.entity";
 import { UserCharacterEntity } from "./entities/user-character.entity";
@@ -64,7 +66,8 @@ export class QuestService {
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
         private readonly gamificationService: GamificationService,
         private readonly creditService: CreditService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly pushService: PushService
     ) {}
 
     // ── Get quest board for user ──────────────────────────────────────────────
@@ -113,6 +116,20 @@ export class QuestService {
         };
     }
 
+    // ── Get completed/claimed quests for user ──────────────────────────────────
+
+    async getCompletedQuests(userId: string): Promise<UserQuestDto[]> {
+        const userQuests = await this.userQuestRepo.find({
+            where: [
+                { userId, status: "completed" },
+                { userId, status: "claimed" }
+            ],
+            relations: ["quest"],
+            order: { completedAt: "DESC" }
+        });
+        return userQuests.map((uq) => this.toUserQuestDto(uq, uq.quest));
+    }
+
     // ── Track progress (called when user performs an action) ───────────────────
 
     async trackProgress(userId: string, trigger: QuestTrigger): Promise<void> {
@@ -129,9 +146,19 @@ export class QuestService {
             if (!uq || uq.status !== "active") continue;
 
             uq.progress = Math.min(uq.progress + 1, quest.requiredCount);
-            if (uq.progress >= quest.requiredCount) {
+            if (uq.progress >= quest.requiredCount && uq.status === "active") {
                 uq.status = "completed";
                 uq.completedAt = new Date();
+
+                // Notify user via push event
+                const payload: PushQuestCompleted = {
+                    questName: quest.name,
+                    questIcon: quest.icon,
+                    questType: quest.questType,
+                    rewards: quest.rewards.map((r) => ({ type: r.type, amount: r.amount })),
+                    gloryReward: quest.gloryReward
+                };
+                this.pushService.sendToUser(userId, "quest:completed", payload);
             }
             await this.userQuestRepo.save(uq);
         }

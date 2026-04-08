@@ -143,6 +143,7 @@
         "adminSystem": "System",
         "adminLogs": "System Logs",
         "adminI18n": "Language Variables",
+        "moduleConfig": "Modules",
         "clips": "Clips",
         "tickets": "Tickets",
         "ticketOverview": "All Tickets",
@@ -1724,7 +1725,13 @@
             "snipeProtection": "Auction extended due to last-minute bid",
             "noAuctions": "No auctions found",
             "noAuctionsHint": "Be the first to create an auction!"
-        }
+        },
+        "levelRequired": "You need to reach at least level {{level}} to use this feature.",
+        "levelRequiredTitle": "Level requirement not met",
+        "currentLevel": "Your current level: {{level}}",
+        "errorCreating": "Error creating.",
+        "errorCreatingListing": "Error creating the listing.",
+        "errorCreatingAuction": "Error creating the auction."
     },
     "blog": {
         "title": "Blog",
@@ -2371,6 +2378,14 @@
         "confirmRemove": "Really end this friendship?",
         "mutualFriends": "Mutual Friends",
         "requestReceived": "Wants to be your friend"
+    },
+    "admin": {
+        "modules": {
+            "title": "Module Configuration",
+            "description": "Enable or disable individual modules and submodules. Disabling a parent module will also disable all its submodules.",
+            "submodules": "submodules",
+            "standalone": "Standalone modules"
+        }
     },
     "adminI18n": {
         "title": "Language Variables",
@@ -3090,7 +3105,12 @@
             "weapon": "Weapon",
             "shield": "Shield",
             "accessory": "Accessory"
-        }
+        },
+        "equipFailed": "Equip failed",
+        "equipLevelRequired": "Your character must be at least level {{level}} to equip this item.",
+        "unequipFailed": "Unequip failed",
+        "equipError": "The item could not be equipped.",
+        "unequipError": "The item could not be unequipped."
     },
     "quest": {
         "title": "Quests",
@@ -3100,6 +3120,11 @@
         "claimed": "Claimed",
         "remaining": "remaining",
         "backToCharacter": "Character",
+        "completed": "Quest Completed!",
+        "completedQuests": "Completed Quests",
+        "noCompleted": "No quests completed yet.",
+        "completedAt": "Completed on",
+        "claimedAt": "Claimed on",
         "empty": "No quests available at the moment.",
         "types": {
             "daily": "Daily Quests",

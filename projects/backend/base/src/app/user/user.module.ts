@@ -7,6 +7,7 @@ import { GamificationModule } from "../gamification/gamification.module";
 import { GroupEntity } from "../group/entities/group.entity";
 import { MediaModule } from "../media/media.module";
 import { ModerationModule } from "../moderation/moderation.module";
+import { RpgModule } from "../rpg/rpg.module";
 import { UserEntity } from "./entities/user.entity";
 import { PresenceInterceptor } from "./presence.interceptor";
 import { UserController } from "./user.controller";
@@ -18,6 +19,7 @@ import { UserService } from "./user.service";
         GamificationModule,
         MediaModule,
         ModerationModule,
+        RpgModule,
         TypeOrmModule.forFeature([UserEntity, GroupEntity])
     ],
     controllers: [UserController],

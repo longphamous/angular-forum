@@ -10,6 +10,7 @@ import { GroupEntity } from "../group/entities/group.entity";
 import { MediaService } from "../media/media.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../push/push.service";
+import { QuestService } from "../rpg/quest.service";
 import { AdminCreateUserDto } from "./dto/admin-create-user.dto";
 import { AdminUpdateUserDto } from "./dto/admin-update-user.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -81,7 +82,8 @@ export class UserService {
         private readonly gamificationService: GamificationService,
         private readonly moderationService: ModerationService,
         private readonly pushService: PushService,
-        private readonly mediaService: MediaService
+        private readonly mediaService: MediaService,
+        private readonly questService: QuestService
     ) {}
 
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -122,6 +124,9 @@ export class UserService {
 
         user.lastLoginAt = new Date();
         await this.userRepo.save(user);
+
+        // Track quest progress for login
+        void this.questService.trackProgress(user.id, "login").catch(() => undefined);
 
         const tokens = this.authService.signTokens(user.id, user.username, user.role, dto.rememberMe);
         const session: AuthSession = { userId: user.id, ...tokens };

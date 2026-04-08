@@ -10,6 +10,16 @@
         </div>
     </div>
 
+    @if (!meetsLevelRequirement()) {
+    <p-message severity="warn">
+        <div class="flex flex-col gap-1">
+            <span class="font-semibold">{{ t("marketplace.levelRequiredTitle") }}</span>
+            <span>{{ t("marketplace.levelRequired", { level: 6 }) }}</span>
+            <span class="text-sm opacity-75">{{ t("marketplace.currentLevel", { level: userLevel() }) }}</span>
+        </div>
+    </p-message>
+    }
+
     @if (error) {
     <p-message [text]="error" severity="error" />
     }
@@ -236,7 +246,7 @@
             <div class="card">
                 <p-button
                     (onClick)="submit()"
-                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId"
+                    [disabled]="!title.trim() || !description.trim() || !selectedCategoryId || !meetsLevelRequirement()"
                     [fluid]="true"
                     [loading]="submitting"
                     icon="pi pi-check"

@@ -1,8 +1,9 @@
 import { CurrencyPipe } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
+import { HttpErrorResponse } from "@angular/common/http";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
 import { ChipModule } from "primeng/chip";
 import { DatePickerModule } from "primeng/datepicker";
@@ -13,6 +14,7 @@ import { SelectModule } from "primeng/select";
 import { TextareaModule } from "primeng/textarea";
 
 import { ListingType, MarketCategory } from "../../../core/models/marketplace/marketplace";
+import { AuthFacade } from "../../../facade/auth/auth-facade";
 import { MarketplaceFacade } from "../../../facade/marketplace/marketplace-facade";
 
 @Component({
@@ -39,6 +41,12 @@ export class CreateListingPage implements OnInit {
     readonly facade = inject(MarketplaceFacade);
     private readonly router = inject(Router);
     private readonly cd = inject(ChangeDetectorRef);
+    private readonly authFacade = inject(AuthFacade);
+    private readonly transloco = inject(TranslocoService);
+
+    static readonly REQUIRED_LEVEL = 6;
+    readonly userLevel = computed(() => this.authFacade.currentUser()?.level ?? 0);
+    readonly meetsLevelRequirement = computed(() => this.userLevel() >= CreateListingPage.REQUIRED_LEVEL);
 
     title = "";
     description = "";
@@ -99,8 +107,14 @@ export class CreateListingPage implements OnInit {
                 next: (listing) => {
                     void this.router.navigate(["/marketplace", listing.id]);
                 },
-                error: () => {
-                    this.error = "Fehler beim Erstellen des Inserats.";
+                error: (err: HttpErrorResponse) => {
+                    const msg = err.error?.message;
+                    if (msg && /requires level/i.test(msg)) {
+                        const level = msg.match(/\d+/)?.[0] ?? String(CreateListingPage.REQUIRED_LEVEL);
+                        this.error = this.transloco.translate("marketplace.levelRequired", { level });
+                    } else {
+                        this.error = this.transloco.translate("marketplace.errorCreatingListing");
+                    }
                     this.submitting = false;
                     this.cd.markForCheck();
                 }

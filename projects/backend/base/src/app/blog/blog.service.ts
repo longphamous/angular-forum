@@ -6,6 +6,7 @@ import { ActivityService } from "../activity/activity.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { MediaService } from "../media/media.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { QuestService } from "../rpg/quest.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogCategoryEntity } from "./entities/blog-category.entity";
 import { BlogCommentEntity } from "./entities/blog-comment.entity";
@@ -60,7 +61,8 @@ export class BlogService {
         private readonly activityService: ActivityService,
         private readonly gamificationService: GamificationService,
         private readonly mediaService: MediaService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly questService: QuestService
     ) {}
 
     async getPosts(options: {
@@ -151,6 +153,7 @@ export class BlogService {
 
         const saved = await this.postRepo.save(post);
         void this.gamificationService.awardXp(authorId, "create_blog_post", saved.id);
+        void this.questService.trackProgress(authorId, "create_blog_post").catch(() => undefined);
 
         if (saved.status === "published") {
             void this.activityService.create(

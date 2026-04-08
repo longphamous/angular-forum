@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
+import { RpgModule } from "../rpg/rpg.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { BlogController } from "./blog.controller";
 import { BlogService } from "./blog.service";
@@ -14,6 +15,7 @@ import { BlogPostEntity } from "./entities/blog-post.entity";
     imports: [
         GamificationModule,
         MediaModule,
+        RpgModule,
         TypeOrmModule.forFeature([BlogPostEntity, BlogCategoryEntity, BlogCommentEntity, UserEntity])
     ],
     controllers: [BlogController],

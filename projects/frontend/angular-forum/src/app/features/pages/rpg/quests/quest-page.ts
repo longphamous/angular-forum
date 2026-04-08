@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
+import { DatePipe } from "@angular/common";
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { ButtonModule } from "primeng/button";
@@ -19,7 +20,7 @@ import { QuestFacade } from "../../../../facade/rpg/quest-facade";
 @Component({
     selector: "quest-page",
     standalone: true,
-    imports: [RouterLink, TranslocoModule, ButtonModule, SkeletonModule, TagModule, TooltipModule],
+    imports: [DatePipe, RouterLink, TranslocoModule, ButtonModule, SkeletonModule, TagModule, TooltipModule],
     templateUrl: "./quest-page.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
@@ -122,15 +123,46 @@ import { QuestFacade } from "../../../../facade/rpg/quest-facade";
             font-size: 0.875rem;
             box-shadow: 0 2px 12px rgba(168, 85, 247, 0.3);
         }
+
+        .quest-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg-subtle);
+            color: var(--text-color-secondary);
+            transition: all 0.2s;
+        }
+        .quest-tab:hover {
+            background: var(--glass-bg);
+        }
+        .quest-tab-active {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
     `
 })
 export class QuestPage implements OnInit {
     readonly facade = inject(QuestFacade);
     readonly questTypeConfig = QUEST_TYPE_CONFIG;
     readonly rewardTypeConfig = REWARD_TYPE_CONFIG;
+    readonly activeTab = signal<"active" | "completed">("active");
 
     ngOnInit(): void {
         this.facade.loadBoard();
+    }
+
+    switchTab(tab: "active" | "completed"): void {
+        this.activeTab.set(tab);
+        if (tab === "completed") {
+            this.facade.loadCompleted();
+        }
     }
 
     questSections(board: QuestBoard): { type: QuestType; quests: UserQuest[] }[] {

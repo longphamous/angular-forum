@@ -12,6 +12,7 @@ import { Repository } from "typeorm";
 
 import { GamificationService } from "../../gamification/gamification.service";
 import { NotificationsService } from "../../notifications/notifications.service";
+import { QuestService } from "../../rpg/quest.service";
 import { CreditService } from "../credit.service";
 import { LottoConfigEntity } from "./entities/lotto-config.entity";
 import { LottoDrawEntity } from "./entities/lotto-draw.entity";
@@ -161,7 +162,8 @@ export class LottoService implements OnModuleInit {
         @InjectRepository(LottoTicketEntity) private readonly ticketRepo: Repository<LottoTicketEntity>,
         @InjectRepository(LottoSpecialDrawEntity) private readonly specialDrawRepo: Repository<LottoSpecialDrawEntity>,
         @InjectRepository(LottoConfigEntity) private readonly configRepo: Repository<LottoConfigEntity>,
-        @InjectRepository(LottoStatsEntity) private readonly statsRepo: Repository<LottoStatsEntity>
+        @InjectRepository(LottoStatsEntity) private readonly statsRepo: Repository<LottoStatsEntity>,
+        private readonly questService: QuestService
     ) {}
 
     async onModuleInit(): Promise<void> {
@@ -434,6 +436,7 @@ export class LottoService implements OnModuleInit {
                     "lotto_win",
                     `Lotto Gewinn: ${winner.prizeClass} (${winner.prizeAmount} Credits)`
                 );
+                void this.questService.trackProgress(winner.userId, "win_lotto").catch(() => undefined);
                 await this.notificationsService.create(
                     winner.userId,
                     "lotto_win",

@@ -5,6 +5,7 @@ import { In, Repository } from "typeorm";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PushService } from "../push/push.service";
 import { PushMessageNew } from "../push/push-event.types";
+import { QuestService } from "../rpg/quest.service";
 import { UserEntity } from "../user/entities/user.entity";
 import { ConversationEntity } from "./entities/conversation.entity";
 import { MessageEntity } from "./entities/message.entity";
@@ -65,7 +66,8 @@ export class MessagesService {
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
         private readonly notificationsService: NotificationsService,
-        private readonly pushService: PushService
+        private readonly pushService: PushService,
+        private readonly questService: QuestService
     ) {}
 
     async getConversations(userId: string): Promise<ConversationDto[]> {
@@ -170,6 +172,7 @@ export class MessagesService {
             readByUserIds: [userId]
         });
         await this.messageRepo.save(msg);
+        void this.questService.trackProgress(userId, "send_message").catch(() => undefined);
 
         await this.conversationRepo.update(convId, {
             lastMessagePreview: content.slice(0, 100),

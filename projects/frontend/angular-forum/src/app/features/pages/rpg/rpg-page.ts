@@ -1,13 +1,16 @@
 import { KeyValuePipe } from "@angular/common";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { TranslocoModule } from "@jsverse/transloco";
+import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
+import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
 import { SkeletonModule } from "primeng/skeleton";
 import { TagModule } from "primeng/tag";
+import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
 
 import {
@@ -39,8 +42,10 @@ const CHARACTER_CLASSES: CharacterClass[] = ["warrior", "mage", "rogue", "ranger
         SelectModule,
         SkeletonModule,
         TagModule,
+        ToastModule,
         TooltipModule
     ],
+    providers: [MessageService],
     templateUrl: "./rpg-page.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
@@ -169,6 +174,8 @@ const CHARACTER_CLASSES: CharacterClass[] = ["warrior", "mage", "rogue", "ranger
 })
 export class RpgPage implements OnInit {
     readonly facade = inject(RpgFacade);
+    private readonly messageService = inject(MessageService);
+    private readonly transloco = inject(TranslocoService);
 
     readonly statNames = STAT_NAMES;
     readonly statConfig = STAT_CONFIG;
@@ -270,7 +277,18 @@ export class RpgPage implements OnInit {
     }
 
     unequip(slot: EquipmentSlot): void {
-        this.facade.unequipSlot(slot).subscribe();
+        this.facade.unequipSlot(slot).subscribe({
+            error: (err: HttpErrorResponse) => {
+                const msg = err.error?.message;
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.transloco.translate("rpg.unequipFailed"),
+                    detail: msg && /requires level/i.test(msg)
+                        ? this.transloco.translate("rpg.equipLevelRequired", { level: msg.match(/\d+/)?.[0] ?? "?" })
+                        : this.transloco.translate("rpg.unequipError")
+                });
+            }
+        });
     }
 
     openInventoryForSlot(slot: EquipmentSlot): void {
@@ -283,9 +301,27 @@ export class RpgPage implements OnInit {
         this.showInventory.set(true);
     }
 
+    canEquip(invItem: EquipmentInventoryItem): boolean {
+        const requiredLevel = invItem.item.requiredLevel;
+        if (!requiredLevel) return true;
+        return (this.facade.character()?.level ?? 0) >= requiredLevel;
+    }
+
     equipFromInventory(invItem: EquipmentInventoryItem): void {
-        this.facade.equipItem(invItem.inventoryId).subscribe(() => {
-            this.showInventory.set(false);
+        this.facade.equipItem(invItem.inventoryId).subscribe({
+            next: () => {
+                this.showInventory.set(false);
+            },
+            error: (err: HttpErrorResponse) => {
+                const msg = err.error?.message;
+                this.messageService.add({
+                    severity: "error",
+                    summary: this.transloco.translate("rpg.equipFailed"),
+                    detail: msg && /requires level/i.test(msg)
+                        ? this.transloco.translate("rpg.equipLevelRequired", { level: msg.match(/\d+/)?.[0] ?? "?" })
+                        : this.transloco.translate("rpg.equipError")
+                });
+            }
         });
     }
 
@@ -330,6 +366,14 @@ export class RpgPage implements OnInit {
         const item = this.draggingItem();
         if (!item || item.item.equipmentSlot !== slot) return;
         this.draggingItem.set(null);
+        if (!this.canEquip(item)) {
+            this.messageService.add({
+                severity: "error",
+                summary: this.transloco.translate("rpg.equipFailed"),
+                detail: this.transloco.translate("rpg.equipLevelRequired", { level: item.item.requiredLevel ?? "?" })
+            });
+            return;
+        }
         this.equipFromInventory(item);
     }
 

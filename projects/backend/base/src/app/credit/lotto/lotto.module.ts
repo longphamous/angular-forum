@@ -3,6 +3,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { GamificationModule } from "../../gamification/gamification.module";
+import { RpgModule } from "../../rpg/rpg.module";
 import { CreditModule } from "../credit.module";
 import { LottoConfigEntity } from "./entities/lotto-config.entity";
 import { LottoDrawEntity } from "./entities/lotto-draw.entity";
@@ -16,6 +17,7 @@ import { LottoService } from "./lotto.service";
 @Module({
     imports: [
         forwardRef(() => GamificationModule),
+        RpgModule,
         ScheduleModule.forRoot(),
         forwardRef(() => CreditModule),
         TypeOrmModule.forFeature([

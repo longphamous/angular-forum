@@ -16,6 +16,7 @@ export const PUSH_EVENTS = [
     "thread:locked",
     "presence:update",
     "achievement:unlocked",
+    "quest:completed",
     "level:up",
     "presence:userOnline",
     "presence:userOffline"
@@ -98,6 +99,14 @@ export interface PushAchievementUnlocked {
     icon: string;
     rarity: string;
     xpReward: number;
+}
+
+export interface PushQuestCompleted {
+    questName: string;
+    questIcon: string | null;
+    questType: string;
+    rewards: { type: string; amount: number }[];
+    gloryReward: number;
 }
 
 export interface PushLevelUp {

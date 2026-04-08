@@ -2,6 +2,7 @@ import { Component, inject } from "@angular/core";
 import { RouterModule } from "@angular/router";
 
 import { NavigationHistoryService } from "./core/services/navigation-history.service";
+import { ModuleConfigFacade } from "./facade/module-config/module-config-facade";
 
 /**
  * Root application component with authentication state and user menu.
@@ -15,4 +16,10 @@ import { NavigationHistoryService } from "./core/services/navigation-history.ser
 export class AppComponent {
     // Eagerly instantiate so navigation history is tracked from the first route
     readonly navHistory = inject(NavigationHistoryService);
+    // Load module config at startup
+    private readonly moduleConfig = inject(ModuleConfigFacade);
+
+    constructor() {
+        this.moduleConfig.load();
+    }
 }

@@ -10,11 +10,11 @@ import {
 import { TranslocoModule, TranslocoService } from "@jsverse/transloco";
 import { Subscription } from "rxjs";
 
-import { PushAchievementUnlocked, PushLevelUp } from "../../models/push/push-events";
+import { PushAchievementUnlocked, PushLevelUp, PushQuestCompleted } from "../../models/push/push-events";
 import { PushService } from "../../services/push.service";
 
 interface ToastItem {
-    type: "achievement" | "levelup";
+    type: "achievement" | "levelup" | "quest";
     icon: string;
     rarity: string;
     label: string;
@@ -210,6 +210,11 @@ interface ToastItem {
             --ach-glow-color: rgba(245, 158, 11, 0.5);
             --ach-accent: #f59e0b;
         }
+        .ach-quest {
+            --ach-gradient: linear-gradient(135deg, #22c55e, #059669, #22c55e);
+            --ach-glow-color: rgba(34, 197, 94, 0.5);
+            --ach-accent: #22c55e;
+        }
 
         @keyframes ach-slide-in {
             0% {
@@ -338,6 +343,7 @@ interface ToastItem {
                     [class.ach-gold]="item.rarity === 'gold'"
                     [class.ach-leaving]="leaving()"
                     [class.ach-levelup]="item.type === 'levelup'"
+                    [class.ach-quest]="item.type === 'quest'"
                     [class.ach-platinum]="item.rarity === 'platinum'"
                     [class.ach-silver]="item.rarity === 'silver'"
                 >
@@ -407,6 +413,24 @@ export class AchievementToast implements OnInit, OnDestroy {
                     name: ev.name,
                     description: ev.description,
                     xpReward: ev.xpReward
+                });
+            }),
+            this.pushService.on<PushQuestCompleted>("quest:completed").subscribe((ev) => {
+                const rewardParts: string[] = [];
+                for (const r of ev.rewards) {
+                    if (r.type === "xp") rewardParts.push(`+${r.amount} XP`);
+                    else if (r.type === "coins") rewardParts.push(`+${r.amount} Coins`);
+                    else if (r.type === "item") rewardParts.push(`×${r.amount} Item`);
+                }
+                if (ev.gloryReward > 0) rewardParts.push(`+${ev.gloryReward} Glory`);
+                this.enqueue({
+                    type: "quest",
+                    icon: ev.questIcon ?? "pi pi-map",
+                    rarity: "quest",
+                    label: this.translocoService.translate("quest.completed"),
+                    name: ev.questName,
+                    description: rewardParts.join(" · "),
+                    xpReward: 0
                 });
             }),
             this.pushService.on<PushLevelUp>("level:up").subscribe((ev) => {

@@ -36,6 +36,31 @@
             </div>
         </div>
 
+        <!-- ── Tabs ────────────────────────────────────────────── -->
+        <div class="mb-4 flex gap-2">
+            <button
+                class="quest-tab"
+                (click)="switchTab('active')"
+                [class.quest-tab-active]="activeTab() === 'active'"
+                type="button"
+            >
+                <i class="pi pi-map"></i>
+                {{ t('quest.title') }}
+            </button>
+            <button
+                class="quest-tab"
+                (click)="switchTab('completed')"
+                [class.quest-tab-active]="activeTab() === 'completed'"
+                type="button"
+            >
+                <i class="pi pi-check-circle"></i>
+                {{ t('quest.completedQuests') }}
+            </button>
+        </div>
+
+        <!-- ── Active Quests Tab ──────────────────────────────── -->
+        @if (activeTab() === 'active') {
+
         <!-- ── Loading ─────────────────────────────────────────── -->
         @if (facade.loading()) {
         <div class="flex flex-col gap-4">
@@ -215,5 +240,95 @@
             <p class="text-surface-500 dark:text-surface-400">{{ t('quest.empty') }}</p>
         </div>
         } }
+
+        } @else {
+        <!-- ── Completed Quests Tab ───────────────────────────── -->
+
+        @if (facade.loadingCompleted()) {
+        <div class="flex flex-col gap-4">
+            @for (_ of [1,2,3]; track $index) {
+            <div class="glass-panel rounded-2xl p-5">
+                <p-skeleton height="3.5rem" width="100%" />
+            </div>
+            }
+        </div>
+        } @else if (facade.completedQuests().length > 0) {
+        <div class="glass-panel rounded-2xl p-5">
+            <h3
+                class="text-surface-500 dark:text-surface-400 m-0 mb-3 flex items-center gap-2 text-sm font-semibold tracking-wider uppercase"
+            >
+                <i class="pi pi-check-circle text-green-500"></i>
+                {{ t('quest.completedQuests') }}
+                <span class="bg-surface-100 dark:bg-surface-800 rounded-full px-2 py-0.5 text-xs font-normal">
+                    {{ facade.completedQuests().length }}
+                </span>
+            </h3>
+
+            <div class="flex flex-col gap-2">
+                @for (uq of facade.completedQuests(); track uq.id) {
+                <div class="quest-card quest-card-completed" [class.quest-card-claimed]="uq.status === 'claimed'">
+                    <!-- Icon -->
+                    <div
+                        class="quest-icon text-green-500"
+                        style="background: var(--glass-bg); border: 1px solid var(--glass-border)"
+                    >
+                        <i class="{{ uq.quest.icon ?? 'pi pi-check' }}"></i>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="min-w-0 flex-1">
+                        <div class="text-surface-800 dark:text-surface-100 text-sm font-semibold">
+                            {{ uq.quest.name }}
+                        </div>
+                        @if (uq.quest.description) {
+                        <div class="text-surface-400 dark:text-surface-500 mt-0.5 text-xs">
+                            {{ uq.quest.description }}
+                        </div>
+                        }
+                        <!-- Rewards -->
+                        <div class="mt-1.5 flex flex-wrap gap-1">
+                            @for (reward of uq.quest.rewards; track reward.type) {
+                            <span class="reward-chip">
+                                <i
+                                    class="{{ rewardTypeConfig[reward.type].icon }} {{ rewardTypeConfig[reward.type].color }}"
+                                    style="font-size: 0.6rem"
+                                ></i>
+                                {{ rewardLabel(reward) }}
+                            </span>
+                            } @if (uq.quest.gloryReward > 0) {
+                            <span class="reward-chip">
+                                <i class="pi pi-crown text-purple-500" style="font-size: 0.6rem"></i>
+                                +{{ uq.quest.gloryReward }}
+                            </span>
+                            }
+                        </div>
+                        <!-- Completed date -->
+                        <div class="text-surface-400 dark:text-surface-500 mt-1 text-xs">
+                            @if (uq.claimedAt) {
+                            {{ t('quest.claimedAt') }}: {{ uq.claimedAt | date:'dd.MM.yyyy HH:mm' }}
+                            } @else if (uq.completedAt) {
+                            {{ t('quest.completedAt') }}: {{ uq.completedAt | date:'dd.MM.yyyy HH:mm' }}
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    @if (uq.status === 'completed') {
+                    <p-button (onClick)="claimReward(uq)" [label]="t('quest.claim')" icon="pi pi-gift" size="small" />
+                    } @else {
+                    <p-tag [value]="t('quest.claimed')" icon="pi pi-check" severity="success" styleClass="text-xs" />
+                    }
+                </div>
+                }
+            </div>
+        </div>
+        } @else {
+        <div class="glass-panel rounded-2xl p-12 text-center">
+            <i class="pi pi-check-circle text-surface-300 dark:text-surface-600 mb-4 text-5xl"></i>
+            <p class="text-surface-500 dark:text-surface-400">{{ t('quest.noCompleted') }}</p>
+        </div>
+        }
+
+        }
     </div>
 </div>

@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
+import { RpgModule } from "../rpg/rpg.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { GalleryAlbumEntity } from "./entities/gallery-album.entity";
 import { GalleryCommentEntity } from "./entities/gallery-comment.entity";
@@ -15,6 +16,7 @@ import { GalleryService } from "./gallery.service";
     imports: [
         GamificationModule,
         MediaModule,
+        RpgModule,
         TypeOrmModule.forFeature([
             GalleryAlbumEntity,
             GalleryMediaEntity,

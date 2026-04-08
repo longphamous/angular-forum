@@ -34,6 +34,7 @@ import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { MediaModule } from "./media/media.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ModerationModule } from "./moderation/moderation.module";
+import { ModuleConfigModule } from "./module-config/module-config.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PushModule } from "./push/push.module";
 import { RecipesModule } from "./recipes/recipes.module";
@@ -76,6 +77,7 @@ import { WeatherModule } from "./weather/weather.module";
         PushModule.register(),
         MessagesModule,
         ModerationModule,
+        ModuleConfigModule,
         BlogModule,
         ChronikModule,
         MarketplaceModule,

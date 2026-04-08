@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 
 import { CreditService } from "../credit/credit.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { QuestService } from "../rpg/quest.service";
 import { ShopItemEntity } from "./entities/shop-item.entity";
 import { UserInventoryEntity } from "./entities/user-inventory.entity";
 
@@ -73,7 +74,8 @@ export class ShopService {
         @InjectRepository(UserInventoryEntity)
         private readonly inventoryRepo: Repository<UserInventoryEntity>,
         private readonly creditService: CreditService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly questService: QuestService
     ) {}
 
     // ─── Public ───────────────────────────────────────────────────────────────
@@ -174,6 +176,7 @@ export class ShopService {
 
         const entry = this.inventoryRepo.create({ userId, itemId, quantity: 1 });
         const saved = await this.inventoryRepo.save(entry);
+        void this.questService.trackProgress(userId, "buy_item").catch(() => undefined);
         return this.toInventoryDto(saved, item);
     }
 

@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { GamificationModule } from "../gamification/gamification.module";
 import { MediaModule } from "../media/media.module";
+import { RpgModule } from "../rpg/rpg.module";
 import { UserEntity } from "../user/entities/user.entity";
 import { ClipStatsController } from "./clip-stats.controller";
 import { ClipStatsService } from "./clip-stats.service";
@@ -18,6 +19,7 @@ import { ClipViewEventEntity } from "./entities/clip-view-event.entity";
     imports: [
         GamificationModule,
         MediaModule,
+        RpgModule,
         TypeOrmModule.forFeature([
             ClipEntity,
             ClipCommentEntity,

@@ -23,6 +23,11 @@ export class QuestController {
         return this.questService.getQuestBoard(user.userId, xpData.level);
     }
 
+    @Get("completed")
+    getCompletedQuests(@CurrentUser() user: AuthenticatedUser): Promise<UserQuestDto[]> {
+        return this.questService.getCompletedQuests(user.userId);
+    }
+
     @Post("claim/:userQuestId")
     claimReward(
         @CurrentUser() user: AuthenticatedUser,

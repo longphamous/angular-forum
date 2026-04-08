@@ -1,3 +1,4 @@
+<p-toast />
 <div class="p-4 sm:p-6 lg:p-8" *transloco="let t">
     <div class="mx-auto max-w-5xl">
         <!-- ── Header ──────────────────────────────────────────── -->
@@ -405,6 +406,16 @@
                         <!-- Equip / Equipped button -->
                         @if (equipped) {
                         <p-tag [value]="t('rpg.equipped')" icon="pi pi-check" severity="success" styleClass="text-xs" />
+                        } @else if (!canEquip(invItem)) {
+                        <span [pTooltip]="t('rpg.equipLevelRequired', { level: invItem.item.requiredLevel })">
+                            <p-button
+                                [disabled]="true"
+                                [label]="t('rpg.equip')"
+                                icon="pi pi-lock"
+                                severity="danger"
+                                size="small"
+                            />
+                        </span>
                         } @else {
                         <p-button
                             (onClick)="equipFromInventory(invItem)"

@@ -6,6 +6,7 @@ import { ActivityService } from "../../activity/activity.service";
 import { GamificationService } from "../../gamification/gamification.service";
 import { UserXpData } from "../../gamification/level.config";
 import { NotificationsService } from "../../notifications/notifications.service";
+import { QuestService } from "../../rpg/quest.service";
 import { UserEntity, UserRole } from "../../user/entities/user.entity";
 import { CreateThreadDto } from "../dto/create-thread.dto";
 import { ForumQueryDto } from "../dto/forum-query.dto";
@@ -87,7 +88,8 @@ export class ThreadService {
         private readonly userRepo: Repository<UserEntity>,
         private readonly gamificationService: GamificationService,
         private readonly activityService: ActivityService,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        private readonly questService: QuestService
     ) {}
 
     async findByForum(forumId: string, query: ForumQueryDto): Promise<PaginatedResult<ThreadDto>> {
@@ -195,6 +197,9 @@ export class ThreadService {
 
         // Award XP for creating a thread
         void this.gamificationService.awardXp(authorId, "create_thread", thread.id);
+
+        // Track quest progress
+        void this.questService.trackProgress(authorId, "create_thread").catch(() => undefined);
 
         void this.activityService.create(
             authorId,

@@ -324,8 +324,10 @@ export class PostService {
 
             // Award XP: giver gets 1, receiver gets 3
             void this.gamificationService.awardXp(userId, "give_reaction", postId);
+            void this.questService.trackProgress(userId, "give_reaction").catch(() => undefined);
             if (post.authorId !== userId) {
                 void this.gamificationService.awardXp(post.authorId, "receive_reaction", postId);
+                void this.questService.trackProgress(post.authorId, "receive_reaction").catch(() => undefined);
                 // Award 2 coins to post author for receiving a reaction
                 void this.creditService
                     .addCredits(post.authorId, 2, "reward", "Coins für erhaltene Reaktion")
